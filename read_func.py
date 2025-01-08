@@ -175,21 +175,21 @@ def convert_rs_to_iwv(df, tp):
     return iwv
 
 
-def extract_values(fn, year):
-    if not os.path.exists(os.path.join(basefol_c, fn + str(year) + '.nc')):
-        try:
-            filen = os.path.join(basefol_r, 'carra', '_'.join(fn.split('_')[1:]) + str(year) + '.nc')
-            NC = xr.open_dataset(str(filen), decode_cf=True, decode_times=True)
-
-            # import cfgrib
-            # ds = cfgrib.open_dataset('era5-levels-members.grib')
-            # ds
-
-            # tmp = NC.sel(x=y, y=x, method='nearest')
-        except FileNotFoundError:
-            print(f'cannot find {filen}')
-
-    return f'thaao_{fn}'
+# def extract_values(fn, year):
+#     if not os.path.exists(os.path.join(basefol_c, fn + str(year) + '.nc')):
+#         try:
+#             filen = os.path.join(basefol_r, 'carra', '_'.join(fn.split('_')[1:]) + str(year) + '.nc')
+#             NC = xr.open_dataset(str(filen), decode_cf=True, decode_times=True)
+#
+#             # import cfgrib
+#             # ds = cfgrib.open_dataset('era5-levels-members.grib')
+#             # ds
+#
+#             # tmp = NC.sel(x=y, y=x, method='nearest')
+#         except FileNotFoundError:
+#             print(f'cannot find {filen}')
+#
+#     return f'thaao_{fn}'
 
 
 def read(var):
