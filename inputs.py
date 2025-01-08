@@ -40,7 +40,7 @@ basefol_out = os.path.join('H:\\Shared drives', 'Dati_elab_docs', 'thaao_reanaly
 ##
 tres = '3h'
 tres_rs = tres  # only for radiosoundings
-var_list = ['iwv']
+var_list = ['temp']
 # 'tcc'
 years = np.arange(2000, 2025, 1)
 
