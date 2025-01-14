@@ -29,9 +29,9 @@ import numpy as np
 import pandas as pd
 
 ## FOLDERS
-basefol_c = os.path.join('H:\\Shared drives', 'Dati_elab_docs', 'reanalysis', 'carra', 'thaao')
-basefol_e = os.path.join('H:\\Shared drives', 'Dati_elab_docs', 'reanalysis', 'era5', 'thaao')
-basefol_l = os.path.join('H:\\Shared drives', 'Dati_elab_docs', 'reanalysis', 'era5-land', 'thaao')
+basefol_c = os.path.join('H:\\Shared drives', 'Reanalysis', 'carra', 'thaao', 'v1')
+basefol_e = os.path.join('H:\\Shared drives', 'Reanalysis', 'era5', 'thaao', 'v1')
+basefol_l = os.path.join('H:\\Shared drives', 'Reanalysis', 'era5-land', 'thaao', 'v1')
 basefol_t = os.path.join('H:\\Shared drives', 'Dati_THAAO')
 basefol_t_elab = os.path.join('H:\\Shared drives', 'Dati_elab_docs')
 basefol_out = os.path.join('H:\\Shared drives', 'Dati_elab_docs', 'thaao_reanalysis')
@@ -39,7 +39,7 @@ basefol_out = os.path.join('H:\\Shared drives', 'Dati_elab_docs', 'thaao_reanaly
 ##
 tres = '3h'
 tres_rs = tres  # only for radiosoundings
-var_list = ['temp']#, 'sw_up', 'lw_up', 'lw_down']  # ['lwp', 'precip', 'temp', 'rh', 'iwv', 'alb', 'cbh', 'precip', 'windd', 'winds', 'surf_pres', 'sw_down', 'sw_up',
+var_list = ['iwv']#, 'sw_up', 'lw_up', 'lw_down']  # ['lwp', 'precip', 'temp', 'rh', 'iwv', 'alb', 'cbh', 'precip', 'windd', 'winds', 'surf_pres', 'sw_down', 'sw_up',
             #'lw_up', 'lw_down']
 # 'tcc'
 years = np.arange(2016, 2025, 1)
