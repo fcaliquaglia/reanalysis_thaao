@@ -138,6 +138,8 @@
   Vertical Structure of the Troposphere', https://doi.org/10.22541/essoar.167898508.82732727/v1.
 - [ERA5-LAND] https://doi.org/10.5194/essd-13-4349-2021
 - [ERA5] https://doi.org/10.1002/qj.4803
+- [5 reanalyses] 'Improved Performance of ERA5 in Arctic Gateway Relative to Four Global Atmospheric
+  Reanalyses', https://doi.org/10.1029/2019GL082781
 - [other] Unlike CARRA, ERA5 lacks a parameterization of a snow layer on top of the sea-ice (Batrak & Muller, 2019).
 
 # THAAO reference instruments
