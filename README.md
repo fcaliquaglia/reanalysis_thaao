@@ -11,14 +11,14 @@
 - [ ] download more ERA-L products
     - [x] ``2m dewpoint temperature``
     - [x] ``2m temperature``
-    - [] ``snow albedo``
-    - [] ``forecast albedo``
-    - [] ``surface pressure``
+    - [x] ``snow albedo``
+    - [x] ``forecast albedo``
+    - [x] ``surface pressure``
     - [] ``total precipitation``
     - [] ``10m_u_component_of_wind``
     - [] ``10m_v_component_of_wind``
-    - [] ``surface_solar_radiation_downwards`` (forecast)
-    - [] ``surface_net_solar_radiation`` (forecast)
+    - [x] ``surface_solar_radiation_downwards`` (forecast)
+    - [x] ``surface_net_solar_radiation`` (forecast)
 - [ ] focus on weather variables
 - [ ] recuperare da Giovanni gli rs che io non ho e devo aggiungere in archivio per l'analisi
 - [X] extract CARRA radiation

@@ -39,8 +39,8 @@ basefol_out = os.path.join('H:\\Shared drives', 'Dati_elab_docs', 'thaao_reanaly
 ##
 tres = '3h'
 tres_rs = tres  # only for radiosoundings
-var_list = ['iwv']#, 'sw_up', 'lw_up', 'lw_down']  # ['lwp', 'precip', 'temp', 'rh', 'iwv', 'alb', 'cbh', 'precip', 'windd', 'winds', 'surf_pres', 'sw_down', 'sw_up',
-            #'lw_up', 'lw_down']
+var_list = ['lwp', 'precip', 'temp', 'rh', 'iwv', 'alb', 'cbh', 'precip', 'windd', 'winds', 'surf_pres', 'sw_down', 'sw_up',
+            'lw_up', 'lw_down']
 # 'tcc'
 years = np.arange(2016, 2025, 1)
 

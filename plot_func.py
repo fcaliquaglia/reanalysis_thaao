@@ -321,7 +321,7 @@ def plot_scatter(vr, avar, period_label):
             fig.suptitle(f'{vr.upper()} {seas_name} {tres}', fontweight='bold')
             axs[i].set_title(label)
 
-            time_list = pd.date_range(start=dt.datetime(2016, 1, 1), end=dt.datetime(2024, 12, 31), freq=tres)
+            time_list = pd.date_range(start=dt.datetime(years[0], 1, 1), end=dt.datetime(years[-1], 12, 31), freq=tres)
             if x.empty | y.empty:
                 continue
             x_all = x.reindex(time_list)
