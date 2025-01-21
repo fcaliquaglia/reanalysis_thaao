@@ -40,7 +40,7 @@ basefol_out = os.path.join('H:\\Shared drives', 'Dati_elab_docs', 'thaao_reanaly
 tres = '3h'
 tres_rs = '1h'  # only for radiosoundings
 var_list = [
-    'iwv']  # 'lwp', 'precip', 'temp', 'rh', 'iwv', 'alb', 'cbh', 'precip', 'windd', 'winds', 'surf_pres', 'sw_down',
+    'temp']  # 'lwp', 'precip', 'temp', 'rh', 'iwv', 'alb', 'cbh', 'precip', 'windd', 'winds', 'surf_pres', 'sw_down',
 # 'sw_up', 'lw_up', 'lw_down']
 # 'tcc'
 years = np.arange(2016, 2024, 1)
@@ -70,7 +70,7 @@ var_names = ['c', 'e', 'l', 't', 't1', 't2']
 var_dict = {'c' : {'name': 'vr_c', 'col': 'red', 'col_ori': 'orange', 'label': 'CARRA', 'label_uom': ''},
             'e' : {'name': 'vr_e', 'col': 'blue', 'col_ori': 'cyan', 'label': 'ERA5', 'label_uom': ''},
             'l' : {'name': 'vr_l', 'col': 'darkgreen', 'col_ori': 'lightgreen', 'label': 'ERA5-L', 'label_uom': ''},
-            't' : {'name': 'vr_t', 'col': 'black', 'col_ori': 'grey', 'label': 'VESPA', 'label_uom': ''},
+            't' : {'name': 'vr_t', 'col': 'black', 'col_ori': 'grey', 'label': 'THAAO', 'label_uom': ''},
             't1': {'name': 'vr_t1', 'col': 'green', 'col_ori': 'lightgreen', 'label': 'HATPRO', 'label_uom': ''},
             't2': {'name': 'vr_t2', 'col': 'purple', 'col_ori': 'violet', 'label': '', 'label_uom': ''}}
 

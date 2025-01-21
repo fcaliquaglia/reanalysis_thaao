@@ -157,13 +157,13 @@ def plot_scatter(vr, avar, period_label):
     fig, ax = plt.subplots(2, 2, figsize=(12, 12), dpi=300)
     axs = ax.ravel()
 
-    comps, x = var_comp_x_selection(vr, avar)
+    comps, x, refx = var_comp_x_selection(vr, avar)
 
     for i, comp in enumerate(comps):
         # define which is the reference measurement for each variable
         y, var_t_res = var_selection(vr, avar, comp)
         axs[i].set_ylabel(var_dict[comp]['label'])
-        axs[i].set_xlabel(var_dict[comp]['label'])
+        axs[i].set_xlabel(var_dict[refx]['label'])
 
         try:
             print(f'plotting scatter THAAO-{var_dict[comp]['label']}')
@@ -174,11 +174,10 @@ def plot_scatter(vr, avar, period_label):
             time_list = pd.date_range(start=dt.datetime(years[0], 1, 1), end=dt.datetime(years[-1], 12, 31), freq=tres)
             if x.empty | y.empty:
                 continue
-            x_all = x.reindex(time_list)
+            x_all = x.reindex(time_list).fillna(np.nan)
             x_s = x_all.loc[(x_all.index.month.isin(seass[period_label]['months']))]
-            y_all = y.reindex(time_list)
+            y_all = y.reindex(time_list).fillna(np.nan)
             y_s = y_all.loc[(y_all.index.month.isin(seass[period_label]['months']))]
-
             idx = np.isfinite(x_s) & np.isfinite(y_s)
 
             if seas_name != 'all':
@@ -194,7 +193,7 @@ def plot_scatter(vr, avar, period_label):
                         bin_size = extr[vr]['max'] / bin_nr
                         h = axs[i].hist2d(x_s[idx], y_s[idx], bins=bin_nr, cmap=plt.cm.jet, cmin=1, vmin=1)
                         axs[i].text(
-                                0.10, 0.80, f'bin_size={bin_size} {var_dict[vr]['uom']}', transform=axs[i].transAxes)
+                                0.10, 0.80, f'bin_size={bin_size} {extr[vr]['uom']}', transform=axs[i].transAxes)
 
             if len(x_s[idx]) < 2 | len(y_s[idx]) < 2:
                 print('ERROR, ERROR, NO DATA ENOUGH FOR PROPER FIT (i.e. only 1 point available)')
@@ -363,20 +362,25 @@ def var_comp_x_selection(vr, avar):
     if vr == 'lwp':
         cmps = ['c', 'e', 't', 't1']
         x = vr_t1_res[vr]
+        ref_x = 't1'
     elif vr in ['windd', 'winds', 'precip']:
         cmps = ['c', 'e', 't', 't1']
         x = vr_t2_res[vr]
+        ref_x = 't2'
     elif vr == 'iwv':
         cmps = ['c', 'e', 't1', 't2']
         x = vr_t_res[vr]
+        ref_x = 't'
     elif vr == 'temp':
         cmps = ['c', 'e', 'l', 't2']
         x = vr_t_res[vr]
+        ref_x = 't'
     else:
         cmps = ['c', 'e', 't1', 't2']
         x = vr_t_res[vr]
+        ref_x = 't'
 
-    return cmps, x
+    return cmps, x, ref_x
 
 
 def var_selection(vr, avar, comp):
