@@ -198,7 +198,7 @@ def plot_scatter(vr, avar, period_label):
             if len(x_s[idx]) < 2 | len(y_s[idx]) < 2:
                 print('ERROR, ERROR, NO DATA ENOUGH FOR PROPER FIT (i.e. only 1 point available)')
             else:
-                cal_draw_fit(axs, i, idx, vr, x_s, y_s)
+                calc_draw_fit(axs, i, idx, vr, x_s, y_s)
 
             axs[i].set_xlim(extr[vr]['min'], extr[vr]['max'])
             axs[i].set_ylim(extr[vr]['min'], extr[vr]['max'])
@@ -210,7 +210,7 @@ def plot_scatter(vr, avar, period_label):
     plt.close('all')
 
 
-def cal_draw_fit(axs, i, idx, vr, x_s, y_s, print_stats=True):
+def calc_draw_fit(axs, i, idx, vr, x_s, y_s, print_stats=True):
     """
 
     :param axs:
@@ -224,7 +224,7 @@ def cal_draw_fit(axs, i, idx, vr, x_s, y_s, print_stats=True):
     """
     b, a = np.polyfit(x_s[idx], y_s[idx], deg=1)
     xseq = np.linspace(extr[vr]['min'], extr[vr]['max'], num=1000)
-    axs[i].plot(xseq, a + b * xseq, color='red', lw=2.5, ls='--', alpha=0.5)
+    axs[i].plot(xseq, a + b * xseq, color=var_dict[vr]['col'], lw=2.5, ls='--', alpha=0.5)
     axs[i].plot(
             [extr[vr]['min'], extr[vr]['max']], [extr[vr]['min'], extr[vr]['max']], color='black', lw=1.5, ls='-')
     if print_stats:
