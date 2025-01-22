@@ -47,11 +47,11 @@ def plot_ts(vr, avar, period_label):
     kwargs = {'lw': 0, 'marker': '.', 'ms': 2}
 
     if vr != 'iwv':
-        var_dict['vr_t2']['label'] = 'AWS ECAPAC'
-        var_dict['vr_t2']['label_uom'] = 'AWS ECAPAC'
+        var_dict['t2']['label'] = 'AWS ECAPAC'
+        var_dict['t2']['label_uom'] = 'AWS ECAPAC'
     else:
-        var_dict['vr_t2']['label'] = 'RS'
-        var_dict['vr_t2']['label_uom'] = 'RS'
+        var_dict['t2']['label'] = 'RS'
+        var_dict['t2']['label_uom'] = 'RS'
 
     for [yy, year] in enumerate(years):
         print(f'plotting {year}')
@@ -357,6 +357,77 @@ def calc_draw_fit(axs, i, idx, vr, x_s, y_s, print_stats=True):
 #     plt.close('all')
 #
 
+
+def plot_scatter_cum(vr, avar):
+    """
+
+    :param vr:
+    :param avar:
+    :return:
+    """
+    import copy as cp
+    fig, ax = plt.subplots(2, 2, figsize=(12, 12), dpi=300)
+    seass_new = cp.copy(seass)
+    seass_new.pop('all')
+
+    for period_label in seass_new:
+        print('SCATTERPLOTS')
+        seas_name = seass[period_label]['name']
+        axs = ax.ravel()
+        comps, x, refx = var_comp_x_selection(vr, avar)
+        for i, comp in enumerate(comps):
+
+            axs[i].set_ylabel(var_dict[comp]['label_uom'])
+            x, y, vr_t_res = var_selection(vr, avar, comp)
+
+            try:
+                print(f'plotting scatter VESPA-{var_dict[comp]['label']}')
+
+                fig.suptitle(f'{vr.upper()} cumulative plot', fontweight='bold')
+                axs[i].set_title(var_dict[comp]['label'])
+
+                time_list = pd.date_range(
+                        start=dt.datetime(years[0], 1, 1), end=dt.datetime(years[-1], 12, 31), freq=tres)
+
+                x_all = x.reindex(time_list).fillna(np.nan)
+                x_s = x_all.loc[(x_all.index.month.isin(seass[period_label]['months']))]
+                y_all = y.reindex(time_list).fillna(np.nan)
+                y_s = y_all.loc[(y_all.index.month.isin(seass[period_label]['months']))]
+                idx = ~(np.isnan(x_s) | np.isnan(y_s))
+
+                if seas_name != 'all':
+                    if var_dict[comp]['label'] == 'RS':
+                        y_s = y.loc[(y.index.month.isin(seass[period_label]['months']))]
+                        x_s = pd.Series(vr_t_res.reindex(y_s.index)[vr])
+
+                        idx = ~(np.isnan(x_s) | np.isnan(y_s))
+                        axs[i].scatter(
+                                x_s[idx].values, y_s[idx].values, s=50, facecolor='none',
+                                color=seass[period_label]['col'], label=period_label)
+                        axs[i].set_xlabel(var_dict[comp]['label_uom'])
+
+                    else:
+                        axs[i].scatter(
+                                x_s[idx], y_s[idx], s=5, color=seass[period_label]['col'], edgecolors='none', alpha=0.5,
+                                label=period_label)
+                        axs[i].set_xlabel(var_dict['vr_t']['label_uom'])
+
+                if len(x_s[idx]) < 2 | len(y_s[idx]) < 2:
+                    print('ERROR, ERROR, NO DATA ENOUGH FOR PROPER FIT (i.e. only 1 point available)')
+                else:
+                    calc_draw_fit(axs, i, idx, x_s, y_s, print_stats=False)
+
+                    axs[i].set_xlim(extr[vr]['min'], extr[vr]['max'])
+                    axs[i].set_ylim(extr[vr]['min'], extr[vr]['max'])
+                    axs[i].text(0.05, 0.95, letters[i] + ')', transform=axs[i].transAxes)
+                    axs[i].legend()
+            except:
+                print(f'error with {var_dict[comp]['label']}')
+
+    plt.savefig(os.path.join(basefol_out, tres, f'{tres}_scatter_cum_{vr}_only.png'))
+    plt.close('all')
+
+
 def var_comp_x_selection(vr, avar):
     [vr_c, vr_e, vr_l, vr_t, vr_t1, vr_t2, vr_c_res, vr_e_res, vr_l_res, vr_t_res, vr_t1_res, vr_t2_res] = avar
     if vr == 'lwp':
@@ -371,10 +442,14 @@ def var_comp_x_selection(vr, avar):
         cmps = ['c', 'e', 't1', 't2']
         x = vr_t_res[vr]
         ref_x = 't'
-    elif vr == 'temp':
+    elif vr in ['temp']:
         cmps = ['c', 'e', 'l', 't2']
         x = vr_t_res[vr]
         ref_x = 't'
+    elif vr in ['precip']:
+        cmps = ['c', 'e']
+        x = vr_t1_res[vr]
+        ref_x = 't2'
     else:
         cmps = ['c', 'e', 't1', 't2']
         x = vr_t_res[vr]

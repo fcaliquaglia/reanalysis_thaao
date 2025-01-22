@@ -21,7 +21,7 @@ __email__ = "filippo.caliquaglia@ingv.it"
 __status__ = "Research"
 __lastupdate__ = ""
 
-from plot_func import plot_residuals, plot_scatter, plot_ts
+from plot_func import plot_residuals, plot_scatter, plot_scatter_cum, plot_ts
 from read_func import *
 from inputs import *
 from res_func import data_resampling
@@ -51,6 +51,7 @@ if __name__ == "__main__":
                    var_t2_res]
         # plot_ts(var, all_var, 'all')
         # plot_residuals(var, all_var, 'all')
+        plot_scatter_cum(var, all_var)
         for seas in seass:
             plot_scatter(var, all_var, seas)
             # plot_ba(var, all_var, seas)
