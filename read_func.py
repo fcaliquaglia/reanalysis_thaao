@@ -105,7 +105,7 @@ def read_temp():
 
     # AWS ECAPAC
     fn = 'AWS_THAAO_'
-    for i in aws_ecapac_daterange:
+    for i in aws_ecapac_daterange[aws_ecapac_daterange.year.isin(years)]:
         i_fmt = i.strftime('%Y_%m_%d')
         try:
             file = os.path.join(
@@ -205,7 +205,7 @@ def read_rh():
 
     # AWS ECAPAC
     fn = 'AWS_THAAO_'
-    for i in aws_ecapac_daterange:
+    for i in aws_ecapac_daterange[aws_ecapac_daterange.year.isin(years)]:
         i_fmt = i.strftime('%Y_%m_%d')
         try:
             file = os.path.join(
@@ -251,7 +251,7 @@ def read_msl_pres():
 
     # # AWS ECAPAC
     # fn = 'AWS_THAAO_'
-    # for i in aws_ecapac_daterange:
+    # for i in aws_ecapac_daterange[aws_ecapac_daterange.year.isin(years)]:
     # i_tmp = i.strftime('%Y_%m_%d')
     #     try:
     #         file = os.path.join(
@@ -329,7 +329,7 @@ def read_surf_pres():
 
     # AWS ECAPAC
     fn = 'AWS_THAAO_'
-    for i in aws_ecapac_daterange:
+    for i in aws_ecapac_daterange[aws_ecapac_daterange.year.isin(years)]:
         i_fmt = i.strftime('%Y_%m_%d')
         try:
             file = os.path.join(
@@ -717,7 +717,7 @@ def read_winds():
 
     # AWS ECAPAC
     fn = 'AWS_THAAO_'
-    for i in aws_ecapac_daterange:
+    for i in aws_ecapac_daterange[aws_ecapac_daterange.year.isin(years)]:
         i_fmt = i.strftime('%Y_%m_%d')
         try:
             file = os.path.join(
@@ -796,7 +796,7 @@ def read_windd():
 
     # AWS ECAPAC
     fn = 'AWS_THAAO_'
-    for i in aws_ecapac_daterange:
+    for i in aws_ecapac_daterange[aws_ecapac_daterange.year.isin(years)]:
         i_fmt = i.strftime('%Y_%m_%d')
         try:
             file = os.path.join(
@@ -978,7 +978,7 @@ def read_precip():
 
     # AWS ECAPAC
     fn = 'AWS_THAAO_'
-    for i in aws_ecapac_daterange:
+    for i in aws_ecapac_daterange[aws_ecapac_daterange.year.isin(years)]:
         i_fmt = i.strftime('%Y_%m_%d')
         try:
             file = os.path.join(
