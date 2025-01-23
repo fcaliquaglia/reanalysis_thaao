@@ -71,7 +71,7 @@ var_dict = {'c' : {'name': 'vr_c', 'col': 'red', 'col_ori': 'orange', 'label': '
             'l' : {'name': 'vr_l', 'col': 'darkgreen', 'col_ori': 'lightgreen', 'label': 'ERA5-L', 'label_uom': ''},
             't' : {'name': 'vr_t', 'col': 'black', 'col_ori': 'grey', 'label': 'THAAO', 'label_uom': ''},
             't1': {'name': 'vr_t1', 'col': 'green', 'col_ori': 'lightgreen', 'label': 'HATPRO', 'label_uom': ''},
-            't2': {'name': 'vr_t2', 'col': 'purple', 'col_ori': 'violet', 'label': '', 'label_uom': ''}}
+            't2': {'name': 'vr_t2', 'col': 'purple', 'col_ori': 'violet', 'label': 'AWS_ECAPAC', 'label_uom': ''}}
 
 extr = {'temp'     : {'min': -40, 'max': 20, 'res_min': -10, 'res_max': 10, 'uom': '[deg]'},
         'lwp'      : {'min': 0, 'max': 50, 'res_min': -20, 'res_max': 20, 'uom': '[kg/m2]'},

@@ -111,9 +111,8 @@ def plot_residuals(vr, avar, period_label):
         daterange = pd.date_range(dt.datetime(year, 1, 1), dt.datetime(year, 12, 31))
         ax[yy].plot(daterange, np.repeat(0, len(daterange)), color='black', lw=2, ls='--')
 
-        # resampled resolution
         vr_ref = vr_t_res.resample(tres).mean()
-        for (varvar, vr_n) in zip([vr_c_res, vr_e_res, vr_l_res, vr_t_res, vr_t1_res, vr_t2_res], var_names):
+        for (varvar, vr_n) in zip([vr_c_res, vr_e_res, vr_l_res, vr_t1_res, vr_t2_res], var_names):
             try:
                 data = varvar[varvar.index.year == year]
                 ax[yy].plot(
@@ -451,8 +450,8 @@ def var_comp_x_selection(vr, avar):
         x = vr_t1_res[vr]
         ref_x = 't2'
     elif vr in ['rh']:
-        cmps = ['c', 'e', 't']
-        x = vr_t1_res[vr]
+        cmps = ['c', 'e', 'l', 't2']
+        x = vr_t_res[vr]
         ref_x = 't'
     else:
         cmps = ['c', 'e', 't1', 't2']
