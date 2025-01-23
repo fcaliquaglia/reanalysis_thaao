@@ -129,8 +129,8 @@ def read_rh():
     c = pd.DataFrame()
     e_t = pd.DataFrame()
     e_td = pd.DataFrame()
-    e = pd.DataFrame()
-    l = pd.DataFrame()
+    l_t = pd.DataFrame()
+    l_td = pd.DataFrame()
     t = pd.DataFrame()
     t1 = pd.DataFrame()
     t2 = pd.DataFrame()
@@ -191,6 +191,47 @@ def read_rh():
     e['rh'] = relative_humidity_from_dewpoint(e['e_t'].values * units.K, e['e_td'].values * units.K).to('percent')
     e.drop(columns=['e_t', 'e_td'], inplace=True)
     e.columns = [vr]
+
+    # ERA5-L
+    fn1 = 'thaao_era5-land_2m_dewpoint_temperature_'
+    fn3 = 'thaao_era5-land_2m_temperature_'
+    for yy, year in enumerate(years):
+        try:
+            l_t_tmp = pd.read_table(
+                    os.path.join(basefol_l, f'{fn3}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
+                    engine='python')
+            l_t_tmp[l_t_tmp == -32767.0] = np.nan
+            l_t = pd.concat([l_t, l_t_tmp], axis=0)
+
+            print(f'OK: {fn3}{year}.txt')
+        except FileNotFoundError:
+            print(f'NOT FOUND: {fn3}{year}.txt')
+    l_t.index = pd.to_datetime(l_t[0] + ' ' + l_t[1], format='%Y-%m-%d %H:%M:%S')
+    l_t.drop(columns=[0, 1], inplace=True)
+    l_t[2].name = vr
+    l_t.columns = ['l_t']
+
+    for yy, year in enumerate(years):
+        try:
+            l_td_tmp = pd.read_table(
+                    os.path.join(basefol_e, f'{fn1}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
+                    engine='python')
+            l_td[l_td_tmp == -32767.0] = np.nan
+            l_td = pd.concat([l_td, l_td_tmp], axis=0)
+
+            print(f'OK: {fn1}{year}.txt')
+        except FileNotFoundError:
+            print(f'NOT FOUND: {fn1}{year}.txt')
+    l_td.index = pd.to_datetime(l_td[0] + ' ' + l_td[1], format='%Y-%m-%d %H:%M:%S')
+    l_td.drop(columns=[0, 1], inplace=True)
+    l_td[2].name = vr
+    l_td.columns = ['l_td']
+
+    l = pd.concat([l_td, l_t], axis=1)
+
+    l['rh'] = relative_humidity_from_dewpoint(l['l_t'].values * units.K, l['l_td'].values * units.K).to('percent')
+    l.drop(columns=['l_t', 'l_td'], inplace=True)
+    l.columns = [vr]
 
     # THAAO
     fn = 'Meteo_weekly_all'
