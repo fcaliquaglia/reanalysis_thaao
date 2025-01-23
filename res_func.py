@@ -27,17 +27,16 @@ from inputs import *
 
 def data_resampling():
     vr = inpt.var_in_use
-    vr_data = inpt.var_in_use[vr]
 
     for vvrr in list(var_dict.keys()):
-        if inpt.var_in_use == 'iwv' & vvrr == 't2':
+        if (inpt.var_in_use == 'iwv') & (vvrr == 't2'):
             try:
-                vr_data[vvrr]['data_res'] = vr_data[vvrr]['data'].resample(tres).mean()
+                extr[vr][vvrr]['data_res'] = extr[vr][vvrr]['data'].resample(tres).mean()
             except (TypeError, NameError):
                 pass
         else:
             try:
-                vr_data[vvrr]['data_res'] = vr_data[vvrr]['data'].resample(tres).mean()
+                extr[vr][vvrr]['data_res'] = extr[vr][vvrr]['data'].resample(tres).mean()
             except (TypeError, NameError):
                 pass
 

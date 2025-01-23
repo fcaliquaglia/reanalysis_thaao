@@ -31,82 +31,138 @@ import inputs as inpt
 from inputs import *
 
 
-def read_temp():
-    # CARRA
-
-    fn = 'thaao_carra_2m_temperature_'
-    for yy, year in enumerate(years):
+def read_carra(vr):
+    for year in years:
         try:
             c_tmp = pd.read_table(
-                    os.path.join(basefol_c, f'{fn}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
-                    engine='python')
-            var_dict['c']['data'] = pd.concat([var_dict['c']['data'], c_tmp], axis=0)
-            print(f'OK: {fn}{year}.txt')
+                    os.path.join(basefol_c, f'{extr[vr]['c']['fn']}{year}.txt'), skipfooter=1, sep='\s+', header=None,
+                    skiprows=1, engine='python')
+            extr[vr]['c']['data'] = pd.concat([extr[vr]['c']['data'], c_tmp], axis=0)
+            print(f'OK: {extr[vr]['c']['fn']}{year}.txt')
         except FileNotFoundError:
-            print(f'NOT FOUND: {fn}{year}.txt')
-    var_dict['c']['data'].index = pd.to_datetime(var_dict['c']['data'][0] + ' ' + var_dict['c']['data'][1], format='%Y-%m-%d %H:%M:%S')
-    var_dict['c']['data'].drop(columns=[0, 1], inplace=True)
-    var_dict['c']['data'][2] = var_dict['c']['data'].values - 273.15
-    var_dict['c']['data'].columns = [inpt.var_in_use]
+            print(f'NOT FOUND: {extr[vr]['c']['fn']}{year}.txt')
+    extr[vr]['c']['data'].index = pd.to_datetime(
+            extr[vr]['c']['data'][0] + ' ' + extr[vr]['c']['data'][1], format='%Y-%m-%d %H:%M:%S')
+    extr[vr]['c']['data'].drop(columns=[0, 1], inplace=True)
+    extr[vr]['c']['data'].columns = [vr]
+    return
 
-    # ERA5
-    e = var_dict['e']['data']
-    fn = 'thaao_era5_2m_temperature_'
-    for yy, year in enumerate(years):
+
+def read_era5(vr):
+    for year in years:
         try:
             e_tmp = pd.read_table(
-                    os.path.join(basefol_e, f'{fn}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
-                    engine='python')
+                    os.path.join(basefol_e, f'{extr[vr]['e']['fn']}{year}.txt'), skipfooter=1, sep='\s+', header=None,
+                    skiprows=1, engine='python')
             e_tmp[e_tmp == -32767.0] = np.nan
-            e = pd.concat([e, e_tmp], axis=0)
+            extr[vr]['e']['data'] = pd.concat([extr[vr]['e']['data'], e_tmp], axis=0)
 
-            print(f'OK: {fn}{year}.txt')
+            print(f'OK: {extr[vr]['e']['fn']}{year}.txt')
         except FileNotFoundError:
-            print(f'NOT FOUND: {fn}{year}.txt')
-    e.index = pd.to_datetime(e[0] + ' ' + e[1], format='%Y-%m-%d %H:%M:%S')
-    e.drop(columns=[0, 1], inplace=True)
-    e[2] = e[2].values - 273.15
-    e.columns = [inpt.var_in_use]
+            print(f'NOT FOUND: {extr[vr]['e']['fn']}{year}.txt')
+    extr[vr]['e']['data'].index = pd.to_datetime(
+            extr[vr]['e']['data'][0] + ' ' + extr[vr]['e']['data'][1], format='%Y-%m-%d %H:%M:%S')
+    extr[vr]['e']['data'].drop(columns=[0, 1], inplace=True)
+    extr[vr]['e']['data'].columns = [vr]
+    return
 
-    # ERA5-L
-    l = var_dict['l']['data']
-    fn = 'thaao_era5-land_2m_temperature_'
-    for yy, year in enumerate(years):
+
+def read_era5_land(vr):
+    for year in years:
         try:
             l_tmp = pd.read_table(
-                    os.path.join(basefol_l, f'{fn}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
-                    engine='python')
+                    os.path.join(basefol_l, f'{extr[vr]['l']['fn']}{year}.txt'), skipfooter=1, sep='\s+', header=None,
+                    skiprows=1, engine='python')
             l_tmp[l_tmp == -32767.0] = np.nan
-            l = pd.concat([l, l_tmp], axis=0)
+            extr[vr]['l']['data'] = pd.concat([extr[vr]['l']['data'], l_tmp], axis=0)
 
-            print(f'OK: {fn}{year}.txt')
+            print(f'OK: {extr[vr]['l']['fn']}{year}.txt')
         except FileNotFoundError:
-            print(f'NOT FOUND: {fn}{year}.txt')
-    l.index = pd.to_datetime(l[0] + ' ' + l[1], format='%Y-%m-%d %H:%M:%S')
-    l.drop(columns=[0, 1], inplace=True)
-    l[2] = l[2].values - 273.15
-    l.columns = [inpt.var_in_use]
+            print(f'NOT FOUND: {extr[vr]['l']['fn']}{year}.txt')
+    extr[vr]['l']['data'].index = pd.to_datetime(
+            extr[vr]['l']['data'][0] + ' ' + extr[vr]['l']['data'][1], format='%Y-%m-%d %H:%M:%S')
+    extr[vr]['l']['data'].drop(columns=[0, 1], inplace=True)
+    extr[vr]['l']['data'].columns = [vr]
+    return
 
-    # THAAO
-    t = var_dict['t']['data']
-    fn = 'Meteo_weekly_all'
+
+def read_thaao_weather(vr, drop_param):
     try:
-        t = xr.open_dataset(os.path.join(basefol_t, 'thaao_meteo', f'{fn}.nc'), engine='netcdf4').to_dataframe()
-        print(f'OK: {fn}.nc')
+        extr[vr]['t']['data'] = xr.open_dataset(
+                os.path.join(basefol_t, 'thaao_meteo', f'{extr[vr]['t']['fn']}.nc'), engine='netcdf4').to_dataframe()
+        print(f'OK: {extr[vr]['t']['fn']}.nc')
     except FileNotFoundError:
-        print(f'NOT FOUND: {fn}.nc')
-    t.drop(columns=['BP_hPa', 'RH_%'], inplace=True)
-    t['Air_K'] = t.values - 273.15
-    t.columns = [inpt.var_in_use]
+        print(f'NOT FOUND: {extr[vr]['t']['fn']}.nc')
+    extr[vr]['t']['data'].drop(columns=drop_param, inplace=True)
+    extr[vr]['t']['data'].columns = [vr]
+    return
 
-    # AWS ECAPAC
-    read_aws_ecapac(param='AirTC')
+
+def read_thaao_vespa(vr):
+    try:
+        extr[vr]['t']['data'] = pd.read_table(
+                os.path.join(basefol_t, 'thaao_vespa', f'{extr[vr]['t']['fn']}.txt'), skipfooter=1, sep='\s+',
+                header=None, skiprows=1, engine='python')
+        print(f'OK: {extr[vr]['t']['fn']}.txt')
+    except FileNotFoundError:
+        print(f'NOT FOUND: {extr[vr]['t']['fn']}.txt')
+    extr[vr]['t']['data'].index = pd.to_datetime(
+            extr[vr]['t']['data'][0] + ' ' + extr[vr]['t']['data'][1], format='%Y-%m-%d %H:%M:%S')
+    extr[vr]['t']['data'].drop(columns=[0, 1, 3, 4, 5], inplace=True)
+    extr[vr]['t']['data'].columns = [inpt.var_in_use]
+    return
+
+
+def read_thaao_hatpro(vr):
+    for yy, year in enumerate(years):
+        try:
+            t1_tmp = pd.read_table(
+                    os.path.join(
+                            basefol_t, 'thaao_hatpro', 'definitivi_da_giando', f'{extr[vr]['t']['fn']}{year}',
+                            f'{extr[vr]['t']['fn']}{year}.DAT'), sep='\s+', engine='python', header=None, skiprows=1)
+            t1_tmp.columns = ['JD_rif', 'IWV', 'STD_IWV', 'RF', 'N']
+            tmp = np.empty(t1_tmp['JD_rif'].shape, dtype=dt.datetime)
+            for ii, el in enumerate(t1_tmp['JD_rif']):
+                new_jd_ass = el + julian.to_jd(dt.datetime(year - 1, 12, 31, 0, 0), fmt='jd')
+                tmp[ii] = julian.from_jd(new_jd_ass, fmt='jd')
+                tmp[ii] = tmp[ii].replace(microsecond=0)
+            t1_tmp.index = pd.DatetimeIndex(tmp)
+            t1_tmp.drop(columns=['JD_rif', 'STD_IWV', 'RF', 'N'], axis=1, inplace=True)
+            extr[vr]['t']['data'] = pd.concat([extr[vr]['t']['data'], t1_tmp], axis=0)
+            print(f'OK: {extr[vr]['t']['fn']}{year}.DAT')
+        except FileNotFoundError:
+            print(f'NOT FOUND: {extr[vr]['t']['fn']}{year}.DAT')
+    extr[vr]['t']['data']['IWV'] = extr[vr]['t']['data']['IWV'].values
+    extr[vr]['t']['data'].columns = [inpt.var_in_use]
+    return
+
+
+def read_thaao_ceilometer( vr, param):
+    for i in ceilometer_daterange:
+        i_fmt = i.strftime('%Y%m%d')
+        try:
+            t_tmp = pd.read_table(
+                    os.path.join(
+                            basefol_t_elab, 'thaao_ceilometer_elab', 'medie_tat_rianalisi',
+                            f'{i_fmt}{extr[vr]['t']['fn']}.txt'), skipfooter=0, sep='\s+', header=0, skiprows=9,
+                    engine='python')
+            t_tmp[t_tmp == -9999.9] = np.nan
+            t_tmp = pd.concat([extr[vr]['t']['data'], t_tmp], axis=0)
+            print(f'OK: {i_fmt}{extr[vr]['t']['fn']}.txt')
+        except (FileNotFoundError, pd.errors.EmptyDataError):
+            print(f'NOT FOUND: {i_fmt}{extr[vr]['t']['fn']}.txt')
+    extr[vr]['t']['data']
+    extr[vr]['t']['data'].index = pd.to_datetime(
+            extr[vr]['t']['data']['#'] + ' ' + extr[vr]['t']['data']['date[y-m-d]time[h:m:s]'],
+            format='%Y-%m-%d %H:%M:%S')
+    extr[vr]['t']['data'].index.name = 'datetime'
+    extr[vr]['t']['data'] = extr[vr]['t']['data'].iloc[:, :].filter([param]).astype(float)
+    extr[vr]['t']['data'].columns = [inpt.var_in_use]
 
     return
 
 
-def read_aws_ecapac(param):
-    t2 = var_dict['t2']['data']
+def read_aws_ecapac(vr, param):
     fn = 'AWS_THAAO_'
     for i in aws_ecapac_daterange[aws_ecapac_daterange.year.isin(years)]:
         i_fmt = i.strftime('%Y_%m_%d')
@@ -116,256 +172,113 @@ def read_aws_ecapac(param):
             t2_tmp = pd.read_csv(
                     file, skiprows=[0, 3], header=0, decimal='.', delimiter=',', engine='python',
                     index_col='TIMESTAMP').iloc[1:, :]
-            t2 = pd.concat([t2, t2_tmp], axis=0)
+            extr[vr]['t2']['data'] = pd.concat([extr[vr]['t2']['data'], t2_tmp], axis=0)
             print(f'OK: {fn}{i_fmt}_00_00.dat')
         except (FileNotFoundError, pd.errors.EmptyDataError):
             print(f'NOT_FOUND: {fn}{i_fmt}_00_00.dat')
-    t2.index = pd.DatetimeIndex(t2.index)
-    t2.index.name = 'datetime'
-    t2 = t2.iloc[:, :].filter([param]).astype(float)
-    t2.columns = [inpt.var_in_use]
+    extr[vr]['t2']['data'].index = pd.DatetimeIndex(extr[vr]['t2']['data'].index)
+    extr[vr]['t2']['data'].index.name = 'datetime'
+    extr[vr]['t2']['data'] = extr[vr]['t2']['data'].iloc[:, :].filter([param]).astype(float)
+    extr[vr]['t2']['data'].columns = [inpt.var_in_use]
     return
 
 
-def read_rh():
-    # CARRA
-    fn = 'thaao_carra_2m_relative_humidity_'
-    for yy, year in enumerate(years):
-        try:
-            c_tmp = pd.read_table(
-                    os.path.join(basefol_c, f'{fn}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
-                    engine='python')
-            c = pd.concat([c, c_tmp], axis=0)
-            print(f'OK: {fn}{year}.txt')
-        except FileNotFoundError:
-            print(f'NOT FOUND: {fn}{year}.txt')
-    c.index = pd.to_datetime(c[0] + ' ' + c[1], format='%Y-%m-%d %H:%M:%S')
-    c.drop(columns=[0, 1], inplace=True)
-    c.columns = [inpt.var_in_use]
-
-    # ERA5
-    fn1 = 'thaao_era5_2m_dewpoint_temperature_'
-    fn3 = 'thaao_era5_2m_temperature_'
-    for yy, year in enumerate(years):
-        try:
-            e_t_tmp = pd.read_table(
-                    os.path.join(basefol_e, f'{fn3}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
-                    engine='python')
-            e_t_tmp[e_t_tmp == -32767.0] = np.nan
-            e_t = pd.concat([e_t, e_t_tmp], axis=0)
-
-            print(f'OK: {fn3}{year}.txt')
-        except FileNotFoundError:
-            print(f'NOT FOUND: {fn3}{year}.txt')
-    e_t.index = pd.to_datetime(e_t[0] + ' ' + e_t[1], format='%Y-%m-%d %H:%M:%S')
-    e_t.drop(columns=[0, 1], inplace=True)
-    e_t[2].name = inpt.var_in_use
-    e_t.columns = ['e_t']
-
-    for yy, year in enumerate(years):
-        try:
-            e_td_tmp = pd.read_table(
-                    os.path.join(basefol_e, f'{fn1}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
-                    engine='python')
-            e_td[e_td_tmp == -32767.0] = np.nan
-            e_td = pd.concat([e_td, e_td_tmp], axis=0)
-
-            print(f'OK: {fn1}{year}.txt')
-        except FileNotFoundError:
-            print(f'NOT FOUND: {fn1}{year}.txt')
-    e_td.index = pd.to_datetime(e_td[0] + ' ' + e_td[1], format='%Y-%m-%d %H:%M:%S')
-    e_td.drop(columns=[0, 1], inplace=True)
-    e_td[2].name = inpt.var_in_use
-    e_td.columns = ['e_td']
-
-    e = pd.concat([e_td, e_t], axis=1)
-
-    e['rh'] = relative_humidity_from_dewpoint(e['e_t'].values * units.K, e['e_td'].values * units.K).to('percent')
-    e.drop(columns=['e_t', 'e_td'], inplace=True)
-    e.columns = [inpt.var_in_use]
-
-    # ERA5-L
-    fn1 = 'thaao_era5-land_2m_dewpoint_temperature_'
-    fn3 = 'thaao_era5-land_2m_temperature_'
-    for yy, year in enumerate(years):
-        try:
-            l_t_tmp = pd.read_table(
-                    os.path.join(basefol_l, f'{fn3}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
-                    engine='python')
-            l_t_tmp[l_t_tmp == -32767.0] = np.nan
-            l_t = pd.concat([l_t, l_t_tmp], axis=0)
-
-            print(f'OK: {fn3}{year}.txt')
-        except FileNotFoundError:
-            print(f'NOT FOUND: {fn3}{year}.txt')
-    l_t.index = pd.to_datetime(l_t[0] + ' ' + l_t[1], format='%Y-%m-%d %H:%M:%S')
-    l_t.drop(columns=[0, 1], inplace=True)
-    l_t[2].name = inpt.var_in_use
-    l_t.columns = ['l_t']
-
-    for yy, year in enumerate(years):
-        try:
-            l_td_tmp = pd.read_table(
-                    os.path.join(basefol_l, f'{fn1}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=2,
-                    engine='python')[[0, 1, 4]]
-            l_td[l_td_tmp == -32767.0] = np.nan
-            l_td = pd.concat([l_td, l_td_tmp], axis=0)
-
-            print(f'OK: {fn1}{year}.txt')
-        except FileNotFoundError:
-            print(f'NOT FOUND: {fn1}{year}.txt')
-    l_td.index = pd.to_datetime(l_td[0] + ' ' + l_td[1], format='%Y-%m-%d %H:%M:%S')
-    l_td.drop(columns=[0, 1], inplace=True)
-    l_td[4].name = inpt.var_in_use
-    l_td.columns = ['l_td']
-
-    l = pd.concat([l_td, l_t], axis=1)
-
-    l['rh'] = relative_humidity_from_dewpoint(l['l_t'].values * units.K, l['l_td'].values * units.K).to('percent')
-    l.drop(columns=['l_t', 'l_td'], inplace=True)
-    l.columns = [inpt.var_in_use]
-
-    # THAAO
-    fn = 'Meteo_weekly_all'
-    try:
-        t = xr.open_dataset(os.path.join(basefol_t, 'thaao_meteo', f'{fn}.nc'), engine='netcdf4').to_dataframe()
-        print(f'OK: {fn}.nc')
-    except FileNotFoundError:
-        print(f'NOT FOUND: {fn}.nc')
-    t.drop(columns=['BP_hPa', 'Air_K'], inplace=True)
-    t.columns = [inpt.var_in_use]
-    #    t.drop(columns=['BP_hPa','Air_K', 'RH_%'], inplace=True)
-
-    # AWS ECAPAC
-    read_aws_ecapac(param='RH')
+def read_temp():
+    read_thaao_weather(inpt.var_in_use, drop_param=['BP_hPa', 'RH_%'])
+    extr[inpt.var_in_use]['t']['data']['Air_K'] = extr[inpt.var_in_use]['t']['data'].values - 273.15
+    read_aws_ecapac(inpt.var_in_use, param='AirTC')
+    read_carra(inpt.var_in_use)
+    extr[inpt.var_in_use]['c']['data'][2] = extr[inpt.var_in_use]['c']['data'].values - 273.15
+    read_era5(inpt.var_in_use)
+    extr[inpt.var_in_use]['e']['data'][2] = extr[inpt.var_in_use]['e']['data'].values - 273.15
+    read_era5_land(inpt.var_in_use)
+    extr[inpt.var_in_use]['l']['data'][2] = extr[inpt.var_in_use]['l']['data'].values - 273.15
 
     return
 
 
 def read_msl_pres():
-    # CARRA
-    fn = 'thaao_carra_mean_sea_level_pressure_'
-    for yy, year in enumerate(years):
-        try:
-            c_tmp = pd.read_table(
-                    os.path.join(basefol_c, f'{fn}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
-                    engine='python')
-            c = pd.concat([c, c_tmp], axis=0)
-            print(f'OK: {fn}{year}.txt')
-        except FileNotFoundError:
-            print(f'NOT FOUND: {fn}{year}.txt')
-    c.index = pd.to_datetime(c[0] + ' ' + c[1], format='%Y-%m-%d %H:%M:%S')
-    c.drop(columns=[0, 1], inplace=True)
-    c.columns = [inpt.var_in_use]
+    read_carra(inpt.var_in_use)
 
     return
 
 
 def read_surf_pres():
-    # CARRA
-    fn = 'thaao_carra_surface_pressure_'
-    for yy, year in enumerate(years):
-        try:
-            c_tmp = pd.read_table(
-                    os.path.join(basefol_c, f'{fn}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
-                    engine='python')
-            c = pd.concat([c, c_tmp], axis=0)
-            print(f'OK: {fn}{year}.txt')
-        except FileNotFoundError:
-            print(f'NOT FOUND: {fn}{year}.txt')
-    c.index = pd.to_datetime(c[0] + ' ' + c[1], format='%Y-%m-%d %H:%M:%S')
-    c.drop(columns=[0, 1], inplace=True)
-    c[2] = c[2].values / 100.
-    c.columns = [inpt.var_in_use]
-    c[c <= 900] = np.nan
+    # cleanup
+    read_carra(inpt.var_in_use)
+    extr[inpt.var_in_use]['c']['data'][2] = extr[inpt.var_in_use]['c']['data'][2].values / 100.
+    extr[inpt.var_in_use]['c']['data'][extr[inpt.var_in_use]['c']['data'] <= 900] = np.nan
 
-    # ERA5
-    fn = 'thaao_era5_surface_pressure_'
-    for yy, year in enumerate(years):
-        try:
-            e_tmp = pd.read_table(
-                    os.path.join(basefol_e, f'{fn}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
-                    engine='python')
-            e_tmp[e_tmp == -32767.0] = np.nan
-            e = pd.concat([e, e_tmp], axis=0)
-            print(f'OK: {fn}{year}.txt')
-        except FileNotFoundError:
-            print(f'NOT FOUND: {fn}{year}.txt')
-    e.index = pd.to_datetime(e[0] + ' ' + e[1], format='%Y-%m-%d %H:%M:%S')
-    e.drop(columns=[0, 1], inplace=True)
-    e[2] = e.values / 100.
-    e.columns = [inpt.var_in_use]
-    e[e <= 900] = np.nan
+    read_era5(inpt.var_in_use)
+    extr[inpt.var_in_use]['e']['data'][2] = extr[inpt.var_in_use]['e']['data'].values / 100.
+    extr[inpt.var_in_use]['e']['data'][extr[inpt.var_in_use]['e']['data'] <= 900] = np.nan
 
-    # THAAO
-    fn = 'Meteo_weekly_all'
-    try:
-        t = xr.open_dataset(os.path.join(basefol_t, 'thaao_meteo', f'{fn}.nc'), engine='netcdf4').to_dataframe()
-        print(f'OK: {fn}.nc')
-    except FileNotFoundError:
-        print(f'NOT FOUND: {fn}.nc')
-    t.drop(columns=['Air_K', 'RH_%'], inplace=True)
-    t.columns = [inpt.var_in_use]
-    t[t <= 900] = np.nan
-    t.loc['2021-10-11 00:00:00':'2021-10-19 00:00:00'] = np.nan
-    t.loc['2024-4-26 00:00:00':'2024-5-4 00:00:00'] = np.nan
+    read_thaao_weather(inpt.var_in_use, drop_param=['Air_K', 'RH_%'])
+    extr[inpt.var_in_use]['t']['data'][extr[inpt.var_in_use]['e']['data'] <= 900] = np.nan
+    extr[inpt.var_in_use]['t']['data'].loc['2021-10-11 00:00:00':'2021-10-19 00:00:00'] = np.nan
+    extr[inpt.var_in_use]['t']['data'].loc['2024-4-26 00:00:00':'2024-5-4 00:00:00'] = np.nan
 
-    read_aws_ecapac(param='BP_mbar')
+    read_aws_ecapac(inpt.var_in_use, param='BP_mbar')
+
+
+def read_rh():
+    # TODO: variable cleanup
+    # e.g. l_td[l_td_tmp == -32767.0] = np.nan
+
+    read_thaao_weather(drop_param=['BP_hPa', 'Air_K'])
+    read_aws_ecapac(param='RH')
+
+    read_thaao_weather(drop_param=['BP_hPa', 'Air_K'])
+    read_carra()
+
+    read_era5()
+    if extr[vr]['l']['data'].empty:
+        read_era5(vr='temp')
+    calc_rh_from_tdp()
+
+    read_era5_land()
+    if extr[vr]['l']['data'].empty:
+        read_era5(vr='temp')
+    calc_rh_from_tdp()
+    return
+
+
+def calc_rh_from_tdp():
+    # TODO not working
+    e = pd.concat([extr[vr]['t']['data'], e_t], axis=1)
+
+    e['rh'] = relative_humidity_from_dewpoint(e['e_t'].values * units.K, e['e_td'].values * units.K).to('percent')
+    extr[vr]['e']['data'].drop(columns=['e_t', 'e_td'], inplace=True)
+    extr[vr]['e']['data'].columns = [inpt.var_in_use]
 
     return
 
 
 def read_alb():
-    # CARRA
-    fn = 'thaao_carra_albedo_'
-    for yy, year in enumerate(years):
-        try:
-            c_tmp = pd.read_table(
-                    os.path.join(basefol_c, f'{fn}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
-                    engine='python')
-            c = pd.concat([c, c_tmp], axis=0)
-            print(f'OK: {fn}{year}.txt')
-        except FileNotFoundError:
-            print(f'NOT FOUND: {fn}{year}.txt')
-    c.index = pd.to_datetime(c[0] + ' ' + c[1], format='%Y-%m-%d %H:%M:%S')
-    c.drop(columns=[0, 1], inplace=True)
-    c[2] = c.values / 100.
-    c.columns = [inpt.var_in_use]
-    c[c <= 0.1] = np.nan
+    read_carra()
 
-    # ERA5
-    fn = 'thaao_era5_forecast_albedo_'
-    for yy, year in enumerate(years):
-        try:
-            e_tmp = pd.read_table(
-                    os.path.join(basefol_e, f'{fn}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
-                    engine='python')
-            e_tmp[e_tmp == -32767.0] = np.nan
-            e = pd.concat([e, e_tmp], axis=0)
-            print(f'OK: {fn}{year}.txt')
-        except FileNotFoundError:
-            print(f'NOT FOUND: {fn}{year}.txt')
-    e.index = pd.to_datetime(e[0] + ' ' + e[1], format='%Y-%m-%d %H:%M:%S')
-    e.drop(columns=[0, 1], inplace=True)
-    e.columns = [inpt.var_in_use]
-    e[e <= 0.1] = np.nan
+    extr[inpt.var_in_use]['c']['data'][2] = extr[inpt.var_in_use]['c']['data'].values / 100.
+    extr[inpt.var_in_use]['c']['data'][extr[inpt.var_in_use]['c']['data'] <= 0.1] = np.nan
 
-    # ERA5
-    fn = 'thaao_era5_snow_albedo_'
-    for yy, year in enumerate(years):
-        try:
-            t2_tmp = pd.read_table(
-                    os.path.join(basefol_e, f'{fn}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
-                    engine='python')
-            t2_tmp[t2_tmp == -32767.0] = np.nan
-            t2 = pd.concat([t2, t2_tmp], axis=0)
-            print(f'OK: {fn}{year}.txt')
-        except FileNotFoundError:
-            print(f'NOT FOUND: {fn}{year}.txt')
-    t2.index = pd.to_datetime(t2[0] + ' ' + t2[1], format='%Y-%m-%d %H:%M:%S')
-    t2.drop(columns=[0, 1], inplace=True)
-    t2.columns = [inpt.var_in_use]
-    t2[t2 <= 0.1] = np.nan
+    read_era5()
+    extr[inpt.var_in_use]['c']['data'][extr[inpt.var_in_use]['c']['data'] <= 0.1] = np.nan
+
+    # # ERA5
+    # fn = 'thaao_era5_snow_albedo_'
+    # for yy, year in enumerate(years):
+    #     try:
+    #         t2_tmp = pd.read_table(
+    #                 os.path.join(basefol_e, f'{fn}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
+    #                 engine='python')
+    #         t2_tmp[t2_tmp == -32767.0] = np.nan
+    #         t2 = pd.concat([t2, t2_tmp], axis=0)
+    #         print(f'OK: {fn}{year}.txt')
+    #     except FileNotFoundError:
+    #         print(f'NOT FOUND: {fn}{year}.txt')
+    # t2.index = pd.to_datetime(t2[0] + ' ' + t2[1], format='%Y-%m-%d %H:%M:%S')
+    # t2.drop(columns=[0, 1], inplace=True)
+    # t2.columns = [inpt.var_in_use]
+    # t2[t2 <= 0.1] = np.nan
 
     # THAAO
     # TODO: sostituire con questo blocco che prende direttamente dal file MERGED_SW_LW_UP_DW_METEO_YYYY.dat
@@ -415,76 +328,16 @@ def read_alb():
 
 
 def read_iwv():
-    # CARRA
-    fn = 'thaao_carra_total_column_integrated_water_vapour_'
-    for yy, year in enumerate(years):
-        try:
-            c_tmp = pd.read_table(
-                    os.path.join(basefol_c, f'{fn}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
-                    engine='python')
-            c = pd.concat([c, c_tmp], axis=0)
-            print(f'OK: {fn}{year}.txt')
-        except FileNotFoundError:
-            print(f'NOT FOUND: {fn}{year}.txt')
-    c.index = pd.to_datetime(c[0] + ' ' + c[1], format='%Y-%m-%d %H:%M:%S')
-    c.drop(columns=[0, 1], inplace=True)
-    c[c <= 0] = np.nan
-    c.columns = [inpt.var_in_use]
+    read_carra()
+    extr[inpt.var_in_use]['c']['data'][extr[inpt.var_in_use]['c']['data'] <= 0] = np.nan
 
-    # ERA5
-    fn = 'thaao_era5_total_column_water_vapour_'
-    for yy, year in enumerate(years):
-        try:
-            e_tmp = pd.read_table(
-                    os.path.join(basefol_e, f'{fn}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
-                    engine='python')
-            e_tmp[e_tmp == -32767.0] = np.nan
-            e = pd.concat([e, e_tmp], axis=0)
-            print(f'OK: {fn}{year}.txt')
-        except FileNotFoundError:
-            print(f'NOT FOUND: {fn}{year}.txt')
-    e.index = pd.to_datetime(e[0] + ' ' + e[1], format='%Y-%m-%d %H:%M:%S')
-    e.drop(columns=[0, 1], inplace=True)
-    e.columns = [inpt.var_in_use]
+    read_era5()
 
-    # THAAO (vespa)
-    fn = 'vespaPWVClearSky'
-    try:
-        t = pd.read_table(
-                os.path.join(basefol_t, 'thaao_vespa', f'{fn}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
-                engine='python')
-        print(f'OK: {fn}.txt')
-    except FileNotFoundError:
-        print(f'NOT FOUND: {fn}{year}.txt')
-    t.index = pd.to_datetime(t[0] + ' ' + t[1], format='%Y-%m-%d %H:%M:%S')
-    t.drop(columns=[0, 1, 3, 4, 5], inplace=True)
-    t.columns = [inpt.var_in_use]
+    read_thaao_vespa()
 
-    # THAAO (hatpro)
-    fn = 'QC_IWV_15_min_'
-    for yy, year in enumerate(years):
-        try:
-            t1_tmp = pd.read_table(
-                    os.path.join(
-                            basefol_t, 'thaao_hatpro', 'definitivi_da_giando', f'{fn}{year}', f'{fn}{year}.DAT'),
-                    sep='\s+', engine='python', header=None, skiprows=1)
-            t1_tmp.columns = ['JD_rif', 'IWV', 'STD_IWV', 'RF', 'N']
-            tmp = np.empty(t1_tmp['JD_rif'].shape, dtype=dt.datetime)
-            for ii, el in enumerate(t1_tmp['JD_rif']):
-                new_jd_ass = el + julian.to_jd(dt.datetime(year - 1, 12, 31, 0, 0), fmt='jd')
-                tmp[ii] = julian.from_jd(new_jd_ass, fmt='jd')
-                tmp[ii] = tmp[ii].replace(microsecond=0)
-            t1_tmp.index = pd.DatetimeIndex(tmp)
-            t1_tmp.drop(columns=['JD_rif', 'STD_IWV', 'RF', 'N'], axis=1, inplace=True)
-            t1 = pd.concat([t1, t1_tmp], axis=0)
-            print(f'OK: {fn}{year}.DAT')
-        except FileNotFoundError:
-            print(f'NOT FOUND: {fn}{year}.DAT')
-    t1['IWV'] = t1['IWV'].values
-    t1.columns = [inpt.var_in_use]
-    # cleaning HATPRO DATA
-    t1[t1 < 0] = np.nan
-    t1[t1 > 30] = np.nan
+    read_thaao_hatpro()
+    extr[inpt.var_in_use]['t1']['data'][extr[inpt.var_in_use]['t1']['data'] < 0] = np.nan
+    extr[inpt.var_in_use]['t1']['data'][extr[inpt.var_in_use]['t1']['data'] > 30] = np.nan
 
     # RS (sondes)
     for yy, year in enumerate(years):
@@ -519,27 +372,13 @@ def read_iwv():
         except FileNotFoundError:
             print(f'NOT FOUND: year {year}')
     t2.columns = [inpt.var_in_use]
-    # np.savetxt(os.path.join(basefol_t, 'rs_pwv.txt'), t2, fmt='%s')
-    t2.to_csv(os.path.join(basefol_t, 'rs_pwv.txt'), index=True)
+    # t2.to_csv(os.path.join(basefol_t, 'rs_pwv.txt'), index=True)
 
     return
 
 
 def read_winds():
-    # CARRA
-    fn = 'thaao_carra_10m_wind_speed_'
-    for yy, year in enumerate(years):
-        try:
-            c_tmp = pd.read_table(
-                    os.path.join(basefol_c, f'{fn}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
-                    engine='python')
-            c = pd.concat([c, c_tmp], axis=0)
-            print(f'OK: {fn}{year}.txt')
-        except FileNotFoundError:
-            print(f'NOT FOUND: {fn}{year}.txt')
-    c.index = pd.to_datetime(c[0] + ' ' + c[1], format='%Y-%m-%d %H:%M:%S')
-    c.drop(columns=[0, 1], inplace=True)
-    c.columns = [inpt.var_in_use]
+    read_carra()
 
     # ERA5
     fn_u = 'thaao_era5_10m_u_component_of_wind_'
@@ -582,20 +421,7 @@ def read_winds():
 
 
 def read_windd():
-    # CARRA
-    fn = 'thaao_carra_10m_wind_direction_'
-    for yy, year in enumerate(years):
-        try:
-            c_tmp = pd.read_table(
-                    os.path.join(basefol_c, f'{fn}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
-                    engine='python')
-            c = pd.concat([c, c_tmp], axis=0)
-            print(f'OK: {fn}{year}.txt')
-        except FileNotFoundError:
-            print(f'NOT FOUND: {fn}{year}.txt')
-    c.index = pd.to_datetime(c[0] + ' ' + c[1], format='%Y-%m-%d %H:%M:%S')
-    c.drop(columns=[0, 1], inplace=True)
-    c.columns = [inpt.var_in_use]
+    read_carra()
 
     # ERA5
     fn_u = 'thaao_era5_10m_u_component_of_wind_'
@@ -637,187 +463,41 @@ def read_windd():
 
 
 def read_tcc():
-    # CARRA
-    fn = 'thaao_carra_total_cloud_cover_'
-    for yy, year in enumerate(years):
-        try:
-            c_tmp = pd.read_table(
-                    os.path.join(basefol_c, f'{fn}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
-                    engine='python')
-            c = pd.concat([c, c_tmp], axis=0)
-            print(f'OK: {fn}{year}.txt')
-        except FileNotFoundError:
-            print(f'NOT FOUND: {fn}{year}.txt')
-    c.index = pd.to_datetime(c[0] + ' ' + c[1], format='%Y-%m-%d %H:%M:%S')
-    c.drop(columns=[0, 1], inplace=True)
-    c.columns = [inpt.var_in_use]
+    read_carra()
+    read_era5()
+    extr[inpt.var_in_use]['e']['data'][2] = extr[inpt.var_in_use]['e']['data'].values * 100.
 
-    # ERA5
-    fn = 'thaao_era5_total_cloud_cover_'
-    for yy, year in enumerate(years):
-        try:
-            e_tmp = pd.read_table(
-                    os.path.join(basefol_e, f'{fn}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
-                    engine='python')
-            e_tmp[e_tmp == -32767.0] = np.nan
-            e = pd.concat([e, e_tmp], axis=0)
-            print(f'OK: {fn}{year}.txt')
-        except FileNotFoundError:
-            print(f'NOT FOUND: {fn}{year}.txt')
-    e.index = pd.to_datetime(e[0] + ' ' + e[1], format='%Y-%m-%d %H:%M:%S')
-    e.drop(columns=[0, 1], inplace=True)
-    e[2] = e.values * 100.
-    e.columns = [inpt.var_in_use]
-
-    # THAAO (ceilometer)
-    fn = '_Thule_CHM190147_000_0060cloud'
-    for i in ceilometer_daterange:
-        i_fmt = i.strftime('%Y%m%d')
-        try:
-            t_tmp = pd.read_table(
-                    os.path.join(basefol_t_elab, 'thaao_ceilometer_elab', 'medie_tat_rianalisi', f'{i_fmt}{fn}.txt'),
-                    skipfooter=0, sep='\s+', header=0, skiprows=9, engine='python')
-            t_tmp[t_tmp == -9999.9] = np.nan
-            t_tmp = pd.concat([t, t_tmp], axis=0)
-            print(f'OK: {i_fmt}{fn}.txt')
-        except (FileNotFoundError, pd.errors.EmptyDataError):
-            print(f'NOT FOUND: {i_fmt}{fn}.txt')
-    t.index = pd.to_datetime(t['#'] + ' ' + t['date[y-m-d]time[h:m:s]'], format='%Y-%m-%d %H:%M:%S')
-    t.index.name = 'datetime'
-    t = t.iloc[:, :].filter(['TCC[okt]']).astype(float)
-    t.columns = [inpt.var_in_use]
-
-    return
+    read_thaao_ceilometer(param='TCC[okt]')
 
 
 def read_cbh():
-    # CARRA
-    fn = 'thaao_carra_cloud_base_'
-    for yy, year in enumerate(years):
-        try:
-            c_tmp = pd.read_table(
-                    os.path.join(basefol_c, f'{fn}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
-                    engine='python')
-            c = pd.concat([c, c_tmp], axis=0)
-            print(f'OK: {fn}{year}.txt')
-        except FileNotFoundError:
-            print(f'NOT FOUND: {fn}{year}.txt')
-    c.index = pd.to_datetime(c[0] + ' ' + c[1], format='%Y-%m-%d %H:%M:%S')
-    c.drop(columns=[0, 1], inplace=True)
-    c.columns = [inpt.var_in_use]
+    read_carra()
 
-    # ERA5
-    fn = 'thaao_era5_cloud_base_height_'
-    for yy, year in enumerate(years):
-        try:
-            e_tmp = pd.read_table(
-                    os.path.join(basefol_e, f'{fn}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
-                    engine='python')
-            e_tmp[e_tmp == -32767.0] = np.nan
-            e = pd.concat([e, e_tmp], axis=0)
-            print(f'OK: {fn}{year}.txt')
-        except FileNotFoundError:
-            print(f'NOT FOUND: {fn}{year}.txt')
-    e.index = pd.to_datetime(e[0] + ' ' + e[1], format='%Y-%m-%d %H:%M:%S')
-    e.drop(columns=[0, 1], inplace=True)
-    e.columns = [inpt.var_in_use]
+    read_era5()
 
-    # THAAO (ceilometer)
-    fn = '_Thule_CHM190147_000_0060cloud'
-    for i in ceilometer_daterange:
-        i_fmt = i.strftime('%Y%m%d')
-        try:
-            t_tmp = pd.read_table(
-                    os.path.join(basefol_t_elab, 'thaao_ceilometer_elab', 'medie_tat_rianalisi', f'{i_fmt}{fn}.txt'),
-                    skipfooter=0, sep='\s+', header=0, skiprows=9, engine='python')
-            t_tmp[t_tmp == -9999.9] = np.nan
-            t = pd.concat([t, t_tmp], axis=0)
-            print(f'OK: {i_fmt}{fn}.txt')
-        except (FileNotFoundError, pd.errors.EmptyDataError):
-            print(f'NOT FOUND: {i_fmt}{fn}.txt')
-    t.index = pd.to_datetime(t['#'] + ' ' + t['date[y-m-d]time[h:m:s]'], format='%Y-%m-%d %H:%M:%S')
-    t.index.name = 'datetime'
-    t = t.iloc[:, :].filter(['CBH_L1[m]']).astype(float)
-    t.columns = [inpt.var_in_use]
-
+    read_thaao_ceilometer(param='CBH_L1[m]')
     return
 
 
 def read_precip():
-    # CARRA
-    fn = 'thaao_carra_total_precipitation_'
-    for yy, year in enumerate(years):
-        try:
-            c_tmp = pd.read_table(
-                    os.path.join(basefol_c, f'{fn}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
-                    engine='python')
-            c = pd.concat([c, c_tmp], axis=0)
-            print(f'OK: {fn}{year}.txt')
-        except FileNotFoundError:
-            print(f'NOT FOUND: {fn}{year}.txt')
-    c.index = pd.to_datetime(c[0] + ' ' + c[1], format='%Y-%m-%d %H:%M:%S')
-    c.drop(columns=[0, 1], inplace=True)
-    c.columns = [inpt.var_in_use]
+    read_carra()
+    read_era5()
+    extr[inpt.var_in_use]['e']['data'][2] = extr[inpt.var_in_use]['e']['data'].values * 1000.
 
-    # ERA5
-    fn = 'thaao_era5_total_precipitation_'
-    for yy, year in enumerate(years):
-        try:
-            e_tmp = pd.read_table(
-                    os.path.join(basefol_e, f'{fn}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
-                    engine='python')
-            e_tmp[e_tmp == -32767.0] = np.nan
-            e = pd.concat([e, e_tmp], axis=0)
-            print(f'OK: {fn}{year}.txt')
-        except FileNotFoundError:
-            print(f'NOT FOUND: {fn}{year}.txt')
-    e.index = pd.to_datetime(e[0] + ' ' + e[1], format='%Y-%m-%d %H:%M:%S')
-    e.drop(columns=[0, 1], inplace=True)
-    e[2] = e.values * 1000.
-    e.columns = [inpt.var_in_use]
-
-    # AWS ECAPAC
     read_aws_ecapac(param='PR')
 
     return
 
 
 def read_lwp():
-    # CARRA
-    fn = 'thaao_carra_total_column_cloud_liquid_water_'
-    for yy, year in enumerate(years):
-        try:
-            c_tmp = pd.read_table(
-                    os.path.join(basefol_c, f'{fn}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
-                    engine='python')
-            c = pd.concat([c, c_tmp], axis=0)
-            print(f'OK: {fn}{year}.txt')
-        except FileNotFoundError:
-            print(f'NOT FOUND: {fn}{year}.txt')
-    c.index = pd.to_datetime(c[0] + ' ' + c[1], format='%Y-%m-%d %H:%M:%S')
-    c.drop(columns=[0, 1], inplace=True)
-    c[2] = c.values * 10000000
-    c.columns = [inpt.var_in_use]
-    c[c < 0.01] = np.nan
+    read_carra()
+    extr[inpt.var_in_use]['c']['data'][2] = extr[inpt.var_in_use]['c']['data'].values * 10000000
+    extr[inpt.var_in_use]['c']['data'][extr[inpt.var_in_use]['c']['data'] < 0.01] = np.nan
     # c[c < 15] = 0
 
-    # ERA5
-    fn = 'thaao_era5_total_column_cloud_liquid_water_'
-    for yy, year in enumerate(years):
-        try:
-            e_tmp = pd.read_table(
-                    os.path.join(basefol_e, f'{fn}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
-                    engine='python')
-            e_tmp[e_tmp == -32767.0] = np.nan
-            e = pd.concat([e, e_tmp], axis=0)
-            print(f'OK: {fn}{year}.txt')
-        except FileNotFoundError:
-            print(f'NOT FOUND: {fn}{year}.txt')
-    e.index = pd.to_datetime(e[0] + ' ' + e[1], format='%Y-%m-%d %H:%M:%S')
-    e.drop(columns=[0, 1], inplace=True)
-    e[2] = e.values * 1000
-    e.columns = [inpt.var_in_use]
-    e[e < 0.01] = np.nan
+    read_era5()
+    extr[inpt.var_in_use]['e']['data'][2] = extr[inpt.var_in_use]['e']['data'].values * 1000
+    extr[inpt.var_in_use]['e']['data'][extr[inpt.var_in_use]['e']['data'] < 0.01] = np.nan
     # e[e < 15] = 0
 
     # THAAO (hatpro)
@@ -884,7 +564,7 @@ def read_lw_down():
             print(f'NOT FOUND: {fn}{year}.txt')
     e.index = pd.to_datetime(e[0] + ' ' + e[1], format='%Y-%m-%d %H:%M:%S')
     e.drop(columns=[0, 1], inplace=True)
-    e[2] = e.values / 3600.  # originele in J*m-2
+    e[2] = e.values / 3600.  # originale in J*m-2
     e.columns = [inpt.var_in_use]
     # cleaning data
     e[e < 0.] = np.nan
