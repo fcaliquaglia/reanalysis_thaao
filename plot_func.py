@@ -26,27 +26,25 @@ import string
 import matplotlib.pyplot as plt
 import numpy.ma as ma
 
+import inputs as inpt
 from inputs import *
 
 letters = list(string.ascii_lowercase)
 
 
-def plot_ts(vr, avar, period_label):
+def plot_ts(period_label):
     """
 
-    :param vr:
-    :param avar:
     :param period_label:
     :return:
     """
     print('TIMESERIES')
-    [vr_c, vr_e, vr_l, vr_t, vr_t1, vr_t2, vr_c_res, vr_e_res, vr_l_res, vr_t_res, vr_t1_res, vr_t2_res] = avar
     fig, ax = plt.subplots(len(years), 1, figsize=(12, 17), dpi=300)
-    fig.suptitle(f'{vr.upper()} all {tres}', fontweight='bold')
+    fig.suptitle(f'{inpt.var_in_use.upper()} all {tres}', fontweight='bold')
     kwargs_ori = {'alpha': 0.02, 'lw': 0, 'marker': '.', 'ms': 1}
     kwargs = {'lw': 0, 'marker': '.', 'ms': 2}
 
-    if vr != 'iwv':
+    if inpt.var_in_use != 'iwv':
         var_dict['t2']['label'] = 'AWS ECAPAC'
         var_dict['t2']['label_uom'] = 'AWS ECAPAC'
     else:
@@ -72,37 +70,34 @@ def plot_ts(vr, avar, period_label):
             except AttributeError:
                 pass
 
-        if vr == 'alb':
+        if inpt.var_in_use == 'alb':
             range1 = pd.date_range(dt.datetime(year, 1, 1), dt.datetime(year, 2, 15), freq=tres)
             range2 = pd.date_range(dt.datetime(year, 11, 1), dt.datetime(year, 12, 31), freq=tres)
             ax[yy].vlines(range1.values, 0, 1, color='grey', alpha=0.3)
             ax[yy].vlines(range2.values, 0, 1, color='grey', alpha=0.3)
-            ax[yy].set_ylim(extr[vr]['min'], extr[vr]['max'])
+            ax[yy].set_ylim(extr[inpt.var_in_use]['min'], extr[inpt.var_in_use]['max'])
         else:
             pass
-        ax[yy].set_ylim(extr[vr]['min'], extr[vr]['max'])
+        ax[yy].set_ylim(extr[inpt.var_in_use]['min'], extr[inpt.var_in_use]['max'])
         ax[yy].text(0.45, 0.85, year, transform=ax[yy].transAxes)
         ax[yy].xaxis.set_major_formatter(myFmt)
         ax[yy].set_xlim(dt.datetime(year, 1, 1), dt.datetime(year, 12, 31))
         ax[yy].text(0.01, 0.90, letters[yy] + ')', transform=ax[yy].transAxes)
     plt.xlabel('Time')
     plt.legend(ncol=2)
-    plt.savefig(os.path.join(basefol_out, tres, f'{tres}_{period_label}_{vr}.png'))
+    plt.savefig(os.path.join(basefol_out, tres, f'{tres}_{period_label}_{inpt.var_in_use}.png'))
     plt.close('all')
 
 
-def plot_residuals(vr, avar, period_label):
+def plot_residuals(period_label):
     """
 
-    :param vr:
-    :param avar:
     :param period_label:
     :return:
     """
     print('RESIDUALS')
-    [vr_c, vr_e, vr_l, vr_t, vr_t1, vr_t2, vr_c_res, vr_e_res, vr_l_res, vr_t_res, vr_t1_res, vr_t2_res] = avar
     fig, ax = plt.subplots(len(years), 1, figsize=(12, 17), dpi=300)
-    fig.suptitle(f'residuals {vr.upper()} all {tres}', fontweight='bold')
+    fig.suptitle(f'residuals {inpt.var_in_use.upper()} all {tres}', fontweight='bold')
     kwargs = {'lw': 1, 'marker': '.', 'ms': 0}
 
     for [yy, year] in enumerate(years):
@@ -121,7 +116,7 @@ def plot_residuals(vr, avar, period_label):
             except AttributeError:
                 pass
 
-        if vr == 'alb':
+        if inpt.var_in_use == 'alb':
             range1 = pd.date_range(dt.datetime(year, 1, 1), dt.datetime(year, 2, 15), freq=tres)
             range2 = pd.date_range(dt.datetime(year, 11, 1), dt.datetime(year, 12, 31), freq=tres)
             ax[yy].vlines(range1.values, -0.5, 0.5, color='grey', alpha=0.3)
@@ -129,7 +124,7 @@ def plot_residuals(vr, avar, period_label):
         else:
             pass
 
-        ax[yy].set_ylim(extr[vr]['res_min'], extr[vr]['res_max'])
+        ax[yy].set_ylim(extr[inpt.var_in_use]['res_min'], extr[inpt.var_in_use]['res_max'])
         ax[yy].text(0.45, 0.85, year, transform=ax[yy].transAxes)
         ax[yy].xaxis.set_major_formatter(myFmt)
         ax[yy].set_xlim(dt.datetime(year, 1, 1), dt.datetime(year, 12, 31))
@@ -138,36 +133,34 @@ def plot_residuals(vr, avar, period_label):
     plt.xlabel('Time')
     plt.legend()
     plt.tight_layout()
-    plt.savefig(os.path.join(basefol_out, tres, f'{tres}_{period_label}_residuals_{vr}.png'))
+    plt.savefig(os.path.join(basefol_out, tres, f'{tres}_{period_label}_residuals_{inpt.var_in_use}.png'))
     plt.close('all')
 
 
-def plot_scatter(vr, avar, period_label):
+def plot_scatter(period_label):
     """
 
-    :param vr:
-    :param avar:
     :param period_label:
     :return:
     """
     print('SCATTERPLOTS')
-    [vr_c, vr_e, vr_l, vr_t, vr_t1, vr_t2, vr_c_res, vr_e_res, vr_l_res, vr_t_res, vr_t1_res, vr_t2_res] = avar
     seas_name = seass[period_label]['name']
     fig, ax = plt.subplots(2, 2, figsize=(12, 12), dpi=300)
     axs = ax.ravel()
 
-    comps, x, refx = var_comp_x_selection(vr, avar)
+    comps, x, = var_comp_x_selection()
+    refx = inpt.extr[inpt.var_in_use]['ref_x']
 
     for i, comp in enumerate(comps):
         # define which is the reference measurement for each variable
-        y, var_t_res = var_selection(vr, avar, comp)
+        y, var_t_res = var_selection(comp)
         axs[i].set_ylabel(var_dict[comp]['label'])
         axs[i].set_xlabel(var_dict[refx]['label'])
 
         try:
             print(f'plotting scatter THAAO-{var_dict[comp]['label']}')
 
-            fig.suptitle(f'{vr.upper()} {seas_name} {tres}', fontweight='bold')
+            fig.suptitle(f'{inpt.var_in_use.upper()} {seas_name} {tres}', fontweight='bold')
             axs[i].set_title(var_dict[comp]['label'])
 
             time_list = pd.date_range(start=dt.datetime(years[0], 1, 1), end=dt.datetime(years[-1], 12, 31), freq=tres)
@@ -189,43 +182,44 @@ def plot_scatter(vr, avar, period_label):
                         axs[i].scatter(
                                 x_s[idx], y_s[idx], color=seass[period_label]['col' + '_' + var_dict[comp]['label']])
                     else:
-                        bin_size = extr[vr]['max'] / bin_nr
+                        bin_size = extr[inpt.var_in_use]['max'] / bin_nr
                         h = axs[i].hist2d(x_s[idx], y_s[idx], bins=bin_nr, cmap=plt.cm.jet, cmin=1, vmin=1)
                         axs[i].text(
-                                0.10, 0.80, f'bin_size={bin_size} {extr[vr]['uom']}', transform=axs[i].transAxes)
+                                0.10, 0.80, f'bin_size={bin_size} {extr[inpt.var_in_use]['uom']}',
+                                transform=axs[i].transAxes)
 
             if len(x_s[idx]) < 2 | len(y_s[idx]) < 2:
                 print('ERROR, ERROR, NO DATA ENOUGH FOR PROPER FIT (i.e. only 1 point available)')
             else:
-                calc_draw_fit(axs, i, vr, x_s[idx], y_s[idx], seass[period_label]['col'])
+                calc_draw_fit(axs, i, x_s[idx], y_s[idx], seass[period_label]['col'])
 
-            axs[i].set_xlim(extr[vr]['min'], extr[vr]['max'])
-            axs[i].set_ylim(extr[vr]['min'], extr[vr]['max'])
+            axs[i].set_xlim(extr[inpt.var_in_use]['min'], extr[inpt.var_in_use]['max'])
+            axs[i].set_ylim(extr[inpt.var_in_use]['min'], extr[inpt.var_in_use]['max'])
             axs[i].text(0.05, 0.95, letters[i] + ')', transform=axs[i].transAxes)
         except:
             print(f'error with {var_dict[comp]['label']}')
 
-    plt.savefig(os.path.join(basefol_out, tres, f'{tres}_scatter_{seas_name}_{vr}.png'))
+    plt.savefig(os.path.join(basefol_out, tres, f'{tres}_scatter_{seas_name}_{inpt.var_in_use}.png'))
     plt.close('all')
 
 
-def calc_draw_fit(axs, i, vr, x, y, fit_color, print_stats=True):
+def calc_draw_fit(axs, i, x, y, fit_color, print_stats=True):
     """
 
     :param fit_color:
     :param axs:
     :param i:
-    :param vr:
     :param x:
     :param y:
     :param print_stats:
     :return:
     """
     b, a = np.polyfit(x, y, deg=1)
-    xseq = np.linspace(extr[vr]['min'], extr[vr]['max'], num=1000)
+    xseq = np.linspace(extr[inpt.var_in_use]['min'], extr[inpt.var_in_use]['max'], num=1000)
     axs[i].plot(xseq, a + b * xseq, color=fit_color, lw=2.5, ls='--', alpha=0.5)
     axs[i].plot(
-            [extr[vr]['min'], extr[vr]['max']], [extr[vr]['min'], extr[vr]['max']], color='black', lw=1.5, ls='-')
+            [extr[inpt.var_in_use]['min'], extr[inpt.var_in_use]['max']],
+            [extr[inpt.var_in_use]['min'], extr[inpt.var_in_use]['max']], color='black', lw=1.5, ls='-')
     if print_stats:
         corcoef = ma.corrcoef(x, y)
         N = len(y)
@@ -237,11 +231,10 @@ def calc_draw_fit(axs, i, vr, x, y, fit_color, print_stats=True):
                 bbox=dict(facecolor='white', edgecolor='white'))
 
 
-# def plot_ba(vr, avar, period_label):
+# def plot_ba(period_label):
 #     """
 #
 #     :param vr:
-#     :param avar:
 #     :param period_label:
 #     :return:
 #     """
@@ -357,11 +350,9 @@ def calc_draw_fit(axs, i, vr, x, y, fit_color, print_stats=True):
 #
 
 
-def plot_scatter_cum(vr, avar):
+def plot_scatter_cum():
     """
 
-    :param vr:
-    :param avar:
     :return:
     """
     import copy as cp
@@ -370,19 +361,19 @@ def plot_scatter_cum(vr, avar):
     seass_new.pop('all')
 
     for period_label in seass_new:
-        print('SCATTERPLOTS')
+        print('SCATTERPLOTS CUMULATIVE')
         seas_name = seass[period_label]['name']
         axs = ax.ravel()
-        comps, x, refx = var_comp_x_selection(vr, avar)
+        comps, x, refx = var_comp_x_selection()
         for i, comp in enumerate(comps):
 
             axs[i].set_ylabel(var_dict[comp]['label_uom'])
-            y, vr_t_res = var_selection(vr, avar, comp)
+            y, vr_t_res = var_selection(comp)
 
             try:
                 print(f'plotting scatter VESPA-{var_dict[comp]['label']}')
 
-                fig.suptitle(f'{vr.upper()} cumulative plot', fontweight='bold')
+                fig.suptitle(f'{inpt.var_in_use.upper()} cumulative plot', fontweight='bold')
                 axs[i].set_title(var_dict[comp]['label'])
 
                 time_list = pd.date_range(
@@ -397,7 +388,7 @@ def plot_scatter_cum(vr, avar):
                 if seas_name != 'all':
                     if var_dict[comp]['label'] == 'RS':
                         y_s = y.loc[(y.index.month.isin(seass[period_label]['months']))]
-                        x_s = pd.Series(vr_t_res.reindex(y_s.index)[vr])
+                        x_s = pd.Series(vr_t_res.reindex(y_s.index)[inpt.var_in_use])
 
                         idx = ~(np.isnan(x_s) | np.isnan(y_s))
                         axs[i].scatter(
@@ -414,56 +405,47 @@ def plot_scatter_cum(vr, avar):
                 if len(x_s[idx]) < 2 | len(y_s[idx]) < 2:
                     print('ERROR, ERROR, NO DATA ENOUGH FOR PROPER FIT (i.e. only 1 point available)')
                 else:
-                    calc_draw_fit(axs, i, vr, x_s[idx], y_s[idx], seass[period_label]['col'], print_stats=False)
+                    calc_draw_fit(axs, i, x_s[idx], y_s[idx], seass[period_label]['col'], print_stats=False)
 
-                    axs[i].set_xlim(extr[vr]['min'], extr[vr]['max'])
-                    axs[i].set_ylim(extr[vr]['min'], extr[vr]['max'])
+                    axs[i].set_xlim(extr[inpt.var_in_use]['min'], extr[inpt.var_in_use]['max'])
+                    axs[i].set_ylim(extr[inpt.var_in_use]['min'], extr[inpt.var_in_use]['max'])
                     axs[i].text(0.05, 0.95, letters[i] + ')', transform=axs[i].transAxes)
                     axs[i].legend()
             except:
                 print(f'error with {var_dict[comp]['label']}')
 
-    plt.savefig(os.path.join(basefol_out, tres, f'{tres}_scatter_cum_{vr}.png'))
+    plt.savefig(os.path.join(basefol_out, tres, f'{tres}_scatter_cum_{inpt.var_in_use}.png'))
     plt.close('all')
 
 
-def var_comp_x_selection(vr, avar):
-    [vr_c, vr_e, vr_l, vr_t, vr_t1, vr_t2, vr_c_res, vr_e_res, vr_l_res, vr_t_res, vr_t1_res, vr_t2_res] = avar
-    if vr == 'lwp':
+def var_comp_x_selection():
+    if inpt.var_in_use == 'lwp':
         cmps = ['c', 'e', 't', 't1']
-        x = vr_t1_res[vr]
-        ref_x = 't1'
-    elif vr in ['windd', 'winds', 'precip']:
+        x = vr_t1_res[inpt.var_in_use]
+    elif inpt.var_in_use in ['windd', 'winds']:
         cmps = ['c', 'e', 't', 't1']
-        x = vr_t2_res[vr]
-        ref_x = 't2'
-    elif vr in ['iwv']:
+        x = vr_t2_res[inpt.var_in_use]
+    elif inpt.var_in_use in ['iwv']:
         cmps = ['c', 'e', 't1', 't2']
-        x = vr_t_res[vr]
-        ref_x = 't'
-    elif vr in ['temp']:
+        x = vr_t_res[inpt.var_in_use]
+
+    elif inpt.var_in_use in ['temp']:
         cmps = ['c', 'e', 'l', 't2']
-        x = vr_t_res[vr]
-        ref_x = 't'
-    elif vr in ['precip']:
+        x = vr_t_res[inpt.var_in_use]
+    elif inpt.var_in_use in ['precip']:
         cmps = ['c', 'e']
-        x = vr_t1_res[vr]
-        ref_x = 't2'
-    elif vr in ['rh']:
+        x = vr_t1_res[inpt.var_in_use]
+    elif inpt.var_in_use in ['rh']:
         cmps = ['c', 'e', 'l', 't2']
-        x = vr_t_res[vr]
-        ref_x = 't'
+        x = vr_t_res[inpt.var_in_use]
     else:
         cmps = ['c', 'e', 't1', 't2']
-        x = vr_t_res[vr]
-        ref_x = 't'
+        x = vr_t_res[inpt.var_in_use]
 
-    return cmps, x, ref_x
+    return cmps, x
 
 
 def var_selection(vr, avar, comp):
-    [vr_c, vr_e, vr_l, vr_t, vr_t1, vr_t2, vr_c_res, vr_e_res, vr_l_res, vr_t_res, vr_t1_res, vr_t2_res] = avar
-
     if comp == 'c':
         try:
             y = vr_c_res[vr]

@@ -24,34 +24,24 @@ __lastupdate__ = ""
 from plot_func import plot_residuals, plot_scatter, plot_scatter_cum, plot_ts
 from read_func import *
 from inputs import *
+import inputs as inpt
 from res_func import data_resampling
 
 if __name__ == "__main__":
 
     for var in var_list:
-        print(var)
-        var_c = pd.DataFrame()
-        var_e = pd.DataFrame()
-        var_l = pd.DataFrame()
-        var_t = pd.DataFrame()
-        var_t1 = pd.DataFrame()
-        var_t2 = pd.DataFrame()
-        if var in ['lwp']:
-            [var_c, var_e, var_l, var_t, var_t1] = read(var)
-        elif var in ['temp', 'msl_pres', 'surf_pres', 'rh', 'winds', 'windd', 'precip', 'alb', 'iwv']:
-            [var_c, var_e, var_l, var_t, var_t1, var_t2] = read(var)
-        else:
-            [var_c, var_e, var_l, var_t] = read(var)
+        inpt.var_in_use = var
+        print(inpt.var_in_use)
+
+        # data reading
+        read()
 
         # time RESAMPLING (specific for windd --> using wind components, and precip --> cumulative)
-        var_c_res, var_e_res, var_l_res, var_t_res, var_t1_res, var_t2_res = data_resampling(
-                var, tres, var_c, var_e, var_l, var_t, var_t1, var_t2)
+        data_resampling()
 
-        all_var = [var_c, var_e, var_l, var_t, var_t1, var_t2, var_c_res, var_e_res, var_l_res, var_t_res, var_t1_res,
-                   var_t2_res]
-        plot_ts(var, all_var, 'all')
-        plot_residuals(var, all_var, 'all')
-        plot_scatter_cum(var, all_var)
+        plot_ts('all')
+        plot_residuals('all')
+        plot_scatter_cum()
         for seas in seass:
-            plot_scatter(var, all_var, seas)
+            plot_scatter(seas)
             # plot_ba(var, all_var, seas)

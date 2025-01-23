@@ -39,10 +39,11 @@ basefol_out = os.path.join('H:\\Shared drives', 'Dati_elab_docs', 'thaao_reanaly
 ##
 tres = '3h'
 tres_rs = '1h'  # only for radiosoundings
-var_list = ['rh', 'temp', 'rh', 'iwv', 'alb', 'cbh', 'precip', 'windd', 'winds', 'surf_pres', 'sw_down',
-            'sw_up', 'lw_up', 'lw_down', 'lwp']
-# 'tcc'
-years = np.arange(2016, 2024, 1)
+var_list = ['temp', 'rh', 'iwv', 'alb', 'cbh', 'precip', 'windd', 'winds', 'surf_pres', 'sw_down', 'sw_up',
+            'lw_up', 'lw_down', 'lwp', 'tcc']
+var_in_use = ''
+
+years = np.arange(2023, 2024, 1)
 
 bin_nr = 200
 
@@ -63,31 +64,38 @@ SMALL_SIZE = 12
 
 myFmt = mdates.DateFormatter('%d-%b')
 
-comps = ['c', 'e', 't1', 't2']
-var_names = ['c', 'e', 'l', 't', 't1', 't2']
+var_dict = {'c': {'data'   : pd.DataFrame(), 'data_res': pd.DataFrame(), 'name': 'vr_c', 'col': 'red',
+                  'col_ori': 'orange', 'label': 'CARRA', 'label_uom': ''},
+            'e': {'data' : pd.DataFrame(), 'data_res': pd.DataFrame(), 'name': 'vr_e', 'col': 'blue', 'col_ori': 'cyan',
+                  'label': 'ERA5', 'label_uom': ''},
+            'l': {'data'   : pd.DataFrame(), 'data_res': pd.DataFrame(), 'name': 'vr_l', 'col': 'darkgreen',
+                  'col_ori': 'lightgreen', 'label': 'ERA5-L', 'label_uom': ''},
+            't': {'data'   : pd.DataFrame(), 'data_res': pd.DataFrame(), 'name': 'vr_t', 'col': 'black',
+                  'col_ori': 'grey', 'label': 'THAAO', 'label_uom': ''},
+            't1': {'data'   : pd.DataFrame(), 'data_res': pd.DataFrame(), 'name': 'vr_t1', 'col': 'green',
+                   'col_ori': 'lightgreen', 'label': 'HATPRO', 'label_uom': ''},
+            't2': {'data'   : pd.DataFrame(), 'data_res': pd.DataFrame(), 'name': 'vr_t2', 'col': 'purple',
+                   'col_ori': 'violet', 'label': 'AWS_ECAPAC', 'label_uom': ''}}
 
-var_dict = {'c' : {'name': 'vr_c', 'col': 'red', 'col_ori': 'orange', 'label': 'CARRA', 'label_uom': ''},
-            'e' : {'name': 'vr_e', 'col': 'blue', 'col_ori': 'cyan', 'label': 'ERA5', 'label_uom': ''},
-            'l' : {'name': 'vr_l', 'col': 'darkgreen', 'col_ori': 'lightgreen', 'label': 'ERA5-L', 'label_uom': ''},
-            't' : {'name': 'vr_t', 'col': 'black', 'col_ori': 'grey', 'label': 'THAAO', 'label_uom': ''},
-            't1': {'name': 'vr_t1', 'col': 'green', 'col_ori': 'lightgreen', 'label': 'HATPRO', 'label_uom': ''},
-            't2': {'name': 'vr_t2', 'col': 'purple', 'col_ori': 'violet', 'label': 'AWS_ECAPAC', 'label_uom': ''}}
+var_names = list(var_dict.keys())
 
-extr = {'temp'     : {'min': -40, 'max': 20, 'res_min': -10, 'res_max': 10, 'uom': '[deg]'},
-        'lwp'      : {'min': 0, 'max': 50, 'res_min': -20, 'res_max': 20, 'uom': '[kg/m2]'},
-        'rh'       : {'min': 0, 'max': 100, 'res_min': -10, 'res_max': 10, 'uom': '[%]'},
-        'windd'    : {'min': 0, 'max': 360, 'res_min': -90, 'res_max': 90, 'uom': '[deg]'},
-        'winds'    : {'min': 0, 'max': 30, 'res_min': -10, 'res_max': 10, 'uom': '[m/s]'},
-        'precip'   : {'min': 0, 'max': 5, 'res_min': -10, 'res_max': 10, 'uom': '[mm?]'},
-        'surf_pres': {'min': 925, 'max': 1013, 'res_min': -10, 'res_max': 10, 'uom': '[hPa]'},
-        'alb'      : {'min': 0, 'max': 1, 'res_min': -0.5, 'res_max': 0.5, 'uom': '[none]'},
-        'iwv'      : {'min': 0, 'max': 20, 'res_min': -5, 'res_max': 5, 'uom': '[kg/m2]'},
-        'lw_up'    : {'min': 0, 'max': 500, 'res_min': -20, 'res_max': 20, 'uom': '[W/m2]'},
-        'lw_down'  : {'min': 0, 'max': 500, 'res_min': -20, 'res_max': 20, 'uom': '[W/m2]'},
-        'sw_up'    : {'min': 0, 'max': 500, 'res_min': -20, 'res_max': 20, 'uom': '[W/m2]'},
-        'sw_down'  : {'min': 0, 'max': 500, 'res_min': -20, 'res_max': 20, 'uom': '[W/m2]'},
-        'cbh'      : {'min': 0, 'max': 10000, 'res_min': -500, 'res_max': 500, 'uom': '[m]'},
-        'tcc'      : {'min': 0, 'max': 1, 'res_min': -50, 'res_max': 50, 'uom': '[octave]'}}
+extr = {'temp'     : {'name': 'temp', 'ref_x': 't', 'min': -40, 'max': 20, 'res_min': -10, 'res_max': 10, 'uom': '[deg]'},
+        'lwp'      : {'name': 'lwp', 'ref_x': 't1', 'min': 0, 'max': 50, 'res_min': -20, 'res_max': 20, 'uom': '[kg/m2]'},
+        'rh'       : {'name': 'rh', 'ref_x': '', 'min': 0, 'max': 100, 'res_min': -10, 'res_max': 10, 'uom': '[%]'},
+        'windd'    : {'name': 'windd', 'ref_x': 't', 'min': 0, 'max': 360, 'res_min': -90, 'res_max': 90, 'uom': '[deg]'},
+        'winds'    : {'name': 'winds', 'ref_x': 't', 'min': 0, 'max': 30, 'res_min': -10, 'res_max': 10, 'uom': '[m/s]'},
+        'precip'   : {'name': 'precip', 'ref_x': 't2', 'min': 0, 'max': 5, 'res_min': -10, 'res_max': 10, 'uom': '[mm?]'},
+        'surf_pres': {'name': 'surf_pres', 'ref_x': '', 'min': 925, 'max': 1013, 'res_min': -10, 'res_max': 10, 'uom': '[hPa]'},
+        'alb'      : {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min': -0.5, 'res_max': 0.5, 'uom': '[none]'},
+        'iwv'      : {'name': 'iwv', 'ref_x': 't', 'min': 0, 'max': 20, 'res_min': -5, 'res_max': 5, 'uom': '[kg/m2]'},
+        'lw_up'    : {'name': 'lw_up', 'ref_x': 't', 'min': 0, 'max': 500, 'res_min': -20, 'res_max': 20, 'uom': '[W/m2]'},
+        'lw_down'  : {'name': 'lw_down', 'ref_x': 't', 'min': 0, 'max': 500, 'res_min': -20, 'res_max': 20, 'uom': '[W/m2]'},
+        'sw_up'    : {'name': 'sw_up', 'ref_x': 't', 'min': 0, 'max': 500, 'res_min': -20, 'res_max': 20, 'uom': '[W/m2]'},
+        'sw_down'  : {'name': 'sw_down', 'ref_x': 't', 'min': 0, 'max': 500, 'res_min': -20, 'res_max': 20, 'uom': '[W/m2]'},
+        'cbh'      : {'name': 'cbh', 'ref_x': 't', 'min': 0, 'max': 10000, 'res_min': -500, 'res_max': 500, 'uom': '[m]'},
+        'tcc'      : {'name': 'tcc', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min': -50, 'res_max': 50, 'uom': '[octave]'}}
+
+#var_names = list(extr.keys())
 
 aws_ecapac_daterange = pd.date_range(start=dt.datetime(2023, 4, 1), end=dt.datetime(2024, 12, 31), freq='1D')
 ceilometer_daterange = pd.date_range(start=dt.datetime(2019, 9, 1), end=dt.datetime(2024, 12, 31), freq='1D')
