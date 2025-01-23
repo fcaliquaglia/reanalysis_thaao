@@ -31,7 +31,8 @@ import inputs as inpt
 from inputs import *
 
 
-def read_carra(vr):
+def read_carra():
+    vr = inpt.var_in_use
     for year in years:
         try:
             c_tmp = pd.read_table(
@@ -48,13 +49,14 @@ def read_carra(vr):
     return
 
 
-def read_era5(vr):
+def read_era5():
+    vr = inpt.var_in_use
     for year in years:
         try:
             e_tmp = pd.read_table(
                     os.path.join(basefol_e, f'{extr[vr]['e']['fn']}{year}.txt'), skipfooter=1, sep='\s+', header=None,
                     skiprows=1, engine='python')
-            e_tmp[e_tmp == -32767.0] = np.nan
+            e_tmp[e_tmp == var_dict['l']['nanval']] = np.nan
             extr[vr]['e']['data'] = pd.concat([extr[vr]['e']['data'], e_tmp], axis=0)
 
             print(f'OK: {extr[vr]['e']['fn']}{year}.txt')
@@ -67,13 +69,14 @@ def read_era5(vr):
     return
 
 
-def read_era5_land(vr):
+def read_era5_land():
+    vr = inpt.var_in_use
     for year in years:
         try:
             l_tmp = pd.read_table(
                     os.path.join(basefol_l, f'{extr[vr]['l']['fn']}{year}.txt'), skipfooter=1, sep='\s+', header=None,
-                    skiprows=1, engine='python')
-            l_tmp[l_tmp == -32767.0] = np.nan
+                    skiprows=2, engine='python')
+            l_tmp[l_tmp == var_dict['l']['nanval']] = np.nan
             extr[vr]['l']['data'] = pd.concat([extr[vr]['l']['data'], l_tmp], axis=0)
 
             print(f'OK: {extr[vr]['l']['fn']}{year}.txt')
@@ -86,7 +89,8 @@ def read_era5_land(vr):
     return
 
 
-def read_thaao_weather(vr, drop_param):
+def read_thaao_weather(drop_param):
+    vr = inpt.var_in_use
     try:
         extr[vr]['t']['data'] = xr.open_dataset(
                 os.path.join(basefol_t, 'thaao_meteo', f'{extr[vr]['t']['fn']}.nc'), engine='netcdf4').to_dataframe()
@@ -98,7 +102,8 @@ def read_thaao_weather(vr, drop_param):
     return
 
 
-def read_thaao_vespa(vr):
+def read_thaao_vespa():
+    vr = inpt.var_in_use
     try:
         extr[vr]['t']['data'] = pd.read_table(
                 os.path.join(basefol_t, 'thaao_vespa', f'{extr[vr]['t']['fn']}.txt'), skipfooter=1, sep='\s+',
@@ -109,11 +114,12 @@ def read_thaao_vespa(vr):
     extr[vr]['t']['data'].index = pd.to_datetime(
             extr[vr]['t']['data'][0] + ' ' + extr[vr]['t']['data'][1], format='%Y-%m-%d %H:%M:%S')
     extr[vr]['t']['data'].drop(columns=[0, 1, 3, 4, 5], inplace=True)
-    extr[vr]['t']['data'].columns = [inpt.var_in_use]
+    extr[vr]['t']['data'].columns = [vr]
     return
 
 
-def read_thaao_hatpro(vr):
+def read_thaao_hatpro():
+    vr = inpt.var_in_use
     for yy, year in enumerate(years):
         try:
             t1_tmp = pd.read_table(
@@ -133,11 +139,12 @@ def read_thaao_hatpro(vr):
         except FileNotFoundError:
             print(f'NOT FOUND: {extr[vr]['t']['fn']}{year}.DAT')
     extr[vr]['t']['data']['IWV'] = extr[vr]['t']['data']['IWV'].values
-    extr[vr]['t']['data'].columns = [inpt.var_in_use]
+    extr[vr]['t']['data'].columns = [vr]
     return
 
 
-def read_thaao_ceilometer( vr, param):
+def read_thaao_ceilometer(param):
+    vr = inpt.var_in_use
     for i in ceilometer_daterange:
         i_fmt = i.strftime('%Y%m%d')
         try:
@@ -146,8 +153,8 @@ def read_thaao_ceilometer( vr, param):
                             basefol_t_elab, 'thaao_ceilometer_elab', 'medie_tat_rianalisi',
                             f'{i_fmt}{extr[vr]['t']['fn']}.txt'), skipfooter=0, sep='\s+', header=0, skiprows=9,
                     engine='python')
-            t_tmp[t_tmp == -9999.9] = np.nan
-            t_tmp = pd.concat([extr[vr]['t']['data'], t_tmp], axis=0)
+            t_tmp[t_tmp == var_dict['t']['nanval']] = np.nan
+            extr[vr]['t']['data'] = pd.concat([extr[vr]['t']['data'], t_tmp], axis=0)
             print(f'OK: {i_fmt}{extr[vr]['t']['fn']}.txt')
         except (FileNotFoundError, pd.errors.EmptyDataError):
             print(f'NOT FOUND: {i_fmt}{extr[vr]['t']['fn']}.txt')
@@ -157,25 +164,26 @@ def read_thaao_ceilometer( vr, param):
             format='%Y-%m-%d %H:%M:%S')
     extr[vr]['t']['data'].index.name = 'datetime'
     extr[vr]['t']['data'] = extr[vr]['t']['data'].iloc[:, :].filter([param]).astype(float)
-    extr[vr]['t']['data'].columns = [inpt.var_in_use]
+    extr[vr]['t']['data'].columns = [vr]
 
     return
 
 
-def read_aws_ecapac(vr, param):
-    fn = 'AWS_THAAO_'
+def read_aws_ecapac(param):
+    vr = inpt.var_in_use
     for i in aws_ecapac_daterange[aws_ecapac_daterange.year.isin(years)]:
         i_fmt = i.strftime('%Y_%m_%d')
         try:
             file = os.path.join(
-                    basefol_t, 'thaao_ecapac_aws_snow', 'AWS_ECAPAC', i.strftime('%Y'), f'{fn}{i_fmt}_00_00.dat')
+                    basefol_t, 'thaao_ecapac_aws_snow', 'AWS_ECAPAC', i.strftime('%Y'),
+                    f'{extr[vr]['t2']['fn']}{i_fmt}_00_00.dat')
             t2_tmp = pd.read_csv(
                     file, skiprows=[0, 3], header=0, decimal='.', delimiter=',', engine='python',
                     index_col='TIMESTAMP').iloc[1:, :]
             extr[vr]['t2']['data'] = pd.concat([extr[vr]['t2']['data'], t2_tmp], axis=0)
-            print(f'OK: {fn}{i_fmt}_00_00.dat')
+            print(f'OK: {extr[vr]['t2']['fn']}{i_fmt}_00_00.dat')
         except (FileNotFoundError, pd.errors.EmptyDataError):
-            print(f'NOT_FOUND: {fn}{i_fmt}_00_00.dat')
+            print(f'NOT_FOUND: {extr[vr]['t2']['fn']}{i_fmt}_00_00.dat')
     extr[vr]['t2']['data'].index = pd.DatetimeIndex(extr[vr]['t2']['data'].index)
     extr[vr]['t2']['data'].index.name = 'datetime'
     extr[vr]['t2']['data'] = extr[vr]['t2']['data'].iloc[:, :].filter([param]).astype(float)
@@ -184,32 +192,32 @@ def read_aws_ecapac(vr, param):
 
 
 def read_temp():
-    read_thaao_weather(inpt.var_in_use, drop_param=['BP_hPa', 'RH_%'])
+    read_thaao_weather(drop_param=['BP_hPa', 'RH_%'])
     extr[inpt.var_in_use]['t']['data']['Air_K'] = extr[inpt.var_in_use]['t']['data'].values - 273.15
-    read_aws_ecapac(inpt.var_in_use, param='AirTC')
-    read_carra(inpt.var_in_use)
+    # read_aws_ecapac(param='AirTC')
+    read_carra()
     extr[inpt.var_in_use]['c']['data'][2] = extr[inpt.var_in_use]['c']['data'].values - 273.15
-    read_era5(inpt.var_in_use)
+    read_era5()
     extr[inpt.var_in_use]['e']['data'][2] = extr[inpt.var_in_use]['e']['data'].values - 273.15
-    read_era5_land(inpt.var_in_use)
+    read_era5_land()
     extr[inpt.var_in_use]['l']['data'][2] = extr[inpt.var_in_use]['l']['data'].values - 273.15
 
     return
 
 
 def read_msl_pres():
-    read_carra(inpt.var_in_use)
+    read_carra()
 
     return
 
 
 def read_surf_pres():
     # cleanup
-    read_carra(inpt.var_in_use)
-    extr[inpt.var_in_use]['c']['data'][2] = extr[inpt.var_in_use]['c']['data'][2].values / 100.
+    read_carra()
+    extr[inpt.var_in_use]['c']['data'][2] = extr[inpt.var_in_use]['c']['data'].values / 100.
     extr[inpt.var_in_use]['c']['data'][extr[inpt.var_in_use]['c']['data'] <= 900] = np.nan
 
-    read_era5(inpt.var_in_use)
+    read_era5()
     extr[inpt.var_in_use]['e']['data'][2] = extr[inpt.var_in_use]['e']['data'].values / 100.
     extr[inpt.var_in_use]['e']['data'][extr[inpt.var_in_use]['e']['data'] <= 900] = np.nan
 
@@ -218,7 +226,7 @@ def read_surf_pres():
     extr[inpt.var_in_use]['t']['data'].loc['2021-10-11 00:00:00':'2021-10-19 00:00:00'] = np.nan
     extr[inpt.var_in_use]['t']['data'].loc['2024-4-26 00:00:00':'2024-5-4 00:00:00'] = np.nan
 
-    read_aws_ecapac(inpt.var_in_use, param='BP_mbar')
+    read_aws_ecapac(param='BP_mbar')
 
 
 def read_rh():

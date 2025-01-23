@@ -36,6 +36,11 @@ basefol_t = os.path.join('H:\\Shared drives', 'Dati_THAAO')
 basefol_t_elab = os.path.join('H:\\Shared drives', 'Dati_elab_docs')
 basefol_out = os.path.join('H:\\Shared drives', 'Dati_elab_docs', 'thaao_reanalysis')
 
+thaao_c='thaao_carra'
+thaao_e='thaao_era5'
+thaao_l='thaa_era5-land'
+thaao_t='thaao'
+
 ##
 tres = '3h'
 tres_rs = '1h'  # only for radiosoundings
@@ -64,23 +69,23 @@ SMALL_SIZE = 12
 
 myFmt = mdates.DateFormatter('%d-%b')
 
-var_dict = {'c' : {'name': 'vr_c', 'col': 'red', 'col_ori': 'orange', 'label': 'CARRA', 'label_uom': ''},
-            'e' : {'name': 'vr_e', 'col': 'blue', 'col_ori': 'cyan', 'label': 'ERA5', 'label_uom': ''},
-            'l' : {'name': 'vr_l', 'col': 'darkgreen', 'col_ori': 'lightgreen', 'label': 'ERA5-L', 'label_uom': ''},
-            't' : {'name': 'vr_t', 'col': 'black', 'col_ori': 'grey', 'label': 'THAAO', 'label_uom': ''},
-            't1': {'name': 'vr_t1', 'col': 'green', 'col_ori': 'lightgreen', 'label': 'HATPRO', 'label_uom': ''},
-            't2': {'name': 'vr_t2', 'col': 'purple', 'col_ori': 'violet', 'label': 'AWS_ECAPAC', 'label_uom': ''}}
+var_dict = {'c' : {'name': 'c', 'nanval':'', 'col': 'red', 'col_ori': 'orange', 'label': 'CARRA', 'label_uom': ''},
+            'e' : {'name': 'e', 'nanval':-32767.0, 'col': 'blue', 'col_ori': 'cyan', 'label': 'ERA5', 'label_uom': ''},
+            'l' : {'name': 'l', 'nanval':-32767.0, 'col': 'darkgreen', 'col_ori': 'lightgreen', 'label': 'ERA5-L', 'label_uom': ''},
+            't' : {'name': 't', 'nanval':-9999.9, 'col': 'black', 'col_ori': 'grey', 'label': 'THAAO', 'label_uom': ''},
+            't1': {'name': 't1', 'nanval':'', 'col': 'green', 'col_ori': 'lightgreen', 'label': 'HATPRO', 'label_uom': ''},
+            't2': {'name': 't2', 'nanval':'', 'col': 'purple', 'col_ori': 'violet', 'label': 'AWS_ECAPAC', 'label_uom': ''}}
 
 var_names = list(var_dict.keys())
 
 extr = {
     'temp': {'name': 'temp', 'ref_x': 't', 'uom': '[deg]', 'min': -40, 'max': 20, 'res_min': -10, 'res_max': 10,
-             'c' : {'fn': 'thaao_carra_2m_temperature_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
-             'e' : {'fn': 'thaao_era5_2m_temperature_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
-             'l' : {'fn': 'thaao_era5-land_2m_temperature_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
+             'c' : {'fn': f'{thaao_c}_2m_temperature_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
+             'e' : {'fn': f'{thaao_e}_2m_temperature_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
+             'l' : {'fn': f'{thaao_l}_2m_temperature_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
              't' : {'fn': 'Meteo_weekly_all', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
              't1': {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
-             't2': {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()}},
+             't2': {'fn': 'AWS_THAAO_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()}},
     'dewpt': {
         'name': 'dewpt', 'ref_x': '', 'uom': '[deg]', 'min': '', 'max': '', 'res_min': '', 'res_max': '',
         'c' : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
@@ -91,8 +96,8 @@ extr = {
         't2': {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()}},
     'lwp': {
         'name' : 'lwp','ref_x' : 't1','min': 0, 'max' : 50, 'res_min' : -20, 'res_max': 20,'uom': '[kg/m2]',
-        'c': {'fn': 'thaao_carra_total_column_cloud_liquid_water_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
-        'e': {'fn'    : 'thaao_era5_total_column_cloud_liquid_water_', 'data': pd.DataFrame(),'data_res': pd.DataFrame()},
+        'c': {'fn': f'{thaao_c}_total_column_cloud_liquid_water_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
+        'e': {'fn'    : f'{thaao_e}_total_column_cloud_liquid_water_', 'data': pd.DataFrame(),'data_res': pd.DataFrame()},
         'l': {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
         't': {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
         't1': {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
@@ -104,49 +109,49 @@ extr = {
         'l': {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
         't': {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
         't1': {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
-        't2': {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
+        't2': {'fn': 'AWS_THAAO_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
     'windd': {
         'name': 'windd', 'ref_x': 't', 'min': 0, 'max': 360, 'res_min': -90, 'res_max': 90, 'uom': '[deg]',
-        'c'         : {'fn': 'thaao_carra_10m_wind_direction_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
+        'c'         : {'fn': f'{thaao_c}_10m_wind_direction_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
         'e'         : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
         'l'         : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
         't'         : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
         't1'        : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
-        't2'        : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()}},
+        't2'        : {'fn': 'AWS_THAAO_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()}},
     'winds': {
         'name': 'winds', 'ref_x': 't', 'min': 0, 'max': 30, 'res_min': -10, 'res_max': 10, 'uom': '[m/s]',
-        'c'         : {'fn': 'thaao_carra_10m_wind_speed_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
+        'c'         : {'fn': f'{thaao_c}_10m_wind_speed_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
         'e'         : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
         'l'         : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
         't'         : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
         't1'        : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
-        't2'        : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()}},
+        't2'        : {'fn': 'AWS_THAAO_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()}},
     'msl': {
         'name': 'winds', 'ref_x': 't', 'min': 0, 'max': 30, 'res_min': -10, 'res_max': 10, 'uom': '[m/s]',
-        'c'       : {'fn': 'thaao_carra_mean_sea_level_pressure_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
+        'c'       : {'fn': f'{thaao_c}_mean_sea_level_pressure_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
         'e'       : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
         'l'       : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
         't'       : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
         't1'      : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
         't2'      : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()}},
     'precip': {'name': 'precip', 'ref_x': 't2', 'min': 0, 'max': 5, 'res_min': -10, 'res_max': 10, 'uom': '[mm?]',
-        'c'          : {'fn': 'thaao_carra_total_precipitation_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
-        'e'          : {'fn': 'thaao_era5_total_precipitation_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
+        'c'          : {'fn': f'{thaao_c}_total_precipitation_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
+        'e'          : {'fn': f'{thaao_e}_total_precipitation_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
         'l'          : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
         't'          : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
         't1'         : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
-        't2'         : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()}},
+        't2'         : {'fn': 'AWS_THAAO_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()}},
     'surf_pres': {'name': 'surf_pres', 'ref_x': '', 'min': 925, 'max': 1013, 'res_min': -10, 'res_max': 10,
         'uom'           : '[hPa]',
-        'c'             : {'fn': 'thaao_carra_surface_pressure_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
-        'e'             : {'fn': 'thaao_era5_surface_pressure_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
+        'c'             : {'fn': f'{thaao_c}_surface_pressure_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
+        'e'             : {'fn': f'{thaao_e}_surface_pressure_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
         'l'             : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
         't'             : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
         't1'            : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
-        't2'            : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()}},
+        't2'            : {'fn': 'AWS_THAAO_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()}},
     'iwv': {'name': 'iwv', 'ref_x': 't', 'min': 0, 'max': 20, 'res_min': -5, 'res_max': 5, 'uom': '[kg/m2]',
-        'c': {'fn':' thaao_carra_total_column_integrated_water_vapour_', 'data': pd.DataFrame(),'data_res': pd.DataFrame()},
-        'e': {'fn': 'thaao_era5_total_column_water_vapour_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
+        'c': {'fn': f'{thaao_c}_total_column_integrated_water_vapour_', 'data': pd.DataFrame(),'data_res': pd.DataFrame()},
+        'e': {'fn': f'{thaao_e}_total_column_water_vapour_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
         'l': {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
         't': {'fn': 'vespaPWVClearSky', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
         't1': {'fn': 'QC_IWV_15_min_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
@@ -180,22 +185,22 @@ extr = {
         't1'          : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
         't2'          : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()}},
     'cbh': {'name': 'cbh', 'ref_x': 't', 'min': 0, 'max': 10000, 'res_min': -500, 'res_max': 500, 'uom': '[m]',
-        'c'       : {'fn': 'thaao_carra_cloud_base_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
-        'e'       : {'fn': 'thaao_era5_cloud_base_height_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
+        'c'       : {'fn': f'{thaao_c}_cloud_base_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
+        'e'       : {'fn': f'{thaao_e}_cloud_base_height_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
         'l'       : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
         't'       : {'fn': '_Thule_CHM190147_000_0060cloud', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
         't1'      : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
         't2'      : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()}},
     'tcc': {'name': 'tcc', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min': -50, 'res_max': 50, 'uom': '[octave]',
-        'c'       : {'fn': 'thaao_carra_total_cloud_cover_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
-        'e'       : {'fn': 'thaao_era5_total_cloud_cover_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
+        'c'       : {'fn': f'{thaao_c}_total_cloud_cover_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
+        'e'       : {'fn': f'{thaao_e}_total_cloud_cover_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
         'l'       : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
         't'       : {'fn': '_Thule_CHM190147_000_0060cloud', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
         't1'      : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
         't2'      : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()}}}
 
 # 'alb'                                                            : {
-#       'filename': {'c' : 'thaao_carra_albedo_', 'e': 'thaao_era5_forecast_albedo_', 'l': '', 't': '', 't1': '',
+#       'filename': {'c' : f'{thaao_c}_albedo_', 'e': f'{thaao_e}_forecast_albedo_', 'l': '', 't': '', 't1': '',
 #                    't2': ''}, 'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min': -0.5, 'res_max': 0.5,
 #       'uom': '[none]'},
 

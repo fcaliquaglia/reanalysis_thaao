@@ -44,52 +44,53 @@ def plot_ts(period_label):
     kwargs_ori = {'alpha': 0.02, 'lw': 0, 'marker': '.', 'ms': 1}
     kwargs = {'lw': 0, 'marker': '.', 'ms': 2}
 
-    if inpt.var_in_use != 'iwv':
+    vr = inpt.var_in_use
+    if vr != 'iwv':
         var_dict['t2']['label'] = 'AWS ECAPAC'
         var_dict['t2']['label_uom'] = 'AWS ECAPAC'
     else:
         var_dict['t2']['label'] = 'RS'
         var_dict['t2']['label_uom'] = 'RS'
 
-    for [yy, year] in enumerate(years):
+    for (yy, year) in enumerate(years):
         print(f'plotting {year}')
 
         # original resolution
-        for (varvar, vr_n) in zip([vr_c, vr_e, vr_l, vr_t, vr_t1, vr_t2], var_names):
+        for varvar in var_names:
             try:
-                data = varvar[varvar.index.year == year]
-                ax[yy].plot(data, color=var_dict[vr_n]['col_ori'], **kwargs_ori)
+                data = extr[vr][varvar]['data'][extr[vr][varvar]['data'].index.year == year]
+                ax[yy].plot(data, color=var_dict[varvar]['col_ori'], **kwargs_ori)
             except AttributeError:
                 pass
 
         # resampled resolution
-        for (varvar, vr_n) in zip([vr_c_res, vr_e_res, vr_l_res, vr_t_res, vr_t1_res, vr_t2_res], var_names):
+        for varvar in var_names:
             try:
-                data = varvar[varvar.index.year == year]
-                ax[yy].plot(data, color=var_dict[vr_n]['col'], label=var_dict[vr_n]['label'], **kwargs)
+                data = extr[vr][varvar]['data_res'][extr[vr][varvar]['data_res'].index.year == year]
+                ax[yy].plot(data, color=var_dict[varvar]['col'], label=var_dict[varvar]['label'], **kwargs)
             except AttributeError:
                 pass
 
-        if inpt.var_in_use == 'alb':
+        if vr == 'alb':
             range1 = pd.date_range(dt.datetime(year, 1, 1), dt.datetime(year, 2, 15), freq=tres)
             range2 = pd.date_range(dt.datetime(year, 11, 1), dt.datetime(year, 12, 31), freq=tres)
             ax[yy].vlines(range1.values, 0, 1, color='grey', alpha=0.3)
             ax[yy].vlines(range2.values, 0, 1, color='grey', alpha=0.3)
-            ax[yy].set_ylim(extr[inpt.var_in_use]['min'], extr[inpt.var_in_use]['max'])
+            ax[yy].set_ylim(extr[vr]['min'], extr[vr]['max'])
         else:
             pass
-        ax[yy].set_ylim(extr[inpt.var_in_use]['min'], extr[inpt.var_in_use]['max'])
+        ax[yy].set_ylim(extr[vr]['min'], extr[vr]['max'])
         ax[yy].text(0.45, 0.85, year, transform=ax[yy].transAxes)
         ax[yy].xaxis.set_major_formatter(myFmt)
         ax[yy].set_xlim(dt.datetime(year, 1, 1), dt.datetime(year, 12, 31))
         ax[yy].text(0.01, 0.90, letters[yy] + ')', transform=ax[yy].transAxes)
     plt.xlabel('Time')
     plt.legend(ncol=2)
-    plt.savefig(os.path.join(basefol_out, tres, f'{tres}_{period_label}_{inpt.var_in_use}.png'))
+    plt.savefig(os.path.join(basefol_out, tres, f'{tres}_{period_label}_{vr}.png'))
     plt.close('all')
 
 
-def plot_residuals(period_label):
+def plot_residuals(vr, period_label):
     """
 
     :param period_label:
@@ -100,6 +101,7 @@ def plot_residuals(period_label):
     fig.suptitle(f'residuals {inpt.var_in_use.upper()} all {tres}', fontweight='bold')
     kwargs = {'lw': 1, 'marker': '.', 'ms': 0}
 
+    vr = inpt.var_in_use
     for [yy, year] in enumerate(years):
         print(f'plotting {year}')
 
@@ -109,7 +111,7 @@ def plot_residuals(period_label):
         vr_ref = vr_t_res.resample(tres).mean()
         for (varvar, vr_n) in zip([vr_c_res, vr_e_res, vr_l_res, vr_t1_res, vr_t2_res], var_names):
             try:
-                data = varvar[varvar.index.year == year]
+                data = extr[vr][varvar]['data_res'][extr[vr][varvar]['data_res'].index.year == year]
                 ax[yy].plot(
                         (data - vr_ref[vr_ref.index.year == year]), color=var_dict[vr_n]['col'],
                         label=var_dict[vr_n]['label'], **kwargs)
