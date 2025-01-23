@@ -198,7 +198,7 @@ def plot_scatter(vr, avar, period_label):
             if len(x_s[idx]) < 2 | len(y_s[idx]) < 2:
                 print('ERROR, ERROR, NO DATA ENOUGH FOR PROPER FIT (i.e. only 1 point available)')
             else:
-                calc_draw_fit(axs, i, idx, vr, x_s, y_s)
+                calc_draw_fit(axs, i, vr, x_s[idx], y_s[idx], seass[period_label]['col'])
 
             axs[i].set_xlim(extr[vr]['min'], extr[vr]['max'])
             axs[i].set_ylim(extr[vr]['min'], extr[vr]['max'])
@@ -210,28 +210,28 @@ def plot_scatter(vr, avar, period_label):
     plt.close('all')
 
 
-def calc_draw_fit(axs, i, idx, vr, x_s, y_s, print_stats=True):
+def calc_draw_fit(axs, i, vr, x, y, fit_color, print_stats=True):
     """
 
+    :param fit_color:
     :param axs:
     :param i:
-    :param idx:
     :param vr:
-    :param x_s:
-    :param y_s:
+    :param x:
+    :param y:
     :param print_stats:
     :return:
     """
-    b, a = np.polyfit(x_s[idx], y_s[idx], deg=1)
+    b, a = np.polyfit(x, y, deg=1)
     xseq = np.linspace(extr[vr]['min'], extr[vr]['max'], num=1000)
-    axs[i].plot(xseq, a + b * xseq, color=var_dict[vr]['col'], lw=2.5, ls='--', alpha=0.5)
+    axs[i].plot(xseq, a + b * xseq, color=fit_color, lw=2.5, ls='--', alpha=0.5)
     axs[i].plot(
             [extr[vr]['min'], extr[vr]['max']], [extr[vr]['min'], extr[vr]['max']], color='black', lw=1.5, ls='-')
     if print_stats:
-        corcoef = ma.corrcoef(x_s[idx], y_s[idx])
-        N = len(y_s[idx])
-        rmse = np.sqrt(np.nanmean((y_s[idx] - x_s[idx]) ** 2))
-        mbe = np.nanmean(y_s[idx] - x_s[idx])
+        corcoef = ma.corrcoef(x, y)
+        N = len(y)
+        rmse = np.sqrt(np.nanmean((y - x) ** 2))
+        mbe = np.nanmean(y - x)
         axs[i].text(
                 0.50, 0.30, f'R={corcoef[0, 1]:.2f} N={N} \n y={b:+.2f}x{a:+.2f} \n MBE={mbe:.2f} RMSE={rmse:.2f}',
                 transform=axs[i].transAxes, fontsize=14, color='black', ha='left', va='center',
@@ -378,7 +378,7 @@ def plot_scatter_cum(vr, avar):
         for i, comp in enumerate(comps):
 
             axs[i].set_ylabel(var_dict[comp]['label_uom'])
-            x, y, vr_t_res = var_selection(vr, avar, comp)
+            y, vr_t_res = var_selection(vr, avar, comp)
 
             try:
                 print(f'plotting scatter VESPA-{var_dict[comp]['label']}')
@@ -404,18 +404,18 @@ def plot_scatter_cum(vr, avar):
                         axs[i].scatter(
                                 x_s[idx].values, y_s[idx].values, s=50, facecolor='none',
                                 color=seass[period_label]['col'], label=period_label)
-                        axs[i].set_xlabel(var_dict[comp]['label_uom'])
+                        axs[i].set_xlabel(var_dict[comp]['label'])
 
                     else:
                         axs[i].scatter(
                                 x_s[idx], y_s[idx], s=5, color=seass[period_label]['col'], edgecolors='none', alpha=0.5,
                                 label=period_label)
-                        axs[i].set_xlabel(var_dict['vr_t']['label_uom'])
+                        axs[i].set_xlabel(var_dict[comp]['label'])
 
                 if len(x_s[idx]) < 2 | len(y_s[idx]) < 2:
                     print('ERROR, ERROR, NO DATA ENOUGH FOR PROPER FIT (i.e. only 1 point available)')
                 else:
-                    calc_draw_fit(axs, i, idx, x_s, y_s, print_stats=False)
+                    calc_draw_fit(axs, i, vr, x_s[idx], y_s[idx], seass[period_label]['col'], print_stats=False)
 
                     axs[i].set_xlim(extr[vr]['min'], extr[vr]['max'])
                     axs[i].set_ylim(extr[vr]['min'], extr[vr]['max'])
@@ -424,7 +424,7 @@ def plot_scatter_cum(vr, avar):
             except:
                 print(f'error with {var_dict[comp]['label']}')
 
-    plt.savefig(os.path.join(basefol_out, tres, f'{tres}_scatter_cum_{vr}_only.png'))
+    plt.savefig(os.path.join(basefol_out, tres, f'{tres}_scatter_cum_{vr}.png'))
     plt.close('all')
 
 
@@ -438,7 +438,7 @@ def var_comp_x_selection(vr, avar):
         cmps = ['c', 'e', 't', 't1']
         x = vr_t2_res[vr]
         ref_x = 't2'
-    elif vr == 'iwv':
+    elif vr in ['iwv']:
         cmps = ['c', 'e', 't1', 't2']
         x = vr_t_res[vr]
         ref_x = 't'
@@ -450,6 +450,10 @@ def var_comp_x_selection(vr, avar):
         cmps = ['c', 'e']
         x = vr_t1_res[vr]
         ref_x = 't2'
+    elif vr in ['rh']:
+        cmps = ['c', 'e', 't']
+        x = vr_t1_res[vr]
+        ref_x = 't'
     else:
         cmps = ['c', 'e', 't1', 't2']
         x = vr_t_res[vr]

@@ -109,7 +109,7 @@ def read_temp():
         i_fmt = i.strftime('%Y_%m_%d')
         try:
             file = os.path.join(
-                    basefol_t, 'thaao_ecapac_aws_snow', 'AWS_ECAPAC', f'{fn}{i_fmt}_00_00.dat')
+                    basefol_t, 'thaao_ecapac_aws_snow', 'AWS_ECAPAC', i.strftime('%Y'), f'{fn}{i_fmt}_00_00.dat')
             t2_tmp = pd.read_csv(
                     file, skiprows=[0, 3], header=0, decimal='.', delimiter=',', engine='python',
                     index_col='TIMESTAMP').iloc[1:, :]
@@ -209,7 +209,7 @@ def read_rh():
         i_fmt = i.strftime('%Y_%m_%d')
         try:
             file = os.path.join(
-                    basefol_t, 'thaao_ecapac_aws_snow', 'AWS_ECAPAC', f'{fn}{i_fmt}_00_00.dat')
+                    basefol_t, 'thaao_ecapac_aws_snow', 'AWS_ECAPAC', i.strftime('%Y'), f'{fn}{i_fmt}_00_00.dat')
             t2_tmp = pd.read_csv(
                     file, skiprows=[0, 3], header=0, decimal='.', delimiter=',', engine='python',
                     index_col='TIMESTAMP').iloc[1:, :]
@@ -333,7 +333,7 @@ def read_surf_pres():
         i_fmt = i.strftime('%Y_%m_%d')
         try:
             file = os.path.join(
-                    basefol_t, 'thaao_ecapac_aws_snow', 'AWS_ECAPAC', f'{fn}{i_fmt}_00_00.dat')
+                    basefol_t, 'thaao_ecapac_aws_snow', 'AWS_ECAPAC', i.strftime('%Y'), f'{fn}{i_fmt}_00_00.dat')
             t2_tmp = pd.read_csv(
                     file, skiprows=[0, 3], header=0, decimal='.', delimiter=',', engine='python',
                     index_col='TIMESTAMP').iloc[1:, :]
@@ -721,7 +721,7 @@ def read_winds():
         i_fmt = i.strftime('%Y_%m_%d')
         try:
             file = os.path.join(
-                    basefol_t, 'thaao_ecapac_aws_snow', 'AWS_ECAPAC', f'{fn}{i_fmt}_00_00.dat')
+                    basefol_t, 'thaao_ecapac_aws_snow', 'AWS_ECAPAC', i.strftime('%Y'), f'{fn}{i_fmt}_00_00.dat')
             t2_tmp = pd.read_csv(
                     file, skiprows=[0, 3], header=0, decimal='.', delimiter=',', engine='python',
                     index_col='TIMESTAMP').iloc[1:, :]
@@ -800,7 +800,7 @@ def read_windd():
         i_fmt = i.strftime('%Y_%m_%d')
         try:
             file = os.path.join(
-                    basefol_t, 'thaao_ecapac_aws_snow', 'AWS_ECAPAC', f'{fn}{i_fmt}_00_00.dat')
+                    basefol_t, 'thaao_ecapac_aws_snow', 'AWS_ECAPAC', i.strftime('%Y'), f'{fn}{i_fmt}_00_00.dat')
             t2_tmp = pd.read_csv(
                     file, skiprows=[0, 3], header=0, decimal='.', delimiter=',', engine='python',
                     index_col='TIMESTAMP').iloc[1:, :]
@@ -982,7 +982,7 @@ def read_precip():
         i_fmt = i.strftime('%Y_%m_%d')
         try:
             file = os.path.join(
-                    basefol_t, 'thaao_ecapac_aws_snow', 'AWS_ECAPAC', f'{fn}{i_fmt}_00_00.dat')
+                    basefol_t, 'thaao_ecapac_aws_snow', 'AWS_ECAPAC', i.strftime('%Y'), f'{fn}{i_fmt}_00_00.dat')
             t2_tmp = pd.read_csv(
                     file, skiprows=[0, 3], header=0, decimal='.', delimiter=',', engine='python',
                     index_col='TIMESTAMP').iloc[1:, :]
