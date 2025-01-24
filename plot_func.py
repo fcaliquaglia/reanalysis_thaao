@@ -422,27 +422,11 @@ def plot_scatter_cum():
 
 
 def var_comp_x_selection():
-    if inpt.var_in_use == 'lwp':
-        cmps = ['c', 'e', 't', 't1']
-        x = vr_t1_res[inpt.var_in_use]
-    elif inpt.var_in_use in ['windd', 'winds']:
-        cmps = ['c', 'e', 't', 't1']
-        x = vr_t2_res[inpt.var_in_use]
-    elif inpt.var_in_use in ['iwv']:
-        cmps = ['c', 'e', 't1', 't2']
-        x = vr_t_res[inpt.var_in_use]
-
-    elif inpt.var_in_use in ['temp']:
-        cmps = ['c', 'e', 'l', 't2']
-        x = vr_t_res[inpt.var_in_use]
-    elif inpt.var_in_use in ['precip']:
-        cmps = ['c', 'e']
-        x = vr_t1_res[inpt.var_in_use]
     elif inpt.var_in_use in ['rh']:
-        cmps = ['c', 'e', 'l', 't2']
+        cmps =
         x = vr_t_res[inpt.var_in_use]
     else:
-        cmps = ['c', 'e', 't1', 't2']
+        cmps =
         x = vr_t_res[inpt.var_in_use]
 
     return cmps, x
