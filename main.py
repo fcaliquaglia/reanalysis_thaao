@@ -31,7 +31,7 @@ if __name__ == "__main__":
 
     for var in var_list:
         inpt.var_in_use = var
-        print(inpt.var_in_use)
+        print(var)
 
         # data reading
         read()

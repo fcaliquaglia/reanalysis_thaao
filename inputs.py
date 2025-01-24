@@ -43,8 +43,8 @@ thaao_t = 'thaao'
 
 ##
 tres = '3h'
-var_list = [
-    'temp']  # ['temp', 'rh'', 'alb', 'cbh', 'precip', 'windd', 'winds', 'surf_pres', 'sw_down', 'sw_up', 'lw_up',
+var_list = ['surf_pres', 'alb', 'sw_down', 'sw_up', 'lw_up']
+# 'lw_down',]  # ['temp', 'rh'', 'alb', 'cbh', 'precip', 'windd', 'winds', 'surf_pres', 'sw_down', 'sw_up', 'lw_up',
 # 'lw_down', 'lwp', 'tcc']
 var_in_use = ''
 
@@ -88,7 +88,7 @@ extr = {'alb'      : {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min'
                       'c'   : {'fn': f'{thaao_c}_albedo_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
                       'e'   : {'fn': f'{thaao_e}_forecast_albedo_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
                       'l'   : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
-                      't'   : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
+                      't'   : {'fn': 'MERGED_SW_LW_UP_DW_METEO_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
                       't1'  : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
                       't2'  : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()}},
         'cbh'      : {'name': 'cbh', 'ref_x': 't', 'min': 0, 'max': 10000, 'res_min': -500, 'res_max': 500,
@@ -182,7 +182,7 @@ extr = {'alb'      : {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min'
                       'e'   : {'fn'      : f'{thaao_e}_surface_pressure_', 'data': pd.DataFrame(),
                                'data_res': pd.DataFrame()},
                       'l'   : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
-                      't'   : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
+                      't'   : {'fn': 'Meteo_weekly_all', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
                       't1'  : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
                       't2'  : {'fn': 'AWS_THAAO_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()}},
         'sw_down'  : {'name': 'sw_down', 'ref_x': 't', 'min': 0, 'max': 500, 'res_min': -20, 'res_max': 20,

@@ -23,7 +23,7 @@ __lastupdate__ = ""
 
 import julian
 import xarray as xr
-from metpy.calc import dewpoint_from_relative_humidity, precipitable_water, relative_humidity_from_dewpoint, \
+from metpy.calc import relative_humidity_from_dewpoint, \
     wind_direction, wind_speed
 from metpy.units import units
 
@@ -98,6 +98,28 @@ def read_thaao_weather(drop_param):
     except FileNotFoundError:
         print(f'NOT FOUND: {extr[vr]['t']['fn']}.nc')
     extr[vr]['t']['data'].drop(columns=drop_param, inplace=True)
+    extr[vr]['t']['data'].columns = [vr]
+    return
+
+
+def read_thaao_alb(drop_param):
+    vr = inpt.var_in_use
+    for yy, year in enumerate(years):
+        try:
+            t_tmp = pd.read_table(
+                    os.path.join(basefol_t, 'thaao_rad', f'{extr[vr]['t']['fn']}{year}_5MIN.dat'), engine='python',
+                    skiprows=None, header=0, decimal='.', sep='\s+')
+            tmp = np.empty(t_tmp['JDAY_UT'].shape, dtype=dt.datetime)
+            for ii, el in enumerate(t_tmp['JDAY_UT']):
+                new_jd_ass = el + julian.to_jd(dt.datetime(year - 1, 12, 31, 0, 0), fmt='jd')
+                tmp[ii] = julian.from_jd(new_jd_ass, fmt='jd')
+                tmp[ii] = tmp[ii].replace(microsecond=0)
+            t_tmp.index = pd.DatetimeIndex(tmp)
+            t_tmp.drop(drop_param, axis=1, inplace=True)
+            extr[vr]['t']['data'] = pd.concat([extr[vr]['t']['data'], t_tmp], axis=0)
+            print(f'OK: {extr[vr]['t']['fn']}{year}.txt')
+        except FileNotFoundError:
+            print(f'NOT FOUND: {extr[vr]['t']['fn']}{year}.txt')
     extr[vr]['t']['data'].columns = [vr]
     return
 
@@ -212,26 +234,26 @@ def read_msl_pres():
 
 
 def read_surf_pres():
-    # cleanup
+    vr = inpt.var_in_use
     read_carra()
-    extr[inpt.var_in_use]['c']['data'][2] = extr[inpt.var_in_use]['c']['data'].values / 100.
-    extr[inpt.var_in_use]['c']['data'][extr[inpt.var_in_use]['c']['data'] <= 900] = np.nan
+    extr[vr]['c']['data'] = extr[vr]['c']['data'] / 100.
+    extr[vr]['c']['data'][extr[vr]['c']['data'] <= 900] = np.nan
 
     read_era5()
-    extr[inpt.var_in_use]['e']['data'][2] = extr[inpt.var_in_use]['e']['data'].values / 100.
-    extr[inpt.var_in_use]['e']['data'][extr[inpt.var_in_use]['e']['data'] <= 900] = np.nan
+    extr[vr]['e']['data'] = extr[vr]['e']['data'].values / 100.
+    extr[vr]['e']['data'][extr[vr]['e']['data'] <= 900] = np.nan
 
-    read_thaao_weather(inpt.var_in_use, drop_param=['Air_K', 'RH_%'])
-    extr[inpt.var_in_use]['t']['data'][extr[inpt.var_in_use]['e']['data'] <= 900] = np.nan
-    extr[inpt.var_in_use]['t']['data'].loc['2021-10-11 00:00:00':'2021-10-19 00:00:00'] = np.nan
-    extr[inpt.var_in_use]['t']['data'].loc['2024-4-26 00:00:00':'2024-5-4 00:00:00'] = np.nan
+    read_thaao_weather(drop_param=['Air_K', 'RH_%'])
+    extr[vr]['t']['data'][extr[vr]['t']['data'] <= 900] = np.nan
+    extr[vr]['t']['data'].loc['2021-10-11 00:00:00':'2021-10-19 00:00:00'] = np.nan
+    extr[vr]['t']['data'].loc['2024-4-26 00:00:00':'2024-5-4 00:00:00'] = np.nan
 
     read_aws_ecapac(param='BP_mbar')
 
 
 def read_rh():
     # TODO: variable cleanup
-    vr=inpt.var_in_use
+    vr = inpt.var_in_use
     # e.g. l_td[l_td_tmp == -32767.0] = np.nan
 
     read_thaao_weather(drop_param=['BP_hPa', 'Air_K'])
@@ -254,7 +276,7 @@ def read_rh():
 
 def calc_rh_from_tdp():
     # TODO not working
-    vr=inpt.var_in_use
+    vr = inpt.var_in_use
     e = pd.concat([extr[vr]['t']['data'], e_t], axis=1)
 
     e['rh'] = relative_humidity_from_dewpoint(e['e_t'].values * units.K, e['e_td'].values * units.K).to('percent')
@@ -265,14 +287,18 @@ def calc_rh_from_tdp():
 
 
 def read_alb():
-    vr=inpt.var_in_use
+    vr = inpt.var_in_use
     read_carra()
-
-    extr[vr]['c']['data'][2] = extr[vr]['c']['data'].values / 100.
+    extr[vr]['c']['data'] = extr[vr]['c']['data'].values / 100.
     extr[vr]['c']['data'][extr[vr]['c']['data'] <= 0.1] = np.nan
 
     read_era5()
     extr[vr]['c']['data'][extr[vr]['c']['data'] <= 0.1] = np.nan
+
+    read_thaao_alb(
+            drop_param=['JDAY_UT', 'JDAY_LOC', 'SZA', 'SW_DOWN', 'SW_UP', 'PAR_DOWN', 'PAR_UP', 'LW_DOWN', 'LW_UP',
+                        'TBP',
+                        'ALBEDO_LW', 'ALBEDO_PAR', 'P', 'T', 'RH', 'PE', 'RR2'])
 
     # # ERA5
     # fn = 'thaao_era5_snow_albedo_'
@@ -291,49 +317,28 @@ def read_alb():
     # t2.columns = [inpt.var_in_use]
     # t2[t2 <= 0.1] = np.nan
 
-    # THAAO
-    # TODO: sostituire con questo blocco che prende direttamente dal file MERGED_SW_LW_UP_DW_METEO_YYYY.dat
-
-    # fn = 'MERGED_SW_LW_UP_DW_METEO_'
+    # # THAAO
+    # # TODO: sostituire con questo blocco che prende direttamente dal file MERGED_SW_LW_UP_DW_METEO_YYYY.dat
+    #
+    #
     # for yy, year in enumerate(years):
     #     try:
     #         t_tmp = pd.read_table(
-    #                 os.path.join(basefol_t, 'thaao_rad', f'{fn}{year}_5MIN.dat'), engine='python',
-    #                 skiprows=None, header=0, decimal='.', sep='\s+')
+    #                 os.path.join(basefol_t, 'thaao_rad', f'{fn}{year}_5MIN.DAT'), engine='python', skiprows=None,
+    #                 header=0, decimal='.', sep='\s+')
     #         tmp = np.empty(t_tmp['JDAY_UT'].shape, dtype=dt.datetime)
     #         for ii, el in enumerate(t_tmp['JDAY_UT']):
     #             new_jd_ass = el + julian.to_jd(dt.datetime(year - 1, 12, 31, 0, 0), fmt='jd')
     #             tmp[ii] = julian.from_jd(new_jd_ass, fmt='jd')
     #             tmp[ii] = tmp[ii].replace(microsecond=0)
     #         t_tmp.index = pd.DatetimeIndex(tmp)
-    #         t_tmp.drop(
-    #                 ['JDAY_UT', 'JDAY_LOC', 'SZA', 'SW_DOWN', 'SW_UP','PAR_DOWN', 'PAR_UP', 'LW_DOWN', 'LW_UP', 'TBP',
-    #                  'ALBEDO_LW', 'ALBEDO_PAR', 'P', 'T', 'RH', 'PE', 'RR2'], axis=1, inplace=True)
+    #         t_tmp.drop(['JDAY_UT', 'JDAY_LOC', 'SZA', 'SW_DOWN', 'SW_UP'], axis=1, inplace=True)
     #         t = pd.concat([t, t_tmp], axis=0)
     #         print(f'OK: {fn}{year}.txt')
     #     except FileNotFoundError:
     #         print(f'NOT FOUND: {fn}{year}.txt')
     # t.columns = [inpt.var_in_use]
-
-    fn = 'ALBEDO_SW_'
-    for yy, year in enumerate(years):
-        try:
-            t_tmp = pd.read_table(
-                    os.path.join(basefol_t, 'thaao_rad', f'{fn}{year}_5MIN.DAT'), engine='python', skiprows=None,
-                    header=0, decimal='.', sep='\s+')
-            tmp = np.empty(t_tmp['JDAY_UT'].shape, dtype=dt.datetime)
-            for ii, el in enumerate(t_tmp['JDAY_UT']):
-                new_jd_ass = el + julian.to_jd(dt.datetime(year - 1, 12, 31, 0, 0), fmt='jd')
-                tmp[ii] = julian.from_jd(new_jd_ass, fmt='jd')
-                tmp[ii] = tmp[ii].replace(microsecond=0)
-            t_tmp.index = pd.DatetimeIndex(tmp)
-            t_tmp.drop(['JDAY_UT', 'JDAY_LOC', 'SZA', 'SW_DOWN', 'SW_UP'], axis=1, inplace=True)
-            t = pd.concat([t, t_tmp], axis=0)
-            print(f'OK: {fn}{year}.txt')
-        except FileNotFoundError:
-            print(f'NOT FOUND: {fn}{year}.txt')
-    t.columns = [inpt.var_in_use]
-    t[t <= 0.1] = np.nan
+    # t[t <= 0.1] = np.nan
 
     return
 
@@ -875,33 +880,33 @@ def read():
 
     :return:
     """
-    if inpt.var_in_use == 'temp':
-        return read_temp()
-    if inpt.var_in_use == 'rh':
-        return read_rh()
-    if inpt.var_in_use == 'surf_pres':
-        return read_surf_pres()
+    if inpt.var_in_use == 'alb':
+        return read_alb()
+    if inpt.var_in_use == 'cbh':
+        return read_cbh()
     if inpt.var_in_use == 'msl_pres':
         return read_msl_pres()
     if inpt.var_in_use == 'lwp':
         return read_lwp()
-    if inpt.var_in_use == 'winds':
-        return read_winds()
-    if inpt.var_in_use == 'windd':
-        return read_windd()
-    if inpt.var_in_use == 'alb':
-        return read_alb()
-    if inpt.var_in_use == 'precip':
-        return read_precip()
-    if inpt.var_in_use == 'cbh':
-        return read_cbh()
-    if inpt.var_in_use == 'tcc':
-        return read_tcc()
     if inpt.var_in_use == 'lw_down':
         return read_lw_down()
     if inpt.var_in_use == 'lw_up':
         return read_lw_up()
+    if inpt.var_in_use == 'precip':
+        return read_precip()
+    if inpt.var_in_use == 'rh':
+        return read_rh()
+    if inpt.var_in_use == 'surf_pres':
+        return read_surf_pres()
     if inpt.var_in_use == 'sw_down':
         return read_sw_down()
     if inpt.var_in_use == 'sw_up':
         return read_sw_up()
+    if inpt.var_in_use == 'tcc':
+        return read_tcc()
+    if inpt.var_in_use == 'temp':
+        return read_temp()
+    if inpt.var_in_use == 'winds':
+        return read_winds()
+    if inpt.var_in_use == 'windd':
+        return read_windd()
