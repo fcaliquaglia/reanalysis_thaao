@@ -43,7 +43,7 @@ thaao_t = 'thaao'
 
 ##
 tres = '3h'
-list_var = ['surf_pres', 'alb', 'sw_down', 'sw_up', 'lw_up']
+list_var = ['alb', 'temp', 'surf_pres', 'alb', 'sw_down', 'sw_up', 'lw_down', 'lw_up']
 # 'lw_down',]  # ['temp', 'rh'', 'alb', 'cbh', 'precip', 'windd', 'winds', 'surf_pres', 'sw_down', 'sw_up', 'lw_up',
 # 'lw_down', 'lwp', 'tcc']
 var = ''
@@ -133,9 +133,9 @@ extr = {'alb'      : {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min'
                       't2'  : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()}},
         'lw_down'  : {'name': 'lw_down', 'ref_x': 't', 'min': 0, 'max': 500, 'res_min': -20, 'res_max': 20,
                       'uom' : '[W/m2]', 'comps': ['c', 'e'],
-                      'c'   : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
-                      'e'   : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
-                      'l'   : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
+                      'c'   : {'fn': 'thaao_carra_thermal_surface_radiation_downwards_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
+                      'e'   : {'fn': 'thaao_era5_surface_thermal_radiation_downwards_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
+                      'l'   : {'fn': 'MERGED_SW_LW_UP_DW_METEO_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
                       't'   : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
                       't1'  : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
                       't2'  : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()}},
@@ -144,7 +144,7 @@ extr = {'alb'      : {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min'
                       'c'   : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
                       'e'   : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
                       'l'   : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
-                      't'   : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
+                      't'   : {'fn': 'MERGED_SW_LW_UP_DW_METEO_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
                       't1'  : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
                       't2'  : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()}},
 
@@ -175,8 +175,8 @@ extr = {'alb'      : {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min'
                       't'    : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
                       't1'   : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
                       't2'   : {'fn': 'AWS_THAAO_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()}},
-        'surf_pres': {'name': 'surf_pres', 'ref_x': '', 'min': 925, 'max': 1013, 'res_min': -10, 'res_max': 10,
-                      'uom' : '[hPa]', 'comps': ['c', 'e', 't1', 't2'],
+        'surf_pres': {'name': 'surf_pres', 'ref_x': 't', 'min': 925, 'max': 1013, 'res_min': -10, 'res_max': 10,
+                      'uom' : '[hPa]', 'comps': ['c', 'e', 't2'],
                       'c'   : {'fn'      : f'{thaao_c}_surface_pressure_', 'data': pd.DataFrame(),
                                'data_res': pd.DataFrame()},
                       'e'   : {'fn'      : f'{thaao_e}_surface_pressure_', 'data': pd.DataFrame(),
@@ -187,10 +187,10 @@ extr = {'alb'      : {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min'
                       't2'  : {'fn': 'AWS_THAAO_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()}},
         'sw_down'  : {'name': 'sw_down', 'ref_x': 't', 'min': 0, 'max': 500, 'res_min': -20, 'res_max': 20,
                       'uom' : '[W/m2]', 'comps': ['c', 'e'],
-                      'c'   : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
-                      'e'   : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
+                      'c'   : {'fn': 'thaao_carra_surface_solar_radiation_downwards_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
+                      'e'   : {'fn': 'thaao_era5_surface_solar_radiation_downwards_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
                       'l'   : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
-                      't'   : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
+                      't'   : {'fn': 'MERGED_SW_LW_UP_DW_METEO_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
                       't1'  : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
                       't2'  : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()}},
         'sw_up'    : {'name': 'sw_up', 'ref_x': 't', 'min': 0, 'max': 500, 'res_min': -20, 'res_max': 20,
@@ -198,7 +198,7 @@ extr = {'alb'      : {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min'
                       'c'   : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
                       'e'   : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
                       'l'   : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
-                      't'   : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
+                      't'   : {'fn': 'MERGED_SW_LW_UP_DW_METEO_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
                       't1'  : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
                       't2'  : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()}},
         'tcc'      : {'name': 'tcc', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min': -50, 'res_max': 50,
