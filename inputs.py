@@ -46,9 +46,9 @@ tres = '3h'
 var_list = ['surf_pres', 'alb', 'sw_down', 'sw_up', 'lw_up']
 # 'lw_down',]  # ['temp', 'rh'', 'alb', 'cbh', 'precip', 'windd', 'winds', 'surf_pres', 'sw_down', 'sw_up', 'lw_up',
 # 'lw_down', 'lwp', 'tcc']
-var_in_use = ''
+var = ''
 
-years = np.arange(2020, 2025, 1)
+years = np.arange(2023, 2025, 1)
 
 bin_nr = 200
 

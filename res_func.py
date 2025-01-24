@@ -22,15 +22,11 @@ __status__ = "Research"
 __lastupdate__ = ""
 
 import inputs as inpt
-from inputs import *
-
 
 def data_resampling():
-    vr = inpt.var_in_use
-
-    for vvrr in list(var_dict.keys()):
+    for vvrr in list(inpt.var_dict.keys()):
         try:
-            extr[vr][vvrr]['data_res'] = extr[vr][vvrr]['data'].resample(tres).mean()
+            inpt.extr[inpt.var][vvrr]['data_res'] = inpt.extr[inpt.var][vvrr]['data'].resample(inpt.tres).mean()
         except (TypeError, NameError):
             pass
 

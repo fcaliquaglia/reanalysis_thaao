@@ -21,13 +21,16 @@ __email__ = "filippo.caliquaglia@ingv.it"
 __status__ = "Research"
 __lastupdate__ = ""
 
+import datetime as dt
+import os
 import string
 
 import matplotlib.pyplot as plt
+import numpy as np
 import numpy.ma as ma
+import pandas as pd
 
 import inputs as inpt
-from inputs import *
 
 letters = list(string.ascii_lowercase)
 
@@ -39,48 +42,47 @@ def plot_ts(period_label):
     :return:
     """
     print('TIMESERIES')
-    fig, ax = plt.subplots(len(years), 1, figsize=(12, 17), dpi=300)
-    fig.suptitle(f'{inpt.var_in_use.upper()} all {tres}', fontweight='bold')
+    fig, ax = plt.subplots(len(inpt.years), 1, figsize=(12, 17), dpi=300)
+    fig.suptitle(f'{inpt.var.upper()} all {inpt.tres}', fontweight='bold')
     kwargs_ori = {'alpha': 0.02, 'lw': 0, 'marker': '.', 'ms': 1}
     kwargs = {'lw': 0, 'marker': '.', 'ms': 2}
 
-    vr = inpt.var_in_use
-
-    for (yy, year) in enumerate(years):
+    for (yy, year) in enumerate(inpt.years):
         print(f'plotting {year}')
 
         # original resolution
-        for varvar in var_names:
+        for varvar in inpt.var_names:
             try:
-                data = extr[vr][varvar]['data'][extr[vr][varvar]['data'].index.year == year]
-                ax[yy].plot(data, color=var_dict[varvar]['col_ori'], **kwargs_ori)
+                data = inpt.extr[inpt.var][varvar]['data'][inpt.extr[inpt.var][varvar]['data'].index.year == year]
+                ax[yy].plot(data, color=inpt.var_dict[varvar]['col_ori'], **kwargs_ori)
             except AttributeError:
                 pass
 
         # resampled resolution
-        for varvar in var_names:
+        for varvar in inpt.var_names:
             try:
-                data = extr[vr][varvar]['data_res'][extr[vr][varvar]['data_res'].index.year == year]
-                ax[yy].plot(data, color=var_dict[varvar]['col'], label=var_dict[varvar]['label'], **kwargs)
+                data = inpt.extr[inpt.var][varvar]['data_res'][
+                    inpt.extr[inpt.var][varvar]['data_res'].index.year == year]
+                ax[yy].plot(data, color=inpt.var_dict[varvar]['col'], label=inpt.var_dict[varvar]['label'], **kwargs)
             except AttributeError:
                 pass
 
-        if vr == 'alb':
-            range1 = pd.date_range(dt.datetime(year, 1, 1), dt.datetime(year, 2, 15), freq=tres)
-            range2 = pd.date_range(dt.datetime(year, 11, 1), dt.datetime(year, 12, 31), freq=tres)
+        if inpt.var == 'alb':
+            range1 = pd.date_range(dt.datetime(year, 1, 1), dt.datetime(year, 2, 15), freq=inpt.tres)
+            range2 = pd.date_range(dt.datetime(year, 11, 1), dt.datetime(year, 12, 31), freq=inpt.tres)
             ax[yy].vlines(range1.values, 0, 1, color='grey', alpha=0.3)
             ax[yy].vlines(range2.values, 0, 1, color='grey', alpha=0.3)
-            ax[yy].set_ylim(extr[vr]['min'], extr[vr]['max'])
+            ax[yy].set_ylim(inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'])
         else:
             pass
-        ax[yy].set_ylim(extr[vr]['min'], extr[vr]['max'])
+        ax[yy].set_ylim(inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'])
         ax[yy].text(0.45, 0.85, year, transform=ax[yy].transAxes)
-        ax[yy].xaxis.set_major_formatter(myFmt)
+        ax[yy].xaxis.set_major_formatter(inpt.myFmt)
         ax[yy].set_xlim(dt.datetime(year, 1, 1), dt.datetime(year, 12, 31))
         ax[yy].text(0.01, 0.90, letters[yy] + ')', transform=ax[yy].transAxes)
     plt.xlabel('Time')
     plt.legend(ncol=2)
-    plt.savefig(os.path.join(basefol_out, tres, f'{tres}_{period_label}_{vr}.png'))
+    plt.savefig(os.path.join(inpt.basefol_out, inpt.tres, f'{inpt.tres}_{period_label}_{inpt.var}.png'))
     plt.close('all')
 
 
@@ -91,46 +93,47 @@ def plot_residuals(period_label):
     :return:
     """
     print('RESIDUALS')
-    vr = inpt.var_in_use
-    fig, ax = plt.subplots(len(years), 1, figsize=(12, 17), dpi=300)
-    fig.suptitle(f'residuals {vr.upper()} all {tres}', fontweight='bold')
+
+    fig, ax = plt.subplots(len(inpt.years), 1, figsize=(12, 17), dpi=300)
+    fig.suptitle(f'residuals {inpt.var.upper()} all {inpt.tres}', fontweight='bold')
     kwargs = {'lw': 1, 'marker': '.', 'ms': 0}
 
-    for [yy, year] in enumerate(years):
+    for [yy, year] in enumerate(inpt.years):
         print(f'plotting {year}')
 
         daterange = pd.date_range(dt.datetime(year, 1, 1), dt.datetime(year, 12, 31))
         ax[yy].plot(daterange, np.repeat(0, len(daterange)), color='black', lw=2, ls='--')
 
-        vr_ref = extr[vr][extr[vr]['ref_x']]['data_res']
+        vr_ref = inpt.extr[inpt.var][inpt.extr[inpt.var]['ref_x']]['data_res']
         # resampled resolution
-        for varvar in var_names:
+        for varvar in inpt.var_names:
             try:
-                data = extr[vr][varvar]['data_res'][extr[vr][varvar]['data_res'].index.year == year]
+                data = inpt.extr[inpt.var][varvar]['data_res'][
+                    inpt.extr[inpt.var][varvar]['data_res'].index.year == year]
                 ax[yy].plot(
-                        data - vr_ref[vr_ref.index.year == year], color=var_dict[varvar]['col'],
-                        label=var_dict[varvar]['label'], **kwargs)
+                        data - vr_ref[vr_ref.index.year == year], color=inpt.var_dict[varvar]['col'],
+                        label=inpt.var_dict[varvar]['label'], **kwargs)
             except AttributeError:
                 pass
 
-        if vr == 'alb':
-            range1 = pd.date_range(dt.datetime(year, 1, 1), dt.datetime(year, 2, 15), freq=tres)
-            range2 = pd.date_range(dt.datetime(year, 11, 1), dt.datetime(year, 12, 31), freq=tres)
+        if inpt.var == 'alb':
+            range1 = pd.date_range(dt.datetime(year, 1, 1), dt.datetime(year, 2, 15), freq=inpt.tres)
+            range2 = pd.date_range(dt.datetime(year, 11, 1), dt.datetime(year, 12, 31), freq=inpt.tres)
             ax[yy].vlines(range1.values, -0.5, 0.5, color='grey', alpha=0.3)
             ax[yy].vlines(range2.values, -0.5, 0.5, color='grey', alpha=0.3)
         else:
             pass
 
-        ax[yy].set_ylim(extr[vr]['res_min'], extr[vr]['res_max'])
+        ax[yy].set_ylim(inpt.extr[inpt.var]['res_min'], inpt.extr[inpt.var]['res_max'])
         ax[yy].text(0.45, 0.85, year, transform=ax[yy].transAxes)
-        ax[yy].xaxis.set_major_formatter(myFmt)
+        ax[yy].xaxis.set_major_formatter(inpt.myFmt)
         ax[yy].set_xlim(dt.datetime(year, 1, 1), dt.datetime(year, 12, 31))
         # panel letters
         ax[yy].text(0.01, 0.90, letters[yy] + ')', transform=ax[yy].transAxes)
     plt.xlabel('Time')
     plt.legend()
     plt.tight_layout()
-    plt.savefig(os.path.join(basefol_out, tres, f'{tres}_{period_label}_residuals_{vr}.png'))
+    plt.savefig(os.path.join(inpt.basefol_out, inpt.tres, f'{inpt.tres}_{period_label}_residuals_{inpt.var}.png'))
     plt.close('all')
 
 
@@ -141,43 +144,44 @@ def plot_scatter(period_label):
     :return:
     """
     print('SCATTERPLOTS')
-    vr = inpt.var_in_use
-    seas_name = seass[period_label]['name']
+
+    seas_name = inpt.seass[period_label]['name']
     fig, ax = plt.subplots(2, 2, figsize=(12, 12), dpi=300)
     axs = ax.ravel()
 
-    x = extr[vr][extr[vr]['ref_x']]['data_res']
-    for i, comp in enumerate(extr[vr]['comps']):
+    x = inpt.extr[inpt.var][inpt.extr[inpt.var]['ref_x']]['data_res']
+    for i, comp in enumerate(inpt.extr[inpt.var]['comps']):
 
-        y = extr[vr][comp]['data_res']
-        axs[i].set_ylabel(var_dict[comp]['label'])
-        # axs[i].set_xlabel(var_dict[refx]['label'])
+        y = inpt.extr[inpt.var][comp]['data_res']
+        axs[i].set_ylabel(inpt.var_dict[comp]['label'])
+        # axs[i].set_xlabel(inpt.var_dict[refx]['label'])
 
         try:
-            print(f'plotting scatter THAAO-{var_dict[comp]['label']}')
+            print(f'plotting scatter THAAO-{inpt.var_dict[comp]['label']}')
 
-            fig.suptitle(f'{vr.upper()} {seas_name} {tres}', fontweight='bold')
-            axs[i].set_title(var_dict[comp]['label'])
+            fig.suptitle(f'{inpt.var.upper()} {seas_name} {inpt.tres}', fontweight='bold')
+            axs[i].set_title(inpt.var_dict[comp]['label'])
 
-            time_list = pd.date_range(start=dt.datetime(years[0], 1, 1), end=dt.datetime(years[-1], 12, 31), freq=tres)
+            time_list = pd.date_range(
+                start=dt.datetime(inpt.years[0], 1, 1), end=dt.datetime(inpt.years[-1], 12, 31), freq=inpt.tres)
             if x.empty | y.empty:
                 continue
             x_all = x.reindex(time_list).fillna(np.nan)
-            x_s = x_all.loc[(x_all.index.month.isin(seass[period_label]['months']))]
+            x_s = x_all.loc[(x_all.index.month.isin(inpt.seass[period_label]['months']))]
             y_all = y.reindex(time_list).fillna(np.nan)
-            y_s = y_all.loc[(y_all.index.month.isin(seass[period_label]['months']))]
+            y_s = y_all.loc[(y_all.index.month.isin(inpt.seass[period_label]['months']))]
             idx = ~((np.isnan(x_s)) | (np.isnan(y_s)))
 
             if seas_name != 'all':
-                axs[i].scatter(x_s[idx], y_s[idx], color=seass[period_label]['col'])
-            elif tres == '1ME':
+                axs[i].scatter(x_s[idx], y_s[idx], color=inpt.seass[period_label]['col'])
+            elif inpt.tres == '1ME':
                 axs[i].scatter(
-                        x_s[idx], y_s[idx], color=seass[period_label]['col' + '_' + var_dict[comp]['label']])
+                        x_s[idx], y_s[idx], color=inpt.seass[period_label]['col' + '_' +inpt.var_dict[comp]['label']])
             else:
-                bin_size = extr[vr]['max'] / bin_nr
-                h = axs[i].hist2d(x_s[idx], y_s[idx], bins=bin_nr, cmap=plt.cm.jet, cmin=1, vmin=1)
+                bin_size = inpt.extr[inpt.var]['max'] / inpt.bin_nr
+                h = axs[i].hist2d(x_s[idx], y_s[idx], bins=inpt.bin_nr, cmap=plt.cm.jet, cmin=1, vmin=1)
                 axs[i].text(
-                        0.10, 0.80, f'bin_size={bin_size} {extr[vr]['uom']}',
+                        0.10, 0.80, f'bin_size={bin_size} {inpt.extr[inpt.var]['uom']}',
                         transform=axs[i].transAxes)
 
             if len(x_s[idx]) < 2 | len(y_s[idx]) < 2:
@@ -185,13 +189,13 @@ def plot_scatter(period_label):
             else:
                 calc_draw_fit(axs, i, x_s[idx], y_s[idx], period_label)
 
-            axs[i].set_xlim(extr[vr]['min'], extr[vr]['max'])
-            axs[i].set_ylim(extr[vr]['min'], extr[vr]['max'])
+            axs[i].set_xlim(inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'])
+            axs[i].set_ylim(inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'])
             axs[i].text(0.05, 0.95, letters[i] + ')', transform=axs[i].transAxes)
         except:
-            print(f'error with {var_dict[comp]['label']}')
+            print(f'error with {inpt.var_dict[comp]['label']}')
 
-    plt.savefig(os.path.join(basefol_out, tres, f'{tres}_scatter_{seas_name}_{vr}.png'))
+    plt.savefig(os.path.join(inpt.basefol_out, inpt.tres, f'{inpt.tres}_scatter_{seas_name}_{inpt.var}.png'))
     plt.close('all')
 
 
@@ -202,53 +206,54 @@ def plot_scatter_cum():
     """
     import copy as cp
     fig, ax = plt.subplots(2, 2, figsize=(12, 12), dpi=300)
-    seass_new = cp.copy(seass)
+    seass_new = cp.copy(inpt.seass)
     seass_new.pop('all')
 
     for period_label in seass_new:
         print('SCATTERPLOTS CUMULATIVE')
-        vr = inpt.var_in_use
-        seas_name = seass[period_label]['name']
+
+        seas_name = inpt.seass[period_label]['name']
         axs = ax.ravel()
 
-        x = extr[vr][extr[vr]['ref_x']]['data_res']
-        for i, comp in enumerate(extr[vr]['comps']):
-            y = extr[vr][comp]['data_res']
+        x = inpt.extr[inpt.var][inpt.extr[inpt.var]['ref_x']]['data_res']
+        for i, comp in enumerate(inpt.extr[inpt.var]['comps']):
+            y = inpt.extr[inpt.var][comp]['data_res']
 
             try:
-                print(f'plotting scatter VESPA-{var_dict[comp]['label']}')
+                print(f'plotting scatter VESPA-{inpt.var_dict[comp]['label']}')
 
-                fig.suptitle(f'{vr.upper()} cumulative plot', fontweight='bold')
-                axs[i].set_title(var_dict[comp]['label'])
+                fig.suptitle(f'{inpt.var.upper()} cumulative plot', fontweight='bold')
+                axs[i].set_title(inpt.var_dict[comp]['label'])
 
                 time_list = pd.date_range(
-                        start=dt.datetime(years[0], 1, 1), end=dt.datetime(years[-1], 12, 31), freq=tres)
+                        start=dt.datetime(inpt.years[0], 1, 1), end=dt.datetime(inpt.years[-1], 12, 31), freq=inpt.tres)
 
                 x_all = x.reindex(time_list).fillna(np.nan)
-                x_s = x_all.loc[(x_all.index.month.isin(seass[period_label]['months']))]
+                x_s = x_all.loc[(x_all.index.month.isin(inpt.seass[period_label]['months']))]
                 y_all = y.reindex(time_list).fillna(np.nan)
-                y_s = y_all.loc[(y_all.index.month.isin(seass[period_label]['months']))]
+                y_s = y_all.loc[(y_all.index.month.isin(inpt.seass[period_label]['months']))]
                 idx = ~(np.isnan(x_s) | np.isnan(y_s))
 
                 if seas_name != 'all':
                     axs[i].scatter(
-                            x_s[idx], y_s[idx], s=5, color=seass[period_label]['col'], edgecolors='none', alpha=0.5,
+                            x_s[idx], y_s[idx], s=5, color=inpt.seass[period_label]['col'], edgecolors='none',
+                            alpha=0.5,
                             label=period_label)
-                    axs[i].set_xlabel(var_dict[comp]['label'])
+                    axs[i].set_xlabel(inpt.var_dict[comp]['label'])
 
                 if len(x_s[idx]) < 2 | len(y_s[idx]) < 2:
                     print('ERROR, ERROR, NO DATA ENOUGH FOR PROPER FIT (i.e. only 1 point available)')
                 else:
                     calc_draw_fit(axs, i, x_s[idx], y_s[idx], period_label, print_stats=False)
 
-                    axs[i].set_xlim(extr[vr]['min'], extr[vr]['max'])
-                    axs[i].set_ylim(extr[vr]['min'], extr[vr]['max'])
+                    axs[i].set_xlim(inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'])
+                    axs[i].set_ylim(inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'])
                     axs[i].text(0.05, 0.95, letters[i] + ')', transform=axs[i].transAxes)
                     axs[i].legend()
             except:
-                print(f'error with {var_dict[comp]['label']}')
+                print(f'error with {inpt.var_dict[comp]['label']}')
 
-    plt.savefig(os.path.join(basefol_out, tres, f'{tres}_scatter_cum_{vr}.png'))
+    plt.savefig(os.path.join(inpt.basefol_out, inpt.tres, f'{inpt.tres}_scatter_cum_{inpt.var}.png'))
     plt.close('all')
 
 
@@ -263,13 +268,13 @@ def calc_draw_fit(axs, i, x, y, per_lab, print_stats=True):
     :param print_stats:
     :return:
     """
-    vr = inpt.var_in_use
+
     b, a = np.polyfit(x.values.flatten(), y.values.flatten(), deg=1)
-    xseq = np.linspace(extr[vr]['min'], extr[vr]['max'], num=1000)
-    axs[i].plot(xseq, a + b * xseq, color=seass[per_lab]['col'], lw=2.5, ls='--', alpha=0.5)
+    xseq = np.linspace(inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'], num=1000)
+    axs[i].plot(xseq, a + b * xseq, color=inpt.seass[per_lab]['col'], lw=2.5, ls='--', alpha=0.5)
     axs[i].plot(
-            [extr[vr]['min'], extr[vr]['max']],
-            [extr[vr]['min'], extr[vr]['max']], color='black', lw=1.5, ls='-')
+            [inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max']],
+            [inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max']], color='black', lw=1.5, ls='-')
     if print_stats:
         corcoef = ma.corrcoef(x, y)
         N = len(y)
@@ -296,19 +301,19 @@ def calc_draw_fit(axs, i, x, y, per_lab, print_stats=True):
 #     # define which is the reference measurement for each variable
 #     if vr == 'lwp':
 #         comps = ['c', 'e', 't', 't1']
-#         x = vr_t1_res[vr]
+#         x = vr_t1_res[inpt.var]
 #         xlabel = 'HATPRO'
 #     elif vr in ['windd', 'winds', 'precip']:
 #         comps = ['c', 'e', 't', 't1']
-#         x = vr_t2_res[vr]
+#         x = vr_t2_res[inpt.var]
 #         xlabel = 'AWS_ECAPAC'
 #     elif vr == 'temp':
 #         comps = ['c', 'e', 'l', 't2']
-#         x = vr_t_res[vr]
+#         x = vr_t_res[inpt.var]
 #         xlabel = 'THAAO'
 #     else:
 #         comps = ['c', 'e', 't1', 't2']
-#         x = vr_t_res[vr]
+#         x = vr_t_res[inpt.var]
 #         xlabel = 'THAAO'
 #
 #     for i, comp in enumerate(comps):
@@ -317,7 +322,7 @@ def calc_draw_fit(axs, i, x, y, per_lab, print_stats=True):
 #             label = 'CARRA'
 #             axs[i].set_ylabel(label)
 #             try:
-#                 y = vr_c_res[vr]
+#                 y = vr_c_res[inpt.var]
 #             except KeyError:
 #                 print(f'error with {label}')
 #                 continue
@@ -325,7 +330,7 @@ def calc_draw_fit(axs, i, x, y, per_lab, print_stats=True):
 #             label = 'ERA5'
 #             axs[i].set_ylabel(label)
 #             try:
-#                 y = vr_e_res[vr]
+#                 y = vr_e_res[inpt.var]
 #             except KeyError:
 #                 print(f'error with {label}')
 #                 continue
@@ -333,7 +338,7 @@ def calc_draw_fit(axs, i, x, y, per_lab, print_stats=True):
 #             label = 'ERA5-L'
 #             axs[i].set_ylabel(label)
 #             try:
-#                 y = vr_l_res[vr]
+#                 y = vr_l_res[inpt.var]
 #             except KeyError:
 #                 print(f'error with {label}')
 #                 continue
@@ -341,7 +346,7 @@ def calc_draw_fit(axs, i, x, y, per_lab, print_stats=True):
 #             label = 'THAAO'
 #             axs[i].set_ylabel(label)
 #             try:
-#                 y = vr_t_res[vr]
+#                 y = vr_t_res[inpt.var]
 #             except KeyError:
 #                 print(f'error with {label}')
 #                 continue
@@ -349,7 +354,7 @@ def calc_draw_fit(axs, i, x, y, per_lab, print_stats=True):
 #             label = 'HATPRO'
 #             axs[i].set_ylabel(label)
 #             try:
-#                 y = vr_t1_res[vr]
+#                 y = vr_t1_res[inpt.var]
 #             except KeyError:
 #                 print(f'error with {label}')
 #                 continue
@@ -360,7 +365,7 @@ def calc_draw_fit(axs, i, x, y, per_lab, print_stats=True):
 #                 label = 'AWS ECAPAC'
 #             axs[i].set_ylabel(label)
 #             try:
-#                 y = vr_t2_res[vr]
+#                 y = vr_t2_res[inpt.var]
 #             except KeyError:
 #                 print(f'error with {label}')
 #                 continue
@@ -386,7 +391,7 @@ def calc_draw_fit(axs, i, x, y, per_lab, print_stats=True):
 #                     confidenceIntervalMethod='approximate', detrend=None,
 #                     percentage=False)  # confidenceIntervalMethod='exact paired' or 'approximate'  # detrend='Linear' or 'None'
 #
-#             # b, a = np.polyfit(x_s[idx], y_s[idx], deg=1)  # xseq = np.linspace(extr[vr]['min'], extr[vr]['max'], num=1000)  # axs[i].plot(xseq, a + b * xseq, color='red', lw=2.5, ls='--')  # axs[i].plot(  #         [extr[vr]['min'], extr[vr]['max']], [extr[vr]['min'], extr[vr]['max']], color='black', lw=1.5,  #         ls='-')  # corcoef = ma.corrcoef(x_s[idx], y_s[idx])  #  # N = x_s[idx].shape[0]  # rmse = np.sqrt(np.nanmean((x_s[idx] - y_s[idx]) ** 2))  # mae = np.nanmean(np.abs(x_s[idx] - y_s[idx]))  # axs[i].text(  #         0.60, 0.15, f'R={corcoef[0, 1]:1.3}\nrmse={rmse:1.3}\nN={N}\nmae={mae:1.3}', fontsize=14,  #         transform=axs[i].transAxes)  # axs[i].set_xlim(extr[vr]['min'], extr[vr]['max'])  # axs[i].set_ylim(extr[vr]['min'], extr[vr]['max'])
+#             # b, a = np.polyfit(x_s[idx], y_s[idx], deg=1)  # xseq = np.linspace(inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'], num=1000)  # axs[i].plot(xseq, a + b * xseq, color='red', lw=2.5, ls='--')  # axs[i].plot(  #         [inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max']], [inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max']], color='black', lw=1.5,  #         ls='-')  # corcoef = ma.corrcoef(x_s[idx], y_s[idx])  #  # N = x_s[idx].shape[0]  # rmse = np.sqrt(np.nanmean((x_s[idx] - y_s[idx]) ** 2))  # mae = np.nanmean(np.abs(x_s[idx] - y_s[idx]))  # axs[i].text(  #         0.60, 0.15, f'R={corcoef[0, 1]:1.3}\nrmse={rmse:1.3}\nN={N}\nmae={mae:1.3}', fontsize=14,  #         transform=axs[i].transAxes)  # axs[i].set_xlim(extr[inpt.var]['min'], inpt.extr[inpt.var]['max'])  # axs[i].set_ylim(extr[inpt.var]['min'], inpt.extr[inpt.var]['max'])
 #         except:
 #             print(f'error with {label}')
 #

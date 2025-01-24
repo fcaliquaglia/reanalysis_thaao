@@ -21,27 +21,27 @@ __email__ = "filippo.caliquaglia@ingv.it"
 __status__ = "Research"
 __lastupdate__ = ""
 
-from plot_func import plot_residuals, plot_scatter, plot_scatter_cum, plot_ts
-from read_func import *
-from inputs import *
+import plot_func as plt_f
+import read_func as rd_f
 import inputs as inpt
-from res_func import data_resampling
+import res_func as rs_f
+
 
 if __name__ == "__main__":
 
-    for var in var_list:
-        inpt.var_in_use = var
+    for var ininpt.var_list:
+       inpt.var = var
         print(var)
 
         # data reading
-        read()
+        rd_f.read()
 
         # time RESAMPLING (specific for windd --> using wind components, and precip --> cumulative)
-        data_resampling()
+        rs_f.data_resampling()
 
-        plot_ts('all')
-        plot_residuals('all')
-        plot_scatter_cum()
-        for seas in seass:
-            plot_scatter(seas)
+        plt_f.plot_ts('all')
+        plt_f.plot_residuals('all')
+        plt_f.plot_scatter_cum()
+        for seas in inpt.seass:
+            plt_f.plot_scatter(seas)
             # plot_ba(var, all_var, seas)
