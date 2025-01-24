@@ -242,7 +242,7 @@ def read_surf_pres():
     inpt.extr[inpt.var]['c']['data'][inpt.extr[inpt.var]['c']['data'] <= 900] = np.nan
 
     read_era5()
-    inpt.extr[inpt.var]['e']['data'] = inpt.extr[inpt.var]['e']['data'].values / 100.
+    inpt.extr[inpt.var]['e']['data'] = inpt.extr[inpt.var]['e']['data'] / 100.
     inpt.extr[inpt.var]['e']['data'][inpt.extr[inpt.var]['e']['data'] <= 900] = np.nan
 
     read_thaao_weather(drop_param=['Air_K', 'RH_%'])
@@ -251,6 +251,7 @@ def read_surf_pres():
     inpt.extr[inpt.var]['t']['data'].loc['2024-4-26 00:00:00':'2024-5-4 00:00:00'] = np.nan
 
     read_aws_ecapac(param='BP_mbar')
+    return
 
 
 def read_rh():
