@@ -231,6 +231,7 @@ def read_surf_pres():
 
 def read_rh():
     # TODO: variable cleanup
+    vr=inpt.var_in_use
     # e.g. l_td[l_td_tmp == -32767.0] = np.nan
 
     read_thaao_weather(drop_param=['BP_hPa', 'Air_K'])
@@ -253,6 +254,7 @@ def read_rh():
 
 def calc_rh_from_tdp():
     # TODO not working
+    vr=inpt.var_in_use
     e = pd.concat([extr[vr]['t']['data'], e_t], axis=1)
 
     e['rh'] = relative_humidity_from_dewpoint(e['e_t'].values * units.K, e['e_td'].values * units.K).to('percent')
@@ -263,13 +265,14 @@ def calc_rh_from_tdp():
 
 
 def read_alb():
+    vr=inpt.var_in_use
     read_carra()
 
-    extr[inpt.var_in_use]['c']['data'][2] = extr[inpt.var_in_use]['c']['data'].values / 100.
-    extr[inpt.var_in_use]['c']['data'][extr[inpt.var_in_use]['c']['data'] <= 0.1] = np.nan
+    extr[vr]['c']['data'][2] = extr[vr]['c']['data'].values / 100.
+    extr[vr]['c']['data'][extr[vr]['c']['data'] <= 0.1] = np.nan
 
     read_era5()
-    extr[inpt.var_in_use]['c']['data'][extr[inpt.var_in_use]['c']['data'] <= 0.1] = np.nan
+    extr[vr]['c']['data'][extr[vr]['c']['data'] <= 0.1] = np.nan
 
     # # ERA5
     # fn = 'thaao_era5_snow_albedo_'
@@ -331,56 +334,6 @@ def read_alb():
             print(f'NOT FOUND: {fn}{year}.txt')
     t.columns = [inpt.var_in_use]
     t[t <= 0.1] = np.nan
-
-    return
-
-
-def read_iwv():
-    read_carra()
-    extr[inpt.var_in_use]['c']['data'][extr[inpt.var_in_use]['c']['data'] <= 0] = np.nan
-
-    read_era5()
-
-    read_thaao_vespa()
-
-    read_thaao_hatpro()
-    extr[inpt.var_in_use]['t1']['data'][extr[inpt.var_in_use]['t1']['data'] < 0] = np.nan
-    extr[inpt.var_in_use]['t1']['data'][extr[inpt.var_in_use]['t1']['data'] > 30] = np.nan
-
-    # RS (sondes)
-    for yy, year in enumerate(years):
-        try:
-            fol_input = os.path.join(basefol_t, 'thaao_rs_sondes', 'txt', f'{year}')
-            file_l = os.listdir(fol_input)
-            file_l.sort()
-            for i in file_l:
-                print(i)
-                file_date = dt.datetime.strptime(i[9:22], '%Y%m%d_%H%M')
-                kw = dict(
-                        skiprows=17, skipfooter=1, header=None, delimiter=" ", na_values="nan", na_filter=True,
-                        skipinitialspace=False, decimal=".", names=['height', 'pres', 'temp', 'rh'], engine='python',
-                        usecols=[0, 1, 2, 3])
-                dfs = pd.read_table(os.path.join(fol_input, i), **kw)
-                # unphysical values checks
-                dfs.loc[(dfs['pres'] > 1013) | (dfs['pres'] < 0), 'pres'] = np.nan
-                dfs.loc[(dfs['height'] < 0), 'height'] = np.nan
-                dfs.loc[(dfs['temp'] < -100) | (dfs['temp'] > 30), 'temp'] = np.nan
-                dfs.loc[(dfs['rh'] < 1.) | (dfs['rh'] > 120), 'rh'] = np.nan
-                dfs.dropna(subset=['temp', 'pres', 'rh'], inplace=True)
-                dfs.drop_duplicates(subset=['height'], inplace=True)
-                # min_pres_ind exclude values recorded during descent
-                min_pres = np.nanmin(dfs['pres'])
-                min_pres_ind = np.nanmin(np.where(dfs['pres'] == min_pres)[0])
-                dfs1 = dfs.iloc[:min_pres_ind]
-                dfs2 = dfs1.set_index(['height'])
-                rs_iwv = convert_rs_to_iwv(dfs2, 1.01)
-                t2_tmp = pd.DataFrame(index=pd.DatetimeIndex([file_date]), data=[rs_iwv.magnitude])
-                t2 = pd.concat([t2, t2_tmp], axis=0)
-            print(f'OK: year {year}')
-        except FileNotFoundError:
-            print(f'NOT FOUND: year {year}')
-    t2.columns = [inpt.var_in_use]
-    # t2.to_csv(os.path.join(basefol_t, 'rs_pwv.txt'), index=True)
 
     return
 
@@ -904,71 +857,6 @@ def read_sw_up():
     return
 
 
-def convert_rs_to_iwv(df, tp):
-    """
-    Convertito concettualmente in python da codice di Giovanni: PWV_Gio.m
-    :param tp: % of the max pressure value up to which calculate the iwv. it is necessary because interpolation fails.
-    :param df:
-    :return:
-    """
-
-    td = dewpoint_from_relative_humidity(
-            df['temp'].to_xarray() * units("degC"), df['rh'].to_xarray() / 100)
-    iwv = precipitable_water(
-            df['pres'].to_xarray() * units("hPa"), td, bottom=None, top=np.nanmin(df['pres']) * tp * units('hPa'))
-    # avo_num = 6.022 * 1e23  # [  # /mol]
-    # gas_c = 8.314  # [J / (K * mol)]
-    # M_water = 18.015e-3  # kg / mol
-    # eps = 0.622
-    # pressure = df['pres'] * 100  # Pa moltiplico per 100 dato che è in hPa
-    # height = df.index.values / 1000  # km divido per 1000 perchè è in metri
-    # tempK = df['temp'] + 273.15  # T in K
-    # tempC = df['temp']  # T in C
-    #
-    # RH = df['rh'] / 100  # frazione di umidità relativa
-    #
-    # ## calcolo la pressione di vapore saturo sull'acqua liquida in Pa (Buck, 1996)
-    # a = 18.678 - tempC / 234.5
-    # b = 257.14 + tempC
-    # c = a * tempC / b
-    # Ps = 611.21 * np.exp(c)  # pressione di vapore saturo [Pa]
-    #
-    # ## pressione parziale di vapore acqueo
-    # Ph2o = RH * Ps
-    #
-    # ## vmr vapore acqueo
-    # # vmr = Ph2o / pressure
-    # vmr = mixing_ratio_from_relative_humidity(
-    #         df['pres'].to_xarray() * units("Pa"), df['temp'].to_xarray() * units("degC"),
-    #         df['rh'].to_xarray() * units("percent"))
-    #
-    # ## mixmass
-    # mix_mass = vmr * eps
-    #
-    # ## Concentrazione di vapore acqueo
-    # conc_h2o = (Ph2o * avo_num / (gas_c * tempK))  ##/m^3
-    #
-    # ## calcolo il numero totale di molecole
-    # conc_tot = np.sum(conc_h2o * 100)
-    #
-    # ## calcolo Tatm
-    # # T_sup = T_int(1)
-    # # Tatm = sum(T_int * conc_h2o_int) * 100 / conc_tot + T_int(1) * conc_h2o_int(1) * (bot - 50 - zGrd) / conc_tot;
-    #
-    # ## calcolo PWV
-    # mol_tot = conc_tot / avo_num  # numero totale di moli
-    # m_tot = mol_tot * M_water  # massa totale in kg
-    # # carico la funzione di densità dell'acqua liquida
-    # rho_lw_T = load('rho_liquid_water vs T')  # in kg al m^3
-    # rho_lw = rho_lw_T.rho_lw
-    # T_lw = rho_lw_T.T_lw
-    # # [mini, ind] = min(abs(T_sup - T_lw))  # trovo a quale T ci troviamo
-    #
-    # PWV = m_tot / rho_lw(ind) * 1000  # [mm] area unitaria e moltiplico per 1000 per averlo im mm
-
-    return iwv
-
-
 def extract_values(fn, year):
     if not os.path.exists(os.path.join(basefol_c, fn + str(year) + '.nc')):
         try:
@@ -995,8 +883,6 @@ def read():
         return read_surf_pres()
     if inpt.var_in_use == 'msl_pres':
         return read_msl_pres()
-    if inpt.var_in_use == 'iwv':
-        return read_iwv()
     if inpt.var_in_use == 'lwp':
         return read_lwp()
     if inpt.var_in_use == 'winds':

@@ -144,8 +144,8 @@
 
 # THAAO reference instruments
 
-Instrument involved are HATPRO (IWV, LWP), aws_ECAPAC (temp, press, rh, windd, winds), aws_vespa (temp, press, rh,
-windd, winds), VESPA (iwv), sw radiometers (up and down), radiosoundings (iwv)
+Instrument involved are HATPRO (LWP), aws_ECAPAC (temp, press, rh, windd, winds), aws_vespa (temp, press, rh,
+windd, winds), sw radiometers (up and down),
 The reference values are always from THAAO measurements, except for IWV (ref: VESPA) and LWP (ref:HATPRO)
 
 > [!IMPORTANT]
@@ -311,20 +311,6 @@ Excluding nan values. x(t): reference value; y(t): reanalysis or other
 - ERA-5: ``total_cloud_cover``
 - ERA5-L: /
 - THAAO (ceilometer): ``cbh`` (lowermost level)
-
-## Integrated water vapour - IWV (``iwv``)
-
-> [!WARNING]
-> - CARRA: ``total_column_integrated_water_vapour``: C'è un problema per CARRA iwv nel dicembre 2023. i valori sono
-    tutti nulli. Ho provato a riscaricare ma non cambia. Alla fine ho filtrato i dati <=0.
-
-- ERA-5: ``total_column_water_vapour``
-- ERA5-L: /
-- THAAO (rs): The vertical integration for rs is **missing**.
-- THAAO (vespa):
-
-> [!WARNING]
-> - THAAO (hatpro): IWV HATPRO values have been masked to nan for values<0.0 and values>30.
 
 ## Liquid Water Path - LWP (``lwp``)
 

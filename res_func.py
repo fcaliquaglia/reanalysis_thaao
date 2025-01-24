@@ -29,15 +29,9 @@ def data_resampling():
     vr = inpt.var_in_use
 
     for vvrr in list(var_dict.keys()):
-        if (inpt.var_in_use == 'iwv') & (vvrr == 't2'):
-            try:
-                extr[vr][vvrr]['data_res'] = extr[vr][vvrr]['data'].resample(tres).mean()
-            except (TypeError, NameError):
-                pass
-        else:
-            try:
-                extr[vr][vvrr]['data_res'] = extr[vr][vvrr]['data'].resample(tres).mean()
-            except (TypeError, NameError):
-                pass
+        try:
+            extr[vr][vvrr]['data_res'] = extr[vr][vvrr]['data'].resample(tres).mean()
+        except (TypeError, NameError):
+            pass
 
     return

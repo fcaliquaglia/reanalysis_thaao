@@ -43,13 +43,12 @@ thaao_t = 'thaao'
 
 ##
 tres = '3h'
-tres_rs = '1h'  # only for radiosoundings
 var_list = [
-    'temp']  # ['temp', 'rh', 'iwv', 'alb', 'cbh', 'precip', 'windd', 'winds', 'surf_pres', 'sw_down', 'sw_up', 'lw_up',
+    'temp']  # ['temp', 'rh'', 'alb', 'cbh', 'precip', 'windd', 'winds', 'surf_pres', 'sw_down', 'sw_up', 'lw_up',
 # 'lw_down', 'lwp', 'tcc']
 var_in_use = ''
 
-years = np.arange(2022, 2024, 1)
+years = np.arange(2020, 2025, 1)
 
 bin_nr = 200
 
@@ -122,16 +121,6 @@ extr = {'alb'      : {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min'
                       't1'   : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
                       't2'   : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()}},
 
-        'iwv'      : {'name' : 'iwv', 'ref_x': 't', 'min': 0, 'max': 20, 'res_min': -5, 'res_max': 5, 'uom': '[kg/m2]',
-                      'comps': ['c', 'e', 't1', 't2'],
-                      'c'    : {'fn'      : f'{thaao_c}_total_column_integrated_water_vapour_', 'data': pd.DataFrame(),
-                                'data_res': pd.DataFrame()},
-                      'e'    : {'fn'      : f'{thaao_e}_total_column_water_vapour_', 'data': pd.DataFrame(),
-                                'data_res': pd.DataFrame()},
-                      'l'    : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
-                      't'    : {'fn': 'vespaPWVClearSky', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
-                      't1'   : {'fn': 'QC_IWV_15_min_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
-                      't2'   : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()}},
         'lwp'      : {'name': 'lwp', 'ref_x': 't1', 'min': 0, 'max': 50, 'res_min': -20, 'res_max': 20,
                       'uom' : '[kg/m2]', 'comps': ['c', 'e', 't', 't1'],
                       'c'   : {'fn'      : f'{thaao_c}_total_column_cloud_liquid_water_', 'data': pd.DataFrame(),
