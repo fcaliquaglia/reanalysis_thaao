@@ -163,7 +163,7 @@ def plot_scatter(period_label):
             axs[i].set_title(inpt.var_dict[comp]['label'])
 
             time_list = pd.date_range(
-                start=dt.datetime(inpt.years[0], 1, 1), end=dt.datetime(inpt.years[-1], 12, 31), freq=inpt.tres)
+                    start=dt.datetime(inpt.years[0], 1, 1), end=dt.datetime(inpt.years[-1], 12, 31), freq=inpt.tres)
             if x.empty | y.empty:
                 continue
             x_all = x.reindex(time_list).fillna(np.nan)
@@ -176,7 +176,7 @@ def plot_scatter(period_label):
                 axs[i].scatter(x_s[idx], y_s[idx], color=inpt.seass[period_label]['col'])
             elif inpt.tres == '1ME':
                 axs[i].scatter(
-                        x_s[idx], y_s[idx], color=inpt.seass[period_label]['col' + '_' +inpt.var_dict[comp]['label']])
+                        x_s[idx], y_s[idx], color=inpt.seass[period_label]['col' + '_' + inpt.var_dict[comp]['label']])
             else:
                 bin_size = inpt.extr[inpt.var]['max'] / inpt.bin_nr
                 h = axs[i].hist2d(x_s[idx], y_s[idx], bins=inpt.bin_nr, cmap=plt.cm.jet, cmin=1, vmin=1)

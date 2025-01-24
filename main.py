@@ -21,16 +21,15 @@ __email__ = "filippo.caliquaglia@ingv.it"
 __status__ = "Research"
 __lastupdate__ = ""
 
+import inputs as inpt
 import plot_func as plt_f
 import read_func as rd_f
-import inputs as inpt
 import res_func as rs_f
-
 
 if __name__ == "__main__":
 
-    for var ininpt.var_list:
-       inpt.var = var
+    for var in inpt.list_var:
+        inpt.var = var
         print(var)
 
         # data reading
