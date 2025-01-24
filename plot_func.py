@@ -90,35 +90,36 @@ def plot_ts(period_label):
     plt.close('all')
 
 
-def plot_residuals(vr, period_label):
+def plot_residuals(period_label):
     """
 
     :param period_label:
     :return:
     """
     print('RESIDUALS')
+    vr = inpt.var_in_use
     fig, ax = plt.subplots(len(years), 1, figsize=(12, 17), dpi=300)
-    fig.suptitle(f'residuals {inpt.var_in_use.upper()} all {tres}', fontweight='bold')
+    fig.suptitle(f'residuals {vr.upper()} all {tres}', fontweight='bold')
     kwargs = {'lw': 1, 'marker': '.', 'ms': 0}
 
-    vr = inpt.var_in_use
     for [yy, year] in enumerate(years):
         print(f'plotting {year}')
 
         daterange = pd.date_range(dt.datetime(year, 1, 1), dt.datetime(year, 12, 31))
         ax[yy].plot(daterange, np.repeat(0, len(daterange)), color='black', lw=2, ls='--')
 
-        vr_ref = vr_t_res.resample(tres).mean()
-        for (varvar, vr_n) in zip([vr_c_res, vr_e_res, vr_l_res, vr_t1_res, vr_t2_res], var_names):
+        vr_ref = extr[vr][extr[vr]['ref_x']]['data_res']
+        # resampled resolution
+        for varvar in var_names:
             try:
                 data = extr[vr][varvar]['data_res'][extr[vr][varvar]['data_res'].index.year == year]
                 ax[yy].plot(
-                        (data - vr_ref[vr_ref.index.year == year]), color=var_dict[vr_n]['col'],
-                        label=var_dict[vr_n]['label'], **kwargs)
+                        data - vr_ref[vr_ref.index.year == year], color=var_dict[varvar]['col'],
+                        label=var_dict[varvar]['label'], **kwargs)
             except AttributeError:
                 pass
 
-        if inpt.var_in_use == 'alb':
+        if vr == 'alb':
             range1 = pd.date_range(dt.datetime(year, 1, 1), dt.datetime(year, 2, 15), freq=tres)
             range2 = pd.date_range(dt.datetime(year, 11, 1), dt.datetime(year, 12, 31), freq=tres)
             ax[yy].vlines(range1.values, -0.5, 0.5, color='grey', alpha=0.3)
@@ -126,7 +127,7 @@ def plot_residuals(vr, period_label):
         else:
             pass
 
-        ax[yy].set_ylim(extr[inpt.var_in_use]['res_min'], extr[inpt.var_in_use]['res_max'])
+        ax[yy].set_ylim(extr[vr]['res_min'], extr[vr]['res_max'])
         ax[yy].text(0.45, 0.85, year, transform=ax[yy].transAxes)
         ax[yy].xaxis.set_major_formatter(myFmt)
         ax[yy].set_xlim(dt.datetime(year, 1, 1), dt.datetime(year, 12, 31))
@@ -135,7 +136,7 @@ def plot_residuals(vr, period_label):
     plt.xlabel('Time')
     plt.legend()
     plt.tight_layout()
-    plt.savefig(os.path.join(basefol_out, tres, f'{tres}_{period_label}_residuals_{inpt.var_in_use}.png'))
+    plt.savefig(os.path.join(basefol_out, tres, f'{tres}_{period_label}_residuals_{vr}.png'))
     plt.close('all')
 
 

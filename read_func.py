@@ -193,14 +193,14 @@ def read_aws_ecapac(param):
 
 def read_temp():
     read_thaao_weather(drop_param=['BP_hPa', 'RH_%'])
-    extr[inpt.var_in_use]['t']['data']['Air_K'] = extr[inpt.var_in_use]['t']['data'].values - 273.15
-    # read_aws_ecapac(param='AirTC')
+    extr[inpt.var_in_use]['t']['data'] = extr[inpt.var_in_use]['t']['data'] - 273.15
+    read_aws_ecapac(param='AirTC')
     read_carra()
-    extr[inpt.var_in_use]['c']['data'][2] = extr[inpt.var_in_use]['c']['data'].values - 273.15
+    extr[inpt.var_in_use]['c']['data'] = extr[inpt.var_in_use]['c']['data'] - 273.15
     read_era5()
-    extr[inpt.var_in_use]['e']['data'][2] = extr[inpt.var_in_use]['e']['data'].values - 273.15
+    extr[inpt.var_in_use]['e']['data'] = extr[inpt.var_in_use]['e']['data'] - 273.15
     read_era5_land()
-    extr[inpt.var_in_use]['l']['data'][2] = extr[inpt.var_in_use]['l']['data'].values - 273.15
+    extr[inpt.var_in_use]['l']['data'] = extr[inpt.var_in_use]['l']['data'] - 273.15
 
     return
 
