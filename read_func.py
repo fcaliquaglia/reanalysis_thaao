@@ -59,7 +59,7 @@ def read_era5():
                     os.path.join(inpt.basefol_e, f'{inpt.extr[inpt.var]['e']['fn']}{year}.txt'), skipfooter=1,
                     sep='\s+', header=None,
                     skiprows=1, engine='python')
-            e_tmp[e_tmp == inpt.var_dict['l']['nanval']] = np.nan
+            e_tmp[e_tmp == inpt.var_dict['e']['nanval']] = np.nan
             inpt.extr[inpt.var]['e']['data'] = pd.concat([inpt.extr[inpt.var]['e']['data'], e_tmp], axis=0)
 
             print(f'OK: {inpt.extr[inpt.var]['e']['fn']}{year}.txt')
