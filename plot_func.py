@@ -147,23 +147,22 @@ def plot_scatter(period_label):
     :return:
     """
     print('SCATTERPLOTS')
+    vr = inpt.var_in_use
     seas_name = seass[period_label]['name']
     fig, ax = plt.subplots(2, 2, figsize=(12, 12), dpi=300)
     axs = ax.ravel()
 
-    comps, x, = var_comp_x_selection()
-    refx = inpt.extr[inpt.var_in_use]['ref_x']
+    x = extr[vr][extr[vr]['ref_x']]['data_res']
+    for i, comp in enumerate(extr[vr]['comps']):
 
-    for i, comp in enumerate(comps):
-        # define which is the reference measurement for each variable
-        y, var_t_res = var_selection(comp)
+        y = extr[vr][comp]['data_res']
         axs[i].set_ylabel(var_dict[comp]['label'])
-        axs[i].set_xlabel(var_dict[refx]['label'])
+        # axs[i].set_xlabel(var_dict[refx]['label'])
 
         try:
             print(f'plotting scatter THAAO-{var_dict[comp]['label']}')
 
-            fig.suptitle(f'{inpt.var_in_use.upper()} {seas_name} {tres}', fontweight='bold')
+            fig.suptitle(f'{vr.upper()} {seas_name} {tres}', fontweight='bold')
             axs[i].set_title(var_dict[comp]['label'])
 
             time_list = pd.date_range(start=dt.datetime(years[0], 1, 1), end=dt.datetime(years[-1], 12, 31), freq=tres)
@@ -185,10 +184,10 @@ def plot_scatter(period_label):
                         axs[i].scatter(
                                 x_s[idx], y_s[idx], color=seass[period_label]['col' + '_' + var_dict[comp]['label']])
                     else:
-                        bin_size = extr[inpt.var_in_use]['max'] / bin_nr
+                        bin_size = extr[vr]['max'] / bin_nr
                         h = axs[i].hist2d(x_s[idx], y_s[idx], bins=bin_nr, cmap=plt.cm.jet, cmin=1, vmin=1)
                         axs[i].text(
-                                0.10, 0.80, f'bin_size={bin_size} {extr[inpt.var_in_use]['uom']}',
+                                0.10, 0.80, f'bin_size={bin_size} {extr[vr]['uom']}',
                                 transform=axs[i].transAxes)
 
             if len(x_s[idx]) < 2 | len(y_s[idx]) < 2:
@@ -196,13 +195,82 @@ def plot_scatter(period_label):
             else:
                 calc_draw_fit(axs, i, x_s[idx], y_s[idx], seass[period_label]['col'])
 
-            axs[i].set_xlim(extr[inpt.var_in_use]['min'], extr[inpt.var_in_use]['max'])
-            axs[i].set_ylim(extr[inpt.var_in_use]['min'], extr[inpt.var_in_use]['max'])
+            axs[i].set_xlim(extr[vr]['min'], extr[vr]['max'])
+            axs[i].set_ylim(extr[vr]['min'], extr[vr]['max'])
             axs[i].text(0.05, 0.95, letters[i] + ')', transform=axs[i].transAxes)
         except:
             print(f'error with {var_dict[comp]['label']}')
 
-    plt.savefig(os.path.join(basefol_out, tres, f'{tres}_scatter_{seas_name}_{inpt.var_in_use}.png'))
+    plt.savefig(os.path.join(basefol_out, tres, f'{tres}_scatter_{seas_name}_{vr}.png'))
+    plt.close('all')
+
+
+def plot_scatter_cum():
+    """
+
+    :return:
+    """
+    import copy as cp
+    fig, ax = plt.subplots(2, 2, figsize=(12, 12), dpi=300)
+    seass_new = cp.copy(seass)
+    seass_new.pop('all')
+
+    for period_label in seass_new:
+        print('SCATTERPLOTS CUMULATIVE')
+        vr = inpt.var_in_use
+        seas_name = seass[period_label]['name']
+        axs = ax.ravel()
+
+        x = extr[vr][extr[vr]['ref_x']]['data_res']
+        for i, comp in enumerate(extr[vr]['comps']):
+
+            y = extr[vr][comp]['data_res']
+
+            try:
+                print(f'plotting scatter VESPA-{var_dict[comp]['label']}')
+
+                fig.suptitle(f'{inpt.var_in_use.upper()} cumulative plot', fontweight='bold')
+                axs[i].set_title(var_dict[comp]['label'])
+
+                time_list = pd.date_range(
+                        start=dt.datetime(years[0], 1, 1), end=dt.datetime(years[-1], 12, 31), freq=tres)
+
+                x_all = x.reindex(time_list).fillna(np.nan)
+                x_s = x_all.loc[(x_all.index.month.isin(seass[period_label]['months']))]
+                y_all = y.reindex(time_list).fillna(np.nan)
+                y_s = y_all.loc[(y_all.index.month.isin(seass[period_label]['months']))]
+                idx = ~(np.isnan(x_s) | np.isnan(y_s))
+
+                if seas_name != 'all':
+                    if var_dict[comp]['label'] == 'RS':
+                        y_s = y.loc[(y.index.month.isin(seass[period_label]['months']))]
+                        x_s = pd.Series(x.reindex(y_s.index)[inpt.var_in_use])
+
+                        idx = ~(np.isnan(x_s) | np.isnan(y_s))
+                        axs[i].scatter(
+                                x_s[idx].values, y_s[idx].values, s=50, facecolor='none',
+                                color=seass[period_label]['col'], label=period_label)
+                        axs[i].set_xlabel(var_dict[comp]['label'])
+
+                    else:
+                        axs[i].scatter(
+                                x_s[idx], y_s[idx], s=5, color=seass[period_label]['col'], edgecolors='none', alpha=0.5,
+                                label=period_label)
+                        axs[i].set_xlabel(var_dict[comp]['label'])
+
+                if len(x_s[idx]) < 2 | len(y_s[idx]) < 2:
+                    print('ERROR, ERROR, NO DATA ENOUGH FOR PROPER FIT (i.e. only 1 point available)')
+                else:
+                    calc_draw_fit(axs, i, x_s[idx], y_s[idx], seass[period_label]['col'], print_stats=False)
+
+                    axs[i].set_xlim(extr[inpt.var_in_use]['min'], extr[inpt.var_in_use]['max'])
+                    axs[i].set_ylim(extr[inpt.var_in_use]['min'], extr[inpt.var_in_use]['max'])
+                    axs[i].text(0.05, 0.95, letters[i] + ')', transform=axs[i].transAxes)
+                    axs[i].legend()
+            except:
+                print(f'error with {var_dict[comp]['label']}')
+
+    plt.savefig(os.path.join(basefol_out, tres, f'{tres}_scatter_cum_{inpt.var_in_use}.png'))
     plt.close('all')
 
 
@@ -217,12 +285,13 @@ def calc_draw_fit(axs, i, x, y, fit_color, print_stats=True):
     :param print_stats:
     :return:
     """
-    b, a = np.polyfit(x, y, deg=1)
-    xseq = np.linspace(extr[inpt.var_in_use]['min'], extr[inpt.var_in_use]['max'], num=1000)
+    vr = inpt.var_in_use
+    b, a = np.polyfit(x.values, y.values, deg=1)
+    xseq = np.linspace(extr[vr]['min'], extr[vr]['max'], num=1000)
     axs[i].plot(xseq, a + b * xseq, color=fit_color, lw=2.5, ls='--', alpha=0.5)
     axs[i].plot(
-            [extr[inpt.var_in_use]['min'], extr[inpt.var_in_use]['max']],
-            [extr[inpt.var_in_use]['min'], extr[inpt.var_in_use]['max']], color='black', lw=1.5, ls='-')
+            [extr[vr]['min'], extr[vr]['max']],
+            [extr[vr]['min'], extr[vr]['max']], color='black', lw=1.5, ls='-')
     if print_stats:
         corcoef = ma.corrcoef(x, y)
         N = len(y)
@@ -232,7 +301,6 @@ def calc_draw_fit(axs, i, x, y, fit_color, print_stats=True):
                 0.50, 0.30, f'R={corcoef[0, 1]:.2f} N={N} \n y={b:+.2f}x{a:+.2f} \n MBE={mbe:.2f} RMSE={rmse:.2f}',
                 transform=axs[i].transAxes, fontsize=14, color='black', ha='left', va='center',
                 bbox=dict(facecolor='white', edgecolor='white'))
-
 
 # def plot_ba(period_label):
 #     """
@@ -351,123 +419,3 @@ def calc_draw_fit(axs, i, x, y, fit_color, print_stats=True):
 #     plt.savefig(os.path.join(basefol_out, tres, f'{tres}_ba_{seas_name}_{vr}.png'))
 #     plt.close('all')
 #
-
-
-def plot_scatter_cum():
-    """
-
-    :return:
-    """
-    import copy as cp
-    fig, ax = plt.subplots(2, 2, figsize=(12, 12), dpi=300)
-    seass_new = cp.copy(seass)
-    seass_new.pop('all')
-
-    for period_label in seass_new:
-        print('SCATTERPLOTS CUMULATIVE')
-        seas_name = seass[period_label]['name']
-        axs = ax.ravel()
-        comps, x, refx = var_comp_x_selection()
-        for i, comp in enumerate(comps):
-
-            axs[i].set_ylabel(var_dict[comp]['label_uom'])
-            y, vr_t_res = var_selection(comp)
-
-            try:
-                print(f'plotting scatter VESPA-{var_dict[comp]['label']}')
-
-                fig.suptitle(f'{inpt.var_in_use.upper()} cumulative plot', fontweight='bold')
-                axs[i].set_title(var_dict[comp]['label'])
-
-                time_list = pd.date_range(
-                        start=dt.datetime(years[0], 1, 1), end=dt.datetime(years[-1], 12, 31), freq=tres)
-
-                x_all = x.reindex(time_list).fillna(np.nan)
-                x_s = x_all.loc[(x_all.index.month.isin(seass[period_label]['months']))]
-                y_all = y.reindex(time_list).fillna(np.nan)
-                y_s = y_all.loc[(y_all.index.month.isin(seass[period_label]['months']))]
-                idx = ~(np.isnan(x_s) | np.isnan(y_s))
-
-                if seas_name != 'all':
-                    if var_dict[comp]['label'] == 'RS':
-                        y_s = y.loc[(y.index.month.isin(seass[period_label]['months']))]
-                        x_s = pd.Series(vr_t_res.reindex(y_s.index)[inpt.var_in_use])
-
-                        idx = ~(np.isnan(x_s) | np.isnan(y_s))
-                        axs[i].scatter(
-                                x_s[idx].values, y_s[idx].values, s=50, facecolor='none',
-                                color=seass[period_label]['col'], label=period_label)
-                        axs[i].set_xlabel(var_dict[comp]['label'])
-
-                    else:
-                        axs[i].scatter(
-                                x_s[idx], y_s[idx], s=5, color=seass[period_label]['col'], edgecolors='none', alpha=0.5,
-                                label=period_label)
-                        axs[i].set_xlabel(var_dict[comp]['label'])
-
-                if len(x_s[idx]) < 2 | len(y_s[idx]) < 2:
-                    print('ERROR, ERROR, NO DATA ENOUGH FOR PROPER FIT (i.e. only 1 point available)')
-                else:
-                    calc_draw_fit(axs, i, x_s[idx], y_s[idx], seass[period_label]['col'], print_stats=False)
-
-                    axs[i].set_xlim(extr[inpt.var_in_use]['min'], extr[inpt.var_in_use]['max'])
-                    axs[i].set_ylim(extr[inpt.var_in_use]['min'], extr[inpt.var_in_use]['max'])
-                    axs[i].text(0.05, 0.95, letters[i] + ')', transform=axs[i].transAxes)
-                    axs[i].legend()
-            except:
-                print(f'error with {var_dict[comp]['label']}')
-
-    plt.savefig(os.path.join(basefol_out, tres, f'{tres}_scatter_cum_{inpt.var_in_use}.png'))
-    plt.close('all')
-
-
-def var_comp_x_selection():
-    elif inpt.var_in_use in ['rh']:
-        cmps =
-        x = vr_t_res[inpt.var_in_use]
-    else:
-        cmps =
-        x = vr_t_res[inpt.var_in_use]
-
-    return cmps, x
-
-
-def var_selection(vr, avar, comp):
-    if comp == 'c':
-        try:
-            y = vr_c_res[vr]
-        except KeyError:
-            print(f'error with {var_dict[comp]['label']}')
-    if comp == 'e':
-        try:
-            y = vr_e_res[vr]
-        except KeyError:
-            print(f'error with {var_dict[comp]['label']}')
-    if comp == 'l':
-        try:
-            y = vr_l_res[vr]
-        except KeyError:
-            print(f'error with {var_dict[comp]['label']}')
-    if comp == 't':
-        try:
-            y = vr_t_res[vr]
-        except KeyError:
-            print(f'error with {var_dict[comp]['label']}')
-    if comp == 't1':
-        try:
-            y = vr_t1_res[vr]
-        except KeyError:
-            print(f'error with {var_dict[comp]['label']}')
-    if comp == 't2':
-        if vr == 'alb':
-            var_dict['t2']['label'] = 'ERA5 snow alb'
-        elif vr == 'iwv':
-            var_dict['t2']['label'] = 'RS'
-        else:
-            var_dict['t2']['label'] = 'AWS ECAPAC'
-        try:
-            y = vr_t2_res[vr]
-        except KeyError:
-            print(f'error with {var_dict[comp]['label']}')
-
-    return y, vr_t_res
