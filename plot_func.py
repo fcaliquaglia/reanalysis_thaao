@@ -241,7 +241,8 @@ def plot_scatter_cum():
                 axs[i].set_xlabel(inpt.var_dict[comp]['label'])
 
                 # if len(x_s[idx]) < 2 | len(y_s[idx]) < 2:
-                #     print('ERROR, ERROR, NO DATA ENOUGH FOR PROPER FIT (i.e. only 1 point available)')
+                #     print('ERROR, ERROR, N
+                #     O DATA ENOUGH FOR PROPER FIT (i.e. only 1 point available)')
                 # else:
                 #     calc_draw_fit(axs, i, idx, x_s, y_s, print_stats=False)
 
@@ -252,7 +253,7 @@ def plot_scatter_cum():
             except:
                 print(f'error with {inpt.var_dict[comp]['label']}')
 
-    plt.savefig(os.path.join(inpt.basefol_out, inpt.tres, f'{inpt.tres}_scatter_cum_{inpt.var}_only.png'))
+    plt.savefig(os.path.join(inpt.basefol_out, inpt.tres, f'{inpt.tres}_scatter_cum_{inpt.var}.png'))
     plt.close('all')
 
 
