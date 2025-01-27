@@ -152,41 +152,56 @@ def plot_scatter(period_label):
         axs[i].set_xlabel(inpt.var_dict[inpt.extr[inpt.var]['ref_x']]['label'])
 
         try:
-            print(f'plotting scatter THAAO-{inpt.var_dict[comp]['label']}')
+            print(f'plotting scatter {inpt.var_dict['t']['label']}-{inpt.var_dict[comp]['label']}')
 
             fig.suptitle(f'{inpt.var.upper()} {inpt.seass[period_label]['name']} {inpt.tres}', fontweight='bold')
             axs[i].set_title(inpt.var_dict[comp]['label'])
 
             time_list = pd.date_range(
-                    start=dt.datetime(inpt.years[0], 1, 1), end=dt.datetime(inpt.years[-1], 12, 31), freq=inpt.tres)
-            if x.empty | y.empty:
-                continue
+                    start=dt.datetime(inpt.years[0], 1, 1, 0, 0), end=dt.datetime(inpt.years[-1], 12, 31, 23, 59),
+                    freq=inpt.tres)
+
             x_all = x.reindex(time_list).fillna(np.nan)
             x_s = x_all.loc[(x_all.index.month.isin(inpt.seass[period_label]['months']))]
             y_all = y.reindex(time_list).fillna(np.nan)
             y_s = y_all.loc[(y_all.index.month.isin(inpt.seass[period_label]['months']))]
-            idx = ~((np.isnan(x_s)) | (np.isnan(y_s)))
+            idx = ~(np.isnan(x_s[inpt.var]) | np.isnan(y_s[inpt.var]))
 
-            # if seas_name != 'all':
-            #     axs[i].scatter(x_s[idx], y_s[idx], color=inpt.seass[period_label]['col'])
-            # elif inpt.tres == '1ME':
-            #     axs[i].scatter(
-            #             x_s[idx], y_s[idx], color=inpt.seass[period_label]['col' + '_' + inpt.var_dict[comp]['label']])
-            # else:
-            bin_size = inpt.extr[inpt.var]['max'] / inpt.bin_nr
-            h = axs[i].hist2d(x_s[idx], y_s[idx], bins=inpt.bin_nr, cmap=plt.cm.jet, cmin=1, vmin=1)
-            axs[i].text(
-                    0.10, 0.80, f'bin_size={bin_size} {inpt.extr[inpt.var]['uom']}',
-                    transform=axs[i].transAxes)
+            if inpt.seass[period_label]['name'] != 'all':
+                axs[i].scatter(
+                        x_s[inpt.var][idx], y_s[inpt.var][idx], s=5, color=inpt.seass[period_label]['col'],
+                        facecolor='none', alpha=0.5,
+                        label=period_label)
+                axs[i].set_xlabel(inpt.var_dict[comp]['label'])
+            else:
+                bin_size = (inpt.extr[inpt.var]['max'] - inpt.extr[inpt.var]['min']) / inpt.extr[inpt.var]['bin_nr']
+                h = axs[i].hist2d(
+                        x_s[inpt.var][idx], y_s[inpt.var][idx], bins=[np.linspace(
+                                inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'], inpt.extr[inpt.var]['bin_nr']),
+                                                                      np.linspace(
+                                                                              inpt.extr[inpt.var]['min'],
+                                                                              inpt.extr[inpt.var]['max'],
+                                                                              inpt.extr[inpt.var]['bin_nr'])],
+                        cmap=plt.cm.jet,
+                        cmin=1, vmin=1)
+                axs[i].text(
+                        0.10, 0.80, f'bin_size={bin_size}',
+                        transform=axs[i].transAxes)  # fig.colorbar(h[3], ax=axs[i], extend='both')
+                axs[i].set_xlabel(inpt.var_dict[comp]['label'])
 
-            # if len(x_s[idx]) < 2 | len(y_s[idx]) < 2:
-            #     print('ERROR, ERROR, NO DATA ENOUGH FOR PROPER FIT (i.e. only 1 point available)')
-            # else:
-            #     calc_draw_fit(axs, i, x_s[idx], y_s[idx], period_label)
+                # if len(x_s[idx]) < 2 | len(y_s[idx]) < 2:
+                #     print('ERROR, ERROR, NO DATA ENOUGH FOR PROPER FIT (i.e. only 1 point available)')
+                # else:
+                #     calc_draw_fit(axs, i, idx, x_s, y_s)
 
             axs[i].set_xlim(inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'])
             axs[i].set_ylim(inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'])
             axs[i].text(0.05, 0.95, inpt.letters[i] + ')', transform=axs[i].transAxes)
+            axs[i].plot(
+                    [inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max']],
+                    [inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max']],
+                    color='black', lw=1.5, ls='-')
+
         except:
             print(f'error with {inpt.var_dict[comp]['label']}')
 
@@ -208,7 +223,7 @@ def plot_scatter_cum():
     seass_new.pop('all')
 
     for period_label in seass_new:
-        print('SCATTERPLOTS CUMULATIVE')
+        print(f'SCATTERPLOTS CUMULATIVE {period_label}')
 
         axs = ax.ravel()
 
@@ -217,7 +232,6 @@ def plot_scatter_cum():
             y = inpt.extr[inpt.var][comp]['data_res']
             axs[i].set_ylabel(inpt.var_dict[comp]['label'])
             axs[i].set_xlabel(inpt.var_dict[inpt.extr[inpt.var]['ref_x']]['label'])
-
             try:
                 print(
                         f'plotting scatter {inpt.var_dict[inpt.extr[inpt.var]['ref_x']]['label']}-{inpt.var_dict[comp]['label']}')
@@ -233,22 +247,26 @@ def plot_scatter_cum():
                 x_s = x_all.loc[(x_all.index.month.isin(seass_new[period_label]['months']))]
                 y_all = y.reindex(time_list).fillna(np.nan)
                 y_s = y_all.loc[(y_all.index.month.isin(seass_new[period_label]['months']))]
-                idx = ~(np.isnan(x_s) | np.isnan(y_s))
+                idx = ~(np.isnan(x_s[inpt.var]) | np.isnan(y_s[inpt.var]))
 
                 axs[i].scatter(
-                        x_s[idx], y_s[idx], s=5, color=seass_new[period_label]['col'], edgecolors='none', alpha=0.5,
+                        x_s[inpt.var][idx], y_s[inpt.var][idx], s=5, color=seass_new[period_label]['col'],
+                        edgecolors='none', alpha=0.5,
                         label=period_label)
                 axs[i].set_xlabel(inpt.var_dict[comp]['label'])
 
                 # if len(x_s[idx]) < 2 | len(y_s[idx]) < 2:
-                #     print('ERROR, ERROR, N
-                #     O DATA ENOUGH FOR PROPER FIT (i.e. only 1 point available)')
+                #     print('ERROR, ERROR, NO DATA ENOUGH FOR PROPER FIT (i.e. only 1 point available)')
                 # else:
-                #     calc_draw_fit(axs, i, idx, x_s, y_s, print_stats=False)
+                #     calc_draw_fit(axs, i, idx, x_s[inpt.var], y_s[inpt.var], print_stats=False)
 
                 axs[i].set_xlim(inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'])
                 axs[i].set_ylim(inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'])
                 axs[i].text(0.05, 0.95, inpt.letters[i] + ')', transform=axs[i].transAxes)
+                axs[i].plot(
+                        [inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max']],
+                        [inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max']],
+                        color='black', lw=1.5, ls='-')
                 axs[i].legend()
             except:
                 print(f'error with {inpt.var_dict[comp]['label']}')
@@ -269,7 +287,7 @@ def calc_draw_fit(axs, i, xx, yy, per_lab, print_stats=True):
     :return:
     """
 
-    b, a = np.polyfit(xx[inpt.var].values, yy[inpt.var].values, deg=1)
+    b, a = np.polyfit(xx.values, yy.values, deg=1)
     xseq = np.linspace(inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'], num=1000)
     axs[i].plot(xseq, a + b * xseq, color=inpt.seass[per_lab]['col'], lw=2.5, ls='--', alpha=0.5)
     axs[i].plot(
