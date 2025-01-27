@@ -23,6 +23,7 @@ __lastupdate__ = ""
 
 import datetime as dt
 import os
+import string
 
 import matplotlib.dates as mdates
 import numpy as np
@@ -43,7 +44,7 @@ thaao_t = 'thaao'
 
 ##
 tres = '3h'
-list_var = ['alb', 'temp', 'surf_pres', 'alb', 'sw_down', 'sw_up', 'lw_down', 'lw_up']
+list_var = ['temp', 'surf_pres', 'alb', 'sw_down', 'sw_up', 'lw_down', 'lw_up']
 # 'lw_down',]  # ['temp', 'rh'', 'alb', 'cbh', 'precip', 'windd', 'winds', 'surf_pres', 'sw_down', 'sw_up', 'lw_up',
 # 'lw_down', 'lwp', 'tcc']
 var = ''
@@ -68,6 +69,7 @@ seass = {'all': {'name'      : 'all', 'months': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 
 SMALL_SIZE = 12
 
 myFmt = mdates.DateFormatter('%d-%b')
+letters = list(string.ascii_lowercase)
 
 var_dict = {'c' : {'name' : 'c', 'nanval': '', 'col': 'red', 'col_ori': 'orange',
                    'label': 'CARRA', 'label_uom': ''},
@@ -80,8 +82,6 @@ var_dict = {'c' : {'name' : 'c', 'nanval': '', 'col': 'red', 'col_ori': 'orange'
                    'label_uom': ''},
             't2': {'name'     : 't2', 'nanval': '', 'col': 'purple', 'col_ori': 'violet', 'label': 'AWS_ECAPAC',
                    'label_uom': ''}}
-
-var_names = list(var_dict.keys())
 
 extr = {'alb'      : {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min': -0.5, 'res_max': 0.5,
                       'uom' : '[none]', 'comps': ['c', 'e', 'l'],
@@ -133,8 +133,10 @@ extr = {'alb'      : {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min'
                       't2'  : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()}},
         'lw_down'  : {'name': 'lw_down', 'ref_x': 't', 'min': 0, 'max': 500, 'res_min': -20, 'res_max': 20,
                       'uom' : '[W/m2]', 'comps': ['c', 'e'],
-                      'c'   : {'fn': 'thaao_carra_thermal_surface_radiation_downwards_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
-                      'e'   : {'fn': 'thaao_era5_surface_thermal_radiation_downwards_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
+                      'c'   : {'fn'      : 'thaao_carra_thermal_surface_radiation_downwards_', 'data': pd.DataFrame(),
+                               'data_res': pd.DataFrame()},
+                      'e'   : {'fn'      : 'thaao_era5_surface_thermal_radiation_downwards_', 'data': pd.DataFrame(),
+                               'data_res': pd.DataFrame()},
                       'l'   : {'fn': 'MERGED_SW_LW_UP_DW_METEO_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
                       't'   : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
                       't1'  : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
@@ -187,8 +189,10 @@ extr = {'alb'      : {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min'
                       't2'  : {'fn': 'AWS_THAAO_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()}},
         'sw_down'  : {'name': 'sw_down', 'ref_x': 't', 'min': 0, 'max': 500, 'res_min': -20, 'res_max': 20,
                       'uom' : '[W/m2]', 'comps': ['c', 'e'],
-                      'c'   : {'fn': 'thaao_carra_surface_solar_radiation_downwards_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
-                      'e'   : {'fn': 'thaao_era5_surface_solar_radiation_downwards_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
+                      'c'   : {'fn'      : 'thaao_carra_surface_solar_radiation_downwards_', 'data': pd.DataFrame(),
+                               'data_res': pd.DataFrame()},
+                      'e'   : {'fn'      : 'thaao_era5_surface_solar_radiation_downwards_', 'data': pd.DataFrame(),
+                               'data_res': pd.DataFrame()},
                       'l'   : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
                       't'   : {'fn': 'MERGED_SW_LW_UP_DW_METEO_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
                       't1'  : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
@@ -229,8 +233,6 @@ extr = {'alb'      : {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min'
                       't'   : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
                       't1'  : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
                       't2'  : {'fn': 'AWS_THAAO_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()}}}
-
-# var_names = list(extr.keys())
 
 aws_ecapac_daterange = pd.date_range(start=dt.datetime(2023, 4, 1), end=dt.datetime(2024, 12, 31), freq='1D')
 ceilometer_daterange = pd.date_range(start=dt.datetime(2019, 9, 1), end=dt.datetime(2024, 12, 31), freq='1D')
