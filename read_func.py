@@ -47,7 +47,7 @@ def read_carra():
             print(f'NOT FOUND: {inpt.extr[inpt.var]['c']['fn']}{year}.txt')
     inpt.extr[inpt.var]['c']['data'].index = pd.to_datetime(
             inpt.extr[inpt.var]['c']['data'][0] + ' ' + inpt.extr[inpt.var]['c']['data'][1], format='%Y-%m-%d %H:%M:%S')
-    inpt.extr[inpt.var]['c']['data'].drop(columns=[0, 1], inplace=True)
+    inpt.extr[inpt.var]['c']['data'] = inpt.extr[inpt.var]['c']['data'][[2]]
     inpt.extr[inpt.var]['c']['data'].columns = [inpt.var]
     return
 
@@ -67,7 +67,7 @@ def read_era5():
             print(f'NOT FOUND: {inpt.extr[inpt.var]['e']['fn']}{year}.txt')
     inpt.extr[inpt.var]['e']['data'].index = pd.to_datetime(
             inpt.extr[inpt.var]['e']['data'][0] + ' ' + inpt.extr[inpt.var]['e']['data'][1], format='%Y-%m-%d %H:%M:%S')
-    inpt.extr[inpt.var]['e']['data'].drop(columns=[0, 1], inplace=True)
+    inpt.extr[inpt.var]['e']['data'] = inpt.extr[inpt.var]['e']['data'][[2]]
     inpt.extr[inpt.var]['e']['data'].columns = [inpt.var]
     return
 
@@ -87,7 +87,7 @@ def read_era5_land():
             print(f'NOT FOUND: {inpt.extr[inpt.var]['l']['fn']}{year}.txt')
     inpt.extr[inpt.var]['l']['data'].index = pd.to_datetime(
             inpt.extr[inpt.var]['l']['data'][0] + ' ' + inpt.extr[inpt.var]['l']['data'][1], format='%Y-%m-%d %H:%M:%S')
-    inpt.extr[inpt.var]['l']['data'].drop(columns=[0, 1], inplace=True)
+    inpt.extr[inpt.var]['l']['data'] = inpt.extr[inpt.var]['l']['data'][[4]]
     inpt.extr[inpt.var]['l']['data'].columns = [inpt.var]
     return
 
@@ -138,12 +138,13 @@ def read_thaao_vespa():
         print(f'NOT FOUND: {inpt.extr[inpt.var]['t']['fn']}.txt')
     inpt.extr[inpt.var]['t']['data'].index = pd.to_datetime(
             inpt.extr[inpt.var]['t']['data'][0] + ' ' + inpt.extr[inpt.var]['t']['data'][1], format='%Y-%m-%d %H:%M:%S')
-    inpt.extr[inpt.var]['t']['data'].drop(columns=[0, 1, 3, 4, 5], inplace=True)
+    inpt.extr[inpt.var]['t']['data'] = inpt.extr[inpt.var]['t']['data'][[2]]
+#    inpt.extr[inpt.var]['t']['data'].drop(columns=[0, 1, 3, 4, 5], inplace=True)
     inpt.extr[inpt.var]['t']['data'].columns = [inpt.var]
     return
 
 
-def read_taao_hatpro():
+def read_thaao_hatpro():
     for yy, year in enumerate(inpt.years):
         try:
             t1_tmp = pd.read_table(
@@ -164,7 +165,8 @@ def read_taao_hatpro():
             print(f'OK: {inpt.extr[inpt.var]['t']['fn']}{year}.DAT')
         except FileNotFoundError:
             print(f'NOT FOUND: {inpt.extr[inpt.var]['t']['fn']}{year}.DAT')
-    inpt.extr[inpt.var]['t']['data']['IWV'] = inpt.extr[inpt.var]['t']['data']['IWV'].values
+    inpt.extr[inpt.var]['t']['data'] = inpt.extr[inpt.var]['t']['data'][['IWV']]
+    #inpt.extr[inpt.var]['t']['data']['IWV'] = inpt.extr[inpt.var]['t']['data']['IWV'].values
     inpt.extr[inpt.var]['t']['data'].columns = [inpt.var]
     return
 
@@ -216,86 +218,16 @@ def read_aws_ecapac(param):
     return
 
 
-def read_temp():
-    read_thaao_weather(drop_param=['BP_hPa', 'RH_%'])
-    inpt.extr[inpt.var]['t']['data'] = inpt.extr[inpt.var]['t']['data'] - 273.15
-    read_aws_ecapac(param='AirTC')
-    read_carra()
-    inpt.extr[inpt.var]['c']['data'] = inpt.extr[inpt.var]['c']['data'] - 273.15
-    read_era5()
-    inpt.extr[inpt.var]['e']['data'] = inpt.extr[inpt.var]['e']['data'] - 273.15
-    read_era5_land()
-    inpt.extr[inpt.var]['l']['data'] = inpt.extr[inpt.var]['l']['data'] - 273.15
-
-    return
-
-
-def read_msl_pres():
-    read_carra()
-
-    return
-
-
-def read_surf_pres():
-    read_carra()
-    inpt.extr[inpt.var]['c']['data'] = inpt.extr[inpt.var]['c']['data'] / 100.
-    inpt.extr[inpt.var]['c']['data'][inpt.extr[inpt.var]['c']['data'] <= 900] = np.nan
-
-    read_era5()
-    inpt.extr[inpt.var]['e']['data'] = inpt.extr[inpt.var]['e']['data'] / 100.
-    inpt.extr[inpt.var]['e']['data'][inpt.extr[inpt.var]['e']['data'] <= 900] = np.nan
-
-    read_thaao_weather(drop_param=['Air_K', 'RH_%'])
-    inpt.extr[inpt.var]['t']['data'][inpt.extr[inpt.var]['t']['data'] <= 900] = np.nan
-    inpt.extr[inpt.var]['t']['data'].loc['2021-10-11 00:00:00':'2021-10-19 00:00:00'] = np.nan
-    inpt.extr[inpt.var]['t']['data'].loc['2024-4-26 00:00:00':'2024-5-4 00:00:00'] = np.nan
-
-    read_aws_ecapac(param='BP_mbar')
-    return
-
-
-def read_rh():
-    # TODO: variable cleanup
-
-    # e.g. l_td[l_td_tmp == -32767.0] = np.nan
-
-    read_thaao_weather(drop_param=['BP_hPa', 'Air_K'])
-    read_aws_ecapac(param='RH')
-
-    read_thaao_weather(drop_param=['BP_hPa', 'Air_K'])
-    read_carra()
-
-    read_era5()
-    if inpt.extr[inpt.var]['l']['data'].empty:
-        read_era5(vr='temp')
-    calc_rh_from_tdp()
-
-    read_era5_land()
-    if inpt.extr[inpt.var]['l']['data'].empty:
-        read_era5(vr='temp')
-    calc_rh_from_tdp()
-    return
-
-
-def calc_rh_from_tdp():
-    # TODO not working
-
-    e = pd.concat([inpt.extr[inpt.var]['t']['data'], e_t], axis=1)
-
-    e['rh'] = relative_humidity_from_dewpoint(e['e_t'].values * units.K, e['e_td'].values * units.K).to('percent')
-    inpt.extr[inpt.var]['e']['data'].drop(columns=['e_t', 'e_td'], inplace=True)
-    inpt.extr[inpt.var]['e']['data'].columns = [inpt.var]
-
-    return
-
-
 def read_alb():
     read_carra()
     inpt.extr[inpt.var]['c']['data'] = inpt.extr[inpt.var]['c']['data'] / 100.
-    inpt.extr[inpt.var]['c']['data'][inpt.extr[inpt.var]['c']['data'] <= 0.1] = np.nan
+    inpt.extr[inpt.var]['c']['data'][inpt.extr[inpt.var]['c']['data'] <= 0.] = np.nan
 
     read_era5()
-    inpt.extr[inpt.var]['c']['data'][inpt.extr[inpt.var]['c']['data'] <= 0.1] = np.nan
+    inpt.extr[inpt.var]['c']['data'][inpt.extr[inpt.var]['c']['data'] <= 0.] = np.nan
+
+    read_era5_land()
+    inpt.extr[inpt.var]['l']['data'][inpt.extr[inpt.var]['l']['data'] <= 0.] = np.nan
 
     read_thaao_rad(
             drop_param=['JDAY_UT', 'JDAY_LOC', 'SZA', 'SW_DOWN', 'SW_UP', 'PAR_DOWN', 'PAR_UP', 'LW_DOWN', 'LW_UP',
@@ -304,114 +236,12 @@ def read_alb():
     return
 
 
-def read_winds():
-    read_carra()
-
-    # ERA5
-    fn_u = 'thaao_era5_10m_u_component_of_wind_'
-    fn_v = 'thaao_era5_10m_v_component_of_wind_'
-    e_u = pd.DataFrame()
-    e_v = pd.DataFrame()
-    for yy, year in enumerate(inpt.years):
-        try:
-            e_u_tmp = pd.read_table(
-                    os.path.join(inpt.basefol_e, f'{fn_u}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
-                    engine='python')
-            e_u = pd.concat([e_u, e_u_tmp], axis=0)
-            print(f'OK: {fn_u}{year}.txt')
-        except FileNotFoundError:
-            print(f'NOT FOUND: {fn_u}{year}.txt')
-    e_u.drop(columns=[0, 1], inplace=True)
-
-    for yy, year in enumerate(inpt.years):
-        try:
-            e_v_tmp = pd.read_table(
-                    os.path.join(inpt.basefol_e, f'{fn_v}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
-                    engine='python')
-            e_v = pd.concat([e_v, e_v_tmp], axis=0)
-            print(f'OK: {fn_v}{year}.txt')
-        except FileNotFoundError:
-            print(f'NOT FOUND: {fn_v}{year}.txt')
-    e_v.index = pd.to_datetime(e_v[0] + ' ' + e_v[1], format='%Y-%m-%d %H:%M:%S')
-    e_v.drop(columns=[0, 1], inplace=True)
-
-    e_ws = wind_speed(e_u.values * units('m/s'), e_v.values * units('m/s'))
-
-    e.index = e_v.index
-    e[inpt.var] = e_ws.magnitude
-    e.columns = [inpt.var]
-
-    # AWS ECAPAC
-    read_aws_ecapac(param='WS_aws')
-
-    return
-
-
-def read_windd():
-    read_carra()
-
-    # ERA5
-    fn_u = 'thaao_era5_10m_u_component_of_wind_'
-    fn_v = 'thaao_era5_10m_v_component_of_wind_'
-    e_u = pd.DataFrame()
-    e_v = pd.DataFrame()
-    for yy, year in enumerate(inpt.years):
-        try:
-            e_u_tmp = pd.read_table(
-                    os.path.join(inpt.basefol_e, f'{fn_u}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
-                    engine='python')
-            e_u = pd.concat([e_u, e_u_tmp], axis=0)
-            print(f'OK: {fn_u}{year}.txt')
-        except FileNotFoundError:
-            print(f'NOT FOUND: {fn_u}{year}.txt')
-    e_u.drop(columns=[0, 1], inplace=True)
-
-    for yy, year in enumerate(inpt.years):
-        try:
-            e_v_tmp = pd.read_table(
-                    os.path.join(inpt.basefol_e, f'{fn_v}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
-                    engine='python')
-            e_v = pd.concat([e_v, e_v_tmp], axis=0)
-            print(f'OK: {fn_v}{year}.txt')
-        except FileNotFoundError:
-            print(f'NOT FOUND: {fn_v}{year}.txt')
-    e_v.index = pd.to_datetime(e_v[0] + ' ' + e_v[1], format='%Y-%m-%d %H:%M:%S')
-    e_v.drop(columns=[0, 1], inplace=True)
-
-    e_wd = wind_direction(e_u.values * units('m/s'), e_v.values * units('m/s'))
-    e.index = e_v.index
-    e[inpt.var] = e_wd.magnitude
-    e.columns = [inpt.var]
-
-    # AWS ECAPAC
-    read_aws_ecapac(param='WD_aws')
-
-    return
-
-
-def read_tcc():
-    read_carra()
-    read_era5()
-    inpt.extr[inpt.var]['e']['data'] = inpt.extr[inpt.var]['e']['data'].values * 100.
-
-    read_thaao_ceilometer(param='TCC[okt]')
-
-
 def read_cbh():
     read_carra()
 
     read_era5()
 
     read_thaao_ceilometer(param='CBH_L1[m]')
-    return
-
-
-def read_precip():
-    read_carra()
-    read_era5()
-    inpt.extr[inpt.var]['e']['data'][2] = inpt.extr[inpt.var]['e']['data'].values * 1000.
-
-    read_aws_ecapac(param='PR')
 
     return
 
@@ -570,6 +400,77 @@ def read_lw_up():
     return
 
 
+def read_msl_pres():
+    read_carra()
+
+    return
+
+
+def read_precip():
+    read_carra()
+    read_era5()
+    inpt.extr[inpt.var]['e']['data'][2] = inpt.extr[inpt.var]['e']['data'].values * 1000.
+
+    read_aws_ecapac(param='PR')
+
+    return
+
+
+def read_rh():
+    # TODO: variable cleanup
+
+    # e.g. l_td[l_td_tmp == -32767.0] = np.nan
+
+    read_thaao_weather(drop_param=['BP_hPa', 'Air_K'])
+    read_aws_ecapac(param='RH')
+
+    read_thaao_weather(drop_param=['BP_hPa', 'Air_K'])
+    read_carra()
+
+    read_era5()
+    if inpt.extr[inpt.var]['l']['data'].empty:
+        read_era5(vr='temp')
+    calc_rh_from_tdp()
+
+    read_era5_land()
+    if inpt.extr[inpt.var]['l']['data'].empty:
+        read_era5(vr='temp')
+    calc_rh_from_tdp()
+
+    return
+
+
+def calc_rh_from_tdp():
+    # TODO not working
+
+    e = pd.concat([inpt.extr[inpt.var]['t']['data'], e_t], axis=1)
+
+    e['rh'] = relative_humidity_from_dewpoint(e['e_t'].values * units.K, e['e_td'].values * units.K).to('percent')
+    inpt.extr[inpt.var]['e']['data'].drop(columns=['e_t', 'e_td'], inplace=True)
+    inpt.extr[inpt.var]['e']['data'].columns = [inpt.var]
+
+    return
+
+
+def read_surf_pres():
+    read_carra()
+    inpt.extr[inpt.var]['c']['data'] = inpt.extr[inpt.var]['c']['data'] / 100.
+    inpt.extr[inpt.var]['c']['data'][inpt.extr[inpt.var]['c']['data'] <= 900] = np.nan
+
+    read_era5()
+    inpt.extr[inpt.var]['e']['data'] = inpt.extr[inpt.var]['e']['data'] / 100.
+    inpt.extr[inpt.var]['e']['data'][inpt.extr[inpt.var]['e']['data'] <= 900] = np.nan
+
+    read_thaao_weather(drop_param=['Air_K', 'RH_%'])
+    inpt.extr[inpt.var]['t']['data'][inpt.extr[inpt.var]['t']['data'] <= 900] = np.nan
+    inpt.extr[inpt.var]['t']['data'].loc['2021-10-11 00:00:00':'2021-10-19 00:00:00'] = np.nan
+    inpt.extr[inpt.var]['t']['data'].loc['2024-4-26 00:00:00':'2024-5-4 00:00:00'] = np.nan
+
+    read_aws_ecapac(param='BP_mbar')
+
+    return
+
+
 def read_sw_down():
     read_carra()
     inpt.extr[inpt.var]['c']['data'][inpt.extr[inpt.var]['c']['data'] < 0.] = np.nan
@@ -581,8 +482,8 @@ def read_sw_down():
     inpt.extr[inpt.var]['l']['data'][inpt.extr[inpt.var]['l']['data'] < 0.] = np.nan
 
     read_thaao_rad(
-        drop_param=['JDAY_UT', 'JDAY_LOC', 'SZA', 'SW_UP', 'PAR_DOWN', 'PAR_UP', 'LW_DOWN', 'LW_UP',
-                    'TBP', 'ALBEDO_LW', 'ALBEDO_SW', 'ALBEDO_PAR', 'P', 'T', 'RH', 'PE', 'RR2'])
+            drop_param=['JDAY_UT', 'JDAY_LOC', 'SZA', 'SW_UP', 'PAR_DOWN', 'PAR_UP', 'LW_DOWN', 'LW_UP',
+                        'TBP', 'ALBEDO_LW', 'ALBEDO_SW', 'ALBEDO_PAR', 'P', 'T', 'RH', 'PE', 'RR2'])
     inpt.extr[inpt.var]['t']['data'][inpt.extr[inpt.var]['t']['data'] < 0.] = np.nan
 
     return
@@ -676,8 +577,118 @@ def read_sw_up():
 
     read_thaao_rad(
             drop_param=['JDAY_UT', 'JDAY_LOC', 'SZA', 'SW_DOWN', 'SW_DOWN', 'PAR_DOWN', 'PAR_UP', 'LW_DOWN', 'LW_UP'
-                        'TBP', 'ALBEDO_LW', 'ALBEDO_SW', 'ALBEDO_PAR', 'P', 'T', 'RH', 'PE', 'RR2'])
+                                                                                                             'TBP',
+                        'ALBEDO_LW', 'ALBEDO_SW', 'ALBEDO_PAR', 'P', 'T', 'RH', 'PE', 'RR2'])
     inpt.extr[inpt.var]['t']['data'][inpt.extr[inpt.var]['t']['data'] < 0.] = np.nan
+
+    return
+
+
+def read_tcc():
+    read_carra()
+    read_era5()
+    inpt.extr[inpt.var]['e']['data'] = inpt.extr[inpt.var]['e']['data'].values * 100.
+
+    read_thaao_ceilometer(param='TCC[okt]')
+
+    return
+
+
+def read_temp():
+    read_thaao_weather(drop_param=['BP_hPa', 'RH_%'])
+    inpt.extr[inpt.var]['t']['data'] = inpt.extr[inpt.var]['t']['data'] - 273.15
+    read_aws_ecapac(param='AirTC')
+    read_carra()
+    inpt.extr[inpt.var]['c']['data'] = inpt.extr[inpt.var]['c']['data'] - 273.15
+    read_era5()
+    inpt.extr[inpt.var]['e']['data'] = inpt.extr[inpt.var]['e']['data'] - 273.15
+    read_era5_land()
+    inpt.extr[inpt.var]['l']['data'] = inpt.extr[inpt.var]['l']['data'] - 273.15
+
+    return
+
+
+def read_windd():
+    read_carra()
+
+    # ERA5
+    fn_u = 'thaao_era5_10m_u_component_of_wind_'
+    fn_v = 'thaao_era5_10m_v_component_of_wind_'
+    e_u = pd.DataFrame()
+    e_v = pd.DataFrame()
+    for yy, year in enumerate(inpt.years):
+        try:
+            e_u_tmp = pd.read_table(
+                    os.path.join(inpt.basefol_e, f'{fn_u}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
+                    engine='python')
+            e_u = pd.concat([e_u, e_u_tmp], axis=0)
+            print(f'OK: {fn_u}{year}.txt')
+        except FileNotFoundError:
+            print(f'NOT FOUND: {fn_u}{year}.txt')
+    e_u.drop(columns=[0, 1], inplace=True)
+
+    for yy, year in enumerate(inpt.years):
+        try:
+            e_v_tmp = pd.read_table(
+                    os.path.join(inpt.basefol_e, f'{fn_v}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
+                    engine='python')
+            e_v = pd.concat([e_v, e_v_tmp], axis=0)
+            print(f'OK: {fn_v}{year}.txt')
+        except FileNotFoundError:
+            print(f'NOT FOUND: {fn_v}{year}.txt')
+    e_v.index = pd.to_datetime(e_v[0] + ' ' + e_v[1], format='%Y-%m-%d %H:%M:%S')
+    e_v.drop(columns=[0, 1], inplace=True)
+
+    e_wd = wind_direction(e_u.values * units('m/s'), e_v.values * units('m/s'))
+    e.index = e_v.index
+    e[inpt.var] = e_wd.magnitude
+    e.columns = [inpt.var]
+
+    # AWS ECAPAC
+    read_aws_ecapac(param='WD_aws')
+
+    return
+
+
+def read_winds():
+    read_carra()
+
+    # ERA5
+    fn_u = 'thaao_era5_10m_u_component_of_wind_'
+    fn_v = 'thaao_era5_10m_v_component_of_wind_'
+    e_u = pd.DataFrame()
+    e_v = pd.DataFrame()
+    for yy, year in enumerate(inpt.years):
+        try:
+            e_u_tmp = pd.read_table(
+                    os.path.join(inpt.basefol_e, f'{fn_u}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
+                    engine='python')
+            e_u = pd.concat([e_u, e_u_tmp], axis=0)
+            print(f'OK: {fn_u}{year}.txt')
+        except FileNotFoundError:
+            print(f'NOT FOUND: {fn_u}{year}.txt')
+    e_u.drop(columns=[0, 1], inplace=True)
+
+    for yy, year in enumerate(inpt.years):
+        try:
+            e_v_tmp = pd.read_table(
+                    os.path.join(inpt.basefol_e, f'{fn_v}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
+                    engine='python')
+            e_v = pd.concat([e_v, e_v_tmp], axis=0)
+            print(f'OK: {fn_v}{year}.txt')
+        except FileNotFoundError:
+            print(f'NOT FOUND: {fn_v}{year}.txt')
+    e_v.index = pd.to_datetime(e_v[0] + ' ' + e_v[1], format='%Y-%m-%d %H:%M:%S')
+    e_v.drop(columns=[0, 1], inplace=True)
+
+    e_ws = wind_speed(e_u.values * units('m/s'), e_v.values * units('m/s'))
+
+    e.index = e_v.index
+    e[inpt.var] = e_ws.magnitude
+    e.columns = [inpt.var]
+
+    # AWS ECAPAC
+    read_aws_ecapac(param='WS_aws')
 
     return
 

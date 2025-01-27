@@ -44,7 +44,7 @@ thaao_t = 'thaao'
 
 ##
 tres = '3h'
-list_var = ['temp', 'surf_pres', 'alb']  # 'sw_down', 'sw_up', 'lw_down', 'lw_up']
+list_var = ['alb', 'surf_pres', 'alb']  # 'sw_down', 'sw_up', 'lw_down', 'lw_up']
 # 'lw_down',]  # ['temp', 'rh'', 'alb', 'cbh', 'precip', 'windd', 'winds', 'surf_pres', 'sw_down', 'sw_up', 'lw_up',
 # 'lw_down', 'lwp', 'tcc']
 var = ''
@@ -85,7 +85,7 @@ extr = {'alb'      : {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min'
                       'uom' : '[none]', 'comps': ['c', 'e', 'l'], 'bin_nr': 200,
                       'c'   : {'fn': f'{thaao_c}_albedo_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
                       'e'   : {'fn': f'{thaao_e}_forecast_albedo_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
-                      'l'   : {'fn': f'{thaao_c}_forecast_albedo_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
+                      'l'   : {'fn': f'{thaao_l}_forecast_albedo_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
                       't'   : {'fn': 'MERGED_SW_LW_UP_DW_METEO_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
                       't1'  : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
                       't2'  : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()}},

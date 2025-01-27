@@ -178,14 +178,14 @@ def plot_scatter(period_label):
                 h = axs[i].hist2d(
                         x_s[inpt.var][idx], y_s[inpt.var][idx], bins=[np.linspace(
                                 inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'], inpt.extr[inpt.var]['bin_nr']),
-                                                                      np.linspace(
-                                                                              inpt.extr[inpt.var]['min'],
-                                                                              inpt.extr[inpt.var]['max'],
-                                                                              inpt.extr[inpt.var]['bin_nr'])],
+                            np.linspace(
+                                    inpt.extr[inpt.var]['min'],
+                                    inpt.extr[inpt.var]['max'],
+                                    inpt.extr[inpt.var]['bin_nr'])],
                         cmap=plt.cm.jet,
                         cmin=1, vmin=1)
                 axs[i].text(
-                        0.10, 0.80, f'bin_size={bin_size}',
+                        0.10, 0.90, f'bin_size={bin_size}',
                         transform=axs[i].transAxes)  # fig.colorbar(h[3], ax=axs[i], extend='both')
                 axs[i].set_xlabel(inpt.var_dict[comp]['label'])
 
