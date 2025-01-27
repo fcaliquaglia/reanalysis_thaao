@@ -139,7 +139,7 @@ def plot_scatter(period_label):
     :param period_label:
     :return:
     """
-    print('SCATTERPLOTS')
+    print(f'SCATTERPLOTS {period_label}')
 
     fig, ax = plt.subplots(2, 2, figsize=(12, 12), dpi=300)
     axs = ax.ravel()

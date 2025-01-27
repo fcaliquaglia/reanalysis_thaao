@@ -299,6 +299,7 @@ def read_lw_down():
     read_thaao_rad(
             drop_param=['JDAY_UT', 'JDAY_LOC', 'SZA', 'SW_DOWN', 'SW_UP', 'PAR_DOWN', 'PAR_UP', 'LW_UP',
                         'TBP', 'ALBEDO_LW', 'ALBEDO_SW', 'ALBEDO_PAR', 'P', 'T', 'RH', 'PE', 'RR2'])
+
     inpt.extr[inpt.var]['t']['data'][inpt.extr[inpt.var]['t']['data'] < 0.] = np.nan
 
     return
@@ -358,7 +359,7 @@ def read_lw_up():
             e_tmp = pd.read_table(
                     os.path.join(inpt.basefol_e, f'{fn1}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
                     engine='python')
-            e_tmp[e_tmp == -32767.0] = np.nan
+            e_tmp[e_tmp == inpt.var_dict['e']['nanval']] = np.nan
             e_n = pd.concat([e_n, e_tmp], axis=0)
             print(f'OK: {fn1}{year}.txt')
         except FileNotFoundError:
@@ -373,7 +374,7 @@ def read_lw_up():
             e_tmp = pd.read_table(
                     os.path.join(inpt.basefol_e, f'{fn2}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
                     engine='python')
-            e_tmp[e_tmp == -32767.0] = np.nan
+            e_tmp[e_tmp == inpt.var_dict['e']['nanval']] = np.nan
             e_d = pd.concat([e_d, e_tmp], axis=0)
             print(f'OK: {fn2}{year}.txt')
         except FileNotFoundError:
@@ -542,7 +543,7 @@ def read_sw_up():
             e_tmp = pd.read_table(
                     os.path.join(inpt.basefol_e, f'{fn1}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
                     engine='python')
-            e_tmp[e_tmp == -32767.0] = np.nan
+            e_tmp[e_tmp == inpt.var_dict['e']['nanval']] = np.nan
             e_n = pd.concat([e_n, e_tmp], axis=0)
             print(f'OK: {fn1}{year}.txt')
         except FileNotFoundError:
@@ -557,7 +558,7 @@ def read_sw_up():
             e_tmp = pd.read_table(
                     os.path.join(inpt.basefol_e, f'{fn2}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
                     engine='python')
-            e_tmp[e_tmp == -32767.0] = np.nan
+            e_tmp[e_tmp == inpt.var_dict['e']['nanval']] = np.nan
             e_d = pd.concat([e_d, e_tmp], axis=0)
             print(f'OK: {fn2}{year}.txt')
         except FileNotFoundError:
