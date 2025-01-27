@@ -139,7 +139,7 @@ def read_thaao_vespa():
     inpt.extr[inpt.var]['t']['data'].index = pd.to_datetime(
             inpt.extr[inpt.var]['t']['data'][0] + ' ' + inpt.extr[inpt.var]['t']['data'][1], format='%Y-%m-%d %H:%M:%S')
     inpt.extr[inpt.var]['t']['data'] = inpt.extr[inpt.var]['t']['data'][[2]]
-#    inpt.extr[inpt.var]['t']['data'].drop(columns=[0, 1, 3, 4, 5], inplace=True)
+    #    inpt.extr[inpt.var]['t']['data'].drop(columns=[0, 1, 3, 4, 5], inplace=True)
     inpt.extr[inpt.var]['t']['data'].columns = [inpt.var]
     return
 
@@ -150,24 +150,22 @@ def read_thaao_hatpro():
             t1_tmp = pd.read_table(
                     os.path.join(
                             inpt.basefol_t, 'thaao_hatpro', 'definitivi_da_giando',
-                            f'{inpt.extr[inpt.var]['t']['fn']}{year}',
-                            f'{inpt.extr[inpt.var]['t']['fn']}{year}.DAT'), sep='\s+', engine='python', header=None,
+                            f'{inpt.extr[inpt.var]['t1']['fn']}{year}',
+                            f'{inpt.extr[inpt.var]['t1']['fn']}{year}.DAT'), sep='\s+', engine='python', header=None,
                     skiprows=1)
-            t1_tmp.columns = ['JD_rif', 'IWV', 'STD_IWV', 'RF', 'N']
+            t1_tmp.columns = ['JD_rif', f'{inpt.var.upper()}', f'STD_{inpt.var.upper()}', 'RF', 'N']
             tmp = np.empty(t1_tmp['JD_rif'].shape, dtype=dt.datetime)
             for ii, el in enumerate(t1_tmp['JD_rif']):
                 new_jd_ass = el + julian.to_jd(dt.datetime(year - 1, 12, 31, 0, 0), fmt='jd')
                 tmp[ii] = julian.from_jd(new_jd_ass, fmt='jd')
                 tmp[ii] = tmp[ii].replace(microsecond=0)
             t1_tmp.index = pd.DatetimeIndex(tmp)
-            t1_tmp.drop(columns=['JD_rif', 'STD_IWV', 'RF', 'N'], axis=1, inplace=True)
-            inpt.extr[inpt.var]['t']['data'] = pd.concat([inpt.extr[inpt.var]['t']['data'], t1_tmp], axis=0)
-            print(f'OK: {inpt.extr[inpt.var]['t']['fn']}{year}.DAT')
+            t1_tmp.drop(columns=['JD_rif', f'STD_{inpt.var.upper()}', 'RF', 'N'], axis=1, inplace=True)
+            inpt.extr[inpt.var]['t1']['data'] = pd.concat([inpt.extr[inpt.var]['t1']['data'], t1_tmp], axis=0)
+            print(f'OK: {inpt.extr[inpt.var]['t1']['fn']}{year}.DAT')
         except FileNotFoundError:
-            print(f'NOT FOUND: {inpt.extr[inpt.var]['t']['fn']}{year}.DAT')
-    inpt.extr[inpt.var]['t']['data'] = inpt.extr[inpt.var]['t']['data'][['IWV']]
-    #inpt.extr[inpt.var]['t']['data']['IWV'] = inpt.extr[inpt.var]['t']['data']['IWV'].values
-    inpt.extr[inpt.var]['t']['data'].columns = [inpt.var]
+            print(f'NOT FOUND: {inpt.extr[inpt.var]['t1']['fn']}{year}.DAT')
+    inpt.extr[inpt.var]['t1']['data'].columns = [inpt.var]
     return
 
 
@@ -248,39 +246,19 @@ def read_cbh():
 
 def read_lwp():
     read_carra()
-    inpt.extr[inpt.var]['c']['data'][2] = inpt.extr[inpt.var]['c']['data'].values * 10000000
+    inpt.extr[inpt.var]['c']['data'] = inpt.extr[inpt.var]['c']['data'] * 10000000
     inpt.extr[inpt.var]['c']['data'][inpt.extr[inpt.var]['c']['data'] < 0.01] = np.nan
     # c[c < 15] = 0
 
     read_era5()
-    inpt.extr[inpt.var]['e']['data'][2] = inpt.extr[inpt.var]['e']['data'].values * 1000
+    inpt.extr[inpt.var]['e']['data'] = inpt.extr[inpt.var]['e']['data'] * 1000
     inpt.extr[inpt.var]['e']['data'][inpt.extr[inpt.var]['e']['data'] < 0.01] = np.nan
     # e[e < 15] = 0
 
-    # THAAO (hatpro)
-    fn = 'LWP_15_min_'
-    for yy, year in enumerate(inpt.years):
-        try:
-            t1_tmp = pd.read_table(
-                    os.path.join(
-                            inpt.basefol_t, 'thaao_hatpro', 'definitivi_da_giando', f'{fn}{year}_SITO',
-                            f'{fn}{year}_SITO.dat'), sep='\s+', engine='python')
-            tmp = np.empty(t1_tmp['JD_rif'].shape, dtype=dt.datetime)
-            for ii, el in enumerate(t1_tmp['JD_rif']):
-                new_jd_ass = el + julian.to_jd(dt.datetime(year - 1, 12, 31, 0, 0), fmt='jd')
-                tmp[ii] = julian.from_jd(new_jd_ass, fmt='jd')
-                tmp[ii] = tmp[ii].replace(microsecond=0)
-            t1_tmp.index = pd.DatetimeIndex(tmp)
-            t1_tmp['LWP_gm-2'] = t1_tmp['LWP_gm-2'].values
-            t1_tmp.drop(columns=['JD_rif', 'RF', 'N', 'STD_LWP'], axis=1, inplace=True)
-            t1 = pd.concat([t1, t1_tmp], axis=0)
 
-            print(f'OK: {fn}{year}.dat')
-        except FileNotFoundError:
-            print(f'NOT FOUND: {fn}{year}.dat')
-    t1.columns = [inpt.var]
+    read_thaao_hatpro()
     # cleaning HATPRO DATA
-    t1[t1 < 0.01] = np.nan
+    inpt.extr[inpt.var]['t1']['data'][ inpt.extr[inpt.var]['t1']['data'] < 0.01] = np.nan
     # t1[t1 < 15] = 0
 
     return

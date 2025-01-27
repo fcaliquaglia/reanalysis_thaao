@@ -44,7 +44,7 @@ thaao_t = 'thaao'
 
 ##
 tres = '3h'
-list_var = ['temp'] #, 'lw_down', 'sw_down']  # 'sw_down', 'sw_up', 'lw_down', 'lw_up']
+list_var = ['lwp'] #, 'lw_down', 'sw_down']  # 'sw_down', 'sw_up', 'lw_down', 'lw_up']
 # 'lw_down',]  # ['temp', 'rh', 'alb', 'cbh', 'precip', 'windd', 'winds', 'surf_pres', 'sw_down', 'sw_up', 'lw_up',
 # 'lw_down', 'lwp', 'tcc']
 var = ''
@@ -127,7 +127,7 @@ extr = {'alb'      : {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min'
                                'data_res': pd.DataFrame()},
                       'l'   : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
                       't'   : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
-                      't1'  : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
+                      't1'  : {'fn': 'LWP_15_min_', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
                       't2'  : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()}},
         'lw_down'  : {'name': 'lw_down', 'ref_x': 't', 'min': 0, 'max': 500, 'res_min': -20, 'res_max': 20,
                       'uom' : '[W/m2]', 'comps': ['c', 'e'], 'bin_nr': 200,
