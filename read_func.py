@@ -92,7 +92,7 @@ def read_era5_land():
             l_tmp = pd.read_table(
                     os.path.join(inpt.basefol_l, f'{inpt.extr[inpt.var]['l']['fn']}{year}.txt'), skipfooter=1,
                     sep='\s+', header=None, skiprows=1, engine='python')
-            if l_tmp[0].values[-1].startswith('cdo'):
+            if l_tmp[0].values[0].startswith('cdo'):
                 l_tmp = pd.read_table(
                         os.path.join(inpt.basefol_l, f'{inpt.extr[inpt.var]['l']['fn']}{year}.txt'), sep='\s+',
                         header=None, skiprows=2, engine='python')
@@ -100,7 +100,6 @@ def read_era5_land():
                 l_tmp = pd.read_table(
                         os.path.join(inpt.basefol_l, f'{inpt.extr[inpt.var]['l']['fn']}{year}.txt'), sep='\s+',
                         header=None, skiprows=2, engine='python', skipfooter=1)
-
             l_tmp[l_tmp == inpt.var_dict['l']['nanval']] = np.nan
             inpt.extr[inpt.var]['l']['data'] = pd.concat([inpt.extr[inpt.var]['l']['data'], l_tmp], axis=0)
             print(f'OK: {inpt.extr[inpt.var]['l']['fn']}{year}.txt')
