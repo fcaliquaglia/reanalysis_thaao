@@ -44,7 +44,7 @@ thaao_t = 'thaao'
 
 ##
 tres = '3h'
-list_var = ['lw_down', 'sw_down']  # , 'lw_down', 'sw_down']  # 'sw_down', 'sw_up', 'lw_down', 'lw_up']
+list_var = ['sw_down', 'lw_down']  # , 'lw_down', 'sw_down']  # 'sw_down', 'sw_up', 'lw_down', 'lw_up']
 # 'lw_down',]  # ['temp', 'rh', 'alb', 'cbh', 'precip', 'windd', 'winds', 'surf_pres', 'sw_down', 'sw_up', 'lw_up',
 # 'lw_down', 'lwp', 'tcc']
 var = ''
@@ -213,7 +213,7 @@ extr = {'alb'      : {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min'
                                'data_res': pd.DataFrame()}},
         'sw_down'  : {'name': 'sw_down', 'ref_x': 't', 'min': 0, 'max': 500, 'res_min': -20, 'res_max': 20,
                       'uom' : '[W/m2]', 'comps': ['c', 'e', 'l'], 'bin_nr': 200,
-                      'c'   : {'fn'  : f'{thaao_c}_surface_solar_radiation_downwards_', 'col_nr': 2,
+                      'c'   : {'fn'  : f'{thaao_c}_surface_solar_radiation_downwards_', 'col_nr': 4,
                                'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
                       'e'   : {'fn'  : f'{thaao_e}_surface_solar_radiation_downwards_', 'col_nr': 2,
                                'data': pd.DataFrame(), 'data_res': pd.DataFrame()},

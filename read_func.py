@@ -38,12 +38,12 @@ def read_carra():
     for year in inpt.years:
         try:
             c_tmp = pd.read_table(
-                    os.path.join(inpt.basefol_c, f'{inpt.extr[inpt.var]['c']['fn']}{year}.txt'), skipfooter=1,
+                    os.path.join(inpt.basefol_c, f'{inpt.extr[inpt.var]['c']['fn']}{year}.txt'),
                     sep='\s+', header=None, skiprows=1, engine='python')
             if c_tmp[0][0] == 'cdo(1)':
                 c_tmp = pd.read_table(
-                        os.path.join(inpt.basefol_c, f'{inpt.extr[inpt.var]['c']['fn']}{year}.txt'), skipfooter=1,
-                        sep='\s+', header=None, skiprows=2, engine='python')
+                        os.path.join(inpt.basefol_c, f'{inpt.extr[inpt.var]['c']['fn']}{year}.txt'), sep='\s+',
+                        header=None, skiprows=2, engine='python')
             c_tmp[c_tmp == inpt.var_dict['c']['nanval']] = np.nan
             inpt.extr[inpt.var]['c']['data'] = pd.concat([inpt.extr[inpt.var]['c']['data'], c_tmp], axis=0)
             print(f'OK: {inpt.extr[inpt.var]['c']['fn']}{year}.txt')
@@ -64,8 +64,8 @@ def read_era5():
                     sep='\s+', header=None, skiprows=1, engine='python')
             if e_tmp[0][0] == 'cdo(1)':
                 e_tmp = pd.read_table(
-                        os.path.join(inpt.basefol_e, f'{inpt.extr[inpt.var]['e']['fn']}{year}.txt'), skipfooter=1,
-                        sep='\s+', header=None, skiprows=2, engine='python')
+                        os.path.join(inpt.basefol_e, f'{inpt.extr[inpt.var]['e']['fn']}{year}.txt'), sep='\s+',
+                        header=None, skiprows=2, engine='python')
             e_tmp[e_tmp == inpt.var_dict['e']['nanval']] = np.nan
             inpt.extr[inpt.var]['e']['data'] = pd.concat([inpt.extr[inpt.var]['e']['data'], e_tmp], axis=0)
             print(f'OK: {inpt.extr[inpt.var]['e']['fn']}{year}.txt')
@@ -86,8 +86,8 @@ def read_era5_land():
                     sep='\s+', header=None, skiprows=1, engine='python')
             if l_tmp[0][0] == 'cdo(1)':
                 l_tmp = pd.read_table(
-                        os.path.join(inpt.basefol_l, f'{inpt.extr[inpt.var]['l']['fn']}{year}.txt'), skipfooter=1,
-                        sep='\s+', header=None, skiprows=2, engine='python')
+                        os.path.join(inpt.basefol_l, f'{inpt.extr[inpt.var]['l']['fn']}{year}.txt'), sep='\s+',
+                        header=None, skiprows=2, engine='python')
             l_tmp[l_tmp == inpt.var_dict['l']['nanval']] = np.nan
             inpt.extr[inpt.var]['l']['data'] = pd.concat([inpt.extr[inpt.var]['l']['data'], l_tmp], axis=0)
             print(f'OK: {inpt.extr[inpt.var]['l']['fn']}{year}.txt')
