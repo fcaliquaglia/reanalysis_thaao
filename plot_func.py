@@ -73,10 +73,10 @@ def plot_ts(period_label):
         else:
             pass
         ax[yy].set_ylim(inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'])
-        ax[yy].text(0.45, 0.85, year, transform=ax[yy].transAxes)
+        ax[yy].text(0.5, 0.90, year, transform=ax[yy].transAxes, horizontalalignment ='center')
         ax[yy].xaxis.set_major_formatter(inpt.myFmt)
         ax[yy].set_xlim(dt.datetime(year, 1, 1), dt.datetime(year, 12, 31))
-        ax[yy].text(0.01, 0.90, inpt.letters[yy] + ')', transform=ax[yy].transAxes)
+        ax[yy].text(0.01, 0.95, inpt.letters[yy] + ')', transform=ax[yy].transAxes)
     plt.xlabel('Time')
     plt.legend(ncol=2)
     plt.savefig(os.path.join(inpt.basefol_out, inpt.tres, f"{inpt.tres}_{period_label}_{inpt.var}.png"))
@@ -122,11 +122,11 @@ def plot_residuals(period_label):
             pass
 
         ax[yy].set_ylim(inpt.extr[inpt.var]['res_min'], inpt.extr[inpt.var]['res_max'])
-        ax[yy].text(0.45, 0.85, year, transform=ax[yy].transAxes)
+        ax[yy].text(0.5, 0.90, year, transform=ax[yy].transAxes, horizontalalignment ='center')
         ax[yy].xaxis.set_major_formatter(inpt.myFmt)
         ax[yy].set_xlim(dt.datetime(year, 1, 1), dt.datetime(year, 12, 31))
         # panel letters
-        ax[yy].text(0.01, 0.90, inpt.letters[yy] + ')', transform=ax[yy].transAxes)
+        ax[yy].text(0.01, 0.95, inpt.letters[yy] + ')', transform=ax[yy].transAxes)
     plt.xlabel('Time')
     plt.legend()
     plt.savefig(os.path.join(inpt.basefol_out, inpt.tres, f"{inpt.tres}_{period_label}_residuals_{inpt.var}.png"))
@@ -196,7 +196,7 @@ def plot_scatter(period_label):
 
             axs[i].set_xlim(inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'])
             axs[i].set_ylim(inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'])
-            axs[i].text(0.05, 0.95, inpt.letters[i] + ')', transform=axs[i].transAxes)
+            axs[i].text(0.01, 0.95, inpt.letters[i] + ')', transform=axs[i].transAxes)
             axs[i].plot(
                     [inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max']],
                     [inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max']],
@@ -262,7 +262,7 @@ def plot_scatter_cum():
 
                 axs[i].set_xlim(inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'])
                 axs[i].set_ylim(inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'])
-                axs[i].text(0.05, 0.95, inpt.letters[i] + ')', transform=axs[i].transAxes)
+                axs[i].text(0.01, 0.95, inpt.letters[i] + ')', transform=axs[i].transAxes)
                 axs[i].plot(
                         [inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max']],
                         [inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max']],
