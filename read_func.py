@@ -102,54 +102,56 @@ def read_thaao_weather(vr=inpt.var):
 
 
 def read_thaao_rad(vr=inpt.var):
-    for yy, year in enumerate(inpt.years):
+    for i in inpt.aws_rad_daterange[inpt.aws_rad_daterange.year.isin(inpt.years)]:
+        i_fmt = int(i.strftime('%Y'))
         try:
             t_tmp = pd.read_table(
-                    os.path.join(inpt.basefol_t, 'thaao_rad', f'{inpt.extr[vr]['t']['fn']}{year}_5MIN.dat'),
+                    os.path.join(inpt.basefol_t, 'thaao_rad', f'{inpt.extr[vr]['t']['fn']}{i_fmt}_5MIN.dat'),
                     engine='python',
                     skiprows=None, header=0, decimal='.', sep='\s+')
             tmp = np.empty(t_tmp['JDAY_UT'].shape, dtype=dt.datetime)
             for ii, el in enumerate(t_tmp['JDAY_UT']):
-                new_jd_ass = el + julian.to_jd(dt.datetime(year - 1, 12, 31, 0, 0), fmt='jd')
+                new_jd_ass = el + julian.to_jd(dt.datetime(i_fmt - 1, 12, 31, 0, 0), fmt='jd')
                 tmp[ii] = julian.from_jd(new_jd_ass, fmt='jd')
                 tmp[ii] = tmp[ii].replace(microsecond=0)
             t_tmp.index = pd.DatetimeIndex(tmp)
             t_tmp = t_tmp[[inpt.extr[vr]['t']['column']]]
             inpt.extr[vr]['t']['data'] = pd.concat([inpt.extr[vr]['t']['data'], t_tmp], axis=0)
-            print(f'OK: {inpt.extr[vr]['t']['fn']}{year}.txt')
+            print(f'OK: {inpt.extr[vr]['t']['fn']}{i_fmt}.txt')
         except FileNotFoundError:
-            print(f'NOT FOUND: {inpt.extr[vr]['t']['fn']}{year}.txt')
+            print(f'NOT FOUND: {inpt.extr[vr]['t']['fn']}{i_fmt}.txt')
     inpt.extr[vr]['t']['data'].columns = [vr]
     return
 
 
 def read_thaao_hatpro(vr=inpt.var):
-    for yy, year in enumerate(inpt.years):
+    for i in inpt.aws_hatpro_daterange[inpt.aws_hatpro_daterange.year.isin(inpt.years)]:
+        i_fmt = int(i.strftime('%Y'))
         try:
             t1_tmp = pd.read_table(
                     os.path.join(
                             inpt.basefol_t, 'thaao_hatpro', 'definitivi_da_giando',
-                            f'{inpt.extr[vr]['t1']['fn']}{year}',
-                            f'{inpt.extr[vr]['t1']['fn']}{year}.DAT'), sep='\s+', engine='python', header=None,
+                            f'{inpt.extr[vr]['t1']['fn']}{i_fmt}',
+                            f'{inpt.extr[vr]['t1']['fn']}{i_fmt}.DAT'), sep='\s+', engine='python', header=None,
                     skiprows=1)
             t1_tmp.columns = ['JD_rif', f'{vr.upper()}', f'STD_{vr.upper()}', 'RF', 'N']
             tmp = np.empty(t1_tmp['JD_rif'].shape, dtype=dt.datetime)
             for ii, el in enumerate(t1_tmp['JD_rif']):
-                new_jd_ass = el + julian.to_jd(dt.datetime(year - 1, 12, 31, 0, 0), fmt='jd')
+                new_jd_ass = el + julian.to_jd(dt.datetime(i_fmt - 1, 12, 31, 0, 0), fmt='jd')
                 tmp[ii] = julian.from_jd(new_jd_ass, fmt='jd')
                 tmp[ii] = tmp[ii].replace(microsecond=0)
             t1_tmp.index = pd.DatetimeIndex(tmp)
             t1_tmp.drop(columns=['JD_rif', f'STD_{vr.upper()}', 'RF', 'N'], axis=1, inplace=True)
             inpt.extr[vr]['t1']['data'] = pd.concat([inpt.extr[vr]['t1']['data'], t1_tmp], axis=0)
-            print(f'OK: {inpt.extr[vr]['t1']['fn']}{year}.DAT')
+            print(f'OK: {inpt.extr[vr]['t1']['fn']}{i_fmt}.DAT')
         except FileNotFoundError:
-            print(f'NOT FOUND: {inpt.extr[vr]['t1']['fn']}{year}.DAT')
+            print(f'NOT FOUND: {inpt.extr[vr]['t1']['fn']}{i_fmt}.DAT')
     inpt.extr[vr]['t1']['data'].columns = [vr]
     return
 
 
 def read_thaao_ceilometer(vr=inpt.var):
-    for i in inpt.ceilometer_daterange:
+    for i in inpt.aws_ceilometer_daterange[inpt.aws_ceilometer_daterange.year.isin(inpt.years)]:
         i_fmt = i.strftime('%Y%m%d')
         try:
             t_tmp = pd.read_table(
@@ -578,44 +580,44 @@ def read_temp():
     return
 
 
-def read_windd():
-    # CARRA
-    read_carra()
-
-    # ERA5
-    fn_u = 'thaao_era5_10m_u_component_of_wind_'
-    fn_v = 'thaao_era5_10m_v_component_of_wind_'
-    e_u = pd.DataFrame()
-    e_v = pd.DataFrame()
-    for yy, year in enumerate(inpt.years):
-        try:
-            e_u_tmp = pd.read_table(
-                    os.path.join(inpt.basefol_e, f'{fn_u}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
-                    engine='python')
-            e_u = pd.concat([e_u, e_u_tmp], axis=0)
-            print(f'OK: {fn_u}{year}.txt')
-        except FileNotFoundError:
-            print(f'NOT FOUND: {fn_u}{year}.txt')
-    e_u.drop(columns=[0, 1], inplace=True)
-
-    for yy, year in enumerate(inpt.years):
-        try:
-            e_v_tmp = pd.read_table(
-                    os.path.join(inpt.basefol_e, f'{fn_v}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
-                    engine='python')
-            e_v = pd.concat([e_v, e_v_tmp], axis=0)
-            print(f'OK: {fn_v}{year}.txt')
-        except FileNotFoundError:
-            print(f'NOT FOUND: {fn_v}{year}.txt')
-    e_v.index = pd.to_datetime(e_v[0] + ' ' + e_v[1], format='%Y-%m-%d %H:%M:%S')
-    e_v.drop(columns=[0, 1], inplace=True)
-
-    e_wd = wind_direction(e_u.values * units('m/s'), e_v.values * units('m/s'))
-    e.index = e_v.index
-    e[inpt.var] = e_wd.magnitude
-    e.columns = [inpt.var]
-
-    return
+# def read_windd():
+#     # CARRA
+#     read_carra()
+#
+#     # ERA5
+#     fn_u = 'thaao_era5_10m_u_component_of_wind_'
+#     fn_v = 'thaao_era5_10m_v_component_of_wind_'
+#     e_u = pd.DataFrame()
+#     e_v = pd.DataFrame()
+#     for yy, year in enumerate(inpt.years):
+#         try:
+#             e_u_tmp = pd.read_table(
+#                     os.path.join(inpt.basefol_e, f'{fn_u}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
+#                     engine='python')
+#             e_u = pd.concat([e_u, e_u_tmp], axis=0)
+#             print(f'OK: {fn_u}{year}.txt')
+#         except FileNotFoundError:
+#             print(f'NOT FOUND: {fn_u}{year}.txt')
+#     e_u.drop(columns=[0, 1], inplace=True)
+#
+#     for yy, year in enumerate(inpt.years):
+#         try:
+#             e_v_tmp = pd.read_table(
+#                     os.path.join(inpt.basefol_e, f'{fn_v}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
+#                     engine='python')
+#             e_v = pd.concat([e_v, e_v_tmp], axis=0)
+#             print(f'OK: {fn_v}{year}.txt')
+#         except FileNotFoundError:
+#             print(f'NOT FOUND: {fn_v}{year}.txt')
+#     e_v.index = pd.to_datetime(e_v[0] + ' ' + e_v[1], format='%Y-%m-%d %H:%M:%S')
+#     e_v.drop(columns=[0, 1], inplace=True)
+#
+#     e_wd = wind_direction(e_u.values * units('m/s'), e_v.values * units('m/s'))
+#     e.index = e_v.index
+#     e[inpt.var] = e_wd.magnitude
+#     e.columns = [inpt.var]
+#
+#     return
 
 
 def read_wind():
@@ -629,19 +631,30 @@ def read_wind():
     e_ws = wind_speed(
             inpt.extr['windu']['e']['data'].values * units('m/s'),
             inpt.extr['windv']['e']['data'].values * units('m/s'))
-    inpt.extr['winds']['e']['data'].index = inpt.extr['windu']['e']['data'].index
-    inpt.extr['winds']['e']['data'] = e_ws.magnitude
-    inpt.extr['winds']['e']['data'].columns = ['winds']
+    inpt.extr['winds']['e']['data'] = pd.DataFrame(
+        index=inpt.extr['windu']['e']['data'].index, data=e_ws.magnitude, columns=['winds'])
+
+    e_wd = wind_direction(
+            inpt.extr['windu']['e']['data'].values * units('m/s'),
+            inpt.extr['windv']['e']['data'].values * units('m/s'))
+    inpt.extr['windd']['e']['data'] = pd.DataFrame(
+        index=inpt.extr['windu']['e']['data'].index, data=e_wd.magnitude, columns=['windd'])
 
     # ERA5-LAND
-    read_era5_land(vr='windu')
-    read_era5_land(vr='windv')
-    l_ws = wind_speed(
-            inpt.extr['windu']['l']['data'].values * units('m/s'),
-            inpt.extr['windv']['l']['data'].values * units('m/s'))
-    inpt.extr['winds']['l']['data'].index = inpt.extr['windu']['l']['data'].index
-    inpt.extr['winds']['l']['data'] = l_ws.magnitude
-    inpt.extr['winds']['l']['data'].columns = ['winds']
+    # TODO activate when files are available
+    # read_era5_land(vr='windu')
+    # read_era5_land(vr='windv')
+    # l_ws = wind_speed(
+    #         inpt.extr['windu']['l']['data'].values * units('m/s'),
+    #         inpt.extr['windv']['l']['data'].values * units('m/s'))
+    # inpt.extr['winds']['l']['data'] = pd.DataFrame(
+    #     index=inpt.extr['windu']['l']['data'].index, data=l_ws.magnitude, columns=['winds'])
+    #
+    # l_wd = wind_direction(
+    #         inpt.extr['windu']['l']['data'].values * units('m/s'),
+    #         inpt.extr['windv']['l']['data'].values * units('m/s'))
+    # inpt.extr['windd']['l']['data'] = pd.DataFrame(
+    #     index=inpt.extr['windu']['l']['data'].index, data=l_wd.magnitude, columns=['windd'])
 
     # THAAO2
     read_aws_ecapac(vr='WS_aws')
@@ -650,17 +663,17 @@ def read_wind():
     return
 
 
-def extract_values(fn, year):
-    if not os.path.exists(os.path.join(inpt.basefol_c, fn + str(year) + '.nc')):
-        try:
-            filen = os.path.join(inpt.basefol_t, 'reanalysis', 'carra', '_'.join(fn.split('_')[1:]) + str(year) + '.nc')
-            NC = xr.open_dataset(str(filen), decode_cf=True, decode_times=True)
-
-            # tmp = NC.sel(x=y, y=x, method='nearest')
-        except FileNotFoundError:
-            print(f'cannot find {filen}')
-
-    return f'thaao_{fn}'
+# def extract_values(fn, year):
+#     if not os.path.exists(os.path.join(inpt.basefol_c, fn + str(year) + '.nc')):
+#         try:
+#             filen = os.path.join(inpt.basefol_t, 'reanalysis', 'carra', '_'.join(fn.split('_')[1:]) + str(year) + '.nc')
+#             NC = xr.open_dataset(str(filen), decode_cf=True, decode_times=True)
+#
+#             # tmp = NC.sel(x=y, y=x, method='nearest')
+#         except FileNotFoundError:
+#             print(f'cannot find {filen}')
+#
+#     return f'thaao_{fn}'
 
 
 def read():
