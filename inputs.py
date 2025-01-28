@@ -44,9 +44,9 @@ thaao_t = 'thaao'
 
 ##
 tres = '3h'
-list_var = ['tcc']
+list_var = ['wind']
 # OK ['cbh', 'alb', 'temp', 'sw_down', 'lw_down']
-# NOT OK []
+# NOT OK ['tcc']
 # 'lw_down',]  # ['', 'rh', 'alb',', 'precip', 'windd', 'winds', 'surf_pres', 'sw_down', 'sw_up', 'lw_up',
 # 'lw_down', 'lwp', 'tcc']'sw_up', 'lw_down']
 var = ''
@@ -280,9 +280,9 @@ extr = {'alb'      : {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min'
                       'uom' : '[m/s]', 'comps': ['c', 'e', 't', 't1'], 'bin_nr': 200,
                       'c'   : {'fn'      : f'', 'column': np.nan, 'data': pd.DataFrame(),
                                'data_res': pd.DataFrame()},
-                      'e'   : {'fn'  : f'{thaao_c}_10m_u_component_of_wind_', 'column': 2,
+                      'e'   : {'fn'  : f'{thaao_e}_10m_u_component_of_wind_', 'column': 4,
                                'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
-                      'l'   : {'fn'  : f'{thaao_l}_10m_u_component_of_wind_', 'column': 2,
+                      'l'   : {'fn'  : f'{thaao_l}_10m_u_component_of_wind_', 'column': 4,
                                'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
                       't'   : {'fn': '', 'column': np.nan, 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
                       't1'  : {'fn': '', 'column': np.nan, 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
@@ -292,7 +292,7 @@ extr = {'alb'      : {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min'
                       'uom' : '[m/s]', 'comps': ['c', 'e', 't', 't1'], 'bin_nr': 200,
                       'c'   : {'fn'      : f'', 'column': np.nan, 'data': pd.DataFrame(),
                                'data_res': pd.DataFrame()},
-                      'e'   : {'fn'  : f'{thaao_c}_10m_v_component_of_wind_', 'column': 2,
+                      'e'   : {'fn'  : f'{thaao_e}_10m_v_component_of_wind_', 'column': 2,
                                'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
                       'l'   : {'fn'  : f'{thaao_l}_10m_v_component_of_wind_', 'column': 2,
                                'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
