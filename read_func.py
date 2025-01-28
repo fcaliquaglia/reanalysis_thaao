@@ -657,8 +657,8 @@ def read_wind():
     #     index=inpt.extr['windu']['l']['data'].index, data=l_wd.magnitude, columns=['windd'])
 
     # THAAO2
-    read_aws_ecapac(vr='WS_aws')
-    read_aws_ecapac(vr='WD_aws')
+    read_aws_ecapac(vr='winds')
+    read_aws_ecapac(vr='windd')
 
     return
 
