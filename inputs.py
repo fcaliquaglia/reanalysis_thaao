@@ -44,9 +44,11 @@ thaao_t = 'thaao'
 
 ##
 tres = '3h'
-list_var = ['sw_down']  # ['temp', 'lw_down', 'sw_down']  # 'sw_down', 'sw_up', 'lw_down', 'lw_up']
-# 'lw_down',]  # ['temp', 'rh', 'alb', 'cbh', 'precip', 'windd', 'winds', 'surf_pres', 'sw_down', 'sw_up', 'lw_up',
-# 'lw_down', 'lwp', 'tcc']
+list_var = ['cbh']
+# OK ['alb', 'temp', 'sw_down', 'lw_down']
+# NOT OK []
+# 'lw_down',]  # ['', 'rh', 'alb',', 'precip', 'windd', 'winds', 'surf_pres', 'sw_down', 'sw_up', 'lw_up',
+# 'lw_down', 'lwp', 'tcc']'sw_up', 'lw_down']
 var = ''
 
 years = np.arange(2022, 2024, 1)
@@ -101,7 +103,7 @@ extr = {'alb'      : {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min'
                       'e'   : {'fn'      : f'{thaao_e}_cloud_base_height_', 'column': 2, 'data': pd.DataFrame(),
                                'data_res': pd.DataFrame()},
                       'l'   : {'fn': '', 'column': np.nan, 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
-                      't'   : {'fn'      : '_Thule_CHM190147_000_0060cloud', 'column': 2, 'data': pd.DataFrame(),
+                      't'   : {'fn'      : '_Thule_CHM190147_000_0060cloud', 'column': 'CBH_L1[m]', 'data': pd.DataFrame(),
                                'data_res': pd.DataFrame()},
                       't1'  : {'fn': '', 'column': np.nan, 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
                       't2'  : {'fn': '', 'column': np.nan, 'data': pd.DataFrame(), 'data_res': pd.DataFrame()}},
@@ -250,7 +252,7 @@ extr = {'alb'      : {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min'
                       'e'   : {'fn'      : f'{thaao_e}_total_cloud_cover_', 'column': 2, 'data': pd.DataFrame(),
                                'data_res': pd.DataFrame()},
                       'l'   : {'fn': '', 'column': np.nan, 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
-                      't'   : {'fn'      : '_Thule_CHM190147_000_0060cloud', 'column': np.nan, 'data': pd.DataFrame(),
+                      't'   : {'fn'      : '_Thule_CHM190147_000_0060cloud', 'column': 'TCC[okt]', 'data': pd.DataFrame(),
                                'data_res': pd.DataFrame()},
                       't1'  : {'fn': '', 'column': np.nan, 'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
                       't2'  : {'fn': '', 'column': np.nan, 'data': pd.DataFrame(), 'data_res': pd.DataFrame()}},

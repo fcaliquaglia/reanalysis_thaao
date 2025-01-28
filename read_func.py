@@ -40,14 +40,6 @@ def read_carra():
             c_tmp = pd.read_table(
                     os.path.join(inpt.basefol_c, f'{inpt.extr[inpt.var]['c']['fn']}{year}.txt'),
                     sep='\s+', header=None, skiprows=1, engine='python', skip_blank_lines=True)
-            if c_tmp[0].values[0].startswith('cdo'):
-                c_tmp = pd.read_table(
-                        os.path.join(inpt.basefol_c, f'{inpt.extr[inpt.var]['c']['fn']}{year}.txt'), sep='\s+',
-                        header=None, skiprows=2, engine='python', skip_blank_lines=True)
-            if c_tmp[0].values[-1].startswith('cdo'):
-                c_tmp = pd.read_table(
-                        os.path.join(inpt.basefol_c, f'{inpt.extr[inpt.var]['c']['fn']}{year}.txt'), sep='\s+',
-                        header=None, skiprows=1, engine='python', skip_blank_lines=True, skipfooter=1)
             c_tmp[c_tmp == inpt.var_dict['c']['nanval']] = np.nan
             inpt.extr[inpt.var]['c']['data'] = pd.concat([inpt.extr[inpt.var]['c']['data'], c_tmp], axis=0)
             print(f'OK: {inpt.extr[inpt.var]['c']['fn']}{year}.txt')
@@ -64,16 +56,8 @@ def read_era5():
     for year in inpt.years:
         try:
             e_tmp = pd.read_table(
-                    os.path.join(inpt.basefol_e, f'{inpt.extr[inpt.var]['e']['fn']}{year}.txt'), skipfooter=1,
+                    os.path.join(inpt.basefol_e, f'{inpt.extr[inpt.var]['e']['fn']}{year}.txt'),
                     sep='\s+', header=None, skiprows=1, engine='python')
-            if e_tmp[0].values[0].startswith('cdo'):
-                e_tmp = pd.read_table(
-                        os.path.join(inpt.basefol_e, f'{inpt.extr[inpt.var]['e']['fn']}{year}.txt'), sep='\s+',
-                        header=None, skiprows=2, engine='python')
-            if e_tmp[0].values[-1].startswith('cdo'):
-                e_tmp = pd.read_table(
-                        os.path.join(inpt.basefol_e, f'{inpt.extr[inpt.var]['e']['fn']}{year}.txt'), sep='\s+',
-                        header=None, skiprows=2, engine='python', skipfooter=1)
             e_tmp[e_tmp == inpt.var_dict['e']['nanval']] = np.nan
             inpt.extr[inpt.var]['e']['data'] = pd.concat([inpt.extr[inpt.var]['e']['data'], e_tmp], axis=0)
             print(f'OK: {inpt.extr[inpt.var]['e']['fn']}{year}.txt')
@@ -90,16 +74,8 @@ def read_era5_land():
     for year in inpt.years:
         try:
             l_tmp = pd.read_table(
-                    os.path.join(inpt.basefol_l, f'{inpt.extr[inpt.var]['l']['fn']}{year}.txt'), skipfooter=1,
+                    os.path.join(inpt.basefol_l, f'{inpt.extr[inpt.var]['l']['fn']}{year}.txt'),
                     sep='\s+', header=None, skiprows=1, engine='python')
-            if l_tmp[0].values[0].startswith('cdo'):
-                l_tmp = pd.read_table(
-                        os.path.join(inpt.basefol_l, f'{inpt.extr[inpt.var]['l']['fn']}{year}.txt'), sep='\s+',
-                        header=None, skiprows=2, engine='python')
-            if l_tmp[0].values[-1].startswith('cdo'):
-                l_tmp = pd.read_table(
-                        os.path.join(inpt.basefol_l, f'{inpt.extr[inpt.var]['l']['fn']}{year}.txt'), sep='\s+',
-                        header=None, skiprows=2, engine='python', skipfooter=1)
             l_tmp[l_tmp == inpt.var_dict['l']['nanval']] = np.nan
             inpt.extr[inpt.var]['l']['data'] = pd.concat([inpt.extr[inpt.var]['l']['data'], l_tmp], axis=0)
             print(f'OK: {inpt.extr[inpt.var]['l']['fn']}{year}.txt')
@@ -172,12 +148,8 @@ def read_thaao_hatpro():
     return
 
 
-def read_thaao_ceilometer(param):
-    """
+def read_thaao_ceilometer():
 
-    :param param:
-    :return:
-    """
     for i in inpt.ceilometer_daterange:
         i_fmt = i.strftime('%Y%m%d')
         try:
@@ -197,7 +169,7 @@ def read_thaao_ceilometer(param):
             inpt.extr[inpt.var]['t']['data']['#'] + ' ' + inpt.extr[inpt.var]['t']['data']['date[y-m-d]time[h:m:s]'],
             format='%Y-%m-%d %H:%M:%S')
     inpt.extr[inpt.var]['t']['data'].index.name = 'datetime'
-    inpt.extr[inpt.var]['t']['data'] = inpt.extr[inpt.var]['t']['data'].iloc[:, :].filter([param]).astype(float)
+    inpt.extr[inpt.var]['t']['data'] = inpt.extr[inpt.var]['t']['data'].iloc[:, :].filter([inpt.extr[inpt.var]['t2']['column']]).astype(float)
     inpt.extr[inpt.var]['t']['data'].columns = [inpt.var]
 
     return
@@ -253,7 +225,7 @@ def read_cbh():
     read_era5()
 
     # THAAO
-    read_thaao_ceilometer(param='CBH_L1[m]')
+    read_thaao_ceilometer()
 
     return
 
@@ -579,7 +551,7 @@ def read_tcc():
     inpt.extr[inpt.var]['e']['data'] = inpt.extr[inpt.var]['e']['data'].values * 100.
 
     # THAAO
-    read_thaao_ceilometer(param='TCC[okt]')
+    read_thaao_ceilometer()
 
     return
 
