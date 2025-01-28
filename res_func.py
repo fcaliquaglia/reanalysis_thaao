@@ -21,10 +21,16 @@ __email__ = "filippo.caliquaglia@ingv.it"
 __status__ = "Research"
 __lastupdate__ = ""
 
+import sys
+
 import inputs as inpt
 
 
 def data_resampling():
+    if (inpt.var == 'winds') | (inpt.var == 'windd') | (inpt.var == 'precip'):
+        print('NO WIND/PRECIP RESAMPLING!')
+        sys.exit()
+
     for vvrr in list(inpt.var_dict.keys()):
         try:
             inpt.extr[inpt.var][vvrr]['data_res'] = inpt.extr[inpt.var][vvrr]['data'].resample(inpt.tres).mean()

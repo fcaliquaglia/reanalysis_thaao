@@ -711,5 +711,5 @@ def read():
         return read_tcc()
     if inpt.var == 'temp':
         return read_temp()
-    if inpt.var == 'wind':
+    if (inpt.var == 'winds') | (inpt.var == 'windd'):
         return read_wind()

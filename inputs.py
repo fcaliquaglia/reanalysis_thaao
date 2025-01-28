@@ -44,10 +44,10 @@ thaao_t = 'thaao'
 
 ##
 tres = '3h'
-list_var = ['wind']
-# OK ['cbh', 'alb', 'temp', 'sw_down', 'lw_down']
+list_var = ['winds']
+# OK ['winds', 'windd', 'cbh', 'alb', 'temp', 'sw_down', 'lw_down']
 # NOT OK ['tcc']
-# 'lw_down',]  # ['', 'rh', 'alb',', 'precip', 'windd', 'winds', 'surf_pres', 'sw_down', 'sw_up', 'lw_up',
+# 'lw_down',]  # ['precip', 'rh', 'surf_pres', 'sw_down', 'sw_up', 'lw_up',
 # 'lw_down', 'lwp', 'tcc']'sw_up', 'lw_down']
 var = ''
 
