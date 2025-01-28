@@ -101,6 +101,11 @@ def read_era5_land():
 
 
 def read_thaao_weather(drop_param):
+    """
+
+    :param drop_param:
+    :return:
+    """
     try:
         inpt.extr[inpt.var]['t']['data'] = xr.open_dataset(
                 os.path.join(inpt.basefol_t, 'thaao_meteo', f'{inpt.extr[inpt.var]['t']['fn']}.nc'),
@@ -114,6 +119,11 @@ def read_thaao_weather(drop_param):
 
 
 def read_thaao_rad(drop_param):
+    """
+
+    :param drop_param:
+    :return:
+    """
     for yy, year in enumerate(inpt.years):
         try:
             t_tmp = pd.read_table(
@@ -178,6 +188,11 @@ def read_thaao_hatpro():
 
 
 def read_thaao_ceilometer(param):
+    """
+
+    :param param:
+    :return:
+    """
     for i in inpt.ceilometer_daterange:
         i_fmt = i.strftime('%Y%m%d')
         try:
@@ -204,6 +219,11 @@ def read_thaao_ceilometer(param):
 
 
 def read_aws_ecapac(param):
+    """
+
+    :param param:
+    :return:
+    """
     for i in inpt.aws_ecapac_daterange[inpt.aws_ecapac_daterange.year.isin(inpt.years)]:
         i_fmt = i.strftime('%Y_%m_%d')
         try:
@@ -274,7 +294,6 @@ def read_lwp():
 
     # THAAO1
     read_thaao_hatpro()
-    # cleaning HATPRO DATA
     inpt.extr[inpt.var]['t1']['data'][inpt.extr[inpt.var]['t1']['data'] < 0.01] = np.nan
     # t1[t1 < 15] = 0
 
@@ -391,6 +410,7 @@ def read_lw_up():
     # cleaning data
     e[e < 0.] = np.nan
 
+    # THAAO
     read_thaao_rad(
             drop_param=['JDAY_UT', 'JDAY_LOC', 'SZA', 'SW_DOWN', 'SW_UP', 'PAR_DOWN', 'PAR_UP', 'LW_DOWN',
                         'TBP', 'ALBEDO_LW', 'ALBEDO_SW', 'ALBEDO_PAR', 'P', 'T', 'RH', 'PE', 'RR2'])
@@ -412,7 +432,7 @@ def read_precip():
 
     # ERA5
     read_era5()
-    inpt.extr[inpt.var]['e']['data'][2] = inpt.extr[inpt.var]['e']['data'].values * 1000.
+    inpt.extr[inpt.var]['e']['data'] = inpt.extr[inpt.var]['e']['data'].values * 1000.
 
     # THAAO2
     read_aws_ecapac(param='PR')
@@ -421,7 +441,6 @@ def read_precip():
 
 
 def read_rh():
-    # TODO: variable cleanup
     # CARRA
     read_carra()
 
@@ -602,6 +621,7 @@ def read_sw_up():
 def read_tcc():
     # CARRA
     read_carra()
+
     # ERA5
     read_era5()
     inpt.extr[inpt.var]['e']['data'] = inpt.extr[inpt.var]['e']['data'].values * 100.
