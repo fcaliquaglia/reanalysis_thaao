@@ -73,7 +73,7 @@ def plot_ts(period_label):
         else:
             pass
         ax[yy].set_ylim(inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'])
-        ax[yy].text(0.45, 0.85, year, transform=ax[yy].transAxes)
+        ax[yy].text(0.5, 0.90, year, transform=ax[yy].transAxes, horizontalalignment ='center')
         ax[yy].xaxis.set_major_formatter(inpt.myFmt)
         ax[yy].set_xlim(dt.datetime(year, 1, 1), dt.datetime(year, 12, 31))
         ax[yy].text(0.01, 0.95, inpt.letters[yy] + ')', transform=ax[yy].transAxes)
@@ -122,7 +122,7 @@ def plot_residuals(period_label):
             pass
 
         ax[yy].set_ylim(inpt.extr[inpt.var]['res_min'], inpt.extr[inpt.var]['res_max'])
-        ax[yy].text(0.45, 0.85, year, transform=ax[yy].transAxes)
+        ax[yy].text(0.5, 0.90, year, transform=ax[yy].transAxes, horizontalalignment ='center')
         ax[yy].xaxis.set_major_formatter(inpt.myFmt)
         ax[yy].set_xlim(dt.datetime(year, 1, 1), dt.datetime(year, 12, 31))
         # panel letters
