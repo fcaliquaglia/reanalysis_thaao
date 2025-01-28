@@ -322,6 +322,23 @@ def read_lw_down():
                         'TBP', 'ALBEDO_LW', 'ALBEDO_SW', 'ALBEDO_PAR', 'P', 'T', 'RH', 'PE', 'RR2'])
     inpt.extr[inpt.var]['t']['data'][inpt.extr[inpt.var]['t']['data'] < 0.] = np.nan
 
+
+def read_lw_net():
+    # CARRA
+    read_carra()
+    inpt.extr[inpt.var]['c']['data'][inpt.extr[inpt.var]['c']['data'] < 0.] = np.nan
+    inpt.extr[inpt.var]['c']['data'] = inpt.extr[inpt.var]['c']['data'] / inpt.var_dict['c']['rad_conv_factor']
+
+    # ERA5
+    read_era5()
+    inpt.extr[inpt.var]['e']['data'][inpt.extr[inpt.var]['e']['data'] < 0.] = np.nan
+    inpt.extr[inpt.var]['e']['data'] = inpt.extr[inpt.var]['e']['data'] / inpt.var_dict['e']['rad_conv_factor']
+
+    # ERA5_LAND
+    read_era5_land()
+    inpt.extr[inpt.var]['l']['data'][inpt.extr[inpt.var]['l']['data'] < 0.] = np.nan
+    inpt.extr[inpt.var]['l']['data'] = inpt.extr[inpt.var]['l']['data'] / inpt.var_dict['l']['rad_conv_factor']
+
     return
 
 
@@ -775,6 +792,8 @@ def read():
         return read_lwp()
     if inpt.var == 'lw_down':
         return read_lw_down()
+    if inpt.var == 'lw_net':
+        return read_lw_net()
     if inpt.var == 'lw_up':
         return read_lw_up()
     if inpt.var == 'precip':
@@ -785,6 +804,8 @@ def read():
         return read_surf_pres()
     if inpt.var == 'sw_down':
         return read_sw_down()
+    if inpt.var == 'sw_net':
+        return read_sw_net()
     if inpt.var == 'sw_up':
         return read_sw_up()
     if inpt.var == 'tcc':
