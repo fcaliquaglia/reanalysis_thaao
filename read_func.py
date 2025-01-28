@@ -320,6 +320,16 @@ def read_sw_down():
 def read_lw_up():
     read_lw_down()
 
+    # CARRA
+    read_carra('lw_net')
+    inpt.extr['lw_net']['c']['data'] = inpt.extr['lw_net']['c']['data'] / inpt.var_dict['c']['rad_conv_factor']
+    inpt.extr['lw_up']['c']['data'] = pd.DataFrame(
+        index=inpt.extr['lw_down']['c']['data'].index,
+        data=inpt.extr['lw_down']['c']['data'].values -
+             inpt.extr['lw_net']['c']['data'].values, columns=['lw_up'])
+    inpt.extr['lw_up']['c']['data'][inpt.extr['lw_up']['c']['data'] < 0.] = np.nan
+    del inpt.extr['lw_net']['c']['data']
+
     # ERA5
     read_era5('lw_net')
     inpt.extr['lw_net']['e']['data'] = inpt.extr['lw_net']['e']['data'] / inpt.var_dict['e']['rad_conv_factor']
@@ -352,6 +362,7 @@ def read_sw_up():
 
     # CARRA
     read_carra('sw_net')
+    inpt.extr['sw_net']['c']['data'] = inpt.extr['sw_net']['c']['data'] / inpt.var_dict['c']['rad_conv_factor']
     inpt.extr['sw_up']['c']['data'] = pd.DataFrame(
         index=inpt.extr['sw_down']['c']['data'].index,
         data=inpt.extr['sw_down']['c']['data'].values -
@@ -361,6 +372,7 @@ def read_sw_up():
 
     # ERA5
     read_era5('sw_net')
+    inpt.extr['sw_net']['e']['data'] = inpt.extr['sw_net']['e']['data'] / inpt.var_dict['e']['rad_conv_factor']
     inpt.extr['sw_up']['e']['data'] = pd.DataFrame(
         index=inpt.extr['sw_down']['e']['data'].index,
         data=inpt.extr['sw_down']['e']['data'].values -
@@ -370,6 +382,7 @@ def read_sw_up():
 
     # ERA5-LAND
     read_era5_land('sw_net')
+    inpt.extr['sw_net']['l']['data'] = inpt.extr['sw_net']['l']['data'] / inpt.var_dict['l']['rad_conv_factor']
     inpt.extr['sw_up']['l']['data'] = pd.DataFrame(
             index=inpt.extr['sw_down']['l']['data'].index,
             data=inpt.extr['sw_down']['l']['data'].values -
