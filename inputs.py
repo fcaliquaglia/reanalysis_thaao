@@ -43,8 +43,8 @@ thaao_l = 'thaao_era5-land'
 thaao_t = 'thaao'
 
 ##
-tres = '3h'
-list_var = ['lw_down', 'sw_down']  # , 'lw_down', 'sw_down']  # 'sw_down', 'sw_up', 'lw_down', 'lw_up']
+tres = '12h'
+list_var = ['temp']  # , 'lw_down', 'sw_down']  # 'sw_down', 'sw_up', 'lw_down', 'lw_up']
 # 'lw_down',]  # ['temp', 'rh', 'alb', 'cbh', 'precip', 'windd', 'winds', 'surf_pres', 'sw_down', 'sw_up', 'lw_up',
 # 'lw_down', 'lwp', 'tcc']
 var = ''
