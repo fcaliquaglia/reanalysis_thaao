@@ -51,7 +51,7 @@ def read_carra():
             print(f'NOT FOUND: {inpt.extr[inpt.var]['c']['fn']}{year}.txt')
     inpt.extr[inpt.var]['c']['data'].index = pd.to_datetime(
             inpt.extr[inpt.var]['c']['data'][0] + ' ' + inpt.extr[inpt.var]['c']['data'][1], format='%Y-%m-%d %H:%M:%S')
-    inpt.extr[inpt.var]['c']['data'] = inpt.extr[inpt.var]['c']['data'][[2]]
+    inpt.extr[inpt.var]['c']['data'] = inpt.extr[inpt.var]['c']['data'][[inpt.extr[inpt.var]['c']['col_nr']]]
     inpt.extr[inpt.var]['c']['data'].columns = [inpt.var]
     return
 
@@ -73,7 +73,7 @@ def read_era5():
             print(f'NOT FOUND: {inpt.extr[inpt.var]['e']['fn']}{year}.txt')
     inpt.extr[inpt.var]['e']['data'].index = pd.to_datetime(
             inpt.extr[inpt.var]['e']['data'][0] + ' ' + inpt.extr[inpt.var]['e']['data'][1], format='%Y-%m-%d %H:%M:%S')
-    inpt.extr[inpt.var]['e']['data'] = inpt.extr[inpt.var]['e']['data'][[2]]
+    inpt.extr[inpt.var]['e']['data'] = inpt.extr[inpt.var]['e']['data'][[inpt.extr[inpt.var]['e']['col_nr']]]
     inpt.extr[inpt.var]['e']['data'].columns = [inpt.var]
     return
 
@@ -95,7 +95,7 @@ def read_era5_land():
             print(f'NOT FOUND: {inpt.extr[inpt.var]['l']['fn']}{year}.txt')
     inpt.extr[inpt.var]['l']['data'].index = pd.to_datetime(
             inpt.extr[inpt.var]['l']['data'][0] + ' ' + inpt.extr[inpt.var]['l']['data'][1], format='%Y-%m-%d %H:%M:%S')
-    inpt.extr[inpt.var]['l']['data'] = inpt.extr[inpt.var]['l']['data'][[4]]
+    inpt.extr[inpt.var]['l']['data'] = inpt.extr[inpt.var]['l']['data'][[inpt.extr[inpt.var]['e']['col_nr']]]
     inpt.extr[inpt.var]['l']['data'].columns = [inpt.var]
     return
 
