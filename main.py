@@ -36,7 +36,7 @@ if __name__ == "__main__":
         rd_f.read()
 
         # time RESAMPLING (specific for windd --> using wind components, and precip --> cumulative)
-        rs_f.data_resampling()
+        rs_f.data_resampling(inpt.var)
 
         plt_f.plot_ts('all')
         plt_f.plot_residuals('all')

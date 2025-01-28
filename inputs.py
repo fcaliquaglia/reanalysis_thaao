@@ -54,8 +54,8 @@ years = np.arange(2022, 2024, 1)
 
 aws_ecapac_daterange = pd.date_range(start=dt.datetime(2023, 4, 1), end=dt.datetime(2024, 12, 31), freq='1D')
 ceilometer_daterange = pd.date_range(start=dt.datetime(2019, 9, 1), end=dt.datetime(2024, 12, 31), freq='1D')
-rad_daterange = pd.date_range(start=dt.datetime(2009, 9, 1), end=dt.datetime(2024, 12, 31), freq='Y')
-hatpro_daterange = pd.date_range(start=dt.datetime(2016, 9, 1), end=dt.datetime(2024, 10, 30), freq='Y')
+rad_daterange = pd.date_range(start=dt.datetime(2009, 9, 1), end=dt.datetime(2024, 12, 31), freq='YE')
+hatpro_daterange = pd.date_range(start=dt.datetime(2016, 9, 1), end=dt.datetime(2024, 10, 30), freq='YE')
 
 SMALL_SIZE = 12
 
