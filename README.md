@@ -13,6 +13,7 @@
 - [ ] recuperare da Giovanni gli rs che io non ho e devo aggiungere in archivio per l'analisi
 - [X] extract CARRA radiation
 - [x] download ``mean_sea_level_pressure``
+- [ ] controllare i nan value per ogni serie e la pulizia (dati negativi, outliers?, etc)
 
 ## Reanalysis considered
 

@@ -149,7 +149,6 @@ def read_thaao_hatpro():
 
 
 def read_thaao_ceilometer():
-
     for i in inpt.ceilometer_daterange:
         i_fmt = i.strftime('%Y%m%d')
         try:
