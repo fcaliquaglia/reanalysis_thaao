@@ -169,7 +169,7 @@ def read_thaao_ceilometer():
             inpt.extr[inpt.var]['t']['data']['#'] + ' ' + inpt.extr[inpt.var]['t']['data']['date[y-m-d]time[h:m:s]'],
             format='%Y-%m-%d %H:%M:%S')
     inpt.extr[inpt.var]['t']['data'].index.name = 'datetime'
-    inpt.extr[inpt.var]['t']['data'] = inpt.extr[inpt.var]['t']['data'].iloc[:, :].filter([inpt.extr[inpt.var]['t2']['column']]).astype(float)
+    inpt.extr[inpt.var]['t']['data'] = inpt.extr[inpt.var]['t']['data'].iloc[:, :].filter([inpt.extr[inpt.var]['t']['column']]).astype(float)
     inpt.extr[inpt.var]['t']['data'].columns = [inpt.var]
 
     return
