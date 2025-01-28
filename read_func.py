@@ -39,8 +39,12 @@ def read_carra():
         try:
             c_tmp = pd.read_table(
                     os.path.join(inpt.basefol_c, f'{inpt.extr[inpt.var]['c']['fn']}{year}.txt'), skipfooter=1,
-                    sep='\s+', header=None,
-                    skiprows=1, engine='python')
+                    sep='\s+', header=None, skiprows=1, engine='python')
+            if c_tmp[0][0] == 'cdo(1)':
+                c_tmp = pd.read_table(
+                        os.path.join(inpt.basefol_c, f'{inpt.extr[inpt.var]['c']['fn']}{year}.txt'), skipfooter=1,
+                        sep='\s+', header=None, skiprows=2, engine='python')
+            c_tmp[c_tmp == inpt.var_dict['c']['nanval']] = np.nan
             inpt.extr[inpt.var]['c']['data'] = pd.concat([inpt.extr[inpt.var]['c']['data'], c_tmp], axis=0)
             print(f'OK: {inpt.extr[inpt.var]['c']['fn']}{year}.txt')
         except FileNotFoundError:
@@ -57,11 +61,13 @@ def read_era5():
         try:
             e_tmp = pd.read_table(
                     os.path.join(inpt.basefol_e, f'{inpt.extr[inpt.var]['e']['fn']}{year}.txt'), skipfooter=1,
-                    sep='\s+', header=None,
-                    skiprows=1, engine='python')
+                    sep='\s+', header=None, skiprows=1, engine='python')
+            if e_tmp[0][0] == 'cdo(1)':
+                e_tmp = pd.read_table(
+                        os.path.join(inpt.basefol_e, f'{inpt.extr[inpt.var]['e']['fn']}{year}.txt'), skipfooter=1,
+                        sep='\s+', header=None, skiprows=2, engine='python')
             e_tmp[e_tmp == inpt.var_dict['e']['nanval']] = np.nan
             inpt.extr[inpt.var]['e']['data'] = pd.concat([inpt.extr[inpt.var]['e']['data'], e_tmp], axis=0)
-
             print(f'OK: {inpt.extr[inpt.var]['e']['fn']}{year}.txt')
         except FileNotFoundError:
             print(f'NOT FOUND: {inpt.extr[inpt.var]['e']['fn']}{year}.txt')
@@ -77,11 +83,13 @@ def read_era5_land():
         try:
             l_tmp = pd.read_table(
                     os.path.join(inpt.basefol_l, f'{inpt.extr[inpt.var]['l']['fn']}{year}.txt'), skipfooter=1,
-                    sep='\s+', header=None,
-                    skiprows=2, engine='python')
+                    sep='\s+', header=None, skiprows=1, engine='python')
+            if l_tmp[0][0] == 'cdo(1)':
+                l_tmp = pd.read_table(
+                        os.path.join(inpt.basefol_l, f'{inpt.extr[inpt.var]['l']['fn']}{year}.txt'), skipfooter=1,
+                        sep='\s+', header=None, skiprows=2, engine='python')
             l_tmp[l_tmp == inpt.var_dict['l']['nanval']] = np.nan
             inpt.extr[inpt.var]['l']['data'] = pd.concat([inpt.extr[inpt.var]['l']['data'], l_tmp], axis=0)
-
             print(f'OK: {inpt.extr[inpt.var]['l']['fn']}{year}.txt')
         except FileNotFoundError:
             print(f'NOT FOUND: {inpt.extr[inpt.var]['l']['fn']}{year}.txt')
@@ -217,16 +225,20 @@ def read_aws_ecapac(param):
 
 
 def read_alb():
+    # CARRA
     read_carra()
     inpt.extr[inpt.var]['c']['data'] = inpt.extr[inpt.var]['c']['data'] / 100.
     inpt.extr[inpt.var]['c']['data'][inpt.extr[inpt.var]['c']['data'] <= 0.] = np.nan
 
+    # ERA5
     read_era5()
     inpt.extr[inpt.var]['c']['data'][inpt.extr[inpt.var]['c']['data'] <= 0.] = np.nan
 
+    # ERA5-LAND
     read_era5_land()
     inpt.extr[inpt.var]['l']['data'][inpt.extr[inpt.var]['l']['data'] <= 0.] = np.nan
 
+    # THAAO
     read_thaao_rad(
             drop_param=['JDAY_UT', 'JDAY_LOC', 'SZA', 'SW_DOWN', 'SW_UP', 'PAR_DOWN', 'PAR_UP', 'LW_DOWN', 'LW_UP',
                         'TBP', 'ALBEDO_LW', 'ALBEDO_PAR', 'P', 'T', 'RH', 'PE', 'RR2'])
@@ -235,49 +247,57 @@ def read_alb():
 
 
 def read_cbh():
+    # CARRA
     read_carra()
 
+    # ERA5
     read_era5()
 
+    # THAAO
     read_thaao_ceilometer(param='CBH_L1[m]')
 
     return
 
 
 def read_lwp():
+    # CARRA
     read_carra()
     inpt.extr[inpt.var]['c']['data'] = inpt.extr[inpt.var]['c']['data'] * 10000000
     inpt.extr[inpt.var]['c']['data'][inpt.extr[inpt.var]['c']['data'] < 0.01] = np.nan
     # c[c < 15] = 0
 
+    # ERA5
     read_era5()
     inpt.extr[inpt.var]['e']['data'] = inpt.extr[inpt.var]['e']['data'] * 1000
     inpt.extr[inpt.var]['e']['data'][inpt.extr[inpt.var]['e']['data'] < 0.01] = np.nan
     # e[e < 15] = 0
 
-
+    # THAAO1
     read_thaao_hatpro()
     # cleaning HATPRO DATA
-    inpt.extr[inpt.var]['t1']['data'][ inpt.extr[inpt.var]['t1']['data'] < 0.01] = np.nan
+    inpt.extr[inpt.var]['t1']['data'][inpt.extr[inpt.var]['t1']['data'] < 0.01] = np.nan
     # t1[t1 < 15] = 0
 
     return
 
 
 def read_lw_down():
+    # CARRA
     read_carra()
     inpt.extr[inpt.var]['c']['data'][inpt.extr[inpt.var]['c']['data'] < 0.] = np.nan
 
+    # ERA5
     read_era5()
     inpt.extr[inpt.var]['e']['data'][inpt.extr[inpt.var]['e']['data'] < 0.] = np.nan
 
+    # ERA5_LAND
     read_era5_land()
     inpt.extr[inpt.var]['l']['data'][inpt.extr[inpt.var]['l']['data'] < 0.] = np.nan
 
+    # THAAO
     read_thaao_rad(
             drop_param=['JDAY_UT', 'JDAY_LOC', 'SZA', 'SW_DOWN', 'SW_UP', 'PAR_DOWN', 'PAR_UP', 'LW_UP',
                         'TBP', 'ALBEDO_LW', 'ALBEDO_SW', 'ALBEDO_PAR', 'P', 'T', 'RH', 'PE', 'RR2'])
-
     inpt.extr[inpt.var]['t']['data'][inpt.extr[inpt.var]['t']['data'] < 0.] = np.nan
 
     return
@@ -380,16 +400,21 @@ def read_lw_up():
 
 
 def read_msl_pres():
+    # CARRA
     read_carra()
 
     return
 
 
 def read_precip():
+    # CARRA
     read_carra()
+
+    # ERA5
     read_era5()
     inpt.extr[inpt.var]['e']['data'][2] = inpt.extr[inpt.var]['e']['data'].values * 1000.
 
+    # THAAO2
     read_aws_ecapac(param='PR')
 
     return
@@ -397,24 +422,27 @@ def read_precip():
 
 def read_rh():
     # TODO: variable cleanup
-
-    # e.g. l_td[l_td_tmp == -32767.0] = np.nan
-
-    read_thaao_weather(drop_param=['BP_hPa', 'Air_K'])
-    read_aws_ecapac(param='RH')
-
-    read_thaao_weather(drop_param=['BP_hPa', 'Air_K'])
+    # CARRA
     read_carra()
 
+    # ERA5
     read_era5()
     if inpt.extr[inpt.var]['l']['data'].empty:
         read_era5(vr='temp')
     calc_rh_from_tdp()
 
+    # ERA5-LAND
     read_era5_land()
     if inpt.extr[inpt.var]['l']['data'].empty:
         read_era5(vr='temp')
     calc_rh_from_tdp()
+
+    # e.g. l_td[l_td_tmp == -32767.0] = np.nan
+
+    # THAAO2
+    read_thaao_weather(drop_param=['BP_hPa', 'Air_K'])
+    read_aws_ecapac(param='RH')
+    read_thaao_weather(drop_param=['BP_hPa', 'Air_K'])
 
     return
 
@@ -432,34 +460,42 @@ def calc_rh_from_tdp():
 
 
 def read_surf_pres():
+    # CARRA
     read_carra()
     inpt.extr[inpt.var]['c']['data'] = inpt.extr[inpt.var]['c']['data'] / 100.
     inpt.extr[inpt.var]['c']['data'][inpt.extr[inpt.var]['c']['data'] <= 900] = np.nan
 
+    # ERA5
     read_era5()
     inpt.extr[inpt.var]['e']['data'] = inpt.extr[inpt.var]['e']['data'] / 100.
     inpt.extr[inpt.var]['e']['data'][inpt.extr[inpt.var]['e']['data'] <= 900] = np.nan
 
+    # THAAO
     read_thaao_weather(drop_param=['Air_K', 'RH_%'])
     inpt.extr[inpt.var]['t']['data'][inpt.extr[inpt.var]['t']['data'] <= 900] = np.nan
     inpt.extr[inpt.var]['t']['data'].loc['2021-10-11 00:00:00':'2021-10-19 00:00:00'] = np.nan
     inpt.extr[inpt.var]['t']['data'].loc['2024-4-26 00:00:00':'2024-5-4 00:00:00'] = np.nan
 
+    # THAAO2
     read_aws_ecapac(param='BP_mbar')
 
     return
 
 
 def read_sw_down():
+    # CARRA
     read_carra()
     inpt.extr[inpt.var]['c']['data'][inpt.extr[inpt.var]['c']['data'] < 0.] = np.nan
 
+    # ERA5
     read_era5()
     inpt.extr[inpt.var]['e']['data'][inpt.extr[inpt.var]['e']['data'] < 0.] = np.nan
 
+    # ERA5-LAND
     read_era5_land()
     inpt.extr[inpt.var]['l']['data'][inpt.extr[inpt.var]['l']['data'] < 0.] = np.nan
 
+    # THAAO
     read_thaao_rad(
             drop_param=['JDAY_UT', 'JDAY_LOC', 'SZA', 'SW_UP', 'PAR_DOWN', 'PAR_UP', 'LW_DOWN', 'LW_UP',
                         'TBP', 'ALBEDO_LW', 'ALBEDO_SW', 'ALBEDO_PAR', 'P', 'T', 'RH', 'PE', 'RR2'])
@@ -564,30 +600,42 @@ def read_sw_up():
 
 
 def read_tcc():
+    # CARRA
     read_carra()
+    # ERA5
     read_era5()
     inpt.extr[inpt.var]['e']['data'] = inpt.extr[inpt.var]['e']['data'].values * 100.
 
+    # THAAO
     read_thaao_ceilometer(param='TCC[okt]')
 
     return
 
 
 def read_temp():
-    read_thaao_weather(drop_param=['BP_hPa', 'RH_%'])
-    inpt.extr[inpt.var]['t']['data'] = inpt.extr[inpt.var]['t']['data'] - 273.15
-    read_aws_ecapac(param='AirTC')
+    # CARRA
     read_carra()
     inpt.extr[inpt.var]['c']['data'] = inpt.extr[inpt.var]['c']['data'] - 273.15
+
+    # ERA5
     read_era5()
     inpt.extr[inpt.var]['e']['data'] = inpt.extr[inpt.var]['e']['data'] - 273.15
+
+    # ERA5-LAND
     read_era5_land()
     inpt.extr[inpt.var]['l']['data'] = inpt.extr[inpt.var]['l']['data'] - 273.15
 
+    # THAAO
+    read_thaao_weather(drop_param=['BP_hPa', 'RH_%'])
+    inpt.extr[inpt.var]['t']['data'] = inpt.extr[inpt.var]['t']['data'] - 273.15
+
+    # THAAO2
+    read_aws_ecapac(param='AirTC')
     return
 
 
 def read_windd():
+    # CARRA
     read_carra()
 
     # ERA5
@@ -623,13 +671,14 @@ def read_windd():
     e[inpt.var] = e_wd.magnitude
     e.columns = [inpt.var]
 
-    # AWS ECAPAC
+    # THAAO2
     read_aws_ecapac(param='WD_aws')
 
     return
 
 
 def read_winds():
+    # CARRA
     read_carra()
 
     # ERA5
@@ -666,7 +715,7 @@ def read_winds():
     e[inpt.var] = e_ws.magnitude
     e.columns = [inpt.var]
 
-    # AWS ECAPAC
+    # THAAO2
     read_aws_ecapac(param='WS_aws')
 
     return

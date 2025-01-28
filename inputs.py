@@ -44,7 +44,7 @@ thaao_t = 'thaao'
 
 ##
 tres = '3h'
-list_var = ['lwp'] #, 'lw_down', 'sw_down']  # 'sw_down', 'sw_up', 'lw_down', 'lw_up']
+list_var = ['lwp', 'lw_down', 'sw_down'] #, 'lw_down', 'sw_down']  # 'sw_down', 'sw_up', 'lw_down', 'lw_up']
 # 'lw_down',]  # ['temp', 'rh', 'alb', 'cbh', 'precip', 'windd', 'winds', 'surf_pres', 'sw_down', 'sw_up', 'lw_up',
 # 'lw_down', 'lwp', 'tcc']
 var = ''
@@ -120,7 +120,7 @@ extr = {'alb'      : {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min'
                       't2'   : {'fn': '', 'data': pd.DataFrame(), 'data_res': pd.DataFrame()}},
 
         'lwp'      : {'name': 'lwp', 'ref_x': 't1', 'min': 0, 'max': 50, 'res_min': -20, 'res_max': 20,
-                      'uom' : '[kg/m2]', 'comps': ['c', 'e', 't', 't1'], 'bin_nr': 200,
+                      'uom' : '[kg/m2]', 'comps': ['c', 'e', 't1'], 'bin_nr': 200,
                       'c'   : {'fn'      : f'{thaao_c}_total_column_cloud_liquid_water_', 'data': pd.DataFrame(),
                                'data_res': pd.DataFrame()},
                       'e'   : {'fn'      : f'{thaao_e}_total_column_cloud_liquid_water_', 'data': pd.DataFrame(),
