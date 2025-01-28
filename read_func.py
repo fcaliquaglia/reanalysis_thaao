@@ -28,7 +28,7 @@ import julian
 import numpy as np
 import pandas as pd
 import xarray as xr
-from metpy.calc import relative_humidity_from_dewpoint, wind_direction, wind_speed
+from metpy.calc import wind_direction, wind_speed
 from metpy.units import units
 
 import inputs as inpt
@@ -274,35 +274,82 @@ def read_precip():
 
 
 def read_rad():
-    # CARRA
-    read_carra(vr='lw_down')
-    read_carra(vr='lw_net')
-    read_carra(vr='sw_down')
-    read_carra(vr='sw_net')
-    # inpt.extr[inpt.var]['c']['data'][inpt.extr[inpt.var]['c']['data'] < 0.] = np.nan
-    # inpt.extr[inpt.var]['c']['data'] = inpt.extr[inpt.var]['c']['data'] / inpt.var_dict['c']['rad_conv_factor']
+    # CARRA LW UPWARDS
+    read_carra('lw_down')
+    read_carra('lw_net')
+    inpt.extr['lw_down']['c']['data'][inpt.extr['lw_down']['c']['data'] < 0.] = np.nan
+    inpt.extr['lw_down']['c']['data'] = inpt.extr['lw_down']['c']['data'] / inpt.var_dict['c']['rad_conv_factor']
+    inpt.extr['lw_net']['c']['data'] = inpt.extr['lw_net']['c']['data'] / inpt.var_dict['c']['rad_conv_factor']
+    inpt.extr['lw_up']['c']['data'] = pd.DataFrame(index=inpt.extr['lw_down']['c']['data'].index,
+                                                   data=inpt.extr['lw_down']['c']['data'].values -
+                                                        inpt.extr['lw_net']['c']['data'].values, columns=['lw_up'])
+    inpt.extr['lw_up']['c']['data'][inpt.extr['lw_up']['c']['data'] < 0.] = np.nan
+    del inpt.extr['lw_net']['c']['data']
 
-    # ERA5
-    read_era5(vr='lw_down')
-    read_era5(vr='lw_net')
-    read_era5(vr='sw_down')
-    read_era5(vr='sw_net')
-    # inpt.var==inpt.extr[inpt.var]['e']['data'][inpt.extr[inpt.var]['e']['data'] < 0.] = np.nan
-    # inpt.extr[inpt.var]['e']['data'] = inpt.extr[inpt.var]['e']['data'] / inpt.var_dict['e']['rad_conv_factor']
+    # CARRA SW UPWARDS
+    read_carra('sw_down')
+    read_carra('sw_net')
+    inpt.extr['sw_down']['c']['data'][inpt.extr['sw_down']['c']['data'] < 0.] = np.nan
+    inpt.extr['sw_down']['c']['data'] = inpt.extr['sw_down']['c']['data'] / inpt.var_dict['c']['rad_conv_factor']
+    inpt.extr['sw_up']['c']['data'] = pd.DataFrame(index=inpt.extr['sw_down']['c']['data'].index,
+                                                   data=inpt.extr['sw_down']['c']['data'].values -
+                                                        inpt.extr['sw_net']['c']['data'].values, columns=['sw_up'])
+    inpt.extr['sw_up']['c']['data'][inpt.extr['sw_up']['c']['data'] < 0.] = np.nan
+    del inpt.extr['sw_net']['c']['data']
 
-    # ERA5_LAND
-    read_era5_land(vr='lw_down')
-    read_era5_land(vr='lw_up')
-    read_era5_land(vr='sw_down')
-    read_era5_land(vr='sw_up')
-    # inpt.extr[inpt.var]['l']['data'][inpt.extr[inpt.var]['l']['data'] < 0.] = np.nan
-    # inpt.extr[inpt.var]['l']['data'] = inpt.extr[inpt.var]['l']['data'] / inpt.var_dict['l']['rad_conv_factor']
+    # ERA5 LW UPWARDS
+    read_era5('lw_down')
+    read_era5('lw_net')
+    inpt.extr['lw_down']['e']['data'][inpt.extr['lw_down']['e']['data'] < 0.] = np.nan
+    inpt.extr['lw_down']['e']['data'] = inpt.extr['lw_down']['e']['data'] / inpt.var_dict['e']['rad_conv_factor']
+    inpt.extr['lw_net']['e']['data'] = inpt.extr['lw_net']['e']['data'] / inpt.var_dict['e']['rad_conv_factor']
+    inpt.extr['lw_up']['e']['data'] = pd.DataFrame(index=inpt.extr['lw_down']['e']['data'].index,
+                                                   data=inpt.extr['lw_down']['e']['data'].values -
+                                                        inpt.extr['lw_net']['e']['data'].values, columns=['lw_up'])
+    inpt.extr['lw_up']['e']['data'][inpt.extr['lw_up']['e']['data'] < 0.] = np.nan
+    del inpt.extr['lw_net']['e']['data']
+
+    # ERA5 SW UPWARDS
+    read_era5('sw_down')
+    read_era5('sw_net')
+    inpt.extr['sw_down']['e']['data'][inpt.extr['sw_down']['e']['data'] < 0.] = np.nan
+    inpt.extr['sw_down']['e']['data'] = inpt.extr['sw_down']['e']['data'] / inpt.var_dict['e']['rad_conv_factor']
+    inpt.extr['sw_up']['e']['data'] = pd.DataFrame(index=inpt.extr['sw_down']['e']['data'].index,
+                                                   data=inpt.extr['sw_down']['e']['data'].values -
+                                                        inpt.extr['sw_net']['e']['data'].values, columns=['sw_up'])
+    inpt.extr['sw_up']['e']['data'][inpt.extr['sw_up']['e']['data'] < 0.] = np.nan
+    del inpt.extr['sw_net']['e']['data']
+
+    # ERA5-LAND LW UPWARDS
+    read_era5('lw_down')
+    read_era5('lw_net')
+    inpt.extr['lw_down']['l']['data'][inpt.extr['lw_down']['l']['data'] < 0.] = np.nan
+    inpt.extr['lw_down']['l']['data'] = inpt.extr['lw_down']['l']['data'] / inpt.var_dict['l']['rad_conv_factor']
+    inpt.extr['lw_net']['l']['data'] = inpt.extr['lw_net']['l']['data'] / inpt.var_dict['l']['rad_conv_factor']
+    inpt.extr['lw_up']['l']['data'] = pd.DataFrame(
+        index=inpt.extr['lw_down']['l']['data'].index,
+        data=inpt.extr['lw_down']['l']['data'].values -
+             inpt.extr['lw_net']['l']['data'].values, columns=['lw_up'])
+    inpt.extr['lw_up']['l']['data'][inpt.extr['lw_up']['l']['data'] < 0.] = np.nan
+    del inpt.extr['lw_net']['l']['data']
+
+    # ERA5-LAND SW UPWARDS
+    read_era5('sw_down')
+    read_era5('sw_net')
+    inpt.extr['sw_down']['l']['data'][inpt.extr['sw_down']['l']['data'] < 0.] = np.nan
+    inpt.extr['sw_down']['l']['data'] = inpt.extr['sw_down']['l']['data'] / inpt.var_dict['l']['rad_conv_factor']
+    inpt.extr['sw_up']['l']['data'] = pd.DataFrame(
+        index=inpt.extr['sw_down']['l']['data'].index,
+        data=inpt.extr['sw_down']['l']['data'].values -
+             inpt.extr['sw_net']['l']['data'].values, columns=['sw_up'])
+    inpt.extr['sw_up']['l']['data'][inpt.extr['sw_up']['l']['data'] < 0.] = np.nan
+    del inpt.extr['sw_net']['l']['data']
 
     # THAAO
-    read_thaao_rad(vr='lw_down')
-    read_thaao_rad(vr='lw_up')
-    read_thaao_rad(vr='sw_down')
-    read_thaao_rad(vr='sw_up')
+    read_thaao_rad('lw_down')
+    read_thaao_rad('lw_up')
+    read_thaao_rad('sw_down')
+    read_thaao_rad('sw_up')
     # inpt.extr[inpt.var]['t']['data'][inpt.extr[inpt.var]['t']['data'] < 0.] = np.nan
 
     return
@@ -315,13 +362,13 @@ def read_rh():
     # ERA5
     read_era5(inpt.var)
     if inpt.extr[inpt.var]['l']['data'].empty:
-        read_era5(vr='temp')
+        read_era5('temp')
     calc_rh_from_tdp()
 
     # ERA5-LAND
     read_era5_land(inpt.var)
     if inpt.extr[inpt.var]['l']['data'].empty:
-        read_era5(vr='temp')
+        read_era5('temp')
     calc_rh_from_tdp()
 
     # e.g. l_td[l_td_tmp == -32767.0] = np.nan
@@ -339,7 +386,7 @@ def calc_rh_from_tdp():
 
     # e = pd.concat([inpt.extr[inpt.var]['t']['data'], e_t], axis=1)
 
-    e['rh'] = relative_humidity_from_dewpoint(e['e_t'].values * units.K, e['e_td'].values * units.K).to('percent')
+    # e['rh'] = relative_humidity_from_dewpoint(e['e_t'].values * units.K, e['e_td'].values * units.K).to('percent')
     inpt.extr[inpt.var]['e']['data'].drop(columns=['e_t', 'e_td'], inplace=True)
     inpt.extr[inpt.var]['e']['data'].columns = [inpt.var]
 
@@ -365,30 +412,6 @@ def read_surf_pres():
 
     # THAAO2
     read_aws_ecapac(inpt.var)
-
-    return
-
-
-def read_sw_up():
-    # CARRA
-    fn1 = 'thaao_carra_surface_net_solar_radiation_'
-    fn2 = 'thaao_carra_surface_solar_radiation_downwards_'
-
-    for yy, year in enumerate(inpt.years):
-        # fn = extract_values(fn, year)
-        try:
-            c_tmp = pd.read_table(
-                    os.path.join(inpt.basefol_c, f'{fn1}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=2,
-                    engine='python')[[0, 1, 4]]
-            c_n = pd.concat([c_n, c_tmp], axis=0)
-            print(f'OK: {fn1}{year}.txt')
-        except FileNotFoundError:
-            print(f'NOT FOUND: {fn1}{year}.txt')
-    c_n.index = pd.to_datetime(c_n[0] + ' ' + c_n[1], format='%Y-%m-%d %H:%M:%S')
-    c_n.drop(columns=[0, 1], inplace=True)
-    c_n[2] = c_n.values / 3600.
-    c_n.drop(columns=[4], inplace=True)
-    c_n.columns = ['surface_net_solar_radiation']
 
     return
 
@@ -431,12 +454,12 @@ def read_temp():
 
 def read_wind():
     # CARRA
-    read_carra(vr='winds')
-    read_carra(vr='windd')
+    read_carra('winds')
+    read_carra('windd')
 
     # ERA5
-    read_era5(vr='windu')
-    read_era5(vr='windv')
+    read_era5('windu')
+    read_era5('windv')
     e_ws = wind_speed(
             inpt.extr['windu']['e']['data'].values * units('m/s'),
             inpt.extr['windv']['e']['data'].values * units('m/s'))
@@ -451,8 +474,8 @@ def read_wind():
 
     # ERA5-LAND
     # TODO activate when files are available
-    # read_era5_land(vr='windu')
-    # read_era5_land(vr='windv')
+    # read_era5_land('windu')
+    # read_era5_land('windv')
     # l_ws = wind_speed(
     #         inpt.extr['windu']['l']['data'].values * units('m/s'),
     #         inpt.extr['windv']['l']['data'].values * units('m/s'))
@@ -466,8 +489,8 @@ def read_wind():
     #     index=inpt.extr['windu']['l']['data'].index, data=l_wd.magnitude, columns=['windd'])
 
     # THAAO2
-    read_aws_ecapac(vr='winds')
-    read_aws_ecapac(vr='windd')
+    read_aws_ecapac('winds')
+    read_aws_ecapac('windd')
 
     return
 
