@@ -304,14 +304,17 @@ def read_lw_down():
     # CARRA
     read_carra()
     inpt.extr[inpt.var]['c']['data'][inpt.extr[inpt.var]['c']['data'] < 0.] = np.nan
+    inpt.extr[inpt.var]['c']['data'] = inpt.extr[inpt.var]['c']['data'] / inpt.var_dict['c']['rad_conv_factor']
 
     # ERA5
     read_era5()
     inpt.extr[inpt.var]['e']['data'][inpt.extr[inpt.var]['e']['data'] < 0.] = np.nan
+    inpt.extr[inpt.var]['e']['data'] = inpt.extr[inpt.var]['e']['data'] / inpt.var_dict['e']['rad_conv_factor']
 
     # ERA5_LAND
     read_era5_land()
     inpt.extr[inpt.var]['l']['data'][inpt.extr[inpt.var]['l']['data'] < 0.] = np.nan
+    inpt.extr[inpt.var]['l']['data'] = inpt.extr[inpt.var]['l']['data'] / inpt.var_dict['l']['rad_conv_factor']
 
     # THAAO
     read_thaao_rad(
