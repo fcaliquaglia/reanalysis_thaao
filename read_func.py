@@ -274,7 +274,7 @@ def read_precip():
 
 
 def read_rad():
-    # CARRA LW UPWARDS
+    # CARRA LW
     read_carra('lw_down')
     read_carra('lw_net')
     inpt.extr['lw_down']['c']['data'][inpt.extr['lw_down']['c']['data'] < 0.] = np.nan
@@ -286,7 +286,7 @@ def read_rad():
     inpt.extr['lw_up']['c']['data'][inpt.extr['lw_up']['c']['data'] < 0.] = np.nan
     del inpt.extr['lw_net']['c']['data']
 
-    # CARRA SW UPWARDS
+    # CARRA SW
     read_carra('sw_down')
     read_carra('sw_net')
     inpt.extr['sw_down']['c']['data'][inpt.extr['sw_down']['c']['data'] < 0.] = np.nan
@@ -297,7 +297,7 @@ def read_rad():
     inpt.extr['sw_up']['c']['data'][inpt.extr['sw_up']['c']['data'] < 0.] = np.nan
     del inpt.extr['sw_net']['c']['data']
 
-    # ERA5 LW UPWARDS
+    # ERA5 LW
     read_era5('lw_down')
     read_era5('lw_net')
     inpt.extr['lw_down']['e']['data'][inpt.extr['lw_down']['e']['data'] < 0.] = np.nan
@@ -309,7 +309,7 @@ def read_rad():
     inpt.extr['lw_up']['e']['data'][inpt.extr['lw_up']['e']['data'] < 0.] = np.nan
     del inpt.extr['lw_net']['e']['data']
 
-    # ERA5 SW UPWARDS
+    # ERA5 SW
     read_era5('sw_down')
     read_era5('sw_net')
     inpt.extr['sw_down']['e']['data'][inpt.extr['sw_down']['e']['data'] < 0.] = np.nan
@@ -320,9 +320,9 @@ def read_rad():
     inpt.extr['sw_up']['e']['data'][inpt.extr['sw_up']['e']['data'] < 0.] = np.nan
     del inpt.extr['sw_net']['e']['data']
 
-    # ERA5-LAND LW UPWARDS
-    read_era5('lw_down')
-    read_era5('lw_net')
+    # ERA5-LAND LW
+    read_era5_land('lw_down')
+    read_era5_land('lw_net')
     inpt.extr['lw_down']['l']['data'][inpt.extr['lw_down']['l']['data'] < 0.] = np.nan
     inpt.extr['lw_down']['l']['data'] = inpt.extr['lw_down']['l']['data'] / inpt.var_dict['l']['rad_conv_factor']
     inpt.extr['lw_net']['l']['data'] = inpt.extr['lw_net']['l']['data'] / inpt.var_dict['l']['rad_conv_factor']
@@ -333,9 +333,9 @@ def read_rad():
     inpt.extr['lw_up']['l']['data'][inpt.extr['lw_up']['l']['data'] < 0.] = np.nan
     del inpt.extr['lw_net']['l']['data']
 
-    # ERA5-LAND SW UPWARDS
-    read_era5('sw_down')
-    read_era5('sw_net')
+    # ERA5-LAND SW
+    read_era5_land('sw_down')
+    read_era5_land('sw_net')
     inpt.extr['sw_down']['l']['data'][inpt.extr['sw_down']['l']['data'] < 0.] = np.nan
     inpt.extr['sw_down']['l']['data'] = inpt.extr['sw_down']['l']['data'] / inpt.var_dict['l']['rad_conv_factor']
     inpt.extr['sw_up']['l']['data'] = pd.DataFrame(
@@ -345,12 +345,17 @@ def read_rad():
     inpt.extr['sw_up']['l']['data'][inpt.extr['sw_up']['l']['data'] < 0.] = np.nan
     del inpt.extr['sw_net']['l']['data']
 
-    # THAAO
+    # THAAO LW
     read_thaao_rad('lw_down')
     read_thaao_rad('lw_up')
+    inpt.extr['lw_down']['t']['data'][inpt.extr['lw_down']['t']['data'] < 0.] = np.nan
+    inpt.extr['lw_up']['t']['data'][inpt.extr['lw_up']['t']['data'] < 0.] = np.nan
+
+    # THAAO SW
     read_thaao_rad('sw_down')
     read_thaao_rad('sw_up')
-    # inpt.extr[inpt.var]['t']['data'][inpt.extr[inpt.var]['t']['data'] < 0.] = np.nan
+    inpt.extr['sw_down']['t']['data'][inpt.extr['sw_down']['t']['data'] < 0.] = np.nan
+    inpt.extr['sw_up']['t']['data'][inpt.extr['sw_up']['t']['data'] < 0.] = np.nan
 
     return
 
