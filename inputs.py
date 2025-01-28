@@ -44,18 +44,25 @@ thaao_t = 'thaao'
 
 ##
 tres = '3h'
-list_var = ['surf_pres']
-# OK ['winds', 'windd', 'cbh', 'alb', 'temp', 'sw_down', 'lw_down']
+list_var = ['lwp']
+# OK ['surf_pres', 'winds', 'windd', 'cbh', 'alb', 'temp', 'sw_down', 'lw_down']
 # NOT OK ['tcc']
-# 'lw_down',]  # ['precip', 'rh', 'surf_pres', 'sw_down', 'sw_up', 'lw_up',
-# 'lw_down', 'lwp', 'tcc']'sw_up', 'lw_down']
+# 'precip' 'rh' 'sw_up' 'lw_up' 'tcc'
 var = ''
 
 years = np.arange(2022, 2024, 1)
 
-seass = {'all': {'name'      : 'all', 'months': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], 'col': 'pink',
-                 'col_CARRA' : 'red', 'col_ERA5': 'blue', 'col_ERA5-L': 'purple', 'col_THAAO': 'grey',
-                 'col_HATPRO': 'grey', 'col_VESPA': 'grey', 'col_AWS_ECAPAC': 'purple'},
+aws_ecapac_daterange = pd.date_range(start=dt.datetime(2023, 4, 1), end=dt.datetime(2024, 12, 31), freq='1D')
+ceilometer_daterange = pd.date_range(start=dt.datetime(2019, 9, 1), end=dt.datetime(2024, 12, 31), freq='1D')
+rad_daterange = pd.date_range(start=dt.datetime(2009, 9, 1), end=dt.datetime(2024, 12, 31), freq='1D')
+hatpro_daterange = pd.date_range(start=dt.datetime(2016, 9, 1), end=dt.datetime(2024, 10, 30), freq='Y')
+
+SMALL_SIZE = 12
+
+myFmt = mdates.DateFormatter('%d-%b')
+letters = list(string.ascii_lowercase)
+
+seass = {'all': {'name': 'all', 'months': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], 'col': 'pink'},
          'DJF': {'name': 'DJF', 'months': [12, 1, 2], 'col': 'blue'},
          'MAM': {'name': 'MAM', 'months': [3, 4, 5], 'col': 'green'},
          'JJA': {'name': 'JJA', 'months': [6, 7, 8], 'col': 'orange'},
@@ -65,11 +72,6 @@ seass = {'all': {'name'      : 'all', 'months': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 
          # 'JA': {'name': 'JA', 'months': [7, 8], 'col': 'grey'},
          # 'SO' : {'name': 'SO', 'months': [9, 10], 'col': 'purple'}
          }
-
-SMALL_SIZE = 12
-
-myFmt = mdates.DateFormatter('%d-%b')
-letters = list(string.ascii_lowercase)
 
 var_dict = {'c' : {'name'     : 'c', 'nanval': '', 'col': 'red', 'col_ori': 'orange', 'label': 'CARRA',
                    'label_uom': '', 'rad_conv_factor': 3600},
@@ -304,8 +306,3 @@ extr = {'alb'      : {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min'
                       't2'  : {'fn'      : 'AWS_THAAO_', 'column': np.nan, 'data': pd.DataFrame(),
                                'data_res': pd.DataFrame()}}
         }
-
-aws_ecapac_daterange = pd.date_range(start=dt.datetime(2023, 4, 1), end=dt.datetime(2024, 12, 31), freq='1D')
-ceilometer_daterange = pd.date_range(start=dt.datetime(2019, 9, 1), end=dt.datetime(2024, 12, 31), freq='1D')
-rad_daterange = pd.date_range(start=dt.datetime(2009, 9, 1), end=dt.datetime(2024, 12, 31), freq='1D')
-hatpro_daterange = pd.date_range(start=dt.datetime(2016, 9, 1), end=dt.datetime(2024, 10, 30), freq='1D')
