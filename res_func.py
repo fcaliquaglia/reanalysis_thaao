@@ -31,14 +31,9 @@ def data_resampling(vr):
         print('NO WIND/PRECIP RESAMPLING!')
         sys.exit()
 
-    if vr in ['lw_up','sw_up']:
-        vr_list = ['lw_up', 'sw_up']
-    else:
-        vr_list = [inpt.var]
-
-    for (vvrr, rrvv) in zip(list(inpt.var_dict.keys()), vr_list):
+    for vvrr in list(inpt.var_dict.keys()):
         try:
-            inpt.extr[rrvv][vvrr]['data_res'] = inpt.extr[rrvv][vvrr]['data'].resample(inpt.tres).mean()
+            inpt.extr[vr][vvrr]['data_res'] = inpt.extr[vr][vvrr]['data'].resample(inpt.tres).mean()
         except (TypeError, NameError):
             pass
 
