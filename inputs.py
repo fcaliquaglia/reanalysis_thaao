@@ -44,10 +44,10 @@ thaao_t = 'thaao'
 
 ##
 tres = '3h'
-list_var = ['lwp']
-# OK ['surf_pres', 'winds', 'windd', 'cbh', 'alb', 'temp', 'sw_down', 'lw_down']
-# NOT OK ['tcc']
-# 'precip' 'rh' 'sw_up' 'lw_up' 'tcc'
+list_var = ['sw_up']
+# OK ['lwp', 'surf_pres', 'winds', 'windd', 'cbh', 'alb', 'temp', 'sw_down', 'lw_down']
+# NOT OK 'tcc' 'precip' 'rh' 'lw_up'
+#
 var = ''
 
 years = np.arange(2022, 2024, 1)
@@ -120,7 +120,7 @@ extr = {'alb'      : {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min'
                       't2'   : {'fn': '', 'column': np.nan, 'data': pd.DataFrame(), 'data_res': pd.DataFrame()}},
 
         'lwp'      : {'name': 'lwp', 'ref_x': 't1', 'min': 0, 'max': 50, 'res_min': -20, 'res_max': 20,
-                      'uom' : '[kg/m2]', 'comps': ['c', 'e', 't1'], 'bin_nr': 200,
+                      'uom' : '[kg/m2]', 'comps': ['c', 'e'], 'bin_nr': 200,
                       'c'   : {'fn'  : f'{thaao_c}_total_column_cloud_liquid_water_', 'column': 2,
                                'data': pd.DataFrame(), 'data_res': pd.DataFrame()},
                       'e'   : {'fn'  : f'{thaao_e}_total_column_cloud_liquid_water_', 'column': 2,

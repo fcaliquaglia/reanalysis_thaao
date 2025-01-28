@@ -252,33 +252,6 @@ def read_lwp():
     return
 
 
-def read_rad():
-    # CARRA
-    read_carra(inpt.var)
-    inpt.extr[inpt.var]['c']['data'][inpt.extr[inpt.var]['c']['data'] < 0.] = np.nan
-    inpt.extr[inpt.var]['c']['data'] = inpt.extr[inpt.var]['c']['data'] / inpt.var_dict['c']['rad_conv_factor']
-
-    # ERA5
-    read_era5(inpt.var)
-    inpt.extr[inpt.var]['e']['data'][inpt.extr[inpt.var]['e']['data'] < 0.] = np.nan
-    inpt.extr[inpt.var]['e']['data'] = inpt.extr[inpt.var]['e']['data'] / inpt.var_dict['e']['rad_conv_factor']
-
-    # ERA5_LAND
-    read_era5_land(inpt.var)
-    inpt.extr[inpt.var]['l']['data'][inpt.extr[inpt.var]['l']['data'] < 0.] = np.nan
-    inpt.extr[inpt.var]['l']['data'] = inpt.extr[inpt.var]['l']['data'] / inpt.var_dict['l']['rad_conv_factor']
-
-    # THAAO
-    if inpt.var not in ['sw_net', 'lw_net']:
-        read_thaao_rad(inpt.var)
-        inpt.extr[inpt.var]['t']['data'][inpt.extr[inpt.var]['t']['data'] < 0.] = np.nan
-
-
-def read_lw_up():
-    # CARRA
-    return
-
-
 def read_msl_pres():
     # CARRA
     read_carra(inpt.var)
@@ -296,6 +269,41 @@ def read_precip():
 
     # THAAO2
     read_aws_ecapac(inpt.var)
+
+    return
+
+
+def read_rad():
+    # CARRA
+    read_carra(vr='lw_down')
+    read_carra(vr='lw_net')
+    read_carra(vr='sw_down')
+    read_carra(vr='sw_net')
+    # inpt.extr[inpt.var]['c']['data'][inpt.extr[inpt.var]['c']['data'] < 0.] = np.nan
+    # inpt.extr[inpt.var]['c']['data'] = inpt.extr[inpt.var]['c']['data'] / inpt.var_dict['c']['rad_conv_factor']
+
+    # ERA5
+    read_era5(vr='lw_down')
+    read_era5(vr='lw_net')
+    read_era5(vr='sw_down')
+    read_era5(vr='sw_net')
+    # inpt.var==inpt.extr[inpt.var]['e']['data'][inpt.extr[inpt.var]['e']['data'] < 0.] = np.nan
+    # inpt.extr[inpt.var]['e']['data'] = inpt.extr[inpt.var]['e']['data'] / inpt.var_dict['e']['rad_conv_factor']
+
+    # ERA5_LAND
+    read_era5_land(vr='lw_down')
+    read_era5_land(vr='lw_up')
+    read_era5_land(vr='sw_down')
+    read_era5_land(vr='sw_up')
+    # inpt.extr[inpt.var]['l']['data'][inpt.extr[inpt.var]['l']['data'] < 0.] = np.nan
+    # inpt.extr[inpt.var]['l']['data'] = inpt.extr[inpt.var]['l']['data'] / inpt.var_dict['l']['rad_conv_factor']
+
+    # THAAO
+    read_thaao_rad(vr='lw_down')
+    read_thaao_rad(vr='lw_up')
+    read_thaao_rad(vr='sw_down')
+    read_thaao_rad(vr='sw_up')
+    # inpt.extr[inpt.var]['t']['data'][inpt.extr[inpt.var]['t']['data'] < 0.] = np.nan
 
     return
 
@@ -329,7 +337,7 @@ def read_rh():
 def calc_rh_from_tdp():
     # TODO not working
 
-    e = pd.concat([inpt.extr[inpt.var]['t']['data'], e_t], axis=1)
+    # e = pd.concat([inpt.extr[inpt.var]['t']['data'], e_t], axis=1)
 
     e['rh'] = relative_humidity_from_dewpoint(e['e_t'].values * units.K, e['e_td'].values * units.K).to('percent')
     inpt.extr[inpt.var]['e']['data'].drop(columns=['e_t', 'e_td'], inplace=True)
@@ -382,74 +390,6 @@ def read_sw_up():
     c_n.drop(columns=[4], inplace=True)
     c_n.columns = ['surface_net_solar_radiation']
 
-    for yy, year in enumerate(inpt.years):
-        # fn = extract_values(fn, year)
-        try:
-            c_tmp = pd.read_table(
-                    os.path.join(inpt.basefol_c, f'{fn2}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=2,
-                    engine='python')[[0, 1, 4]]
-            c_d = pd.concat([c_d, c_tmp], axis=0)
-            print(f'OK: {fn2}{year}.txt')
-        except FileNotFoundError:
-            print(f'NOT FOUND: {fn2}{year}.txt')
-    c_d.index = pd.to_datetime(c_d[0] + ' ' + c_d[1], format='%Y-%m-%d %H:%M:%S')
-    c_d.drop(columns=[0, 1], inplace=True)
-    c_d[2] = c_d.values / 3600.
-    c_d.drop(columns=[4], inplace=True)
-    c_d.columns = ['surface_solar_radiation_downwards']
-
-    c = pd.concat([c_n, c_d], axis=1)
-
-    c['surface_solar_radiation_upwards'] = c['surface_solar_radiation_downwards'] - c['surface_net_solar_radiation']
-    c.drop(columns=['surface_net_solar_radiation', 'surface_solar_radiation_downwards'], inplace=True)
-    c.columns = [inpt.var]
-    # cleaning data
-    c[c < 0.] = np.nan
-
-    # ERA5
-    fn1 = 'thaao_era5_surface_net_solar_radiation_'
-    fn2 = 'thaao_era5_surface_solar_radiation_downwards_'
-    for yy, year in enumerate(inpt.years):
-        try:
-            e_tmp = pd.read_table(
-                    os.path.join(inpt.basefol_e, f'{fn1}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
-                    engine='python')
-            e_tmp[e_tmp == inpt.var_dict['e']['nanval']] = np.nan
-            e_n = pd.concat([e_n, e_tmp], axis=0)
-            print(f'OK: {fn1}{year}.txt')
-        except FileNotFoundError:
-            print(f'NOT FOUND: {fn1}{year}.txt')
-    e_n.index = pd.to_datetime(e_n[0] + ' ' + e_n[1], format='%Y-%m-%d %H:%M:%S')
-    e_n.drop(columns=[0, 1], inplace=True)
-    e_n[2] = e_n.values / 3600.  # originele in J*m-2
-    e_n.columns = ['surface_net_solar_radiation']
-
-    for yy, year in enumerate(inpt.years):
-        try:
-            e_tmp = pd.read_table(
-                    os.path.join(inpt.basefol_e, f'{fn2}{year}.txt'), skipfooter=1, sep='\s+', header=None, skiprows=1,
-                    engine='python')
-            e_tmp[e_tmp == inpt.var_dict['e']['nanval']] = np.nan
-            e_d = pd.concat([e_d, e_tmp], axis=0)
-            print(f'OK: {fn2}{year}.txt')
-        except FileNotFoundError:
-            print(f'NOT FOUND: {fn2}{year}.txt')
-    e_d.index = pd.to_datetime(e_d[0] + ' ' + e_d[1], format='%Y-%m-%d %H:%M:%S')
-    e_d.drop(columns=[0, 1], inplace=True)
-    e_d[2] = e_d.values / 3600.  # originele in J*m-2
-    e_d.columns = ['surface_solar_radiation_downwards']
-
-    e = pd.concat([e_n, e_d], axis=1)
-
-    e['surface_solar_radiation_upwards'] = e['surface_solar_radiation_downwards'] - e['surface_net_solar_radiation']
-    e.drop(columns=['surface_net_solar_radiation', 'surface_solar_radiation_downwards'], inplace=True)
-    e.columns = [inpt.var]
-    # cleaning data
-    e[e < 0.] = np.nan
-
-    read_thaao_rad()
-    inpt.extr[inpt.var]['t']['data'][inpt.extr[inpt.var]['t']['data'] < 0.] = np.nan
-
     return
 
 
@@ -487,6 +427,7 @@ def read_temp():
     # THAAO2
     read_aws_ecapac(inpt.var)
     return
+
 
 def read_wind():
     # CARRA
@@ -557,11 +498,8 @@ def read():
         return read_msl_pres()
     if inpt.var == 'lwp':
         return read_lwp()
-    if inpt.var == 'lw_down':
-        return read_rad()
-    if inpt.var == 'lw_net':
-        return read_rad()
-    if inpt.var == 'lw_up':
+    if (inpt.var == 'lw_down') | (inpt.var == 'lw_net') | (inpt.var == 'lw_up') | (inpt.var == 'sw_down') | (
+            inpt.var == 'sw_net') | (inpt.var == 'sw_up'):
         return read_rad()
     if inpt.var == 'precip':
         return read_precip()
@@ -569,12 +507,6 @@ def read():
         return read_rh()
     if inpt.var == 'surf_pres':
         return read_surf_pres()
-    if inpt.var == 'sw_down':
-        return read_rad()
-    if inpt.var == 'sw_net':
-        return read_rad()
-    if inpt.var == 'sw_up':
-        return read_sw_up()
     if inpt.var == 'tcc':
         return read_tcc()
     if inpt.var == 'temp':
