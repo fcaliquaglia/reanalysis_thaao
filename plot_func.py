@@ -39,6 +39,7 @@ def plot_ts(period_label):
     :return:
     """
     print('TIMESERIES')
+    plt.ioff()
     fig, ax = plt.subplots(len(inpt.years), 1, figsize=(12, 17), dpi=300)
     fig.suptitle(f"{inpt.var.upper()} all {inpt.tres}", fontweight='bold')
     kwargs_ori = {'alpha': 0.02, 'lw': 0, 'marker': '.', 'ms': 1}
@@ -90,7 +91,7 @@ def plot_residuals(period_label):
     :return:
     """
     print('RESIDUALS')
-
+    plt.ioff()
     fig, ax = plt.subplots(len(inpt.years), 1, figsize=(12, 17), dpi=300)
     fig.suptitle(f"residuals {inpt.var.upper()} all {inpt.tres}", fontweight='bold')
     kwargs = {'lw': 1, 'marker': '.', 'ms': 0}
@@ -140,7 +141,7 @@ def plot_scatter(period_label):
     :return:
     """
     print(f"SCATTERPLOTS {period_label}")
-
+    plt.ioff()
     fig, ax = plt.subplots(2, 2, figsize=(12, 12), dpi=300)
     axs = ax.ravel()
 
