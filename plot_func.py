@@ -38,6 +38,7 @@ def plot_ts(period_label):
     :param period_label:
     :return:
     """
+    # with plt.xkcd():
     print('TIMESERIES')
     fig, ax = plt.subplots(len(inpt.years), 1, figsize=(12, 17), dpi=300)
     fig.suptitle(f"{inpt.var.upper()} all {inpt.tres}", fontweight='bold')
@@ -73,7 +74,7 @@ def plot_ts(period_label):
         else:
             pass
         ax[yy].set_ylim(inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'])
-        ax[yy].text(0.5, 0.90, year, transform=ax[yy].transAxes, horizontalalignment ='center')
+        ax[yy].text(0.5, 0.90, year, transform=ax[yy].transAxes, horizontalalignment='center')
         ax[yy].xaxis.set_major_formatter(inpt.myFmt)
         ax[yy].set_xlim(dt.datetime(year, 1, 1), dt.datetime(year, 12, 31))
         ax[yy].text(0.01, 0.95, inpt.letters[yy] + ')', transform=ax[yy].transAxes)
@@ -122,7 +123,7 @@ def plot_residuals(period_label):
             pass
 
         ax[yy].set_ylim(inpt.extr[inpt.var]['res_min'], inpt.extr[inpt.var]['res_max'])
-        ax[yy].text(0.5, 0.90, year, transform=ax[yy].transAxes, horizontalalignment ='center')
+        ax[yy].text(0.5, 0.90, year, transform=ax[yy].transAxes, horizontalalignment='center')
         ax[yy].xaxis.set_major_formatter(inpt.myFmt)
         ax[yy].set_xlim(dt.datetime(year, 1, 1), dt.datetime(year, 12, 31))
         # panel letters
@@ -172,7 +173,6 @@ def plot_scatter(period_label):
                         x_s[inpt.var][idx], y_s[inpt.var][idx], s=5, color=inpt.seass[period_label]['col'],
                         facecolor='none', alpha=0.5,
                         label=period_label)
-                axs[i].set_xlabel(inpt.var_dict[comp]['label'])
             else:
                 bin_size = (inpt.extr[inpt.var]['max'] - inpt.extr[inpt.var]['min']) / inpt.extr[inpt.var]['bin_nr']
                 h = axs[i].hist2d(
@@ -187,7 +187,6 @@ def plot_scatter(period_label):
                 axs[i].text(
                         0.10, 0.90, f"bin_size={bin_size}",
                         transform=axs[i].transAxes)  # fig.colorbar(h[3], ax=axs[i], extend='both')
-                axs[i].set_xlabel(inpt.var_dict[comp]['label'])
 
                 # if len(x_s[idx]) < 2 | len(y_s[idx]) < 2:
                 #     print('ERROR, ERROR, NO DATA ENOUGH FOR PROPER FIT (i.e. only 1 point available)')
@@ -252,7 +251,6 @@ def plot_scatter_cum():
                         x_s[inpt.var][idx], y_s[inpt.var][idx], s=5, color=seass_new[period_label]['col'],
                         edgecolors='none', alpha=0.5,
                         label=period_label)
-                axs[i].set_xlabel(inpt.var_dict[comp]['label'])
 
                 # if len(x_s[idx]) < 2 | len(y_s[idx]) < 2:
                 #     print('ERROR, ERROR, NO DATA ENOUGH FOR PROPER FIT (i.e. only 1 point available)')
