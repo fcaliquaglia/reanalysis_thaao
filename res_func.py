@@ -27,11 +27,11 @@ import inputs as inpt
 
 
 def data_resampling(vr):
-    if inpt.var in['winds', 'windd', 'precip']:
+    if inpt.var in ['winds', 'windd', 'precip']:
         print('NO WIND/PRECIP RESAMPLING!')
         sys.exit()
 
-    for vvrr in list(inpt.var_dict.keys()):
+    for vvrr in list(inpt.extr[vr]['comps']) + list(inpt.extr[vr]['ref_x']):
         try:
             data_res = inpt.extr[vr][vvrr]['data'].resample(inpt.tres).mean()
             inpt.extr[vr][vvrr]['data_res'] = data_res
