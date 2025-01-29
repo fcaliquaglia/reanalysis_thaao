@@ -40,7 +40,7 @@ basefol_out = os.path.join('H:\\Shared drives', 'Dati_elab_docs', 'thaao_reanaly
 thaao_c = 'thaao_carra'
 thaao_e = 'thaao_era5'
 thaao_l = 'thaao_era5-land'
-thaao_t = 'thaao'
+thaao_t = 'thaao'aaaaaaa
 
 ##
 tres = '3h'
