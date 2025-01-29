@@ -30,7 +30,8 @@ import numpy.ma as ma
 import pandas as pd
 
 import inputs as inpt
-
+# import matplotlib
+# matplotlib.use('WebAgg')
 
 def plot_ts(period_label):
     """
@@ -217,6 +218,7 @@ def plot_scatter_cum():
     """
     import copy as cp
     fig, ax = plt.subplots(2, 2, figsize=(12, 12), dpi=300)
+
     seass_new = cp.copy(inpt.seass)
     seass_new.pop('all')
 
@@ -224,7 +226,6 @@ def plot_scatter_cum():
         print(f"SCATTERPLOTS CUMULATIVE {period_label}")
 
         axs = ax.ravel()
-
         x = inpt.extr[inpt.var][inpt.extr[inpt.var]['ref_x']]['data_res']
         for i, comp in enumerate(inpt.extr[inpt.var]['comps']):
             y = inpt.extr[inpt.var][comp]['data_res']
