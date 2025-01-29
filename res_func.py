@@ -33,7 +33,8 @@ def data_resampling(vr):
 
     for vvrr in list(inpt.var_dict.keys()):
         try:
-            inpt.extr[vr][vvrr]['data_res'] = inpt.extr[vr][vvrr]['data'].resample(inpt.tres).mean()
+            data_res = inpt.extr[vr][vvrr]['data'].resample(inpt.tres).mean()
+            inpt.extr[vr][vvrr]['data_res'] = data_res
         except (TypeError, NameError):
             pass
 
