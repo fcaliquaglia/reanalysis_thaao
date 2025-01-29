@@ -35,16 +35,18 @@ import inputs as inpt
 
 
 def read_carra(vr):
+    c_tmp_all = pd.DataFrame()
     for year in inpt.years:
         try:
             c_tmp = pd.read_table(
                     os.path.join(inpt.basefol_c, f'{inpt.extr[vr]['c']['fn']}{year}.txt'),
                     sep='\s+', header=None, skiprows=1, engine='python', skip_blank_lines=True)
             c_tmp[c_tmp == inpt.var_dict['c']['nanval']] = np.nan
-            inpt.extr[vr]['c']['data'] = pd.concat([inpt.extr[vr]['c']['data'], c_tmp], axis=0)
+            c_tmp_all = pd.concat([c_tmp_all, c_tmp], axis=0)
             print(f'OK: {inpt.extr[vr]['c']['fn']}{year}.txt')
         except FileNotFoundError:
             print(f'NOT FOUND: {inpt.extr[vr]['c']['fn']}{year}.txt')
+    inpt.extr[vr]['c']['data'] = c_tmp_all
     inpt.extr[vr]['c']['data'].index = pd.to_datetime(
             inpt.extr[vr]['c']['data'][0] + ' ' + inpt.extr[vr]['c']['data'][1], format='%Y-%m-%d %H:%M:%S')
     inpt.extr[vr]['c']['data'] = inpt.extr[vr]['c']['data'][[inpt.extr[vr]['c']['column']]]
@@ -53,16 +55,18 @@ def read_carra(vr):
 
 
 def read_era5(vr):
+    e_tmp_all = pd.DataFrame()
     for year in inpt.years:
         try:
             e_tmp = pd.read_table(
                     os.path.join(inpt.basefol_e, f'{inpt.extr[vr]['e']['fn']}{year}.txt'),
                     sep='\s+', header=None, skiprows=1, engine='python')
             e_tmp[e_tmp == inpt.var_dict['e']['nanval']] = np.nan
-            inpt.extr[vr]['e']['data'] = pd.concat([inpt.extr[vr]['e']['data'], e_tmp], axis=0)
+            e_tmp_all = pd.concat([e_tmp_all, e_tmp], axis=0)
             print(f'OK: {inpt.extr[vr]['e']['fn']}{year}.txt')
         except FileNotFoundError:
             print(f'NOT FOUND: {inpt.extr[vr]['e']['fn']}{year}.txt')
+    inpt.extr[vr]['e']['data'] = e_tmp_all
     inpt.extr[vr]['e']['data'].index = pd.to_datetime(
             inpt.extr[vr]['e']['data'][0] + ' ' + inpt.extr[vr]['e']['data'][1], format='%Y-%m-%d %H:%M:%S')
     inpt.extr[vr]['e']['data'] = inpt.extr[vr]['e']['data'][[inpt.extr[vr]['e']['column']]]
@@ -71,16 +75,18 @@ def read_era5(vr):
 
 
 def read_era5_land(vr):
+    l_tmp_all = pd.DataFrame()
     for year in inpt.years:
         try:
             l_tmp = pd.read_table(
                     os.path.join(inpt.basefol_l, f'{inpt.extr[vr]['l']['fn']}{year}.txt'),
                     sep='\s+', header=None, skiprows=1, engine='python')
             l_tmp[l_tmp == inpt.var_dict['l']['nanval']] = np.nan
-            inpt.extr[vr]['l']['data'] = pd.concat([inpt.extr[vr]['l']['data'], l_tmp], axis=0)
+            l_tmp_all = pd.concat([l_tmp_all, l_tmp], axis=0)
             print(f'OK: {inpt.extr[vr]['l']['fn']}{year}.txt')
         except FileNotFoundError:
             print(f'NOT FOUND: {inpt.extr[vr]['l']['fn']}{year}.txt')
+    inpt.extr[vr]['l']['data'] = l_tmp_all
     inpt.extr[vr]['l']['data'].index = pd.to_datetime(
             inpt.extr[vr]['l']['data'][0] + ' ' + inpt.extr[vr]['l']['data'][1], format='%Y-%m-%d %H:%M:%S')
     inpt.extr[vr]['l']['data'] = inpt.extr[vr]['l']['data'][[inpt.extr[vr]['l']['column']]]
@@ -102,6 +108,7 @@ def read_thaao_weather(vr):
 
 
 def read_thaao_rad(vr):
+    t_tmp_all = pd.DataFrame()
     for i in inpt.rad_daterange[inpt.rad_daterange.year.isin(inpt.years)]:
         i_fmt = int(i.strftime('%Y'))
         try:
@@ -116,15 +123,17 @@ def read_thaao_rad(vr):
                 tmp[ii] = tmp[ii].replace(microsecond=0)
             t_tmp.index = pd.DatetimeIndex(tmp)
             t_tmp = t_tmp[[inpt.extr[vr]['t']['column']]]
-            inpt.extr[vr]['t']['data'] = pd.concat([inpt.extr[vr]['t']['data'], t_tmp], axis=0)
+            t_tmp_all = pd.concat([t_tmp_all, t_tmp], axis=0)
             print(f'OK: {inpt.extr[vr]['t']['fn']}{i_fmt}.txt')
         except FileNotFoundError:
             print(f'NOT FOUND: {inpt.extr[vr]['t']['fn']}{i_fmt}.txt')
+    inpt.extr[vr]['t']['data'] = t_tmp_all
     inpt.extr[vr]['t']['data'].columns = [vr]
     return
 
 
 def read_thaao_hatpro(vr):
+    t1_tmp_all = pd.DataFrame()
     for i in inpt.hatpro_daterange[inpt.hatpro_daterange.year.isin(inpt.years)]:
         i_fmt = int(i.strftime('%Y'))
         try:
@@ -142,15 +151,17 @@ def read_thaao_hatpro(vr):
                 tmp[ii] = tmp[ii].replace(microsecond=0)
             t1_tmp.index = pd.DatetimeIndex(tmp)
             t1_tmp.drop(columns=['JD_rif', f'STD_{vr.upper()}', 'RF', 'N'], axis=1, inplace=True)
-            inpt.extr[vr]['t1']['data'] = pd.concat([inpt.extr[vr]['t1']['data'], t1_tmp], axis=0)
+            t_tmp_all = pd.concat([t1_tmp_all, t1_tmp], axis=0)
             print(f'OK: {inpt.extr[vr]['t1']['fn']}{i_fmt}.DAT')
         except FileNotFoundError:
             print(f'NOT FOUND: {inpt.extr[vr]['t1']['fn']}{i_fmt}.DAT')
+    inpt.extr[vr]['t1']['data'] = t_tmp_all
     inpt.extr[vr]['t1']['data'].columns = [vr]
     return
 
 
 def read_thaao_ceilometer(vr):
+    t_tmp_all = pd.DataFrame()
     for i in inpt.ceilometer_daterange[inpt.ceilometer_daterange.year.isin(inpt.years)]:
         i_fmt = i.strftime('%Y%m%d')
         try:
@@ -161,10 +172,11 @@ def read_thaao_ceilometer(vr):
                     skiprows=9,
                     engine='python')
             t_tmp[t_tmp == inpt.var_dict['t']['nanval']] = np.nan
-            inpt.extr[vr]['t']['data'] = pd.concat([inpt.extr[vr]['t']['data'], t_tmp], axis=0)
+            t_tmp_all = pd.concat([t_tmp_all, t_tmp], axis=0)
             print(f'OK: {i_fmt}{inpt.extr[vr]['t']['fn']}.txt')
         except (FileNotFoundError, pd.errors.EmptyDataError):
             print(f'NOT FOUND: {i_fmt}{inpt.extr[vr]['t']['fn']}.txt')
+    inpt.extr[vr]['t']['data'] = t_tmp_all
     inpt.extr[vr]['t']['data'].index = pd.to_datetime(
             inpt.extr[vr]['t']['data']['#'] + ' ' + inpt.extr[vr]['t']['data']['date[y-m-d]time[h:m:s]'],
             format='%Y-%m-%d %H:%M:%S')
@@ -177,6 +189,7 @@ def read_thaao_ceilometer(vr):
 
 
 def read_aws_ecapac(vr):
+    t2_tmp_all = pd.DataFrame()
     for i in inpt.aws_ecapac_daterange[inpt.aws_ecapac_daterange.year.isin(inpt.years)]:
         i_fmt = i.strftime('%Y_%m_%d')
         try:
@@ -186,10 +199,12 @@ def read_aws_ecapac(vr):
             t2_tmp = pd.read_csv(
                     file, skiprows=[0, 3], header=0, decimal='.', delimiter=',', engine='python',
                     index_col='TIMESTAMP').iloc[1:, :]
-            inpt.extr[vr]['t2']['data'] = pd.concat([inpt.extr[vr]['t2']['data'], t2_tmp], axis=0)
+            t2_tmp_all = pd.concat([t2_tmp_all, t2_tmp], axis=0)
+
             print(f'OK: {inpt.extr[vr]['t2']['fn']}{i_fmt}_00_00.dat')
         except (FileNotFoundError, pd.errors.EmptyDataError):
             print(f'NOT_FOUND: {inpt.extr[vr]['t2']['fn']}{i_fmt}_00_00.dat')
+    inpt.extr[vr]['t2']['data'] = t2_tmp_all
     inpt.extr[vr]['t2']['data'].index = pd.DatetimeIndex(inpt.extr[vr]['t2']['data'].index)
     inpt.extr[vr]['t2']['data'].index.name = 'datetime'
     inpt.extr[vr]['t2']['data'] = inpt.extr[vr]['t2']['data'].iloc[:, :].filter(
@@ -324,9 +339,9 @@ def read_lw_up():
     read_carra('lw_net')
     inpt.extr['lw_net']['c']['data'] = inpt.extr['lw_net']['c']['data'] / inpt.var_dict['c']['rad_conv_factor']
     inpt.extr['lw_up']['c']['data'] = pd.DataFrame(
-        index=inpt.extr['lw_down']['c']['data'].index,
-        data=inpt.extr['lw_down']['c']['data'].values -
-             inpt.extr['lw_net']['c']['data'].values, columns=['lw_up'])
+            index=inpt.extr['lw_down']['c']['data'].index,
+            data=inpt.extr['lw_down']['c']['data'].values -
+                 inpt.extr['lw_net']['c']['data'].values, columns=['lw_up'])
     inpt.extr['lw_up']['c']['data'][inpt.extr['lw_up']['c']['data'] < 0.] = np.nan
     del inpt.extr['lw_net']['c']['data']
 
@@ -334,9 +349,9 @@ def read_lw_up():
     read_era5('lw_net')
     inpt.extr['lw_net']['e']['data'] = inpt.extr['lw_net']['e']['data'] / inpt.var_dict['e']['rad_conv_factor']
     inpt.extr['lw_up']['e']['data'] = pd.DataFrame(
-        index=inpt.extr['lw_down']['e']['data'].index,
-        data=inpt.extr['lw_down']['e']['data'].values -
-             inpt.extr['lw_net']['e']['data'].values, columns=['lw_up'])
+            index=inpt.extr['lw_down']['e']['data'].index,
+            data=inpt.extr['lw_down']['e']['data'].values -
+                 inpt.extr['lw_net']['e']['data'].values, columns=['lw_up'])
     inpt.extr['lw_up']['e']['data'][inpt.extr['lw_up']['e']['data'] < 0.] = np.nan
     del inpt.extr['lw_net']['e']['data']
 
@@ -364,9 +379,9 @@ def read_sw_up():
     read_carra('sw_net')
     inpt.extr['sw_net']['c']['data'] = inpt.extr['sw_net']['c']['data'] / inpt.var_dict['c']['rad_conv_factor']
     inpt.extr['sw_up']['c']['data'] = pd.DataFrame(
-        index=inpt.extr['sw_down']['c']['data'].index,
-        data=inpt.extr['sw_down']['c']['data'].values -
-             inpt.extr['sw_net']['c']['data'].values, columns=['sw_up'])
+            index=inpt.extr['sw_down']['c']['data'].index,
+            data=inpt.extr['sw_down']['c']['data'].values -
+                 inpt.extr['sw_net']['c']['data'].values, columns=['sw_up'])
     inpt.extr['sw_up']['c']['data'][inpt.extr['sw_up']['c']['data'] < 0.] = np.nan
     del inpt.extr['sw_net']['c']['data']
 
@@ -374,9 +389,9 @@ def read_sw_up():
     read_era5('sw_net')
     inpt.extr['sw_net']['e']['data'] = inpt.extr['sw_net']['e']['data'] / inpt.var_dict['e']['rad_conv_factor']
     inpt.extr['sw_up']['e']['data'] = pd.DataFrame(
-        index=inpt.extr['sw_down']['e']['data'].index,
-        data=inpt.extr['sw_down']['e']['data'].values -
-             inpt.extr['sw_net']['e']['data'].values, columns=['sw_up'])
+            index=inpt.extr['sw_down']['e']['data'].index,
+            data=inpt.extr['sw_down']['e']['data'].values -
+                 inpt.extr['sw_net']['e']['data'].values, columns=['sw_up'])
     inpt.extr['sw_up']['e']['data'][inpt.extr['sw_up']['e']['data'] < 0.] = np.nan
     del inpt.extr['sw_net']['e']['data']
 

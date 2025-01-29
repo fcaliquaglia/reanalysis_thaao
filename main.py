@@ -27,7 +27,6 @@ import read_func as rd_f
 import res_func as rs_f
 
 if __name__ == "__main__":
-
     for var in inpt.list_var:
         inpt.var = var
         print(var)

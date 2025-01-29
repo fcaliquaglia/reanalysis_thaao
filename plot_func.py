@@ -201,7 +201,6 @@ def plot_scatter(period_label):
                     [inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max']],
                     [inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max']],
                     color='black', lw=1.5, ls='-')
-
         except:
             print(f"error with {inpt.var_dict[comp]['label']}")
 
