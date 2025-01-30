@@ -44,13 +44,13 @@ thaao_t = 'thaao'
 
 ##
 tres = '3h'
-list_var = ['lwp', 'surf_pres', 'winds', 'windd', 'cbh', 'alb', 'temp', 'sw_down', 'lw_down', 'sw_up', 'lw_up']
+list_var = ['lwp', 'surf_pres', 'cbh', 'alb', 'temp', 'sw_down', 'lw_down', 'sw_up', 'lw_up']
 # OK ['lwp', 'surf_pres', 'winds', 'windd', 'cbh', 'alb', 'temp', 'sw_down', 'lw_down', 'sw_up', 'lw_up']
 # NOT OK 'tcc' 'precip' 'rh'
 #
 var = ''
 
-years = np.arange(2022, 2024, 1)
+years = np.arange(2021, 2024, 1)
 
 aws_ecapac_daterange = pd.date_range(start=dt.datetime(2023, 4, 1), end=dt.datetime(2024, 12, 31), freq='1D')
 ceilometer_daterange = pd.date_range(start=dt.datetime(2019, 9, 1), end=dt.datetime(2024, 12, 31), freq='1D')
@@ -191,7 +191,7 @@ extr = {'alb'      : {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min'
                       't1'   : {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
                       't2'   : {'fn'      : 'AWS_THAAO_', 'column': 'RH', 'data': '',
                                 'data_res': ''}},
-        'surf_pres': {'name': 'surf_pres', 'ref_x': 't', 'min': 925, 'max': 1013, 'res_min': -10, 'res_max': 10,
+        'surf_pres': {'name': 'surf_pres', 'ref_x': 't', 'min': 935, 'max': 1013, 'res_min': -10, 'res_max': 10,
                       'uom' : '[hPa]', 'comps': ['c', 'e', 't2'], 'bin_nr': 200,
                       'c'   : {'fn'      : f'{thaao_c}_surface_pressure_', 'column': 2, 'data': '',
                                'data_res': ''},
