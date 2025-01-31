@@ -226,25 +226,26 @@ def plot_scatter_cum():
     plt.close('all')
 
 
-def calc_draw_fit(axs, i, xx, yy, per_lab, print_stats=True):
+def calc_draw_fit(axs, i, xxx, yyy, per_lab, print_stats=True):
     """
     :param per_lab:
     :param axs:
     :param i:
-    :param xx:
-    :param yy:
+    :param xxx:
+    :param yyy:
     :param print_stats:
     :return:
     """
-
-    b, a = np.polyfit(xx.values.flatten(), yy.values.flatten(), deg=1)
+    xx = xxx.values.flatten()
+    yy = yyy.values.flatten()
+    b, a = np.polyfit(xx, yy, deg=1)
     xseq = np.linspace(inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'], num=1000)
     axs[i].plot(xseq, a + b * xseq, color=inpt.seass[per_lab]['col'], lw=2.5, ls='--', alpha=0.5)
     axs[i].plot(
             [inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max']],
             [inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max']], color='black', lw=1.5, ls='-')
     if print_stats:
-        corcoef = ma.corrcoef(xx, yy)
+        corcoef = np.corrcoef(xx, yy)
         N = len(yy)
         rmse = np.sqrt(np.nanmean((yy - xx) ** 2))
         mbe = np.nanmean(yy - xx)
