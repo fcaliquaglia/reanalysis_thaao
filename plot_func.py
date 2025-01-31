@@ -302,7 +302,9 @@ def frame_and_axis_removal(ax, len_comps):
     :param len_comps:
     :return:
     """
-    if len_comps == 3:
+    if len_comps >= 4:
+        axis_removal_list = []
+    elif len_comps == 3:
         axis_removal_list = [3]
     elif len_comps == 2:
         axis_removal_list = [2, 3]
