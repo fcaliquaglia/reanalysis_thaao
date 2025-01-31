@@ -15,6 +15,16 @@
 - [x] download ``mean_sea_level_pressure``
 - [ ] controllare i nan value per ogni serie e la pulizia (dati negativi, outliers?, etc)
 
+## Environment packages needed
+
+- python3
+- scipy
+- netcdf4
+- mtplotlib
+- julian
+- pandas
+- xarray
+
 ## Reanalysis considered
 
 ### CARRA (Copernicus Arctic Regional Reanalysis)

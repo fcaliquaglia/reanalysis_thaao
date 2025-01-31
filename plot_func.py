@@ -190,10 +190,10 @@ def plot_scatter(period_label):
                         0.10, 0.90, f"bin_size={bin_size}",
                         transform=axs[i].transAxes)  # fig.colorbar(h[3], ax=axs[i], extend='both')
 
-                # if len(x_s[idx]) < 2 | len(y_s[idx]) < 2:
-                #     print('ERROR, ERROR, NO DATA ENOUGH FOR PROPER FIT (i.e. only 1 point available)')
-                # else:
-                #     calc_draw_fit(axs, i, idx, x_s, y_s)
+                if len(x_s[idx]) < 2 | len(y_s[idx]) < 2:
+                    print('ERROR, ERROR, NO DATA ENOUGH FOR PROPER FIT (i.e. only 1 point available)')
+                else:
+                    calc_draw_fit(axs, i, idx, x_s, y_s)
 
             axs[i].set_xlim(inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'])
             axs[i].set_ylim(inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'])
