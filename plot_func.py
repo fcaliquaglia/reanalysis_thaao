@@ -133,6 +133,8 @@ def plot_scatter(period_label):
     axs = ax.ravel()
 
     x = inpt.extr[inpt.var][inpt.extr[inpt.var]['ref_x']]['data_res']
+
+    frame_and_axis_removal(axs, len(inpt.extr[inpt.var]['comps']))
     for i, comp in enumerate(inpt.extr[inpt.var]['comps']):
         y = inpt.extr[inpt.var][comp]['data_res']
 
@@ -194,6 +196,7 @@ def plot_scatter_cum():
 
         axs = ax.ravel()
         x = inpt.extr[inpt.var][inpt.extr[inpt.var]['ref_x']]['data_res']
+        frame_and_axis_removal(axs, len(inpt.extr[inpt.var]['comps']))
         for i, comp in enumerate(inpt.extr[inpt.var]['comps']):
             y = inpt.extr[inpt.var][comp]['data_res']
             print(
@@ -210,6 +213,11 @@ def plot_scatter_cum():
             axs[i].scatter(
                     x_s[inpt.var][idx], y_s[inpt.var][idx], s=5, color=seass_new[period_label]['col'],
                     edgecolors='none', alpha=0.5, label=period_label)
+
+            if len(x_s[idx]) < 2 | len(y_s[idx]) < 2:
+                print('ERROR, ERROR, NO DATA ENOUGH FOR PROPER FIT (i.e. only 1 point available)')
+            else:
+                calc_draw_fit(axs, i, x_s[idx], y_s[idx], period_label, print_stats=False)
 
             format_scatterplot(axs, comp, i)
 
@@ -284,6 +292,29 @@ def format_ts(ax, year, yy, residuals=False):
         ax[yy].set_ylim(inpt.extr[inpt.var]['res_min'], inpt.extr[inpt.var]['res_max'])
     else:
         ax[yy].set_ylim(inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'])
+    return
+
+
+def frame_and_axis_removal(ax, len_comps):
+    """
+
+    :param ax:
+    :param len_comps:
+    :return:
+    """
+    if len_comps == 3:
+        axis_removal_list = [3]
+    elif len_comps == 2:
+        axis_removal_list = [2, 3]
+    elif len_comps == 1:
+        axis_removal_list = [1, 2, 3]
+
+    for a in axis_removal_list:
+        ax[a].axis('off')  # this rows the rectangular frame
+        ax[a].get_xaxis().set_visible(False)  # this removes the ticks and numbers for x axis
+        ax[a].get_yaxis().set_visible(False)  # this removes the ticks and numbers for y axis
+
+    return
 
 # def plot_ba(period_label):
 #     """
