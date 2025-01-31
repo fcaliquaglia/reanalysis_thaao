@@ -35,6 +35,11 @@ import inputs as inpt
 
 
 def read_carra(vr):
+    """
+
+    :param vr:
+    :return:
+    """
     c_tmp_all = pd.DataFrame()
     for year in inpt.years:
         try:
@@ -55,6 +60,11 @@ def read_carra(vr):
 
 
 def read_era5(vr):
+    """
+
+    :param vr:
+    :return:
+    """
     e_tmp_all = pd.DataFrame()
     for year in inpt.years:
         try:
@@ -75,6 +85,11 @@ def read_era5(vr):
 
 
 def read_era5_land(vr):
+    """
+
+    :param vr:
+    :return:
+    """
     l_tmp_all = pd.DataFrame()
     for year in inpt.years:
         try:
@@ -95,6 +110,11 @@ def read_era5_land(vr):
 
 
 def read_thaao_weather(vr):
+    """
+
+    :param vr:
+    :return:
+    """
     try:
         inpt.extr[vr]['t']['data'] = xr.open_dataset(
                 os.path.join(inpt.basefol_t, 'thaao_meteo', f'{inpt.extr[vr]['t']['fn']}.nc'),
@@ -108,6 +128,11 @@ def read_thaao_weather(vr):
 
 
 def read_thaao_rad(vr):
+    """
+
+    :param vr:
+    :return:
+    """
     t_tmp_all = pd.DataFrame()
     for i in inpt.rad_daterange[inpt.rad_daterange.year.isin(inpt.years)]:
         i_fmt = int(i.strftime('%Y'))
@@ -132,6 +157,11 @@ def read_thaao_rad(vr):
 
 
 def read_thaao_hatpro(vr):
+    """
+
+    :param vr:
+    :return:
+    """
     t1_tmp_all = pd.DataFrame()
     for i in inpt.hatpro_daterange[inpt.hatpro_daterange.year.isin(inpt.years)]:
         i_fmt = int(i.strftime('%Y'))
@@ -159,6 +189,11 @@ def read_thaao_hatpro(vr):
 
 
 def read_thaao_ceilometer(vr):
+    """
+
+    :param vr:
+    :return:
+    """
     t_tmp_all = pd.DataFrame()
     for i in inpt.ceilometer_daterange[inpt.ceilometer_daterange.year.isin(inpt.years)]:
         i_fmt = i.strftime('%Y%m%d')
@@ -186,6 +221,11 @@ def read_thaao_ceilometer(vr):
 
 
 def read_aws_ecapac(vr):
+    """
+
+    :param vr:
+    :return:
+    """
     t2_tmp_all = pd.DataFrame()
     for i in inpt.aws_ecapac_daterange[inpt.aws_ecapac_daterange.year.isin(inpt.years)]:
         i_fmt = i.strftime('%Y_%m_%d')
@@ -348,7 +388,7 @@ def read_lw_up():
             index=inpt.extr['lw_down']['e']['data'].index,
             data=inpt.extr['lw_down']['e']['data'].values - inpt.extr['lw_net']['e']['data'].values, columns=['lw_up'])
     inpt.extr['lw_up']['e']['data'][inpt.extr['lw_up']['e']['data'] < 0.] = np.nan
-    #del inpt.extr['lw_net']['e']['data']
+    # del inpt.extr['lw_net']['e']['data']
 
     # ERA5-LAND
     read_era5_land('lw_net')
@@ -357,7 +397,7 @@ def read_lw_up():
             index=inpt.extr['lw_down']['l']['data'].index,
             data=inpt.extr['lw_down']['l']['data'].values - inpt.extr['lw_net']['l']['data'].values, columns=['lw_up'])
     inpt.extr['lw_up']['l']['data'][inpt.extr['lw_up']['l']['data'] < 0.] = np.nan
-    #del inpt.extr['lw_net']['l']['data']
+    # del inpt.extr['lw_net']['l']['data']
 
     # THAAO
     read_thaao_rad('lw_up')
