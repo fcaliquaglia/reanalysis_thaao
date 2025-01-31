@@ -44,7 +44,7 @@ thaao_t = 'thaao'
 
 ##
 tres = '3h'
-list_var = ['lwp', 'surf_pres', 'cbh', 'alb', 'temp', 'sw_down', 'lw_down', 'sw_up', 'lw_up']
+list_var = ['lwp', 'sw_down', 'lw_down', 'sw_up', 'lw_up', 'surf_pres', 'cbh', 'alb', 'temp', ]
 # OK ['lwp', 'surf_pres', 'winds', 'windd', 'cbh', 'alb', 'temp', 'sw_down', 'lw_down', 'sw_up', 'lw_up']
 # NOT OK 'tcc' 'precip' 'rh'
 #
@@ -129,8 +129,8 @@ extr = {'alb'      : {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min'
                       't1'  : {'fn'      : 'LWP_15_min_', 'column': np.nan, 'data': '',
                                'data_res': ''},
                       't2'  : {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''}},
-        'lw_down'  : {'name': 'lw_down', 'ref_x': 't', 'min': 0, 'max': 500, 'res_min': -20, 'res_max': 20,
-                      'uom' : '[W/m2]', 'comps': ['c', 'e'], 'bin_nr': 200,
+        'lw_down'  : {'name': 'lw_down', 'ref_x': 't', 'min': 0, 'max': 600, 'res_min': -20, 'res_max': 20,
+                      'uom' : '[W/m2]', 'comps': ['c', 'e', 'l'], 'bin_nr': 200,
                       'c'   : {'fn'  : f'{thaao_c}_thermal_surface_radiation_downwards_', 'column': 4,
                                'data': '', 'data_res': ''},
                       'e'   : {'fn'  : f'{thaao_e}_surface_thermal_radiation_downwards_', 'column': 2,
@@ -141,8 +141,8 @@ extr = {'alb'      : {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min'
                                'data_res': ''},
                       't1'  : {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
                       't2'  : {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''}},
-        'lw_net'   : {'name': 'lw_down', 'ref_x': 't', 'min': 0, 'max': 500, 'res_min': -20, 'res_max': 20,
-                      'uom' : '[W/m2]', 'comps': ['c', 'e'], 'bin_nr': 200,
+        'lw_net'   : {'name': 'lw_down', 'ref_x': 't', 'min': 0, 'max': 600, 'res_min': -20, 'res_max': 20,
+                      'uom' : '[W/m2]', 'comps': ['c', 'e', 'l'], 'bin_nr': 200,
                       'c'   : {'fn'  : f'{thaao_c}_surface_net_thermal_radiation_', 'column': 2,
                                'data': '', 'data_res': ''},
                       'e'   : {'fn'  : f'{thaao_e}_surface_net_thermal_radiation_', 'column': 2,
@@ -152,8 +152,8 @@ extr = {'alb'      : {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min'
                       't'   : {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
                       't1'  : {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
                       't2'  : {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''}},
-        'lw_up'    : {'name': 'lw_up', 'ref_x': 't', 'min': 0, 'max': 500, 'res_min': -20, 'res_max': 20,
-                      'uom' : '[W/m2]', 'comps': ['c', 'e'], 'bin_nr': 200,
+        'lw_up'    : {'name': 'lw_up', 'ref_x': 't', 'min': 0, 'max': 600, 'res_min': -20, 'res_max': 20,
+                      'uom' : '[W/m2]', 'comps': ['c', 'e', 'l'], 'bin_nr': 200,
                       'c'   : {'fn': '', 'column': 2, 'data': '', 'data_res': ''},
                       'e'   : {'fn': '', 'column': 2, 'data': '', 'data_res': ''},
                       'l'   : {'fn': '', 'column': 2, 'data': '', 'data_res': ''},
@@ -203,8 +203,8 @@ extr = {'alb'      : {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min'
                       't1'  : {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
                       't2'  : {'fn'      : 'AWS_THAAO_', 'column': 'BP_mbar', 'data': '',
                                'data_res': ''}},
-        'sw_down'  : {'name': 'sw_down', 'ref_x': 't', 'min': 0, 'max': 500, 'res_min': -20, 'res_max': 20,
-                      'uom' : '[W/m2]', 'comps': ['c', 'e'], 'bin_nr': 200,
+        'sw_down'  : {'name': 'sw_down', 'ref_x': 't', 'min': 0, 'max': 600, 'res_min': -20, 'res_max': 20,
+                      'uom' : '[W/m2]', 'comps': ['c', 'e', 'l'], 'bin_nr': 200,
                       'c'   : {'fn'  : f'{thaao_c}_surface_solar_radiation_downwards_', 'column': 4,
                                'data': '', 'data_res': ''},
                       'e'   : {'fn'  : f'{thaao_e}_surface_solar_radiation_downwards_', 'column': 2,
@@ -215,8 +215,8 @@ extr = {'alb'      : {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min'
                                'data_res': ''},
                       't1'  : {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
                       't2'  : {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''}},
-        'sw_net'   : {'name': 'sw_down', 'ref_x': 't', 'min': 0, 'max': 500, 'res_min': -20, 'res_max': 20,
-                      'uom' : '[W/m2]', 'comps': ['c', 'e'], 'bin_nr': 200,
+        'sw_net'   : {'name': 'sw_down', 'ref_x': 't', 'min': 0, 'max': 600, 'res_min': -20, 'res_max': 20,
+                      'uom' : '[W/m2]', 'comps': ['c', 'e', 'l'], 'bin_nr': 200,
                       'c'   : {'fn'  : f'{thaao_c}_surface_net_solar_radiation_', 'column': 4,
                                'data': '', 'data_res': ''},
                       'e'   : {'fn'  : f'{thaao_e}_surface_net_solar_radiation_', 'column': 2,
@@ -226,8 +226,8 @@ extr = {'alb'      : {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min'
                       't'   : {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
                       't1'  : {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
                       't2'  : {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''}},
-        'sw_up'    : {'name': 'sw_up', 'ref_x': 't', 'min': 0, 'max': 500, 'res_min': -20, 'res_max': 20,
-                      'uom' : '[W/m2]', 'comps': ['c', 'e'], 'bin_nr': 200,
+        'sw_up'    : {'name': 'sw_up', 'ref_x': 't', 'min': 0, 'max': 600, 'res_min': -20, 'res_max': 20,
+                      'uom' : '[W/m2]', 'comps': ['c', 'e', 'l'], 'bin_nr': 200,
                       'c'   : {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
                       'e'   : {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
                       'l'   : {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
