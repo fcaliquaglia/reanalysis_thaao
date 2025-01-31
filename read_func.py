@@ -39,8 +39,8 @@ def read_carra(vr):
     for year in inpt.years:
         try:
             c_tmp = pd.read_table(
-                    os.path.join(inpt.basefol_c, f'{inpt.extr[vr]['c']['fn']}{year}.txt'),
-                    sep='\s+', header=None, skiprows=1, engine='python', skip_blank_lines=True)
+                    os.path.join(inpt.basefol_c, f'{inpt.extr[vr]['c']['fn']}{year}.txt'), sep='\s+', header=None,
+                    skiprows=1, engine='python', skip_blank_lines=True)
             c_tmp[c_tmp == inpt.var_dict['c']['nanval']] = np.nan
             c_tmp_all = pd.concat([c_tmp_all, c_tmp], axis=0)
             print(f'OK: {inpt.extr[vr]['c']['fn']}{year}.txt')
@@ -59,8 +59,8 @@ def read_era5(vr):
     for year in inpt.years:
         try:
             e_tmp = pd.read_table(
-                    os.path.join(inpt.basefol_e, f'{inpt.extr[vr]['e']['fn']}{year}.txt'),
-                    sep='\s+', header=None, skiprows=1, engine='python')
+                    os.path.join(inpt.basefol_e, f'{inpt.extr[vr]['e']['fn']}{year}.txt'), sep='\s+', header=None,
+                    skiprows=1, engine='python')
             e_tmp[e_tmp == inpt.var_dict['e']['nanval']] = np.nan
             e_tmp_all = pd.concat([e_tmp_all, e_tmp], axis=0)
             print(f'OK: {inpt.extr[vr]['e']['fn']}{year}.txt')
@@ -79,8 +79,8 @@ def read_era5_land(vr):
     for year in inpt.years:
         try:
             l_tmp = pd.read_table(
-                    os.path.join(inpt.basefol_l, f'{inpt.extr[vr]['l']['fn']}{year}.txt'),
-                    sep='\s+', header=None, skiprows=1, engine='python')
+                    os.path.join(inpt.basefol_l, f'{inpt.extr[vr]['l']['fn']}{year}.txt'), sep='\s+', header=None,
+                    skiprows=1, engine='python')
             l_tmp[l_tmp == inpt.var_dict['l']['nanval']] = np.nan
             l_tmp_all = pd.concat([l_tmp_all, l_tmp], axis=0)
             print(f'OK: {inpt.extr[vr]['l']['fn']}{year}.txt')
@@ -114,8 +114,7 @@ def read_thaao_rad(vr):
         try:
             t_tmp = pd.read_table(
                     os.path.join(inpt.basefol_t, 'thaao_rad', f'{inpt.extr[vr]['t']['fn']}{i_fmt}_5MIN.dat'),
-                    engine='python',
-                    skiprows=None, header=0, decimal='.', sep='\s+')
+                    engine='python', skiprows=None, header=0, decimal='.', sep='\s+')
             tmp = np.empty(t_tmp['JDAY_UT'].shape, dtype=dt.datetime)
             for ii, el in enumerate(t_tmp['JDAY_UT']):
                 new_jd_ass = el + julian.to_jd(dt.datetime(i_fmt - 1, 12, 31, 0, 0), fmt='jd')
@@ -140,9 +139,8 @@ def read_thaao_hatpro(vr):
             t1_tmp = pd.read_table(
                     os.path.join(
                             inpt.basefol_t, 'thaao_hatpro', 'definitivi_da_giando',
-                            f'{inpt.extr[vr]['t1']['fn']}{i_fmt}',
-                            f'{inpt.extr[vr]['t1']['fn']}{i_fmt}.DAT'), sep='\s+', engine='python', header=None,
-                    skiprows=1)
+                            f'{inpt.extr[vr]['t1']['fn']}{i_fmt}', f'{inpt.extr[vr]['t1']['fn']}{i_fmt}.DAT'),
+                    sep='\s+', engine='python', header=None, skiprows=1)
             t1_tmp.columns = ['JD_rif', 'RF', 'N', 'LWP_gm-2', 'STD_LWP']
             tmp = np.empty(t1_tmp['JD_rif'].shape, dtype=dt.datetime)
             for ii, el in enumerate(t1_tmp['JD_rif']):
@@ -168,8 +166,7 @@ def read_thaao_ceilometer(vr):
             t_tmp = pd.read_table(
                     os.path.join(
                             inpt.basefol_t_elab, 'thaao_ceilometer_elab', 'medie_tat_rianalisi',
-                            f'{i_fmt}{inpt.extr[vr]['t']['fn']}.txt'), skipfooter=0, sep='\s+', header=0,
-                    skiprows=9,
+                            f'{i_fmt}{inpt.extr[vr]['t']['fn']}.txt'), skipfooter=0, sep='\s+', header=0, skiprows=9,
                     engine='python')
             t_tmp[t_tmp == inpt.var_dict['t']['nanval']] = np.nan
             t_tmp_all = pd.concat([t_tmp_all, t_tmp], axis=0)
@@ -340,30 +337,27 @@ def read_lw_up():
     inpt.extr['lw_net']['c']['data'] = inpt.extr['lw_net']['c']['data'] / inpt.var_dict['c']['rad_conv_factor']
     inpt.extr['lw_up']['c']['data'] = pd.DataFrame(
             index=inpt.extr['lw_down']['c']['data'].index,
-            data=inpt.extr['lw_down']['c']['data'].values -
-                 inpt.extr['lw_net']['c']['data'].values, columns=['lw_up'])
+            data=inpt.extr['lw_down']['c']['data'].values - inpt.extr['lw_net']['c']['data'].values, columns=['lw_up'])
     inpt.extr['lw_up']['c']['data'][inpt.extr['lw_up']['c']['data'] < 0.] = np.nan
-    del inpt.extr['lw_net']['c']['data']
+    # del inpt.extr['lw_net']['c']['data']
 
     # ERA5
     read_era5('lw_net')
     inpt.extr['lw_net']['e']['data'] = inpt.extr['lw_net']['e']['data'] / inpt.var_dict['e']['rad_conv_factor']
     inpt.extr['lw_up']['e']['data'] = pd.DataFrame(
             index=inpt.extr['lw_down']['e']['data'].index,
-            data=inpt.extr['lw_down']['e']['data'].values -
-                 inpt.extr['lw_net']['e']['data'].values, columns=['lw_up'])
+            data=inpt.extr['lw_down']['e']['data'].values - inpt.extr['lw_net']['e']['data'].values, columns=['lw_up'])
     inpt.extr['lw_up']['e']['data'][inpt.extr['lw_up']['e']['data'] < 0.] = np.nan
-    del inpt.extr['lw_net']['e']['data']
+    #del inpt.extr['lw_net']['e']['data']
 
     # ERA5-LAND
     read_era5_land('lw_net')
     inpt.extr['lw_net']['l']['data'] = inpt.extr['lw_net']['l']['data'] / inpt.var_dict['l']['rad_conv_factor']
     inpt.extr['lw_up']['l']['data'] = pd.DataFrame(
             index=inpt.extr['lw_down']['l']['data'].index,
-            data=inpt.extr['lw_down']['l']['data'].values -
-                 inpt.extr['lw_net']['l']['data'].values, columns=['lw_up'])
+            data=inpt.extr['lw_down']['l']['data'].values - inpt.extr['lw_net']['l']['data'].values, columns=['lw_up'])
     inpt.extr['lw_up']['l']['data'][inpt.extr['lw_up']['l']['data'] < 0.] = np.nan
-    del inpt.extr['lw_net']['l']['data']
+    #del inpt.extr['lw_net']['l']['data']
 
     # THAAO
     read_thaao_rad('lw_up')
@@ -380,8 +374,7 @@ def read_sw_up():
     inpt.extr['sw_net']['c']['data'] = inpt.extr['sw_net']['c']['data'] / inpt.var_dict['c']['rad_conv_factor']
     inpt.extr['sw_up']['c']['data'] = pd.DataFrame(
             index=inpt.extr['sw_down']['c']['data'].index,
-            data=inpt.extr['sw_down']['c']['data'].values -
-                 inpt.extr['sw_net']['c']['data'].values, columns=['sw_up'])
+            data=inpt.extr['sw_down']['c']['data'].values - inpt.extr['sw_net']['c']['data'].values, columns=['sw_up'])
     inpt.extr['sw_up']['c']['data'][inpt.extr['sw_up']['c']['data'] < 0.] = np.nan
     del inpt.extr['sw_net']['c']['data']
 
@@ -390,8 +383,7 @@ def read_sw_up():
     inpt.extr['sw_net']['e']['data'] = inpt.extr['sw_net']['e']['data'] / inpt.var_dict['e']['rad_conv_factor']
     inpt.extr['sw_up']['e']['data'] = pd.DataFrame(
             index=inpt.extr['sw_down']['e']['data'].index,
-            data=inpt.extr['sw_down']['e']['data'].values -
-                 inpt.extr['sw_net']['e']['data'].values, columns=['sw_up'])
+            data=inpt.extr['sw_down']['e']['data'].values - inpt.extr['sw_net']['e']['data'].values, columns=['sw_up'])
     inpt.extr['sw_up']['e']['data'][inpt.extr['sw_up']['e']['data'] < 0.] = np.nan
     del inpt.extr['sw_net']['e']['data']
 
@@ -400,8 +392,7 @@ def read_sw_up():
     inpt.extr['sw_net']['l']['data'] = inpt.extr['sw_net']['l']['data'] / inpt.var_dict['l']['rad_conv_factor']
     inpt.extr['sw_up']['l']['data'] = pd.DataFrame(
             index=inpt.extr['sw_down']['l']['data'].index,
-            data=inpt.extr['sw_down']['l']['data'].values -
-                 inpt.extr['sw_net']['l']['data'].values, columns=['sw_up'])
+            data=inpt.extr['sw_down']['l']['data'].values - inpt.extr['sw_net']['l']['data'].values, columns=['sw_up'])
     inpt.extr['sw_up']['l']['data'][inpt.extr['sw_up']['l']['data'] < 0.] = np.nan
     del inpt.extr['sw_net']['l']['data']
 

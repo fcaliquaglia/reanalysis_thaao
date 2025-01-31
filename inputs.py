@@ -44,10 +44,10 @@ thaao_t = 'thaao'
 
 ##
 tres = '3h'
-list_var = ['temp', 'sw_down', 'lw_down', 'sw_up', 'lw_up', 'surf_pres', 'cbh', 'alb']
+list_var = ['sw_up', 'sw_down', 'lw_down', 'lw_up', 'surf_pres', 'cbh', 'alb', 'temp']
 # OK ['lwp', 'surf_pres', 'winds', 'windd', 'cbh', 'alb', 'temp', 'sw_down', 'lw_down', 'sw_up', 'lw_up']
 # NOT OK 'tcc' 'precip' 'rh', 'lwp'
-#
+
 var = ''
 
 years = np.arange(2021, 2024, 1)
@@ -143,7 +143,7 @@ extr = {'alb'      : {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min'
                       't2'  : {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''}},
         'lw_net'   : {'name': 'lw_down', 'ref_x': 't', 'min': 0, 'max': 600, 'res_min': -20, 'res_max': 20,
                       'uom' : '[W/m2]', 'comps': ['c', 'e', 'l'], 'bin_nr': 200,
-                      'c'   : {'fn'  : f'{thaao_c}_surface_net_thermal_radiation_', 'column': 2,
+                      'c'   : {'fn'  : f'{thaao_c}_surface_net_thermal_radiation_', 'column': 4,
                                'data': '', 'data_res': ''},
                       'e'   : {'fn'  : f'{thaao_e}_surface_net_thermal_radiation_', 'column': 2,
                                'data': '', 'data_res': ''},
@@ -154,9 +154,9 @@ extr = {'alb'      : {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min'
                       't2'  : {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''}},
         'lw_up'    : {'name': 'lw_up', 'ref_x': 't', 'min': 0, 'max': 600, 'res_min': -20, 'res_max': 20,
                       'uom' : '[W/m2]', 'comps': ['c', 'e', 'l'], 'bin_nr': 200,
-                      'c'   : {'fn': '', 'column': 2, 'data': '', 'data_res': ''},
-                      'e'   : {'fn': '', 'column': 2, 'data': '', 'data_res': ''},
-                      'l'   : {'fn': '', 'column': 2, 'data': '', 'data_res': ''},
+                      'c'   : {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
+                      'e'   : {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
+                      'l'   : {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
                       't'   : {'fn'      : 'MERGED_SW_LW_UP_DW_METEO_', 'column': 'LW_UP', 'data': '',
                                'data_res': ''},
                       't1'  : {'fn': '', 'column': 2, 'data': '', 'data_res': ''},
