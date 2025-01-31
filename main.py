@@ -27,19 +27,22 @@ import read_func as rd_f
 import res_func as rs_f
 
 if __name__ == "__main__":
-    for var in inpt.list_var:
-        inpt.var = var
-        print(var)
+    for tres in inpt.tres_list:
+        inpt.tres = tres
+        print(tres)
 
-        # data reading
-        rd_f.read()
+        for var in inpt.list_var:
+            inpt.var = var
+            print(var)
 
-        # time RESAMPLING (specific for windd --> using wind components, and precip --> cumulative)
-        rs_f.data_resampling(inpt.var)
+            # data reading
+            rd_f.read()
 
-        plt_f.plot_ts('all')
-        plt_f.plot_residuals('all')
-        plt_f.plot_scatter_cum()
-        for seas in inpt.seass:
-            plt_f.plot_scatter(seas)
-            # plot_ba(var, all_var, seas)
+            # time RESAMPLING (specific for windd --> using wind components, and precip --> cumulative)
+            rs_f.data_resampling(inpt.var)
+
+            plt_f.plot_ts('all')
+            plt_f.plot_residuals('all')
+            plt_f.plot_scatter_cum()
+            for seas in inpt.seass:
+                plt_f.plot_scatter(seas)  # plot_ba(var, all_var, seas)
