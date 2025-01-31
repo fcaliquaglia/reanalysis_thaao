@@ -603,6 +603,8 @@ def calc_rad_acc_era5_land(vr):
     # appending original value at 0100
     inpt.extr[vr]['l']['data_diff'] = pd.concat([inpt.extr[vr]['l']['data_diff'], orig_filtered_data]).sort_index()
     inpt.extr[vr]['l']['data'] = inpt.extr[vr]['l']['data_diff']
+
+    print('ERA5-LAND data for radiation corrected because they are values daily-accumulated!')
     return
 
 
