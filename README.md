@@ -184,7 +184,7 @@ Total number of points analysed.
 
 ### MAE
 
-> mae = np.nanmean(np.abs(x - y))
+> mae = np.nanmean(np.abs(y - x))
 
 Excluding nan values. x(t): reference value, usually THAAO, see above; y(t): reanalysis or other
 
@@ -194,7 +194,7 @@ Pearson correlation coefficient
 
 ### RMSE
 
-> rmse = np.sqrt(np.nanmean((x - y) ** 2)
+> rmse = np.sqrt(np.nanmean((y - x) ** 2)
 
 Excluding nan values. x(t): reference value; y(t): reanalysis or other
 
@@ -252,8 +252,20 @@ Excluding nan values. x(t): reference value; y(t): reanalysis or other
 > For CARRA radiation values. These forecast variables are released t different leadtimes, with 1-hour frequency.
 > Therefore, we consider only leadtime 1, obtaining every three hours, hourly forecast valued for the following hour
 > w.r.t the chose timeframe. For example, we choose April 1, 2023 at 6:00 UTC, we analyze forecast values on April 1,
-> 2023
-> at 7:00 UTC. All the radiation dataset have been cleaned for values <0.
+> 2023 at 7:00 UTC. All the radiation dataset have been cleaned for values <0.
+
+> [!WARNING]
+> Accumulations rates for ERA5-Land >> from https://confluence.ecmwf.int/display/CKB/ERA5-Land%3A+data+documentation#ERA5Land:datadocumentation-Temporalfrequency
+> Please, note that the convention for accumulations used in ERA5-Land differs with that for ERA5. The accumulations in 
+> the short forecasts of ERA5-Land (with hourly steps from 01 to 24) are treated the same as those in ERA-Interim or 
+> ERA-Interim/Land, i.e., they are accumulated from the beginning of the forecast to the end of the forecast step. For 
+> example, runoff at day=D, step=12 will provide runoff accumulated from day=D, time=0 to day=D, time=12. The maximum 
+> accumulation is over 24 hours, i.e., from day=D, time=0 to day=D+1,time=0 (step=24). 
+> - HRES: accumulations are from 00 UTC to the hour ending at the forecast step 
+> - For the CDS time, or validity time, of 00 UTC, the accumulations are over the 24 hours ending at 00 UTC i.e. the 
+> accumulation is during the previous day
+> - Synoptic monthly means (stream=mnth): accumulations have units of "variable_units per forecast_step hours"
+Monthly means of daily means (stream=moda): accumulations have units that include "per day", see section Monthly means
 
 ### Downward shortwave irradiance - DSI (``sw_down``)
 
@@ -316,11 +328,11 @@ Excluding nan values. x(t): reference value; y(t): reanalysis or other
 
 ## Liquid Water Path - LWP (``lwp``)
 
-> [!CAUTION]  
+> [!CAUTION]
 > LWP values have issues, at least for CARRA which has been divided by 10E-06 instead of 10e-03 as expected from the
-> declared uom. All LWP values have been masked to nan for LWP<0.0.
+> declared uom. All LWP values have been masked to nan for LWP<0.0. Perhaps HATPRO 
 
 - CARRA: ``total_column_cloud_liquid_water``
-- ERA-5: ``total_column_cloud_liquid_water`` (also ``total_column_water``?)
+- ERA-5: ``total_column_cloud_liquid_water``
 - ERA5-L: /
-- THAAO (hatpro):
+- THAAO (hatpro): ???
