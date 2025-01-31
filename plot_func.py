@@ -220,6 +220,7 @@ def plot_scatter_cum():
                 calc_draw_fit(axs, i, x_s[idx], y_s[idx], period_label, print_stats=False)
 
             format_scatterplot(axs, comp, i)
+            axs[i].legend()
 
     plt.savefig(
             os.path.join(inpt.basefol_out, inpt.tres, f"{inpt.tres}_scatter_cum_{inpt.var}.png"), bbox_inches='tight')
