@@ -143,19 +143,19 @@ def read_thaao_hatpro(vr):
                             f'{inpt.extr[vr]['t1']['fn']}{i_fmt}',
                             f'{inpt.extr[vr]['t1']['fn']}{i_fmt}.DAT'), sep='\s+', engine='python', header=None,
                     skiprows=1)
-            t1_tmp.columns = ['JD_rif', f'{vr.upper()}', f'STD_{vr.upper()}', 'RF', 'N']
+            t1_tmp.columns = ['JD_rif', 'RF', 'N', 'LWP_gm-2', 'STD_LWP']
             tmp = np.empty(t1_tmp['JD_rif'].shape, dtype=dt.datetime)
             for ii, el in enumerate(t1_tmp['JD_rif']):
                 new_jd_ass = el + julian.to_jd(dt.datetime(i_fmt - 1, 12, 31, 0, 0), fmt='jd')
                 tmp[ii] = julian.from_jd(new_jd_ass, fmt='jd')
                 tmp[ii] = tmp[ii].replace(microsecond=0)
             t1_tmp.index = pd.DatetimeIndex(tmp)
-            t1_tmp.drop(columns=['JD_rif', f'STD_{vr.upper()}', 'RF', 'N'], axis=1, inplace=True)
-            t_tmp_all = pd.concat([t1_tmp_all, t1_tmp], axis=0)
+            t1_tmp.drop(columns=['JD_rif', 'STD_LWP', 'RF', 'N'], axis=1, inplace=True)
+            t1_tmp_all = pd.concat([t1_tmp_all, t1_tmp], axis=0)
             print(f'OK: {inpt.extr[vr]['t1']['fn']}{i_fmt}.DAT')
         except FileNotFoundError:
             print(f'NOT FOUND: {inpt.extr[vr]['t1']['fn']}{i_fmt}.DAT')
-    inpt.extr[vr]['t1']['data'] = t_tmp_all
+    inpt.extr[vr]['t1']['data'] = t1_tmp_all
     inpt.extr[vr]['t1']['data'].columns = [vr]
     return
 
@@ -249,13 +249,13 @@ def read_cbh():
 def read_lwp():
     # CARRA
     read_carra(inpt.var)
-    inpt.extr[inpt.var]['c']['data'] = inpt.extr[inpt.var]['c']['data'] * 10000000
+    inpt.extr[inpt.var]['c']['data'] = inpt.extr[inpt.var]['c']['data']
     inpt.extr[inpt.var]['c']['data'][inpt.extr[inpt.var]['c']['data'] < 0.01] = np.nan
     # c[c < 15] = 0
 
     # ERA5
     read_era5(inpt.var)
-    inpt.extr[inpt.var]['e']['data'] = inpt.extr[inpt.var]['e']['data'] * 1000
+    inpt.extr[inpt.var]['e']['data'] = inpt.extr[inpt.var]['e']['data']
     inpt.extr[inpt.var]['e']['data'][inpt.extr[inpt.var]['e']['data'] < 0.01] = np.nan
     # e[e < 15] = 0
 

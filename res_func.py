@@ -31,7 +31,7 @@ def data_resampling(vr):
         print('NO WIND/PRECIP RESAMPLING!')
         sys.exit()
 
-    for vvrr in list(inpt.extr[vr]['comps']) + list(inpt.extr[vr]['ref_x']):
+    for vvrr in inpt.extr[vr]['comps'] + [inpt.extr[vr]['ref_x']]:
         try:
             data_res = inpt.extr[vr][vvrr]['data'].resample(inpt.tres).mean()
             inpt.extr[vr][vvrr]['data_res'] = data_res
