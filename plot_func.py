@@ -60,8 +60,7 @@ def plot_ts(period_label):
 
         # resampled resolution
         for varvar in inpt.extr[inpt.var]['comps'] + [inpt.extr[inpt.var]['ref_x']]:
-            data = inpt.extr[inpt.var][varvar]['data_res'][
-                inpt.extr[inpt.var][varvar]['data_res'].index.year == year]
+            data = inpt.extr[inpt.var][varvar]['data_res'][inpt.extr[inpt.var][varvar]['data_res'].index.year == year]
             ax[yy].plot(data, color=inpt.var_dict[varvar]['col'], label=inpt.var_dict[varvar]['label'], **kwargs)
 
         if inpt.var == 'alb':
@@ -100,8 +99,7 @@ def plot_residuals(period_label):
         ax[yy].plot(daterange, np.repeat(0, len(daterange)), color='black', lw=2, ls='--')
 
         for varvar in inpt.extr[inpt.var]['comps']:
-            data = inpt.extr[inpt.var][varvar]['data_res'][
-                inpt.extr[inpt.var][varvar]['data_res'].index.year == year]
+            data = inpt.extr[inpt.var][varvar]['data_res'][inpt.extr[inpt.var][varvar]['data_res'].index.year == year]
             ax[yy].plot(
                     data - x[x.index.year == year], color=inpt.var_dict[varvar]['col'],
                     label=inpt.var_dict[varvar]['label'], **kwargs)
@@ -120,21 +118,6 @@ def plot_residuals(period_label):
             os.path.join(inpt.basefol_out, inpt.tres, f"{inpt.tres}_{period_label}_residuals_{inpt.var}.png"),
             bbox_inches='tight')
     plt.close('all')
-
-
-def format_ts(ax, year, yy, residuals=False):
-    ax[yy].xaxis.set_major_formatter(inpt.myFmt)
-    ax[yy].set_xlim(dt.datetime(year, 1, 1), dt.datetime(year, 12, 31))
-
-    ax[yy].text(0.5, 0.90, year, transform=ax[yy].transAxes, horizontalalignment='center')
-    ax[yy].text(0.01, 0.95, inpt.letters[yy] + ')', transform=ax[yy].transAxes)
-
-    if residuals:
-        ax[yy].set_ylim(inpt.extr[inpt.var]['res_min'], inpt.extr[inpt.var]['res_max'])
-    else:
-        ax[yy].set_ylim(inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'])
-
-
 
 
 def plot_scatter(period_label):
@@ -167,19 +150,15 @@ def plot_scatter(period_label):
         if inpt.seass[period_label]['name'] != 'all':
             axs[i].scatter(
                     x_s[inpt.var][idx], y_s[inpt.var][idx], s=5, color=inpt.seass[period_label]['col'],
-                    facecolor='none', alpha=0.5,
-                    label=period_label)
+                    facecolor='none', alpha=0.5, label=period_label)
         else:
             bin_size = (inpt.extr[inpt.var]['max'] - inpt.extr[inpt.var]['min']) / inpt.extr[inpt.var]['bin_nr']
             h = axs[i].hist2d(
                     x_s[inpt.var][idx], y_s[inpt.var][idx], bins=[np.linspace(
                             inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'], inpt.extr[inpt.var]['bin_nr']),
                         np.linspace(
-                                inpt.extr[inpt.var]['min'],
-                                inpt.extr[inpt.var]['max'],
-                                inpt.extr[inpt.var]['bin_nr'])],
-                    cmap=plt.cm.jet,
-                    cmin=1, vmin=1)
+                                inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'], inpt.extr[inpt.var]['bin_nr'])],
+                    cmap=plt.cm.jet, cmin=1, vmin=1)
             axs[i].text(
                     0.10, 0.90, f"bin_size={bin_size}",
                     transform=axs[i].transAxes)  # fig.colorbar(h[3], ax=axs[i], extend='both')
@@ -230,8 +209,7 @@ def plot_scatter_cum():
 
             axs[i].scatter(
                     x_s[inpt.var][idx], y_s[inpt.var][idx], s=5, color=seass_new[period_label]['col'],
-                    edgecolors='none', alpha=0.5,
-                    label=period_label)
+                    edgecolors='none', alpha=0.5, label=period_label)
 
             if len(x_s[idx]) < 2 | len(y_s[idx]) < 2:
                 print('ERROR, ERROR, NO DATA ENOUGH FOR PROPER FIT (i.e. only 1 point available)')
@@ -243,26 +221,6 @@ def plot_scatter_cum():
     plt.savefig(
             os.path.join(inpt.basefol_out, inpt.tres, f"{inpt.tres}_scatter_cum_{inpt.var}.png"), bbox_inches='tight')
     plt.close('all')
-
-
-def format_scatterplot(axs, comp, i):
-    """
-
-    :param axs:
-    :param comp:
-    :param i:
-    :return:
-    """
-    axs[i].set_title(inpt.var_dict[comp]['label'])
-    axs[i].set_xlabel(inpt.var_dict[inpt.extr[inpt.var]['ref_x']]['label'])
-    axs[i].set_ylabel(inpt.var_dict[comp]['label'])
-    axs[i].set_xlim(inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'])
-    axs[i].set_ylim(inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'])
-    axs[i].text(0.01, 0.95, inpt.letters[i] + ')', transform=axs[i].transAxes)
-    axs[i].plot(
-            [inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max']],
-            [inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max']],
-            color='black', lw=1.5, ls='-')
 
 
 def calc_draw_fit(axs, i, xx, yy, per_lab, print_stats=True):
@@ -291,6 +249,46 @@ def calc_draw_fit(axs, i, xx, yy, per_lab, print_stats=True):
                 0.50, 0.30, f"R={corcoef[0, 1]:.2f} N={N} \n y={b:+.2f}x{a:+.2f} \n MBE={mbe:.2f} RMSE={rmse:.2f}",
                 transform=axs[i].transAxes, fontsize=14, color='black', ha='left', va='center',
                 bbox=dict(facecolor='white', edgecolor='white'))
+
+
+def format_scatterplot(axs, comp, i):
+    """
+
+    :param axs:
+    :param comp:
+    :param i:
+    :return:
+    """
+    axs[i].set_title(inpt.var_dict[comp]['label'])
+    axs[i].set_xlabel(inpt.var_dict[inpt.extr[inpt.var]['ref_x']]['label'])
+    axs[i].set_ylabel(inpt.var_dict[comp]['label'])
+    axs[i].set_xlim(inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'])
+    axs[i].set_ylim(inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'])
+    axs[i].text(0.01, 0.95, inpt.letters[i] + ')', transform=axs[i].transAxes)
+    axs[i].plot(
+            [inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max']],
+            [inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max']], color='black', lw=1.5, ls='-')
+
+
+def format_ts(ax, year, yy, residuals=False):
+    """
+
+    :param ax:
+    :param year:
+    :param yy:
+    :param residuals:
+    :return:
+    """
+    ax[yy].xaxis.set_major_formatter(inpt.myFmt)
+    ax[yy].set_xlim(dt.datetime(year, 1, 1), dt.datetime(year, 12, 31))
+
+    ax[yy].text(0.5, 0.90, year, transform=ax[yy].transAxes, horizontalalignment='center')
+    ax[yy].text(0.01, 0.95, inpt.letters[yy] + ')', transform=ax[yy].transAxes)
+
+    if residuals:
+        ax[yy].set_ylim(inpt.extr[inpt.var]['res_min'], inpt.extr[inpt.var]['res_max'])
+    else:
+        ax[yy].set_ylim(inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'])
 
 # def plot_ba(period_label):
 #     """
