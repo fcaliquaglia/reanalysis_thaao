@@ -44,9 +44,9 @@ thaao_t = 'thaao'
 
 ##
 tres = '3h'
-list_var = ['temp', 'lwp', 'sw_down', 'lw_down', 'sw_up', 'lw_up', 'surf_pres', 'cbh', 'alb']
+list_var = ['temp', 'sw_down', 'lw_down', 'sw_up', 'lw_up', 'surf_pres', 'cbh', 'alb']
 # OK ['lwp', 'surf_pres', 'winds', 'windd', 'cbh', 'alb', 'temp', 'sw_down', 'lw_down', 'sw_up', 'lw_up']
-# NOT OK 'tcc' 'precip' 'rh'
+# NOT OK 'tcc' 'precip' 'rh', 'lwp'
 #
 var = ''
 

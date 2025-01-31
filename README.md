@@ -24,6 +24,7 @@
 - julian
 - pandas
 - xarray
+- metpy
 
 ## Reanalysis considered
 
