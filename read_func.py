@@ -106,6 +106,11 @@ def read_era5_land(vr):
             inpt.extr[vr]['l']['data'][0] + ' ' + inpt.extr[vr]['l']['data'][1], format='%Y-%m-%d %H:%M:%S')
     inpt.extr[vr]['l']['data'] = inpt.extr[vr]['l']['data'][[inpt.extr[vr]['l']['column']]]
     inpt.extr[vr]['l']['data'].columns = [vr]
+
+    # only for radiation variables
+    if inpt.var in ['sw_up', 'sw_down', 'lw_up', 'lw_down']:
+        calc_rad_acc_era5_land(vr)
+
     return
 
 
@@ -580,6 +585,24 @@ def read_wind():
     read_aws_ecapac('winds')
     read_aws_ecapac('windd')
 
+    return
+
+
+def calc_rad_acc_era5_land(vr):
+    """
+
+    :param vr:
+    :return:
+    """
+    # caluculating instantaneous as difference with previous timestep
+    inpt.extr[vr]['l']['data_diff'] = inpt.extr[vr]['l']['data'][vr].diff()
+    # dropping value at 0100 which does not need any subtraction (it is the first of the day)
+    inpt.extr[vr]['l']['data_diff'] = inpt.extr[vr]['l']['data_diff'][inpt.extr[vr]['l']['data_diff'].index.hour != 1]
+    # selecting original value at 0100
+    orig_filtered_data = inpt.extr[vr]['l']['data'][inpt.extr[vr]['l']['data'].index.hour == 1]
+    # appending original value at 0100
+    inpt.extr[vr]['l']['data_diff'] = pd.concat([inpt.extr[vr]['l']['data_diff'], orig_filtered_data]).sort_index()
+    inpt.extr[vr]['l']['data'] = inpt.extr[vr]['l']['data_diff']
     return
 
 
