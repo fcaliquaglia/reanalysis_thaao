@@ -43,7 +43,7 @@ thaao_l = 'thaao_era5-land'
 thaao_t = 'thaao'
 
 ##
-tres_list = ['3h', '24', '1h', '6h', '12h', '1ME']
+tres_list = ['3h', '24h', '1h', '6h', '12h', '1ME']
 list_var = ['lw_up', 'sw_down', 'lw_down', 'sw_up', 'surf_pres', 'cbh', 'alb', 'temp']
 # OK ['lwp', 'surf_pres', 'winds', 'windd', 'cbh', 'alb', 'temp', 'sw_down', 'lw_down', 'sw_up', 'lw_up']
 # NOT OK 'tcc' 'precip' 'rh', 'lwp'
@@ -51,7 +51,7 @@ list_var = ['lw_up', 'sw_down', 'lw_down', 'sw_up', 'surf_pres', 'cbh', 'alb', '
 tres = ''
 var = ''
 
-years = np.arange(2021, 2024, 1)
+years = np.arange(2016, 2024, 1)
 
 aws_ecapac_daterange = pd.date_range(start=dt.datetime(2023, 4, 1), end=dt.datetime(2024, 12, 31), freq='1D')
 ceilometer_daterange = pd.date_range(start=dt.datetime(2019, 9, 1), end=dt.datetime(2024, 12, 31), freq='1D')
@@ -130,7 +130,7 @@ extr = {'alb'      : {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min'
                       't1'  : {'fn'      : 'LWP_15_min_', 'column': np.nan, 'data': '',
                                'data_res': ''},
                       't2'  : {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''}},
-        'lw_down'  : {'name': 'lw_down', 'ref_x': 't', 'min': 0, 'max': 600, 'res_min': -20, 'res_max': 20,
+        'lw_down'  : {'name': 'lw_down', 'ref_x': 't', 'min': 100, 'max': 400, 'res_min': -20, 'res_max': 20,
                       'uom' : '[W/m2]', 'comps': ['c', 'e', 'l'], 'bin_nr': 200,
                       'c'   : {'fn'  : f'{thaao_c}_thermal_surface_radiation_downwards_', 'column': 4,
                                'data': '', 'data_res': ''},
@@ -153,7 +153,7 @@ extr = {'alb'      : {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min'
                       't'   : {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
                       't1'  : {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
                       't2'  : {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''}},
-        'lw_up'    : {'name': 'lw_up', 'ref_x': 't', 'min': 0, 'max': 600, 'res_min': -20, 'res_max': 20,
+        'lw_up'    : {'name': 'lw_up', 'ref_x': 't', 'min': 100, 'max': 500, 'res_min': -20, 'res_max': 20,
                       'uom' : '[W/m2]', 'comps': ['c', 'e', 'l'], 'bin_nr': 200,
                       'c'   : {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
                       'e'   : {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
@@ -204,7 +204,7 @@ extr = {'alb'      : {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min'
                       't1'  : {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
                       't2'  : {'fn'      : 'AWS_THAAO_', 'column': 'BP_mbar', 'data': '',
                                'data_res': ''}},
-        'sw_down'  : {'name': 'sw_down', 'ref_x': 't', 'min': 0, 'max': 600, 'res_min': -20, 'res_max': 20,
+        'sw_down'  : {'name': 'sw_down', 'ref_x': 't', 'min': 0, 'max': 700, 'res_min': -20, 'res_max': 20,
                       'uom' : '[W/m2]', 'comps': ['c', 'e', 'l'], 'bin_nr': 200,
                       'c'   : {'fn'  : f'{thaao_c}_surface_solar_radiation_downwards_', 'column': 4,
                                'data': '', 'data_res': ''},
@@ -236,8 +236,8 @@ extr = {'alb'      : {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min'
                                'data_res': ''},
                       't1'  : {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
                       't2'  : {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''}},
-        'temp'     : {'name'   : 'temp', 'ref_x': 't', 'min': -40, 'max': 20, 'res_min': -10,
-                      'res_max': 10, 'uom': '[deg]', 'comps': ['c', 'e', 'l', 't2'], 'bin_nr': 200,
+        'temp'     : {'name'   : 'temp', 'ref_x': 't', 'min': -40, 'max': 20, 'res_min': -15,
+                      'res_max': 15, 'uom': '[deg]', 'comps': ['c', 'e', 'l', 't2'], 'bin_nr': 200,
                       'c'      : {'fn'      : f'{thaao_c}_2m_temperature_', 'column': 2, 'data': '',
                                   'data_res': ''},
                       'e'      : {'fn'      : f'{thaao_e}_2m_temperature_', 'column': 2, 'data': '',
