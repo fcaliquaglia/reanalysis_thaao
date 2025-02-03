@@ -205,7 +205,7 @@ def read_thaao_ceilometer(vr):
         try:
             t_tmp = pd.read_table(
                     os.path.join(
-                            inpt.basefol_t_elab, 'thaao_ceilometer_elab', 'medie_tat_rianalisi',
+                            inpt.basefol_t, 'thaao_ceilometer', 'medie_tat_rianalisi',
                             f'{i_fmt}{inpt.extr[vr]['t']['fn']}.txt'), skipfooter=0, sep='\s+', header=0, skiprows=9,
                     engine='python')
             t_tmp[t_tmp == inpt.var_dict['t']['nanval']] = np.nan
