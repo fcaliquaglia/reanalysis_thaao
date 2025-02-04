@@ -62,6 +62,10 @@ SMALL_SIZE = 12
 myFmt = mdates.DateFormatter('%d-%b')
 letters = list(string.ascii_lowercase)
 
+thaao_lat=76.5
+thaao_lon=-68.8
+thaao_elev=220
+
 seass = {'all': {'name': 'all', 'months': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], 'col': 'pink'},
          'DJF': {'name': 'DJF', 'months': [12, 1, 2], 'col': 'blue'},
          'MAM': {'name': 'MAM', 'months': [3, 4, 5], 'col': 'green'},
