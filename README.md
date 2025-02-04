@@ -39,7 +39,8 @@
 > [!NOTE]
 > (from the official website) The C3S Arctic Regional Reanalysis (CARRA) dataset contains 3-hourly analyses and hourly
 > short term forecasts of atmospheric and surface meteorological variables (surface and near-surface temperature,
-> surface and top of atmosphere fluxes, precipitation, cloud, humidity, wind, pressure, snow and sea variables) at 2.5 km
+> surface and top of atmosphere fluxes, precipitation, cloud, humidity, wind, pressure, snow and sea variables) at 2.5
+> km
 > resolution. Additionally,
 > forecasts up to 30 hours initialised from the analyses at 00 and 12 UTC are available.
 > The dataset includes two domains. The West domain covers Greenland, the Labrador Sea, Davis Strait, Baffin Bay,
@@ -67,7 +68,8 @@
 > [!NOTE]
 > (from the official website) ERA5 is the fifth generation ECMWF atmospheric reanalysis of the global climate covering
 > the period from January 1940 to present. It is produced by the Copernicus Climate Change Service (C3S) at ECMWF and
-> provides hourly estimates of a large number of atmospheric, land and oceanic climate variables. The data cover the Earth
+> provides hourly estimates of a large number of atmospheric, land and oceanic climate variables. The data cover the
+> Earth
 > on a 31km grid and resolve the atmosphere using 137 levels from the surface up to a height of 80km. ERA5 includes an
 > ensemble component at half the resolution to provide information on synoptic uncertainty of its products.
 > ERA5 uses a state-of-the-art numerical weather prediction model to assimilate a variety of observations,
@@ -320,18 +322,21 @@ from https://confluence.ecmwf.int/display/CKB/ERA5-Land%3A+data+documentation#ER
 
 ## Cloud Base Height (``cbh``)
 
-- CARRA: ``cloud_base``
-- ERA-5: ``cloud_base_height``
+- CARRA: ``cloud_base``. For the comparison, THAAO geographical elevation is NOT removed from this dataset, because the
+  spatial resolution will likely resolve such an elevation. Values lower than 20.0 m (fog) have been removed.
+- ERA-5: ``cloud_base_height``. Fog is not considered when defining cloud base height. For the comparison THAAO
+  geographical elevation is removed from this dataset, because the spatial resolution likely won't take into account
+  South Mountain. Values lower than 20.0 m (fog) have been removed.
 - ERA5-L: /
 - THAAO (ceilometer): ``tcc`` CBH is calculated as the median value over 1 h from the original 15s time resolution. Only
-  the first layer is considered.
+  the first layer is considered. Values lower than 20.0 m (fog) have been removed.
 
 ## Total Cloud Cover (``tcc``)
 
 - CARRA: ``total_cloud_cover``
 - ERA-5: ``total_cloud_cover``
 - ERA5-L: /
-- THAAO (ceilometer): ``cbh`` TCC is calculated as the mode value over 1 h from the original 15s time resolution. Only
+- THAAO (ceilometer): ``tcc`` TCC is calculated as the mode value over 1 h from the original 15s time resolution. Only
   the first layer is considered.
 
 ## Liquid Water Path - LWP (``lwp``)
