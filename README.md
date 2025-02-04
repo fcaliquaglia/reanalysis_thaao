@@ -20,7 +20,7 @@
 - python3
 - scipy
 - netcdf4
-- mtplotlib
+- matplotlib
 - julian
 - pandas
 - xarray
@@ -38,9 +38,9 @@
 
 > [!NOTE]
 > (from the official website) The C3S Arctic Regional Reanalysis (CARRA) dataset contains 3-hourly analyses and hourly
-> short term forecasts of
-> atmospheric and surface meteorological variables (surface and near-surface temperature, surface and top of atmosphere
-> fluxes, precipitation, cloud, humidity, wind, pressure, snow and sea variables) at 2.5 km resolution. Additionally,
+> short term forecasts of atmospheric and surface meteorological variables (surface and near-surface temperature,
+> surface and top of atmosphere fluxes, precipitation, cloud, humidity, wind, pressure, snow and sea variables) at 2.5 km
+> resolution. Additionally,
 > forecasts up to 30 hours initialised from the analyses at 00 and 12 UTC are available.
 > The dataset includes two domains. The West domain covers Greenland, the Labrador Sea, Davis Strait, Baffin Bay,
 > Denmark Strait, Iceland, Jan Mayen, the Greenland Sea and Svalbard. The East domain covers Svalbard, Jan Mayen, Franz
@@ -66,12 +66,10 @@
 
 > [!NOTE]
 > (from the official website) ERA5 is the fifth generation ECMWF atmospheric reanalysis of the global climate covering
-> the
-> period from January 1940
-> to present1. It is produced by the Copernicus Climate Change Service (C3S) at ECMWF and provides hourly estimates of a
-> large number of atmospheric, land and oceanic climate variables. The data cover the Earth on a 31km grid and resolve
-> the atmosphere using 137 levels from the surface up to a height of 80km. ERA5 includes an ensemble component at half
-> the resolution to provide information on synoptic uncertainty of its products.
+> the period from January 1940 to present. It is produced by the Copernicus Climate Change Service (C3S) at ECMWF and
+> provides hourly estimates of a large number of atmospheric, land and oceanic climate variables. The data cover the Earth
+> on a 31km grid and resolve the atmosphere using 137 levels from the surface up to a height of 80km. ERA5 includes an
+> ensemble component at half the resolution to provide information on synoptic uncertainty of its products.
 > ERA5 uses a state-of-the-art numerical weather prediction model to assimilate a variety of observations,
 > including satellite and ground-based measurements, and produces a comprehensive and consistent view of the Earth's
 > atmosphere. These products are widely used by researchers and practitioners in various fields, including climate
@@ -146,9 +144,10 @@
 
 # THAAO reference instruments
 
-Instrument involved are HATPRO (LWP), aws_ECAPAC (temp, press, rh, windd, winds), aws_vespa (temp, press, rh,
-windd, winds), sw radiometers (up and down),
-The reference values are always from THAAO measurements, except for IWV (ref: VESPA) and LWP (ref:HATPRO)
+Instrument involved are HATPRO (LWP), aws_ECAPAC (temp, press, rh, windd, winds), aws_vespa (temp, press, rh), sw
+radiometers (up and down),
+The reference values are always from THAAO measurements, except for IWV (ref: VESPA) and LWP (ref:HATPRO), Meteo ref is
+from aws_vespa (except for winds and windd).
 
 > [!IMPORTANT]
 > The code can be run at whichever time resolution.
@@ -199,6 +198,11 @@ Pearson correlation coefficient
 Excluding nan values. x(t): reference value; y(t): reanalysis or other
 
 # Variables
+
+For ERA5 and ERA5-LAND, missing values have been set to np.nan (-32767.0, -32767.0, respectively)). The same applies to
+vespa (-9999.9)
+Datestamps, were in Julian format, were converted and approximated to the nearest second, before performing any
+resampling operation
 
 ## WEATHER
 
@@ -255,17 +259,20 @@ Excluding nan values. x(t): reference value; y(t): reanalysis or other
 > 2023 at 7:00 UTC. All the radiation dataset have been cleaned for values <0.
 
 > [!WARNING]
-> Accumulations rates for ERA5-Land >> from https://confluence.ecmwf.int/display/CKB/ERA5-Land%3A+data+documentation#ERA5Land:datadocumentation-Temporalfrequency
-> Please, note that the convention for accumulations used in ERA5-Land differs with that for ERA5. The accumulations in 
-> the short forecasts of ERA5-Land (with hourly steps from 01 to 24) are treated the same as those in ERA-Interim or 
-> ERA-Interim/Land, i.e., they are accumulated from the beginning of the forecast to the end of the forecast step. For 
-> example, runoff at day=D, step=12 will provide runoff accumulated from day=D, time=0 to day=D, time=12. The maximum 
-> accumulation is over 24 hours, i.e., from day=D, time=0 to day=D+1,time=0 (step=24). 
-> - HRES: accumulations are from 00 UTC to the hour ending at the forecast step 
-> - For the CDS time, or validity time, of 00 UTC, the accumulations are over the 24 hours ending at 00 UTC i.e. the 
-> accumulation is during the previous day
+> Accumulations rates for ERA5-Land >>
+>
+from https://confluence.ecmwf.int/display/CKB/ERA5-Land%3A+data+documentation#ERA5Land:datadocumentation-Temporalfrequency
+> Please, note that the convention for accumulations used in ERA5-Land differs with that for ERA5. The accumulations in
+> the short forecasts of ERA5-Land (with hourly steps from 01 to 24) are treated the same as those in ERA-Interim or
+> ERA-Interim/Land, i.e., they are accumulated from the beginning of the forecast to the end of the forecast step. For
+> example, runoff at day=D, step=12 will provide runoff accumulated from day=D, time=0 to day=D, time=12. The maximum
+> accumulation is over 24 hours, i.e., from day=D, time=0 to day=D+1,time=0 (step=24).
+> - HRES: accumulations are from 00 UTC to the hour ending at the forecast step
+> - For the CDS time, or validity time, of 00 UTC, the accumulations are over the 24 hours ending at 00 UTC i.e. the
+    > accumulation is during the previous day
 > - Synoptic monthly means (stream=mnth): accumulations have units of "variable_units per forecast_step hours"
-Monthly means of daily means (stream=moda): accumulations have units that include "per day", see section Monthly means
+    Monthly means of daily means (stream=moda): accumulations have units that include "per day", see section Monthly
+    means
 
 ### Downward shortwave irradiance - DSI (``sw_down``)
 
@@ -297,10 +304,10 @@ Monthly means of daily means (stream=moda): accumulations have units that includ
 
 ### Surface albedo (``alb``)
 
-- CARRA: ``albedo`` (forecast). Values masked to nan for alb<0.1, since they are unrealistic.
-- ERA-5: ``forecast_albedo`` (also ``snow_albedo``)
-- ERA5-L: /
-- THAAO (pyrgeometers): ``DSI``+``USI``
+- CARRA: ``albedo`` (forecast). Values masked to nan for alb<0.0.
+- ERA-5: ``forecast_albedo`` (also ``snow_albedo``). Values masked to nan for alb<0.0.
+- ERA5-L: ``forecast_albedo``. Values masked to nan for alb<0.0.
+- THAAO (pyrgeometers): ``DSI``+``USI``. Values masked to nan for alb<0.0. Rescaled to 0-1.
 
 ## CLOUD & ATMOSPHERE
 
@@ -316,21 +323,22 @@ Monthly means of daily means (stream=moda): accumulations have units that includ
 - CARRA: ``cloud_base``
 - ERA-5: ``cloud_base_height``
 - ERA5-L: /
-- THAAO (ceilometer): ``tcc`` CBH is calculated as the median value over 1 h form the original 15 s time resolution,
-  then averaged for the comparison.
+- THAAO (ceilometer): ``tcc`` CBH is calculated as the median value over 1 h from the original 15s time resolution. Only
+  the first layer is considered.
 
 ## Total Cloud Cover (``tcc``)
 
 - CARRA: ``total_cloud_cover``
 - ERA-5: ``total_cloud_cover``
 - ERA5-L: /
-- THAAO (ceilometer): ``cbh`` (lowermost level)
+- THAAO (ceilometer): ``cbh`` TCC is calculated as the mode value over 1 h from the original 15s time resolution. Only
+  the first layer is considered.
 
 ## Liquid Water Path - LWP (``lwp``)
 
 > [!CAUTION]
 > LWP values have issues, at least for CARRA which has been divided by 10E-06 instead of 10e-03 as expected from the
-> declared uom. All LWP values have been masked to nan for LWP<0.0. Perhaps HATPRO 
+> declared uom. All LWP values have been masked to nan for LWP<0.0. Perhaps HATPRO
 
 - CARRA: ``total_column_cloud_liquid_water``
 - ERA-5: ``total_column_cloud_liquid_water``
