@@ -278,12 +278,16 @@ def read_alb():
 def read_cbh():
     # CARRA
     read_carra(inpt.var)
+    inpt.extr[inpt.var]['c']['data'][inpt.extr[inpt.var]['c']['data'] <= 20.] = np.nan
 
     # ERA5
     read_era5(inpt.var)
+    inpt.extr[inpt.var]['e']['data'][inpt.extr[inpt.var]['e']['data'] <= 20.] = np.nan
+    inpt.extr[inpt.var]['e']['data'] += inpt.thaao_elev
 
     # THAAO
     read_thaao_ceilometer(inpt.var)
+    inpt.extr[inpt.var]['t']['data'][inpt.extr[inpt.var]['t']['data'] <= 20.] = np.nan
 
     return
 
