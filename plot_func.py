@@ -214,7 +214,7 @@ def plot_scatter_cum():
                     x_s[inpt.var][idx], y_s[inpt.var][idx], s=5, color=seass_new[period_label]['col'],
                     edgecolors='none', alpha=0.5, label=period_label)
 
-            if len(x_s[idx]) < 2 | len(y_s[idx]) < 2:
+            if (len(x_s[idx]) < 2) | (len(y_s[idx]) < 2):
                 print('ERROR, ERROR, NO DATA ENOUGH FOR PROPER FIT (i.e. only 1 point available)')
             else:
                 calc_draw_fit(axs, i, x_s[idx], y_s[idx], period_label, print_stats=False)

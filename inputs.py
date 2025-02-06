@@ -43,7 +43,7 @@ thaao_t = 'thaao'
 
 ##
 tres_list = ['3h']
-list_var = ['cbh']
+list_var = ['lwp']
 # OK ['lwp', 'surf_pres', 'winds', 'windd', 'cbh', 'alb', 'temp', 'sw_down', 'lw_down', 'sw_up', 'lw_up']
 # NOT OK 'tcc' 'precip' 'rh', 'lwp'
 
@@ -126,7 +126,7 @@ extr = {'alb'      : {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min'
                                'data': '', 'data_res': ''},
                       'l'   : {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
                       't'   : {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
-                      't1'  : {'fn'      : 'LWP_15_min_', 'column': np.nan, 'data': '',
+                      't1'  : {'fn'      : 'LWP_15_min_all', 'column': 'LWP_g/m2', 'data': '',
                                'data_res': ''},
                       't2'  : {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''}},
         'lw_down'  : {'name': 'lw_down', 'ref_x': 't', 'min': 100, 'max': 400, 'res_min': -20, 'res_max': 20,
