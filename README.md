@@ -144,6 +144,12 @@
   Reanalyses', https://doi.org/10.1029/2019GL082781
 - [other] Unlike CARRA, ERA5 lacks a parameterization of a snow layer on top of the sea-ice (Batrak & Muller, 2019).
 
+- Xi, Xingya, Qinghua Yang, Changwei Liu, Matthew D. Shupe, Bo Han, Shijie Peng, Shaohui Zhou, and Dake Chen. 2024.
+  ‘Evaluation of the Planetary Boundary Layer Height From ERA5 Reanalysis With MOSAiC Observations Over the Arctic
+  Ocean’. Journal of Geophysical Research: Atmospheres 129 (12): e2024JD040779. https://doi.org/10.1029/2024JD040779.
+- Batrak, Yurii, and Malte Müller. 2019. ‘On the Warm Bias in Atmospheric Reanalyses Induced by the Missing Snow over
+  Arctic Sea-Ice’. Nature Communications 10 (1): 4170. https://doi.org/10.1038/s41467-019-11975-3.
+
 # THAAO reference instruments
 
 Instrument involved are HATPRO (LWP), aws_ECAPAC (temp, press, rh, windd, winds), aws_vespa (temp, press, rh), sw
