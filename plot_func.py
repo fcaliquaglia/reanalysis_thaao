@@ -27,22 +27,13 @@ import os
 
 import matplotlib.pyplot as plt
 import numpy as np
-import numpy.ma as ma
 import pandas as pd
 
 import inputs as inpt
 
+
 # import matplotlib
 # matplotlib.use('WebAgg')
-import matplotlib.pyplot as plt
-import pandas as pd
-import datetime as dt
-import os
-
-import matplotlib.pyplot as plt
-import pandas as pd
-import datetime as dt
-import os
 
 
 def plot_ts(period_label):
@@ -77,7 +68,7 @@ def plot_ts(period_label):
     if inpt.var == 'alb':
         for year in inpt.years:
             vlines_ranges[year] = [pd.date_range(dt.datetime(year, 1, 1), dt.datetime(year, 2, 15), freq=inpt.tres),
-                pd.date_range(dt.datetime(year, 11, 1), dt.datetime(year, 12, 31), freq=inpt.tres)]
+                                   pd.date_range(dt.datetime(year, 11, 1), dt.datetime(year, 12, 31), freq=inpt.tres)]
 
     # Loop through years and plot
     for yy, year in enumerate(inpt.years):
@@ -128,8 +119,7 @@ def plot_residuals(period_label):
 
     # Ensure ax is iterable even if there's only one subplot
     num_years = len(inpt.years)
-    fig, ax = plt.subplots(num_years, 1, figsize=(12, 17), dpi=300, squeeze=False)
-    ax = ax.ravel()  # Flatten in case of a 2D array
+    fig, axes = plt.subplots(num_years, 1, figsize=(12, 17), dpi=300, squeeze=False)
 
     fig.suptitle(f"Residuals {inpt.var.upper()} all {inpt.tres}", fontweight='bold')
 
@@ -138,23 +128,24 @@ def plot_residuals(period_label):
 
     for yy, year in enumerate(inpt.years):
         print(f"Plotting {year}")
+        ax = axes[yy]  # Select axis
 
         # Plot zero-reference line
         date_range = pd.date_range(dt.datetime(year, 1, 1), dt.datetime(year, 12, 31))
-        ax[yy].plot(date_range, np.zeros(len(date_range)), color='black', lw=2, ls='--')
+        ax.plot(date_range, np.zeros(len(date_range)), color='black', lw=2, ls='--')
 
         # Plot residuals for each component
         for var in inpt.extr[inpt.var]['comps']:
             data_res = inpt.extr[inpt.var][var]['data_res']
             residuals = data_res[data_res.index.year == year] - reference_data[reference_data.index.year == year]
-            ax[yy].plot(residuals, color=inpt.var_dict[var]['col_ori'], label=inpt.var_dict[var]['label'], **kwargs)
+            ax.plot(residuals, color=inpt.var_dict[var]['col_ori'], label=inpt.var_dict[var]['label'], **kwargs)
 
         # Add seasonal markers for 'alb' variable
         if inpt.var == 'alb':
             winter_ranges = [pd.date_range(dt.datetime(year, 1, 1), dt.datetime(year, 2, 15), freq=inpt.tres),
-                pd.date_range(dt.datetime(year, 11, 1), dt.datetime(year, 12, 31), freq=inpt.tres)]
+                             pd.date_range(dt.datetime(year, 11, 1), dt.datetime(year, 12, 31), freq=inpt.tres)]
             for rng in winter_ranges:
-                ax[yy].vlines(rng, -0.5, 0.5, color='grey', alpha=0.3)
+                ax.vlines(rng, -0.5, 0.5, color='grey', alpha=0.3)
 
         # Apply consistent formatting
         format_ts(ax, year, yy, residuals=True)
