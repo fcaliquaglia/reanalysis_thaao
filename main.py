@@ -21,8 +21,8 @@ __lastupdate__ = ""
 
 import inputs as inpt
 import plot_func as plt_f
-import read_func as rd_f
-import res_func as rs_f
+import read_all
+import res_all
 
 if __name__ == "__main__":
     for inpt.tres in inpt.tres_list:
@@ -32,10 +32,10 @@ if __name__ == "__main__":
             print(f"  Processing variable: {inpt.var}")
 
             # Read data
-            rd_f.read()
+            read_all.read()
 
             # Resample data
-            rs_f.data_resampling(inpt.var)
+            res_all.data_resampling(inpt.var)
 
             # Generate plots
             plt_f.plot_ts('all')
