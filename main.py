@@ -32,7 +32,7 @@ if __name__ == "__main__":
             print(f"  Processing variable: {inpt.var}")
 
             # Read data
-            read_all.read()
+            read_all.read_all()
 
             # Resample data
             res_all.data_resampling(inpt.var)

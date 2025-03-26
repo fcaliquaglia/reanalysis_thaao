@@ -61,7 +61,7 @@ def plot_ts(period_label):
         # resampled resolution
         for varvar in inpt.extr[inpt.var]['comps'] + [inpt.extr[inpt.var]['ref_x']]:
             data = inpt.extr[inpt.var][varvar]['data_res'][inpt.extr[inpt.var][varvar]['data_res'].index.year == year]
-            ax[yy].plot(data, color=inpt.var_dict[varvar]['col'], label=inpt.var_dict[varvar]['label'], **kwargs)
+            ax[yy].plot(data, color=inpt.var_dict[varvar]['col_ori'], label=inpt.var_dict[varvar]['label'], **kwargs)
 
         if inpt.var == 'alb':
             range1 = pd.date_range(dt.datetime(year, 1, 1), dt.datetime(year, 2, 15), freq=inpt.tres)
@@ -101,7 +101,7 @@ def plot_residuals(period_label):
         for varvar in inpt.extr[inpt.var]['comps']:
             data = inpt.extr[inpt.var][varvar]['data_res'][inpt.extr[inpt.var][varvar]['data_res'].index.year == year]
             ax[yy].plot(
-                    data - x[x.index.year == year], color=inpt.var_dict[varvar]['col'],
+                    data - x[x.index.year == year], color=inpt.var_dict[varvar]['col_ori'],
                     label=inpt.var_dict[varvar]['label'], **kwargs)
 
         if inpt.var == 'alb':

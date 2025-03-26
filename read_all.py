@@ -27,7 +27,7 @@ from metpy.units import units
 from read_reanalysis import *
 
 
-def read():
+def read_all():
     """
     Read the data based on the value of inpt.var.
     """
