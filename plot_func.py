@@ -35,48 +35,89 @@ import inputs as inpt
 
 # import matplotlib
 # matplotlib.use('WebAgg')
+import matplotlib.pyplot as plt
+import pandas as pd
+import datetime as dt
+import os
+
+import matplotlib.pyplot as plt
+import pandas as pd
+import datetime as dt
+import os
+
 
 def plot_ts(period_label):
     """
+    Plots time series data for all years in `inpt.years`.
 
-    :param period_label:
-    :return:
+    :param period_label: Label for the period used in the filename.
+    :return: None
     """
-    # with plt.xkcd():
     print('TIMESERIES')
     plt.ioff()
-    fig, ax = plt.subplots(len(inpt.years), 1, figsize=(12, 17), dpi=300)
+
+    num_years = len(inpt.years)
+    fig, axes = plt.subplots(num_years, 1, figsize=(12, 17), dpi=300, sharex=True)
     fig.suptitle(f"{inpt.var.upper()} all {inpt.tres}", fontweight='bold')
-    kwargs_ori = {'alpha': 0.02, 'lw': 0, 'marker': '.', 'ms': 1}
-    kwargs = {'lw': 0, 'marker': '.', 'ms': 2}
 
-    for (yy, year) in enumerate(inpt.years):
-        print(f"plotting {year}")
+    # Ensure axes is iterable even if there's only one subplot
+    if num_years == 1:
+        axes = [axes]
 
-        # original resolution
-        for varvar in inpt.extr[inpt.var]['comps'] + [inpt.extr[inpt.var]['ref_x']]:
-            data = inpt.extr[inpt.var][varvar]['data'][inpt.extr[inpt.var][varvar]['data'].index.year == year]
-            ax[yy].plot(data, color=inpt.var_dict[varvar]['col_ori'], **kwargs_ori)
+    # Plot settings
+    plot_kwargs_ori = {'alpha': 0.02, 'lw': 0, 'marker': '.', 'ms': 1}
+    plot_kwargs_res = {'lw': 0, 'marker': '.', 'ms': 2}
 
-        # resampled resolution
-        for varvar in inpt.extr[inpt.var]['comps'] + [inpt.extr[inpt.var]['ref_x']]:
-            data = inpt.extr[inpt.var][varvar]['data_res'][inpt.extr[inpt.var][varvar]['data_res'].index.year == year]
-            ax[yy].plot(data, color=inpt.var_dict[varvar]['col_ori'], label=inpt.var_dict[varvar]['label'], **kwargs)
+    # Cache references to inpt variables
+    var_data = inpt.extr[inpt.var]
+    var_dict = inpt.var_dict
+    components = var_data['comps'] + [var_data['ref_x']]
 
-        if inpt.var == 'alb':
-            range1 = pd.date_range(dt.datetime(year, 1, 1), dt.datetime(year, 2, 15), freq=inpt.tres)
-            range2 = pd.date_range(dt.datetime(year, 11, 1), dt.datetime(year, 12, 31), freq=inpt.tres)
-            ax[yy].vlines(range1.values, 0, 1, color='grey', alpha=0.3)
-            ax[yy].vlines(range2.values, 0, 1, color='grey', alpha=0.3)
+    # Precompute vertical line ranges for 'alb' plots
+    vlines_ranges = {}
+    if inpt.var == 'alb':
+        for year in inpt.years:
+            vlines_ranges[year] = [
+                pd.date_range(dt.datetime(year, 1, 1), dt.datetime(year, 2, 15), freq=inpt.tres),
+                pd.date_range(dt.datetime(year, 11, 1), dt.datetime(year, 12, 31), freq=inpt.tres)
+            ]
 
+    # Loop through years and plot
+    for yy, year in enumerate(inpt.years):
+        print(f"Plotting {year}")
+        ax = axes[yy]  # Select axis
+
+        for var in components:
+            comp_data = var_data[var]['data']
+            res_data = var_data[var]['data_res']
+            var_color = var_dict[var]['col_ori']
+            var_label = var_dict[var]['label']
+
+            # Filter by year and plot
+            yearly_comp_data = comp_data[comp_data.index.year == year]
+            yearly_res_data = res_data[res_data.index.year == year]
+
+            ax.plot(yearly_comp_data, color=var_color, **plot_kwargs_ori)
+            ax.plot(yearly_res_data, color=var_color, label=var_label, **plot_kwargs_res)
+
+        # Add vertical lines for 'alb' variable
+        if inpt.var == 'alb' and year in vlines_ranges:
+            for v_range in vlines_ranges[year]:
+                ax.vlines(v_range, 0, 1, color='grey', alpha=0.3)
+
+        # Format time series subplot
         format_ts(ax, year, yy)
 
+    # Remove unnecessary frames and axes
+    frame_and_axis_removal(axes, len(components))
+
+    # Final plot adjustments
     plt.xlabel('Time')
     plt.legend(ncol=2)
-    plt.savefig(
-            os.path.join(inpt.directories['out'], inpt.tres, f"{inpt.tres}_{period_label}_{inpt.var}.png"),
-            bbox_inches='tight')
-    plt.close('all')
+    plt.subplots_adjust(hspace=0.3)  # Adjust spacing between subplots
+    output_path = os.path.join(inpt.directories['out'], inpt.tres, f"{inpt.tres}_{period_label}_{inpt.var}.png")
+    plt.savefig(output_path, bbox_inches='tight')
+    plt.close(fig)
 
 
 def plot_residuals(period_label):
@@ -114,6 +155,7 @@ def plot_residuals(period_label):
 
     plt.xlabel('Time')
     plt.legend()
+    plt.tight_layout()
     plt.savefig(
             os.path.join(inpt.directories['out'], inpt.tres, f"{inpt.tres}_{period_label}_residuals_{inpt.var}.png"),
             bbox_inches='tight')
@@ -171,7 +213,7 @@ def plot_scatter(period_label):
             calc_draw_fit(axs, i, x_s[idx], y_s[idx], period_label)
 
         format_scatterplot(axs, comp, i)
-
+    plt.tight_layout()
     plt.savefig(
             os.path.join(
                     inpt.directories['out'], inpt.tres,
@@ -221,7 +263,7 @@ def plot_scatter_cum():
 
             format_scatterplot(axs, comp, i)
             axs[i].legend()
-
+    plt.tight_layout()
     plt.savefig(
             os.path.join(inpt.directories['out'], inpt.tres, f"{inpt.tres}_scatter_cum_{inpt.var}.png"), bbox_inches='tight')
     plt.close('all')
@@ -284,16 +326,16 @@ def format_ts(ax, year, yy, residuals=False):
     :param residuals:
     :return:
     """
-    ax[yy].xaxis.set_major_formatter(inpt.myFmt)
-    ax[yy].set_xlim(dt.datetime(year, 1, 1), dt.datetime(year, 12, 31))
+    ax.xaxis.set_major_formatter(inpt.myFmt)
+    ax.set_xlim(dt.datetime(year, 1, 1), dt.datetime(year, 12, 31))
 
-    ax[yy].text(0.5, 0.90, year, transform=ax[yy].transAxes, horizontalalignment='center')
-    ax[yy].text(0.01, 0.95, inpt.letters[yy] + ')', transform=ax[yy].transAxes)
+    ax.text(0.5, 0.90, year, transform=ax.transAxes, horizontalalignment='center')
+    ax.text(0.01, 0.95, inpt.letters[yy] + ')', transform=ax.transAxes)
 
     if residuals:
-        ax[yy].set_ylim(inpt.extr[inpt.var]['res_min'], inpt.extr[inpt.var]['res_max'])
+        ax.set_ylim(inpt.extr[inpt.var]['res_min'], inpt.extr[inpt.var]['res_max'])
     else:
-        ax[yy].set_ylim(inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'])
+        ax.set_ylim(inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'])
     return
 
 
