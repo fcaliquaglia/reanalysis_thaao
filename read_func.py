@@ -109,7 +109,7 @@ def read_thaao_rad(vr):
     :return:
     """
     t_tmp_all = pd.DataFrame()
-    for i in inpt.rad_daterange[inpt.rad_daterange.year.isin(inpt.years)]:
+    for i in inpt.date_ranges['rad'][inpt.date_ranges['rad'].year.isin(inpt.years)]:
         i_fmt = int(i.strftime('%Y'))
         try:
             t_tmp = pd.read_table(
@@ -138,7 +138,7 @@ def read_thaao_hatpro(vr):
     :return:
     """
     t1_tmp_all = pd.DataFrame()
-    for i in inpt.hatpro_daterange[inpt.hatpro_daterange.year.isin(inpt.years)]:
+    for i in inpt.date_ranges['hatpro'][inpt.date_ranges['hatpro'].year.isin(inpt.years)]:
         i_fmt = int(i.strftime('%Y'))
         try:
             t1_tmp = pd.read_table(
@@ -170,7 +170,7 @@ def read_thaao_ceilometer(vr):
     :return:
     """
     t_tmp_all = pd.DataFrame()
-    for i in inpt.ceilometer_daterange[inpt.ceilometer_daterange.year.isin(inpt.years)]:
+    for i in inpt.date_ranges['ceilometer'][inpt.date_ranges['ceilometer'].year.isin(inpt.years)]:
         i_fmt = i.strftime('%Y%m%d')
         try:
             t_tmp = pd.read_table(
@@ -202,7 +202,7 @@ def read_aws_ecapac(vr):
     :return:
     """
     t2_tmp_all = pd.DataFrame()
-    for i in inpt.aws_ecapac_daterange[inpt.aws_ecapac_daterange.year.isin(inpt.years)]:
+    for i in inpt.date_ranges['aws_ecapac'][inpt.date_ranges['aws_ecapac'].year.isin(inpt.years)]:
         i_fmt = i.strftime('%Y_%m_%d')
         try:
             file = os.path.join(
@@ -588,23 +588,10 @@ def read():
     """
 
     # Create a mapping of variable names to functions
-    read_functions = {
-        'alb': read_alb,
-        'cbh': read_cbh,
-        'msl_pres': read_msl_pres,
-        'lwp': read_lwp,
-        'lw_down': read_lw_down,
-        'lw_up': read_lw_up,
-        'precip': read_precip,
-        'rh': read_rh,
-        'surf_pres': read_surf_pres,
-        'sw_down': read_sw_down,
-        'sw_up': read_sw_up,
-        'tcc': read_tcc,
-        'temp': read_temp,
-        'winds': read_wind,
-        'windd': read_wind,
-    }
+    read_functions = {'alb': read_alb, 'cbh': read_cbh, 'msl_pres': read_msl_pres, 'lwp': read_lwp,
+        'lw_down'          : read_lw_down, 'lw_up': read_lw_up, 'precip': read_precip, 'rh': read_rh,
+        'surf_pres'        : read_surf_pres, 'sw_down': read_sw_down, 'sw_up': read_sw_up, 'tcc': read_tcc,
+        'temp'             : read_temp, 'winds': read_wind, 'windd': read_wind, }
 
     # Use the mapping to call the correct function
     var = inpt.var

@@ -74,7 +74,7 @@ def plot_ts(period_label):
     plt.xlabel('Time')
     plt.legend(ncol=2)
     plt.savefig(
-            os.path.join(inpt.basefol_out, inpt.tres, f"{inpt.tres}_{period_label}_{inpt.var}.png"),
+            os.path.join(inpt.directories['out'], inpt.tres, f"{inpt.tres}_{period_label}_{inpt.var}.png"),
             bbox_inches='tight')
     plt.close('all')
 
@@ -115,7 +115,7 @@ def plot_residuals(period_label):
     plt.xlabel('Time')
     plt.legend()
     plt.savefig(
-            os.path.join(inpt.basefol_out, inpt.tres, f"{inpt.tres}_{period_label}_residuals_{inpt.var}.png"),
+            os.path.join(inpt.directories['out'], inpt.tres, f"{inpt.tres}_{period_label}_residuals_{inpt.var}.png"),
             bbox_inches='tight')
     plt.close('all')
 
@@ -174,7 +174,7 @@ def plot_scatter(period_label):
 
     plt.savefig(
             os.path.join(
-                    inpt.basefol_out, inpt.tres,
+                    inpt.directories['out'], inpt.tres,
                     f"{inpt.tres}_scatter_{inpt.seass[period_label]['name']}_{inpt.var}.png"), bbox_inches='tight')
     plt.close('all')
 
@@ -223,7 +223,7 @@ def plot_scatter_cum():
             axs[i].legend()
 
     plt.savefig(
-            os.path.join(inpt.basefol_out, inpt.tres, f"{inpt.tres}_scatter_cum_{inpt.var}.png"), bbox_inches='tight')
+            os.path.join(inpt.directories['out'], inpt.tres, f"{inpt.tres}_scatter_cum_{inpt.var}.png"), bbox_inches='tight')
     plt.close('all')
 
 
@@ -430,5 +430,5 @@ def frame_and_axis_removal(ax, len_comps):
 #         except:
 #             print(f"error with {label}")
 #
-#     plt.savefig(os.path.join(basefol_out, tres, f"{tres}_ba_{seas_name}_{vr}.png"), bbox_inches='tight')
+#     plt.savefig(os.path.join(inpt.directories['out'], tres, f"{tres}_ba_{seas_name}_{vr}.png"), bbox_inches='tight')
 #     plt.close('all')
