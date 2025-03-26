@@ -6,10 +6,12 @@
 ### TODO
 
 - [ ] extract better pixel
+- [ ]escludere dai plot valori mediati se sono basati da meno di x misure nel periodo considerato (medi mail di Daniela)
 - [ ] revise strategy for pixel extraction using read_func.extract_values()
 - [ ] riportare valori di pressione al livello del mare?
 - [x] download more ERA-L products
 - [ ] focus on weather variables
+- [ ] aggiungere i metar al posto di ERA5-L
 - [ ] recuperare da Giovanni gli rs che io non ho e devo aggiungere in archivio per l'analisi
 - [X] extract CARRA radiation
 - [x] download ``mean_sea_level_pressure``
