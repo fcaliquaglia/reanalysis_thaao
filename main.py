@@ -25,10 +25,10 @@ import read_func as rd_f
 import res_func as rs_f
 
 if __name__ == "__main__":
-    for inpt.tres in inpt.tres_list:  # Modify global variable directly
+    for inpt.tres in inpt.tres_list:
         print(f"Processing time resolution: {inpt.tres}")
 
-        for inpt.var in inpt.list_var:  # Modify global variable directly
+        for inpt.var in inpt.list_var:
             print(f"  Processing variable: {inpt.var}")
 
             # Read data

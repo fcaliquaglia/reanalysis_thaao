@@ -42,9 +42,9 @@ def read_reanalysis(vr, source):
     :param source: Source of data (e.g., 'c' for Carra, 'e' for ERA5, 'l' for ERA5 Land)
     :return: None
     """
-    # Accumulate data for efficient processing
+
     data_tmp_all = []
-    extr_source = inpt.extr[vr][source]  # Get source-specific information
+    extr_source = inpt.extr[vr][source]
     base_path = inpt.directories[source]
     nanval = inpt.var_dict[source]['nanval']
     fn_template = extr_source['fn']
@@ -57,8 +57,8 @@ def read_reanalysis(vr, source):
             # Read the file
             data_tmp = pd.read_table(
                     file_path, sep='\s+', header=None, skiprows=1, engine='python', skip_blank_lines=True)
-            data_tmp[data_tmp == nanval] = np.nan  # Replace nanval with np.nan
-            data_tmp_all.append(data_tmp)  # Accumulate data in list
+            data_tmp[data_tmp == nanval] = np.nan
+            data_tmp_all.append(data_tmp)
             print(f'OK: {fn_template}{year}.txt')
         except FileNotFoundError:
             print(f'NOT FOUND: {fn_template}{year}.txt')

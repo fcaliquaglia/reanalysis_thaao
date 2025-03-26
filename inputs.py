@@ -32,10 +32,10 @@ import pandas as pd
 # Directories Configuration
 # =============================================================
 BASE_PATH = 'H:\\Shared drives'
-directories = {'carra'     : os.path.join(BASE_PATH, 'Reanalysis', 'carra', 'thaao', 'v1'),
-               'era5'      : os.path.join(BASE_PATH, 'Reanalysis', 'era5', 'thaao', 'v1'),
-               'era5_land' : os.path.join(BASE_PATH, 'Reanalysis', 'era5-land', 'thaao', 'v1'),
-               'dati_thaao': os.path.join(BASE_PATH, 'Dati_THAAO'),
+directories = {'c'     : os.path.join(BASE_PATH, 'Reanalysis', 'carra', 'thaao', 'v1'),
+               'e'      : os.path.join(BASE_PATH, 'Reanalysis', 'era5', 'thaao', 'v1'),
+               'l' : os.path.join(BASE_PATH, 'Reanalysis', 'era5-land', 'thaao', 'v1'),
+               't': os.path.join(BASE_PATH, 'Dati_THAAO'),
                'out'       : os.path.join(BASE_PATH, 'Dati_elab_docs', 'thaao_reanalysis')}
 
 # =============================================================
