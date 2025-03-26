@@ -32,7 +32,6 @@ import pandas as pd
 
 import inputs as inpt
 
-
 # import matplotlib
 # matplotlib.use('WebAgg')
 import matplotlib.pyplot as plt
@@ -77,10 +76,8 @@ def plot_ts(period_label):
     vlines_ranges = {}
     if inpt.var == 'alb':
         for year in inpt.years:
-            vlines_ranges[year] = [
-                pd.date_range(dt.datetime(year, 1, 1), dt.datetime(year, 2, 15), freq=inpt.tres),
-                pd.date_range(dt.datetime(year, 11, 1), dt.datetime(year, 12, 31), freq=inpt.tres)
-            ]
+            vlines_ranges[year] = [pd.date_range(dt.datetime(year, 1, 1), dt.datetime(year, 2, 15), freq=inpt.tres),
+                pd.date_range(dt.datetime(year, 11, 1), dt.datetime(year, 12, 31), freq=inpt.tres)]
 
     # Loop through years and plot
     for yy, year in enumerate(inpt.years):
@@ -122,43 +119,54 @@ def plot_ts(period_label):
 
 def plot_residuals(period_label):
     """
+    Plots residuals for the given variable across all selected years.
 
-    :param period_label:
-    :return:
+    :param period_label: Label for the output file.
     """
     print('RESIDUALS')
     plt.ioff()
-    fig, ax = plt.subplots(len(inpt.years), 1, figsize=(12, 17), dpi=300)
-    fig.suptitle(f"residuals {inpt.var.upper()} all {inpt.tres}", fontweight='bold')
+
+    # Ensure ax is iterable even if there's only one subplot
+    num_years = len(inpt.years)
+    fig, ax = plt.subplots(num_years, 1, figsize=(12, 17), dpi=300, squeeze=False)
+    ax = ax.ravel()  # Flatten in case of a 2D array
+
+    fig.suptitle(f"Residuals {inpt.var.upper()} all {inpt.tres}", fontweight='bold')
+
     kwargs = {'lw': 1, 'marker': '.', 'ms': 0}
-    x = inpt.extr[inpt.var][inpt.extr[inpt.var]['ref_x']]['data_res']
+    reference_data = inpt.extr[inpt.var][inpt.extr[inpt.var]['ref_x']]['data_res']
 
-    for [yy, year] in enumerate(inpt.years):
-        print(f"plotting {year}")
+    for yy, year in enumerate(inpt.years):
+        print(f"Plotting {year}")
 
-        daterange = pd.date_range(dt.datetime(year, 1, 1), dt.datetime(year, 12, 31))
-        ax[yy].plot(daterange, np.repeat(0, len(daterange)), color='black', lw=2, ls='--')
+        # Plot zero-reference line
+        date_range = pd.date_range(dt.datetime(year, 1, 1), dt.datetime(year, 12, 31))
+        ax[yy].plot(date_range, np.zeros(len(date_range)), color='black', lw=2, ls='--')
 
-        for varvar in inpt.extr[inpt.var]['comps']:
-            data = inpt.extr[inpt.var][varvar]['data_res'][inpt.extr[inpt.var][varvar]['data_res'].index.year == year]
-            ax[yy].plot(
-                    data - x[x.index.year == year], color=inpt.var_dict[varvar]['col_ori'],
-                    label=inpt.var_dict[varvar]['label'], **kwargs)
+        # Plot residuals for each component
+        for var in inpt.extr[inpt.var]['comps']:
+            data_res = inpt.extr[inpt.var][var]['data_res']
+            residuals = data_res[data_res.index.year == year] - reference_data[reference_data.index.year == year]
+            ax[yy].plot(residuals, color=inpt.var_dict[var]['col_ori'], label=inpt.var_dict[var]['label'], **kwargs)
 
+        # Add seasonal markers for 'alb' variable
         if inpt.var == 'alb':
-            range1 = pd.date_range(dt.datetime(year, 1, 1), dt.datetime(year, 2, 15), freq=inpt.tres)
-            range2 = pd.date_range(dt.datetime(year, 11, 1), dt.datetime(year, 12, 31), freq=inpt.tres)
-            ax[yy].vlines(range1.values, -0.5, 0.5, color='grey', alpha=0.3)
-            ax[yy].vlines(range2.values, -0.5, 0.5, color='grey', alpha=0.3)
+            winter_ranges = [pd.date_range(dt.datetime(year, 1, 1), dt.datetime(year, 2, 15), freq=inpt.tres),
+                pd.date_range(dt.datetime(year, 11, 1), dt.datetime(year, 12, 31), freq=inpt.tres)]
+            for rng in winter_ranges:
+                ax[yy].vlines(rng, -0.5, 0.5, color='grey', alpha=0.3)
 
+        # Apply consistent formatting
         format_ts(ax, year, yy, residuals=True)
 
     plt.xlabel('Time')
     plt.legend()
     plt.tight_layout()
-    plt.savefig(
-            os.path.join(inpt.directories['out'], inpt.tres, f"{inpt.tres}_{period_label}_residuals_{inpt.var}.png"),
-            bbox_inches='tight')
+
+    # Save the figure
+    output_path = os.path.join(
+            inpt.directories['out'], inpt.tres, f"{inpt.tres}_{period_label}_residuals_{inpt.var}.png")
+    plt.savefig(output_path, bbox_inches='tight')
     plt.close('all')
 
 
@@ -265,7 +273,8 @@ def plot_scatter_cum():
             axs[i].legend()
     plt.tight_layout()
     plt.savefig(
-            os.path.join(inpt.directories['out'], inpt.tres, f"{inpt.tres}_scatter_cum_{inpt.var}.png"), bbox_inches='tight')
+            os.path.join(inpt.directories['out'], inpt.tres, f"{inpt.tres}_scatter_cum_{inpt.var}.png"),
+            bbox_inches='tight')
     plt.close('all')
 
 
