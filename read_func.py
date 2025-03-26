@@ -34,81 +34,51 @@ from metpy.units import units
 import inputs as inpt
 
 
-def read_carra(vr):
+def read_reanalysis(vr, source):
     """
+    Generic function to read reanalysis data for the given variable from a specified source.
 
-    :param vr:
-    :return:
+    :param vr: Variable for which the data is read
+    :param source: Source of data (e.g., 'c' for Carra, 'e' for ERA5, 'l' for ERA5 Land)
+    :return: None
     """
-    c_tmp_all = pd.DataFrame()
-    for year in inpt.years:
+    # Accumulate data for efficient processing
+    data_tmp_all = []
+    extr_source = inpt.extr[vr][source]  # Get source-specific information
+    base_path = inpt.basefol_c if source == 'c' else (inpt.basefol_e if source == 'e' else inpt.basefol_l)
+    nanval = inpt.var_dict[source]['nanval']
+    fn_template = extr_source['fn']
+    years = inpt.years
+
+    # Read data for each year
+    for year in years:
+        file_path = os.path.join(base_path, f'{fn_template}{year}.txt')
         try:
-            c_tmp = pd.read_table(
-                    os.path.join(inpt.basefol_c, f'{inpt.extr[vr]['c']['fn']}{year}.txt'), sep='\s+', header=None,
-                    skiprows=1, engine='python', skip_blank_lines=True)
-            c_tmp[c_tmp == inpt.var_dict['c']['nanval']] = np.nan
-            c_tmp_all = pd.concat([c_tmp_all, c_tmp], axis=0)
-            print(f'OK: {inpt.extr[vr]['c']['fn']}{year}.txt')
+            # Read the file
+            data_tmp = pd.read_table(
+                    file_path, sep='\s+', header=None, skiprows=1, engine='python', skip_blank_lines=True)
+            data_tmp[data_tmp == nanval] = np.nan  # Replace nanval with np.nan
+            data_tmp_all.append(data_tmp)  # Accumulate data in list
+            print(f'OK: {fn_template}{year}.txt')
         except FileNotFoundError:
-            print(f'NOT FOUND: {inpt.extr[vr]['c']['fn']}{year}.txt')
-    inpt.extr[vr]['c']['data'] = c_tmp_all
-    inpt.extr[vr]['c']['data'].index = pd.to_datetime(
-            inpt.extr[vr]['c']['data'][0] + ' ' + inpt.extr[vr]['c']['data'][1], format='%Y-%m-%d %H:%M:%S')
-    inpt.extr[vr]['c']['data'] = inpt.extr[vr]['c']['data'][[inpt.extr[vr]['c']['column']]]
-    inpt.extr[vr]['c']['data'].columns = [vr]
-    return
+            print(f'NOT FOUND: {fn_template}{year}.txt')
 
+    # Concatenate data once at the end
+    if data_tmp_all:
+        data_tmp_all = pd.concat(data_tmp_all, axis=0)
+        # Set datetime index
+        datetime_column = pd.to_datetime(data_tmp_all[0] + ' ' + data_tmp_all[1], format='%Y-%m-%d %H:%M:%S')
+        data_tmp_all.index = datetime_column
+        # Select relevant column based on source-specific column
+        data_tmp_all = data_tmp_all[[extr_source['column']]]
+        data_tmp_all.columns = [vr]  # Rename column to variable name
 
-def read_era5(vr):
-    """
+        extr_source['data'] = data_tmp_all  # Store the data
+    else:
+        print(f'No data found for {fn_template}')
 
-    :param vr:
-    :return:
-    """
-    e_tmp_all = pd.DataFrame()
-    for year in inpt.years:
-        try:
-            e_tmp = pd.read_table(
-                    os.path.join(inpt.basefol_e, f'{inpt.extr[vr]['e']['fn']}{year}.txt'), sep='\s+', header=None,
-                    skiprows=1, engine='python')
-            e_tmp[e_tmp == inpt.var_dict['e']['nanval']] = np.nan
-            e_tmp_all = pd.concat([e_tmp_all, e_tmp], axis=0)
-            print(f'OK: {inpt.extr[vr]['e']['fn']}{year}.txt')
-        except FileNotFoundError:
-            print(f'NOT FOUND: {inpt.extr[vr]['e']['fn']}{year}.txt')
-    inpt.extr[vr]['e']['data'] = e_tmp_all
-    inpt.extr[vr]['e']['data'].index = pd.to_datetime(
-            inpt.extr[vr]['e']['data'][0] + ' ' + inpt.extr[vr]['e']['data'][1], format='%Y-%m-%d %H:%M:%S')
-    inpt.extr[vr]['e']['data'] = inpt.extr[vr]['e']['data'][[inpt.extr[vr]['e']['column']]]
-    inpt.extr[vr]['e']['data'].columns = [vr]
-    return
-
-
-def read_era5_land(vr):
-    """
-
-    :param vr:
-    :return:
-    """
-    l_tmp_all = pd.DataFrame()
-    for year in inpt.years:
-        try:
-            l_tmp = pd.read_table(
-                    os.path.join(inpt.basefol_l, f'{inpt.extr[vr]['l']['fn']}{year}.txt'), sep='\s+', header=None,
-                    skiprows=1, engine='python')
-            l_tmp[l_tmp == inpt.var_dict['l']['nanval']] = np.nan
-            l_tmp_all = pd.concat([l_tmp_all, l_tmp], axis=0)
-            print(f'OK: {inpt.extr[vr]['l']['fn']}{year}.txt')
-        except FileNotFoundError:
-            print(f'NOT FOUND: {inpt.extr[vr]['l']['fn']}{year}.txt')
-    inpt.extr[vr]['l']['data'] = l_tmp_all
-    inpt.extr[vr]['l']['data'].index = pd.to_datetime(
-            inpt.extr[vr]['l']['data'][0] + ' ' + inpt.extr[vr]['l']['data'][1], format='%Y-%m-%d %H:%M:%S')
-    inpt.extr[vr]['l']['data'] = inpt.extr[vr]['l']['data'][[inpt.extr[vr]['l']['column']]]
-    inpt.extr[vr]['l']['data'].columns = [vr]
-
-    # only for radiation variables
-    if inpt.var in ['sw_up', 'sw_down', 'lw_up', 'lw_down']:
+    # Additional processing for radiation variables (only for ERA5 Land)
+    if source == 'l' and inpt.var in ['sw_up', 'sw_down', 'lw_up', 'lw_down']:
         calc_rad_acc_era5_land(vr)
 
     return
@@ -257,16 +227,16 @@ def read_aws_ecapac(vr):
 
 def read_alb():
     # CARRA
-    read_carra(inpt.var)
+    read_reanalysis(inpt.var, 'c')
     inpt.extr[inpt.var]['c']['data'] = inpt.extr[inpt.var]['c']['data'] / 100.
     inpt.extr[inpt.var]['c']['data'][inpt.extr[inpt.var]['c']['data'] <= 0.] = np.nan
 
     # ERA5
-    read_era5(inpt.var)
+    read_reanalysis(inpt.var, 'e')
     inpt.extr[inpt.var]['c']['data'][inpt.extr[inpt.var]['c']['data'] <= 0.] = np.nan
 
     # ERA5-LAND
-    read_era5_land(inpt.var)
+    read_reanalysis(inpt.var, 'l')
     inpt.extr[inpt.var]['l']['data'][inpt.extr[inpt.var]['l']['data'] <= 0.] = np.nan
 
     # THAAO
@@ -277,11 +247,11 @@ def read_alb():
 
 def read_cbh():
     # CARRA
-    read_carra(inpt.var)
+    read_reanalysis(inpt.var, 'c')
     inpt.extr[inpt.var]['c']['data'][inpt.extr[inpt.var]['c']['data'] <= 20.] = np.nan
 
     # ERA5
-    read_era5(inpt.var)
+    read_reanalysis(inpt.var, 'e')
     inpt.extr[inpt.var]['e']['data'][inpt.extr[inpt.var]['e']['data'] <= 20.] = np.nan
     inpt.extr[inpt.var]['e']['data'] += inpt.thaao_elev
 
@@ -294,13 +264,13 @@ def read_cbh():
 
 def read_lwp():
     # CARRA
-    read_carra(inpt.var)
+    read_reanalysis(inpt.var, 'c')
     inpt.extr[inpt.var]['c']['data'] = inpt.extr[inpt.var]['c']['data']
     inpt.extr[inpt.var]['c']['data'][inpt.extr[inpt.var]['c']['data'] < 0.01] = np.nan
     # c[c < 15] = 0
 
     # ERA5
-    read_era5(inpt.var)
+    read_reanalysis(inpt.var, 'e')
     inpt.extr[inpt.var]['e']['data'] = inpt.extr[inpt.var]['e']['data']
     inpt.extr[inpt.var]['e']['data'][inpt.extr[inpt.var]['e']['data'] < 0.01] = np.nan
     # e[e < 15] = 0
@@ -315,17 +285,17 @@ def read_lwp():
 
 def read_msl_pres():
     # CARRA
-    read_carra(inpt.var)
+    read_reanalysis(inpt.var, 'c')
 
     return
 
 
 def read_precip():
     # CARRA
-    read_carra(inpt.var)
+    read_reanalysis(inpt.var, 'c')
 
     # ERA5
-    read_era5(inpt.var)
+    read_reanalysis(inpt.var, 'e')
     inpt.extr[inpt.var]['e']['data'] = inpt.extr[inpt.var]['e']['data'].values * 1000.
 
     # THAAO2
@@ -336,17 +306,17 @@ def read_precip():
 
 def read_lw_down():
     # CARRA
-    read_carra('lw_down')
+    read_reanalysis('lw_down', 'c')
     inpt.extr['lw_down']['c']['data'][inpt.extr['lw_down']['c']['data'] < 0.] = np.nan
     inpt.extr['lw_down']['c']['data'] = inpt.extr['lw_down']['c']['data'] / inpt.var_dict['c']['rad_conv_factor']
 
     # ERA5
-    read_era5('lw_down')
+    read_reanalysis('lw_down', 'e')
     inpt.extr['lw_down']['e']['data'][inpt.extr['lw_down']['e']['data'] < 0.] = np.nan
     inpt.extr['lw_down']['e']['data'] = inpt.extr['lw_down']['e']['data'] / inpt.var_dict['e']['rad_conv_factor']
 
     # ERA5-LAND
-    read_era5_land('lw_down')
+    read_reanalysis('lw_down', 'l')
     inpt.extr['lw_down']['l']['data'][inpt.extr['lw_down']['l']['data'] < 0.] = np.nan
     inpt.extr['lw_down']['l']['data'] = inpt.extr['lw_down']['l']['data'] / inpt.var_dict['l']['rad_conv_factor']
 
@@ -358,17 +328,17 @@ def read_lw_down():
 
 def read_sw_down():
     # CARRA
-    read_carra('sw_down')
+    read_reanalysis('sw_down', 'c')
     inpt.extr['sw_down']['c']['data'][inpt.extr['sw_down']['c']['data'] < 0.] = np.nan
     inpt.extr['sw_down']['c']['data'] = inpt.extr['sw_down']['c']['data'] / inpt.var_dict['c']['rad_conv_factor']
 
     # ERA5
-    read_era5('sw_down')
+    read_reanalysis('sw_down', 'e')
     inpt.extr['sw_down']['e']['data'][inpt.extr['sw_down']['e']['data'] < 0.] = np.nan
     inpt.extr['sw_down']['e']['data'] = inpt.extr['sw_down']['e']['data'] / inpt.var_dict['e']['rad_conv_factor']
 
     # ERA5-LAND
-    read_era5_land('sw_down')
+    read_reanalysis('sw_down', 'l')
     inpt.extr['sw_down']['l']['data'][inpt.extr['sw_down']['l']['data'] < 0.] = np.nan
     inpt.extr['sw_down']['l']['data'] = inpt.extr['sw_down']['l']['data'] / inpt.var_dict['l']['rad_conv_factor']
 
@@ -382,7 +352,7 @@ def read_lw_up():
     read_lw_down()
 
     # CARRA
-    read_carra('lw_net')
+    read_reanalysis('lw_net', 'c')
     inpt.extr['lw_net']['c']['data'] = inpt.extr['lw_net']['c']['data'] / inpt.var_dict['c']['rad_conv_factor']
     inpt.extr['lw_up']['c']['data'] = pd.DataFrame(
             index=inpt.extr['lw_down']['c']['data'].index,
@@ -391,7 +361,7 @@ def read_lw_up():
     # del inpt.extr['lw_net']['c']['data']
 
     # ERA5
-    read_era5('lw_net')
+    read_reanalysis('lw_net', 'e')
     inpt.extr['lw_net']['e']['data'] = inpt.extr['lw_net']['e']['data'] / inpt.var_dict['e']['rad_conv_factor']
     inpt.extr['lw_up']['e']['data'] = pd.DataFrame(
             index=inpt.extr['lw_down']['e']['data'].index,
@@ -400,7 +370,7 @@ def read_lw_up():
     # del inpt.extr['lw_net']['e']['data']
 
     # ERA5-LAND
-    read_era5_land('lw_net')
+    read_reanalysis('lw_net', 'l')
     inpt.extr['lw_net']['l']['data'] = inpt.extr['lw_net']['l']['data'] / inpt.var_dict['l']['rad_conv_factor']
     inpt.extr['lw_up']['l']['data'] = pd.DataFrame(
             index=inpt.extr['lw_down']['l']['data'].index,
@@ -419,7 +389,7 @@ def read_sw_up():
     read_sw_down()
 
     # CARRA
-    read_carra('sw_net')
+    read_reanalysis('sw_net', 'c')
     inpt.extr['sw_net']['c']['data'] = inpt.extr['sw_net']['c']['data'] / inpt.var_dict['c']['rad_conv_factor']
     inpt.extr['sw_up']['c']['data'] = pd.DataFrame(
             index=inpt.extr['sw_down']['c']['data'].index,
@@ -428,7 +398,7 @@ def read_sw_up():
     del inpt.extr['sw_net']['c']['data']
 
     # ERA5
-    read_era5('sw_net')
+    read_reanalysis('sw_net', 'e')
     inpt.extr['sw_net']['e']['data'] = inpt.extr['sw_net']['e']['data'] / inpt.var_dict['e']['rad_conv_factor']
     inpt.extr['sw_up']['e']['data'] = pd.DataFrame(
             index=inpt.extr['sw_down']['e']['data'].index,
@@ -437,7 +407,7 @@ def read_sw_up():
     del inpt.extr['sw_net']['e']['data']
 
     # ERA5-LAND
-    read_era5_land('sw_net')
+    read_reanalysis('sw_net', 'l')
     inpt.extr['sw_net']['l']['data'] = inpt.extr['sw_net']['l']['data'] / inpt.var_dict['l']['rad_conv_factor']
     inpt.extr['sw_up']['l']['data'] = pd.DataFrame(
             index=inpt.extr['sw_down']['l']['data'].index,
@@ -454,18 +424,18 @@ def read_sw_up():
 
 def read_rh():
     # CARRA
-    read_carra(inpt.var)
+    read_reanalysis(inpt.var, 'c')
 
     # ERA5
-    read_era5(inpt.var)
+    read_reanalysis(inpt.var, 'e')
     if inpt.extr[inpt.var]['l']['data'].empty:
-        read_era5('temp')
+        read_reanalysis('temp', 'e')
     calc_rh_from_tdp()
 
     # ERA5-LAND
-    read_era5_land(inpt.var)
+    read_reanalysis(inpt.var, 'l')
     if inpt.extr[inpt.var]['l']['data'].empty:
-        read_era5('temp')
+        read_reanalysis('temp', 'e')
     calc_rh_from_tdp()
 
     # e.g. l_td[l_td_tmp == -32767.0] = np.nan
@@ -492,12 +462,12 @@ def calc_rh_from_tdp():
 
 def read_surf_pres():
     # CARRA
-    read_carra(inpt.var)
+    read_reanalysis(inpt.var, 'c')
     inpt.extr[inpt.var]['c']['data'] = inpt.extr[inpt.var]['c']['data'] / 100.
     inpt.extr[inpt.var]['c']['data'][inpt.extr[inpt.var]['c']['data'] <= 900] = np.nan
 
     # ERA5
-    read_era5(inpt.var)
+    read_reanalysis(inpt.var, 'e')
     inpt.extr[inpt.var]['e']['data'] = inpt.extr[inpt.var]['e']['data'] / 100.
     inpt.extr[inpt.var]['e']['data'][inpt.extr[inpt.var]['e']['data'] <= 900] = np.nan
 
@@ -515,10 +485,10 @@ def read_surf_pres():
 
 def read_tcc():
     # CARRA
-    read_carra(inpt.var)
+    read_reanalysis(inpt.var, 'c')
 
     # ERA5
-    read_era5(inpt.var)
+    read_reanalysis(inpt.var, 'e')
     inpt.extr[inpt.var]['e']['data'] = inpt.extr[inpt.var]['e']['data'].values * 100.
 
     # THAAO
@@ -529,15 +499,15 @@ def read_tcc():
 
 def read_temp():
     # CARRA
-    read_carra(inpt.var)
+    read_reanalysis(inpt.var, 'c')
     inpt.extr[inpt.var]['c']['data'] = inpt.extr[inpt.var]['c']['data'] - 273.15
 
     # ERA5
-    read_era5(inpt.var)
+    read_reanalysis(inpt.var, 'e')
     inpt.extr[inpt.var]['e']['data'] = inpt.extr[inpt.var]['e']['data'] - 273.15
 
     # ERA5-LAND
-    read_era5_land(inpt.var)
+    read_reanalysis(inpt.var, 'l')
     inpt.extr[inpt.var]['l']['data'] = inpt.extr[inpt.var]['l']['data'] - 273.15
 
     # THAAO
@@ -551,12 +521,12 @@ def read_temp():
 
 def read_wind():
     # CARRA
-    read_carra('winds')
-    read_carra('windd')
+    read_reanalysis('winds', 'c')
+    read_reanalysis('windd', 'c')
 
     # ERA5
-    read_era5('windu')
-    read_era5('windv')
+    read_reanalysis('windu', 'e')
+    read_reanalysis('windv', 'e')
     e_ws = wind_speed(
             inpt.extr['windu']['e']['data'].values * units('m/s'),
             inpt.extr['windv']['e']['data'].values * units('m/s'))
@@ -571,8 +541,8 @@ def read_wind():
 
     # ERA5-LAND
     # TODO activate when files are available
-    # read_era5_land('windu')
-    # read_era5_land('windv')
+    # read_reanalysis('windu', 'l')
+    # read_reanalysis('windv', 'l')
     # l_ws = wind_speed(
     #         inpt.extr['windu']['l']['data'].values * units('m/s'),
     #         inpt.extr['windv']['l']['data'].values * units('m/s'))
@@ -627,34 +597,31 @@ def calc_rad_acc_era5_land(vr):
 
 def read():
     """
-
-    :return:
+    Read the data based on the value of inpt.var.
     """
-    if inpt.var == 'alb':
-        return read_alb()
-    if inpt.var == 'cbh':
-        return read_cbh()
-    if inpt.var == 'msl_pres':
-        return read_msl_pres()
-    if inpt.var == 'lwp':
-        return read_lwp()
-    if inpt.var == 'lw_down':
-        return read_lw_down()
-    if inpt.var == 'lw_up':
-        return read_lw_up()
-    if inpt.var == 'precip':
-        return read_precip()
-    if inpt.var == 'rh':
-        return read_rh()
-    if inpt.var == 'surf_pres':
-        return read_surf_pres()
-    if inpt.var == 'sw_down':
-        return read_sw_down()
-    if inpt.var == 'sw_up':
-        return read_sw_up()
-    if inpt.var == 'tcc':
-        return read_tcc()
-    if inpt.var == 'temp':
-        return read_temp()
-    if inpt.var in ['winds', 'windd']:
-        return read_wind()
+
+    # Create a mapping of variable names to functions
+    read_functions = {
+        'alb': read_alb,
+        'cbh': read_cbh,
+        'msl_pres': read_msl_pres,
+        'lwp': read_lwp,
+        'lw_down': read_lw_down,
+        'lw_up': read_lw_up,
+        'precip': read_precip,
+        'rh': read_rh,
+        'surf_pres': read_surf_pres,
+        'sw_down': read_sw_down,
+        'sw_up': read_sw_up,
+        'tcc': read_tcc,
+        'temp': read_temp,
+        'winds': read_wind,
+        'windd': read_wind,
+    }
+
+    # Use the mapping to call the correct function
+    var = inpt.var
+    if var in read_functions:
+        return read_functions[var]()
+    else:
+        raise ValueError(f"Unknown variable: {var}")

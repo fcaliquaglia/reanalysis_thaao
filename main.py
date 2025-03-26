@@ -1,18 +1,16 @@
 #!/usr/local/bin/python3
 # -*- coding: utf-8 -*-
-# -------------------------------------------------------------------------------
-#
+
 """
-Brief description
+Script for data reading, resampling, and plotting.
 """
 
 # =============================================================
-# CREATED: 
+# CREATED:
 # AFFILIATION: INGV
-# AUTHORS: Filippo Cali' Quaglia
+# AUTHOR: Filippo Cali' Quaglia
 # =============================================================
-#
-# -------------------------------------------------------------------------------
+
 __author__ = "Filippo Cali' Quaglia"
 __credits__ = ["??????"]
 __license__ = "GPL"
@@ -27,22 +25,23 @@ import read_func as rd_f
 import res_func as rs_f
 
 if __name__ == "__main__":
-    for tres in inpt.tres_list:
-        inpt.tres = tres
-        print(tres)
+    for inpt.tres in inpt.tres_list:  # Modify global variable directly
+        print(f"Processing time resolution: {inpt.tres}")
 
-        for var in inpt.list_var:
-            inpt.var = var
-            print(var)
+        for inpt.var in inpt.list_var:  # Modify global variable directly
+            print(f"  Processing variable: {inpt.var}")
 
-            # data reading
+            # Read data
             rd_f.read()
 
-            # time RESAMPLING (specific for windd --> using wind components, and precip --> cumulative)
+            # Resample data
             rs_f.data_resampling(inpt.var)
 
+            # Generate plots
             plt_f.plot_ts('all')
             plt_f.plot_residuals('all')
             plt_f.plot_scatter_cum()
+
+            # Seasonal scatter plots
             for seas in inpt.seass:
-                plt_f.plot_scatter(seas)  # plot_ba(var, all_var, seas)
+                plt_f.plot_scatter(seas)
