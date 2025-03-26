@@ -45,7 +45,7 @@ def read_reanalysis(vr, source):
     # Accumulate data for efficient processing
     data_tmp_all = []
     extr_source = inpt.extr[vr][source]  # Get source-specific information
-    base_path = inpt.basefol_c if source == 'c' else (inpt.basefol_e if source == 'e' else inpt.basefol_l)
+    base_path = inpt.directories[source]
     nanval = inpt.var_dict[source]['nanval']
     fn_template = extr_source['fn']
     years = inpt.years
@@ -92,7 +92,7 @@ def read_thaao_weather(vr):
     """
     try:
         inpt.extr[vr]['t']['data'] = xr.open_dataset(
-                os.path.join(inpt.basefol_t, 'thaao_meteo', f'{inpt.extr[vr]['t']['fn']}.nc'),
+                os.path.join(inpt.directories['t'], 'thaao_meteo', f'{inpt.extr[vr]['t']['fn']}.nc'),
                 engine='netcdf4').to_dataframe()
         print(f'OK: {inpt.extr[vr]['t']['fn']}.nc')
     except FileNotFoundError:
@@ -113,7 +113,7 @@ def read_thaao_rad(vr):
         i_fmt = int(i.strftime('%Y'))
         try:
             t_tmp = pd.read_table(
-                    os.path.join(inpt.basefol_t, 'thaao_rad', f'{inpt.extr[vr]['t']['fn']}{i_fmt}_5MIN.dat'),
+                    os.path.join(inpt.directories['t'], 'thaao_rad', f'{inpt.extr[vr]['t']['fn']}{i_fmt}_5MIN.dat'),
                     engine='python', skiprows=None, header=0, decimal='.', sep='\s+')
             tmp = np.empty(t_tmp['JDAY_UT'].shape, dtype=dt.datetime)
             for ii, el in enumerate(t_tmp['JDAY_UT']):
@@ -143,7 +143,7 @@ def read_thaao_hatpro(vr):
         try:
             t1_tmp = pd.read_table(
                     os.path.join(
-                            inpt.basefol_t, 'thaao_hatpro', 'definitivi_da_giando',
+                            inpt.directories['t'], 'thaao_hatpro', 'definitivi_da_giando',
                             f'{inpt.extr[vr]['t1']['fn']}{i_fmt}', f'{inpt.extr[vr]['t1']['fn']}{i_fmt}.DAT'),
                     sep='\s+', engine='python', header=None, skiprows=1)
             t1_tmp.columns = ['JD_rif', 'RF', 'N', 'LWP_gm-2', 'STD_LWP']
@@ -175,7 +175,7 @@ def read_thaao_ceilometer(vr):
         try:
             t_tmp = pd.read_table(
                     os.path.join(
-                            inpt.basefol_t, 'thaao_ceilometer', 'medie_tat_rianalisi',
+                            inpt.directories['t'], 'thaao_ceilometer', 'medie_tat_rianalisi',
                             f'{i_fmt}{inpt.extr[vr]['t']['fn']}.txt'), skipfooter=0, sep='\s+', header=0, skiprows=9,
                     engine='python')
             t_tmp[t_tmp == inpt.var_dict['t']['nanval']] = np.nan
@@ -206,7 +206,7 @@ def read_aws_ecapac(vr):
         i_fmt = i.strftime('%Y_%m_%d')
         try:
             file = os.path.join(
-                    inpt.basefol_t, 'thaao_ecapac_aws_snow', 'AWS_ECAPAC', i.strftime('%Y'),
+                    inpt.directories['t'], 'thaao_ecapac_aws_snow', 'AWS_ECAPAC', i.strftime('%Y'),
                     f'{inpt.extr[vr]['t2']['fn']}{i_fmt}_00_00.dat')
             t2_tmp = pd.read_csv(
                     file, skiprows=[0, 3], header=0, decimal='.', delimiter=',', engine='python',
@@ -580,19 +580,6 @@ def calc_rad_acc_era5_land(vr):
 
     print('ERA5-LAND data for radiation corrected because they are values daily-accumulated!')
     return
-
-
-# def extract_values(fn, year):
-#     if not os.path.exists(os.path.join(inpt.basefol_c, fn + str(year) + '.nc')):
-#         try:
-#             filen = os.path.join(inpt.basefol_t, 'reanalysis', 'carra', '_'.join(fn.split('_')[1:]) + str(year) + '.nc')
-#             NC = xr.open_dataset(str(filen), decode_cf=True, decode_times=True)
-#
-#             # tmp = NC.sel(x=y, y=x, method='nearest')
-#         except FileNotFoundError:
-#             print(f'cannot find {filen}')
-#
-#     return f'thaao_{fn}'
 
 
 def read():
