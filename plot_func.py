@@ -38,9 +38,17 @@ import inputs as inpt
 
 def plot_ts(period_label):
     """
+    Plots time series data for each year in the provided dataset.
 
-    :param period_label:
-    :return:
+    This function generates a multi-panel plot with each panel corresponding to one year
+    of data. It plots the original and resampled resolutions for various variables and
+    optionally overlays vertical lines to indicate specific periods. The resulting plot
+    is saved as an image in the output directory specified in `inpt`.
+
+    :param period_label: A string used in the filename to describe the period of the data.
+    :type period_label: str
+    :return: This function does not return a value, but saves the generated plot as an image file.
+    :rtype: None
     """
     # with plt.xkcd():
     print('TIMESERIES')
@@ -81,9 +89,14 @@ def plot_ts(period_label):
 
 def plot_residuals(period_label):
     """
+    Plots the residuals of data over specified years, creating one subplot per year. The function processes
+    input data for a given variable, compares it against a reference, and applies specific formatting
+    based on the variable's type. Visual elements such as trend lines, markers, and vertical lines are
+    added to the plots to highlight residual patterns and seasonal ranges.
 
-    :param period_label:
-    :return:
+    :param period_label: Label identifying the specific period for the residual plots
+    :type period_label: str
+    :return: None
     """
     print('RESIDUALS')
     plt.ioff()
@@ -122,9 +135,19 @@ def plot_residuals(period_label):
 
 def plot_scatter(period_label):
     """
+    Generates a 2x2 grid of scatter plots based on input data for the specified period label.
 
-    :param period_label:
-    :return:
+    The function creates scatter plots or 2D histograms depending on the specified
+    season or whether all data is included. Each subplot corresponds to a different
+    component of the dataset. The function applies data filtering, calculates
+    polynomial fits where applicable, and formats the plots before saving the
+    resulting figure to the file system.
+
+    :param period_label: A key that identifies the specific time period (e.g., a season)
+        from the input dataset to process and plot. It corresponds to a label used to
+        filter data and configure plot settings.
+    :type period_label: str
+    :return: None
     """
     print(f"SCATTERPLOTS {period_label}")
     plt.ioff()
@@ -181,8 +204,19 @@ def plot_scatter(period_label):
 
 def plot_scatter_cum():
     """
+    Plots cumulative scatter plots for given data, with specific subplots for each comparison,
+    and includes features like fitting a line, customizing plot appearance, and saving the
+    generated figure. The function processes multiple datasets for specific seasonal or temporal
+    periods, reindexes data for consistency, and handles missing values appropriately. It also
+    uses provided external inputs for settings and configurations required during plotting.
 
-    :return:
+    :raises ValueError: Raised if there is insufficient data for proper fitting (less than two points).
+
+    :params None: This function takes no parameters, relying instead on settings and data
+    within the `inpt` global object and other supporting configurations.
+
+    :return: None. The function directly creates and saves scatter plot figures for the
+    given inputs.
     """
     plt.ioff()
     fig, ax = plt.subplots(2, 2, figsize=(12, 12), dpi=300)
@@ -229,13 +263,21 @@ def plot_scatter_cum():
 
 def calc_draw_fit(axs, i, xxx, yyy, per_lab, print_stats=True):
     """
-    :param per_lab:
-    :param axs:
-    :param i:
-    :param xxx:
-    :param yyy:
-    :param print_stats:
-    :return:
+    Calculates and visualizes a linear fit between two datasets, annotating the plot with statistical
+    information.
+
+    This function performs a linear regression on the input data, generates a fitted line, and plots
+    it along with a 1:1 reference line. Optionally, it calculates and overlays statistical metrics
+    such as correlation coefficient, mean bias error (MBE), and root mean square error (RMSE) onto the
+    specified subplot axes.
+
+    :param axs: Matplotlib axes array to display the plot.
+    :param i: Index to select a specific subplot from the axes array.
+    :param xxx: Input data (x-coordinates) for the regression.
+    :param yyy: Input data (y-coordinates) for the regression.
+    :param per_lab: Key to extract specific plot attributes from a configuration dictionary.
+    :param print_stats: Flag indicating whether to display statistical metrics on the plot.
+    :return: None
     """
     xx = xxx.values.flatten()
     yy = yyy.values.flatten()
@@ -258,11 +300,18 @@ def calc_draw_fit(axs, i, xxx, yyy, per_lab, print_stats=True):
 
 def format_scatterplot(axs, comp, i):
     """
+    Formats a scatterplot by setting the title, axis labels, axis limits, and adding relevant
+    text annotations. This function updates the provided axes object to display the data
+    representation in a visually coherent manner based on a given component and index.
 
-    :param axs:
-    :param comp:
-    :param i:
-    :return:
+    :param axs: A list or array-like object of Matplotlib Axes to be formatted.
+    :type axs: list or matplotlib.axes.Axes
+    :param comp: A component key used to retrieve values from `inpt.var_dict` for
+        labeling and scaling the scatterplot.
+    :type comp: str
+    :param i: Index of the specific Axes object within `axs` to format.
+    :type i: int
+    :return: None
     """
     axs[i].set_title(inpt.var_dict[comp]['label'])
     axs[i].set_xlabel(inpt.var_dict[inpt.extr[inpt.var]['ref_x']]['label'])
@@ -277,12 +326,18 @@ def format_scatterplot(axs, comp, i):
 
 def format_ts(ax, year, yy, residuals=False):
     """
+    Formats a matplotlib Axes object for time series data visualization. This function sets
+    the x-axis formatter, adjusts axis limits, and includes custom labels and text for the
+    specified subplot. Optionally, it adjusts vertical axis limits based on residuals.
 
-    :param ax:
-    :param year:
-    :param yy:
-    :param residuals:
-    :return:
+    :param ax: A dictionary or similar object containing Axes objects of the plot.
+    :param year: The year to set x-axis limits and include in the text label.
+    :type year: int
+    :param yy: The index or key indicating which subplot to format within the `ax` object.
+    :type yy: Any
+    :param residuals: Whether to use vertical axis limits for residual data. Defaults to False.
+    :type residuals: bool
+    :return: None
     """
     ax[yy].xaxis.set_major_formatter(inpt.myFmt)
     ax[yy].set_xlim(dt.datetime(year, 1, 1), dt.datetime(year, 12, 31))
@@ -299,10 +354,16 @@ def format_ts(ax, year, yy, residuals=False):
 
 def frame_and_axis_removal(ax, len_comps):
     """
+    Removes frame and axis elements from the specified subplots in a given matplotlib `Axes` object based on the
+    length of components provided. The function disables both the rectangular frame and the ticks/numbers for
+    subplots according to the specified number of components.
 
-    :param ax:
-    :param len_comps:
-    :return:
+    :param ax: The matplotlib Axes object that contains the subplots to adjust
+    :type ax: matplotlib.axes._axes.Axes
+    :param len_comps: The number of components determining which subplots' frames and axes are removed
+    :type len_comps: int
+    :return: The function does not return any value. It modifies the `Axes` object in place.
+    :rtype: None
     """
     if len_comps >= 4:
         axis_removal_list = []

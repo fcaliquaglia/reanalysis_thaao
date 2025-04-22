@@ -27,6 +27,16 @@ import inputs as inpt
 
 
 def data_resampling(vr):
+    """
+    Resamples the data for a specified variable to the defined temporal resolution. The function checks
+    the specified variable for compatibility with the resampling process. If the variable is related
+    to wind or precipitation data, resampling is not allowed, and the function exits. For compatible
+    variables, it performs resampling over the associated components and reference data.
+
+    :param vr: The variable for which the data resampling is performed.
+    :type vr: str
+    :return: None
+    """
     if inpt.var in ['winds', 'windd', 'precip']:
         print('NO WIND/PRECIP RESAMPLING!')
         sys.exit()

@@ -36,9 +36,17 @@ import inputs as inpt
 
 def read_carra(vr):
     """
+    Reads and processes Carra dataset based on a specified variable code. The function
+    iterates through defined years, attempts to read the corresponding data files,
+    concatenates the data, and performs transformations such as null value handling
+    and indexing by datetime. If a file corresponding to a year is not found, a
+    notification is printed, and processing continues. The result is stored in the
+    `inpt` structure under the specified variable code.
 
-    :param vr:
-    :return:
+    :param vr: The variable code to identify specific data to be processed.
+    :type vr: str
+    :return: None. The processed data is stored directly into the `inpt` structure.
+    :rtype: None
     """
     c_tmp_all = pd.DataFrame()
     for year in inpt.years:
@@ -61,9 +69,15 @@ def read_carra(vr):
 
 def read_era5(vr):
     """
+    Reads ERA5 data files for the specified variable and aggregates them into a single DataFrame.
 
-    :param vr:
-    :return:
+    This function processes and consolidates data for a specific variable from multiple annual files,
+    as determined by the input configuration. Missing data values are replaced with NaN, and the DataFrame
+    is indexed by a datetime column derived from the input files.
+
+    :param vr: The variable name for which ERA5 data will be read and processed, as specified
+               in the input configuration.
+    :return: None. The processed data is directly stored in the global `inpt.extr` dictionary.
     """
     e_tmp_all = pd.DataFrame()
     for year in inpt.years:
@@ -86,9 +100,17 @@ def read_era5(vr):
 
 def read_era5_land(vr):
     """
+    Reads ERA5-Land data from a series of text files, processes it, and assigns the resulting DataFrame
+    to a specified key in the input object's structure. It also handles optional radiation variable
+    calculations if applicable.
 
-    :param vr:
-    :return:
+    The function is designed to handle data files across multiple years, concatenate them into a single
+    DataFrame, replace specified NaN values with `np.nan`, and perform both index formatting and column
+    selection based on the input structure.
+
+    :param vr: The variable key to be processed, guiding the extraction and processing of relevant data.
+    :type vr: str
+    :return: None
     """
     l_tmp_all = pd.DataFrame()
     for year in inpt.years:
@@ -116,9 +138,18 @@ def read_era5_land(vr):
 
 def read_thaao_weather(vr):
     """
+    Reads and processes weather data for the specified variable and updates the
+    global input structure. The function attempts to load a NetCDF file associated
+    with the given variable and converts it into a pandas DataFrame. It then filters
+    and renames columns in the DataFrame based on predefined configurations in
+    the global input structure.
 
-    :param vr:
-    :return:
+    :param vr: The variable identifier used to fetch weather data.
+    :type vr: str
+
+    :raises FileNotFoundError: If the required NetCDF file does not exist.
+
+    :return: None. The global input structure is updated directly.
     """
     try:
         inpt.extr[vr]['t']['data'] = xr.open_dataset(
@@ -134,9 +165,16 @@ def read_thaao_weather(vr):
 
 def read_thaao_rad(vr):
     """
+    Reads and processes the Thaao radiation data for a specific variable over a specified
+    date range and yearly subset defined within the configuration. This function iterates
+    through years, attempts to load the corresponding data files for the input variable, and
+    processes the data to generate a time-indexed DataFrame for further analysis. If a file is
+    not found for a specific year, a message is logged to indicate the missing data.
 
-    :param vr:
-    :return:
+    :param vr: The variable name used to index configuration details and process corresponding
+               data.
+    :type vr: str
+    :return: None
     """
     t_tmp_all = pd.DataFrame()
     for i in inpt.rad_daterange[inpt.rad_daterange.year.isin(inpt.years)]:
@@ -163,9 +201,15 @@ def read_thaao_rad(vr):
 
 def read_thaao_hatpro(vr):
     """
+    Reads and processes data from a specified text file into a structured dataframe. This function
+    attempts to read and parse data for a given `vr` (variable identifier) from a specific file path.
+    It processes datetime information, assigns appropriate column names, and stores the resultant
+    data within a structured input object. If the specified file is not found, it logs the error
+    without halting execution.
 
-    :param vr:
-    :return:
+    :param vr: The variable identifier used to locate and process the associated data.
+    :type vr: str
+    :return: None
     """
     #t1_tmp_all = pd.DataFrame()
     try:
@@ -201,9 +245,20 @@ def read_thaao_hatpro(vr):
 
 def read_thaao_ceilometer(vr):
     """
+    Reads and processes ceilometer data for a specified variable from multiple files
+    in a given directory structure. The data is collected from files corresponding
+    to a specific date range and year(s). This function concatenates the data
+    from multiple files, cleans it (replacing specific values with NaNs),
+    and processes timestamps to create a time-indexed DataFrame.
 
-    :param vr:
-    :return:
+    :param vr: The variable key indicating the specific type of data
+        to be processed from the ceilometer files (e.g., temperature).
+    :type vr: str
+
+    :raises FileNotFoundError: Raised if a file for a given date is not found.
+    :raises pd.errors.EmptyDataError: Raised if a file for a given date is empty.
+
+    :return: None
     """
     t_tmp_all = pd.DataFrame()
     for i in inpt.ceilometer_daterange[inpt.ceilometer_daterange.year.isin(inpt.years)]:
@@ -233,9 +288,12 @@ def read_thaao_ceilometer(vr):
 
 def read_aws_ecapac(vr):
     """
+    Reads and processes AWS ECAPAC data for a specified variable across a specific date range
+    defined in the input configuration. Concatenates data for all specified dates, handles missing
+    or malformed files, and updates the data container with the formatted results.
 
-    :param vr:
-    :return:
+    :param vr: Variable name (str) specifying the dataset key in the input extraction configuration.
+    :return: None
     """
     t2_tmp_all = pd.DataFrame()
     for i in inpt.aws_ecapac_daterange[inpt.aws_ecapac_daterange.year.isin(inpt.years)]:
@@ -262,6 +320,15 @@ def read_aws_ecapac(vr):
 
 
 def read_alb():
+    """
+    Reads and processes the input variable data from multiple sources including CARRA, ERA5,
+    ERA5-LAND, and THAAO. Adjusts the datasets by scaling and cleaning data points
+    as per defined conditions.
+
+    :raises KeyError: If required keys are missing in the input dictionary for any source.
+    :raises TypeError: If data type mismatches occur when processing datasets within sources.
+    :raises ValueError: If data contains invalid values not conforming to the expected range.
+    """
     # CARRA
     read_carra(inpt.var)
     inpt.extr[inpt.var]['c']['data'] = inpt.extr[inpt.var]['c']['data'] / 100.
@@ -282,6 +349,15 @@ def read_alb():
 
 
 def read_cbh():
+    """
+    Reads cloud base height (CBH) data from different sources and processes it
+    based on the specified input variable. This function integrates data from
+    multiple sources including CARRA, ERA5, and THAAO Ceilometer, providing a
+    comprehensive dataset for further analysis.
+
+    :raises ValueError: If the specified input variable is invalid or unsupported.
+    :return: None
+    """
     # CARRA
     read_carra(inpt.var)
 
@@ -295,6 +371,18 @@ def read_cbh():
 
 
 def read_lwp():
+    """
+    Reads cloud liquid water path (LWP) data from multiple sources, processes it, and
+    updates the respective datasets for further analysis. This function specifically
+    handles data from three sources: CARRA, ERA5, and THAAO1. Upon reading the data,
+    conditions are applied to clean and format it appropriately for use.
+
+    :raises ValueError: If any required input data is missing or improperly formatted.
+
+    :param None:
+
+    :return: None
+    """
     # CARRA
     read_carra(inpt.var)
     inpt.extr[inpt.var]['c']['data'] = inpt.extr[inpt.var]['c']['data']
@@ -316,6 +404,16 @@ def read_lwp():
 
 
 def read_msl_pres():
+    """
+    Reads mean sea-level pressure (MSL) from the specified source.
+
+    This function is responsible for reading mean sea-level pressure
+    data using the method or procedure defined in the `read_carra`
+    function. It uses the `inpt.var` as an input parameter for the
+    read operation.
+
+    :return: None
+    """
     # CARRA
     read_carra(inpt.var)
 
@@ -323,6 +421,17 @@ def read_msl_pres():
 
 
 def read_precip():
+    """
+    Reads and processes precipitation data from multiple sources.
+
+    This function integrates data from CARRA, ERA5, and THAAO2 datasets, applying
+    necessary transformations and storing resulting data within the provided input
+    structure. The function is responsible for coordinating the reading of data
+    via corresponding source-specific readers and ensuring compatibility of the
+    processed data across sources.
+
+    :return: None
+    """
     # CARRA
     read_carra(inpt.var)
 
@@ -337,6 +446,22 @@ def read_precip():
 
 
 def read_lw_down():
+    """
+    Reads and processes longwave downward radiation ('lw_down') data from multiple sources such as
+    CARRA, ERA5, ERA5-LAND, and THAAO. The function handles data quality issues by filtering out
+    non-physical values (values less than 0) and applies conversion factors to the raw data using
+    values stored in the `var_dict` dictionary.
+
+    The processed data is stored in the `inpt.extr` dictionary under specific keys corresponding to
+    each data source ('c' for CARRA, 'e' for ERA5, 'l' for ERA5-LAND, and 't' for THAAO).
+
+    :raises KeyError: If keys expected in `inpt.extr` or `inpt.var_dict` for specific
+        sources ('c', 'e', 'l', 't') are missing.
+    :raises ValueError: If data conversion or filtering operations encounter unexpected
+        or malformed data values.
+
+    :return: None
+    """
     # CARRA
     read_carra('lw_down')
     inpt.extr['lw_down']['c']['data'][inpt.extr['lw_down']['c']['data'] < 0.] = np.nan
@@ -359,6 +484,14 @@ def read_lw_down():
 
 
 def read_sw_down():
+    """
+    Reads and processes shortwave downward radiation data from multiple data sources,
+    including CARRA, ERA5, ERA5-LAND, and THAAO. Negative values of radiation data
+    are replaced with NaN, and the data is scaled according to respective radiation
+    conversion factors.
+
+    :return: None
+    """
     # CARRA
     read_carra('sw_down')
     inpt.extr['sw_down']['c']['data'][inpt.extr['sw_down']['c']['data'] < 0.] = np.nan
@@ -381,6 +514,27 @@ def read_sw_down():
 
 
 def read_lw_up():
+    """
+    Processes and calculates longwave upwelling radiation data for multiple datasets.
+
+    This function reads and processes longwave radiation data, including
+    net longwave radiation and upward longwave radiation, for various
+    datasets including CARRA, ERA5, ERA5-LAND, and THAAO. The processing
+    includes unit conversions using a radiation conversion factor,
+    subtracting net radiation from downward radiation to compute upward
+    radiation, and handling invalid or unusable data (e.g., setting negative
+    values to NaN).
+
+    The data is categorized into different keys for each dataset, and the
+    relevant computations are conducted based on the respective radiation
+    conversion factors and formulas for each dataset source.
+
+    :raises KeyError: If required data keys are missing in input dictionaries.
+    :raises TypeError: If the input data types are incompatible with the operations.
+    :raises ValueError: If data contains invalid values for computations.
+    :raises AttributeError: If required attributes are missing in the input object.
+    :return: None
+    """
     read_lw_down()
 
     # CARRA
@@ -418,6 +572,18 @@ def read_lw_up():
 
 
 def read_sw_up():
+    """
+    Reads and processes shortwave upward radiation data from various sources, including CARRA, ERA5,
+    ERA5-LAND, and THAAO. The function adjusts and prepares this data by performing necessary unit
+    conversions, calculations, and value filtering. Data from each source is extracted, recalculated
+    using conversion factors, filtered for valid values, and any processed intermediate data is
+    removed to optimize memory usage.
+
+    :raise KeyError: if the expected keys are not found in the data structures.
+    :raise ValueError: if the data contains invalid or unexpected values.
+
+    :return: None
+    """
     read_sw_down()
 
     # CARRA
@@ -455,6 +621,16 @@ def read_sw_up():
 
 
 def read_rh():
+    """
+    Reads and processes relative humidity data from various sources including
+    CARRA, ERA5, ERA5-LAND, and THAAO2-based weather datasets. This function
+    includes checks for missing data and calculates relative humidity from
+    temperature and dew point temperature if necessary.
+
+    :raises KeyError: Raised if there is a key-related issue during data access
+        within the input variables.
+    :raises ValueError: Raised if an unexpected data inconsistency is encountered.
+    """
     # CARRA
     read_carra(inpt.var)
 
@@ -481,6 +657,16 @@ def read_rh():
 
 
 def calc_rh_from_tdp():
+    """
+    Calculate relative humidity from dew point temperature.
+
+    This function processes input data by removing specific columns and adjusting
+    the column structure for calculated data. It appears to use dew point
+    temperature and environmental temperature to determine relative humidity, but
+    the main functionality has been commented out and requires implementation.
+
+    :return: None
+    """
     # TODO not working
 
     # e = pd.concat([inpt.extr[inpt.var]['t']['data'], e_t], axis=1)
@@ -493,6 +679,14 @@ def calc_rh_from_tdp():
 
 
 def read_surf_pres():
+    """
+    Reads surface pressure data from multiple sources, processes the data, and handles exceptional
+    values by setting them to NaN. The function operates on multiple datasets - CARRA, ERA5, THAAO,
+    and THAAO2, adjusting their scales or removing data in certain cases.
+
+    :raises: KeyError if `inpt.var` is not found in the input data structure or if any expected
+             fields are incomplete or missing.
+    """
     # CARRA
     read_carra(inpt.var)
     inpt.extr[inpt.var]['c']['data'] = inpt.extr[inpt.var]['c']['data'] / 100.
@@ -516,6 +710,17 @@ def read_surf_pres():
 
 
 def read_tcc():
+    """
+    Reads data from multiple sources (CARRA, ERA5, and THAAO ceilometer) and processes them accordingly.
+
+    This function performs the following:
+    - Reads data from the CARRA dataset.
+    - Reads data from the ERA5 dataset and processes this data by scaling certain values.
+    - Reads data from the THAAO ceilometer dataset.
+    Finally, the function does not return any data as it modifies `inpt` directly.
+
+    :return: None
+    """
     # CARRA
     read_carra(inpt.var)
 
@@ -530,6 +735,14 @@ def read_tcc():
 
 
 def read_temp():
+    """
+    Transforms temperature data from various datasets to Celsius and retrieves
+    reformatted sources into a structured container. The function processes data
+    from the CARRA, ERA5, ERA5-LAND, THAAO, and THAAO2 datasets, converting values
+    from Kelvin to Celsius for consistency.
+
+    :return: None
+    """
     # CARRA
     read_carra(inpt.var)
     inpt.extr[inpt.var]['c']['data'] = inpt.extr[inpt.var]['c']['data'] - 273.15
@@ -552,6 +765,29 @@ def read_temp():
 
 
 def read_wind():
+    """
+    Calculates and populates wind speed and direction data from different
+    data sources, including CARRA, ERA5, ERA5-LAND (currently deactivated),
+    and AWS ECAPAC. The method reads data, computes wind speed and direction,
+    and stores the processed results back into the `inpt` structure.
+
+    The wind speed is calculated using components (u, v) provided by respective
+    datasets. Similarly, the wind direction is derived from the same components
+    where applicable. The method currently deactivates ERA5-LAND calculations
+    due to unavailable data.
+
+    :param inpt: Input structure that contains extracted data for various
+        wind component keys such as 'windu' and 'windv' from different
+        models. The method updates wind speed ('winds') and wind direction
+        ('windd') within this structure based on computed results.
+        Must already contain placeholders for updated wind speed and direction
+        data for respective datasets.
+    :type inpt: object
+
+    :return: Updates the `inpt` structure in place with calculated wind speed
+        ('winds') and wind direction ('windd') for available datasets.
+    :rtype: None
+    """
     # CARRA
     read_carra('winds')
     read_carra('windd')
@@ -596,11 +832,18 @@ def read_wind():
 
 def calc_rad_acc_era5_land(vr):
     """
+    Calculates instantaneous radiation accumulation from daily accumulated ERA5-LAND data.
 
-    :param vr:
-    :return:
+    This function processes the daily-accumulated radiation data for ERA5-LAND by
+    calculating the difference between consecutive timesteps. It also handles specific
+    timesteps (e.g., at 0100 hours), ensuring the data integrity for further analysis.
+
+    :param vr: The key or identifier in the `inpt.extr` data dictionary used to locate
+        the radiation dataset for processing.
+    :type vr: str
+    :return: None
     """
-    # caluculating instantaneous as difference with previous timestep
+    # calculating instantaneous as difference with previous timestep
     inpt.extr[vr]['l']['data_diff'] = inpt.extr[vr]['l']['data'][vr].diff()
     # dropping value at 0100 which does not need any subtraction (it is the first of the day)
     inpt.extr[vr]['l']['data_diff'] = inpt.extr[vr]['l']['data_diff'][inpt.extr[vr]['l']['data_diff'].index.hour != 1]
@@ -629,8 +872,15 @@ def calc_rad_acc_era5_land(vr):
 
 def read():
     """
+    Reads data based on the variable type given in the `inpt` object and determines
+    the appropriate function to be called. Different types of data such as
+    'alb', 'cbh', 'msl_pres', 'lwp', and others are supported, with each type
+    corresponding to a specified reading function. The method selects and
+    executes the specific reader function based on the value assigned to
+    `inpt.var`.
 
-    :return:
+    :return: The result of the specific data reading operation. The type of return
+       value depends on the reader function executed.
     """
     if inpt.var == 'alb':
         return read_alb()
