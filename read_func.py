@@ -33,23 +33,27 @@ from metpy.units import units
 
 import inputs as inpt
 
+
 def read_carra(vr):
-
+    c_tmp_all = pd.DataFrame()
     for year in inpt.years:
-        ds = xr.open_dataset(os.path.join(inpt.basefol_c, f'{inpt.extr[vr]['c']['fn']}{year}.nc'))
-        target_lat = 76.5
-        target_lon = -68.8
+        ds = xr.open_dataset(
+            os.path.join(inpt.basefol_c, f'{inpt.extr[vr]['c']['fn']}{year}.nc'), decode_timedelta=True)
+
         # Wrap longitude if dataset uses 0–360
-        if target_lon < 0:
-            target_lon = 360 + target_lon
+        if inpt.thaao_lon < 0:
+            inpt.thaao_lon = 360 + inpt.thaao_lon
 
-
-        dist = ((ds["latitude"] - target_lat)**2 + (ds["longitude"] - target_lon)**2)
+        dist = ((ds["latitude"] - inpt.thaao_lat) ** 2 + (ds["longitude"] - inpt.thaao_lon) ** 2)
         y_idx, x_idx = np.unravel_index(dist.argmin().values, dist.shape)
-        r2_val = ds["r2"].isel( y=y_idx, x=x_idx).values
-
-        print(f"Closest grid point at lat={target_lat} and lon={target_lon} is {r2_val}")
-
+        c_tmp = ds[inpt.extr[vr]['c']['var_name']].isel(y=y_idx, x=x_idx).values
+        c_tmp_all = pd.concat([c_tmp_all, c_tmp], axis=0)
+        print(f"Closest grid point at lat={inpt.thaao_lat} and lon={inpt.thaao_lon} is {c_tmp}")
+        inpt.extr[vr]['c']['data'] = c_tmp_all
+        inpt.extr[vr]['c']['data'].index = pd.to_datetime(
+                inpt.extr[vr]['c']['data'][0] + ' ' + inpt.extr[vr]['c']['data'][1], format='%Y-%m-%d %H:%M:%S')
+        inpt.extr[vr]['c']['data'] = inpt.extr[vr]['c']['data'][[inpt.extr[vr]['c']['column']]]
+        inpt.extr[vr]['c']['data'].columns = [vr]
 
 # def read_carra(vr):
 #     """
@@ -228,36 +232,32 @@ def read_thaao_hatpro(vr):
     :type vr: str
     :return: None
     """
-    #t1_tmp_all = pd.DataFrame()
+    # t1_tmp_all = pd.DataFrame()
     try:
-     #    t1_tmp = pd.read_table(
-     #            os.path.join(
-     #                    inpt.basefol_t, 'thaao_hatpro',
-     #                    f'{inpt.extr[vr]['t1']['fn']}', f'{inpt.extr[vr]['t1']['fn']}.DAT'),
-     #            sep='\s+', engine='python', header=0, skiprows=9)
-     # #   t1_tmp.columns = ['Date[y_m_d]', 'Time[h:m]', 'LWP[g/m2]', 'STD_LWP[g/m2]', 'Num']
-     #    # t1_tmp_all = t1_tmp    
+        #    t1_tmp = pd.read_table(
+        #            os.path.join(
+        #                    inpt.basefol_t, 'thaao_hatpro',
+        #                    f'{inpt.extr[vr]['t1']['fn']}', f'{inpt.extr[vr]['t1']['fn']}.DAT'),
+        #            sep='\s+', engine='python', header=0, skiprows=9)
+        # #   t1_tmp.columns = ['Date[y_m_d]', 'Time[h:m]', 'LWP[g/m2]', 'STD_LWP[g/m2]', 'Num']
+        #    # t1_tmp_all = t1_tmp
 
-     #    t1_tmp.index = pd.to_datetime(
-     #    (t1_tmp[['Date_y_m_d']].values + ' ' + t1_tmp[['Time_h:m']].values)[:,0], 
-     #    format='%Y-%m-%d %H:%M:%S')
+        #    t1_tmp.index = pd.to_datetime(
+        #    (t1_tmp[['Date_y_m_d']].values + ' ' + t1_tmp[['Time_h:m']].values)[:,0],
+        #    format='%Y-%m-%d %H:%M:%S')
         t1_tmp = pd.read_table(
-                   os.path.join(
-                           inpt.basefol_t, 'thaao_hatpro',
-                           f'{inpt.extr[vr]['t1']['fn']}', f'{inpt.extr[vr]['t1']['fn']}.DAT'),
-                   sep='\s+', engine='python', header=0, skiprows=9, 
-                   parse_dates={'datetime': [0, 1]}, date_format='%Y-%m-%d %H:%M:%S', index_col='datetime')
-        
-        
+                os.path.join(
+                        inpt.basefol_t, 'thaao_hatpro', f'{inpt.extr[vr]['t1']['fn']}',
+                        f'{inpt.extr[vr]['t1']['fn']}.DAT'), sep='\s+', engine='python', header=0, skiprows=9,
+                parse_dates={'datetime': [0, 1]}, date_format='%Y-%m-%d %H:%M:%S', index_col='datetime')
+
         inpt.extr[vr]['t1']['data'] = t1_tmp[[inpt.extr[vr]['t1']['column']]]
-        
+
         inpt.extr[vr]['t1']['data'].columns = [vr]
 
         print(f'OK: {inpt.extr[vr]['t1']['fn']}.DAT')
     except FileNotFoundError:
         print(f'NOT FOUND: {inpt.extr[vr]['t1']['fn']}.DAT')
-    
-    
 
 
 def read_thaao_ceilometer(vr):
@@ -403,7 +403,7 @@ def read_lwp():
     # CARRA
     read_carra(inpt.var)
     inpt.extr[inpt.var]['c']['data'] = inpt.extr[inpt.var]['c']['data']
-    #inpt.extr[inpt.var]['c']['data'][inpt.extr[inpt.var]['c']['data'] < 0.01] = np.nan
+    # inpt.extr[inpt.var]['c']['data'][inpt.extr[inpt.var]['c']['data'] < 0.01] = np.nan
     # c[c < 15] = 0
 
     # ERA5
