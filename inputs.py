@@ -30,20 +30,22 @@ import numpy as np
 import pandas as pd
 
 ## FOLDERS
-basefol_c = os.path.join('H:\\Shared drives', 'Reanalysis', 'carra', 'thaao', 'v1')
+basefol_c = os.path.join('H:\\Shared drives', 'Reanalysis', 'carra', 'raw')
+# basefol_c = os.path.join('H:\\Shared drives', 'Reanalysis', 'carra', 'thaao', 'v1')
 basefol_e = os.path.join('H:\\Shared drives', 'Reanalysis', 'era5', 'thaao', 'v1')
 basefol_l = os.path.join('H:\\Shared drives', 'Reanalysis', 'era5-land', 'thaao', 'v1')
 basefol_t = os.path.join('H:\\Shared drives', 'Dati_THAAO')
 basefol_out = os.path.join('H:\\Shared drives', 'Dati_elab_docs', 'thaao_reanalysis')
 
-thaao_c = 'thaao_carra'
+# thaao_c = 'thaao_carra'
+thaao_c = 'carra'
 thaao_e = 'thaao_era5'
 thaao_l = 'thaao_era5-land'
 thaao_t = 'thaao'
 
 ##
 tres_list = ['3h']
-list_var = ['lwp']
+list_var = ['temp']
 # OK ['lwp', 'surf_pres', 'winds', 'windd', 'cbh', 'alb', 'temp', 'sw_down', 'lw_down', 'sw_up', 'lw_up']
 # NOT OK 'tcc' 'precip' 'rh', 'lwp'
 
