@@ -94,17 +94,21 @@ for i in rows_with_points[::skip]:
         if inside_mask[i, j]:
             ax.text(x_grid[i, j], y_grid[i, j], f"({i},{j})", fontsize=4, ha='center', va='center', color='black')
 
+colors = ['red', 'green', 'blue']
 
-colors1 = ['red', 'green', 'blue']
-colors2 = ['red', 'green', 'blue']
-for idx, (lat_local, lon_local) in enumerate(zip(lat1, lon1)):
-    x, y = transformer.transform(lon_local, lat_local)
-    ax.plot(
-            x, y, marker='o', markersize=2, color=colors1[idx], label=f'PICK:({lat_local:.4f}, {lon_local:.4f})')
-for idx, (lat_local, lon_local) in enumerate(zip(lat2, lon2)):
-    x, y = transformer.transform(lon_local, lat_local)
-    ax.plot(
-            x, y, marker='x', markersize=5, color=colors2[idx], label=f'REF({lat_local:.4f}, {lon_local:.4f})')
+for idx, ((lat1_local, lon1_local), (lat2_local, lon2_local)) in enumerate(zip(zip(lat1, lon1), zip(lat2, lon2))):
+    # Transform points from lat/lon to raster CRS
+    x1, y1 = transformer.transform(lon1_local, lat1_local)
+    x2, y2 = transformer.transform(lon2_local, lat2_local)
+
+    # Plot first marker (from first list)
+    ax.plot(x1, y1, marker='o', markersize=5, color=colors[idx], label=f'PICK:({lat1_local:.4f}, {lon1_local:.4f})')
+
+    # Plot second marker (from second list)
+    ax.plot(x2, y2, marker='x', markersize=7, color=colors[idx], label=f'REF:({lat2_local:.4f}, {lon2_local:.4f})')
+
+    # Plot line connecting them
+    ax.plot([x1, x2], [y1, y2], color=colors[idx], linestyle='--', linewidth=1)
 ax.legend(
         loc='upper left', bbox_to_anchor=(0.0, 1.0), ncol=1, fancybox=True, shadow=True, fontsize=12)
 
