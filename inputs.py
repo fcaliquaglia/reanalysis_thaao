@@ -56,7 +56,7 @@ list_var = ['temp']
 tres = ''
 var = ''
 
-years = np.arange(2016, 2024, 1)
+years = np.arange(2023, 2024, 1)
 
 aws_ecapac_daterange = pd.date_range(start=dt.datetime(2023, 4, 1), end=dt.datetime(2024, 12, 31), freq='1D')
 ceilometer_daterange = pd.date_range(start=dt.datetime(2019, 9, 1), end=dt.datetime(2024, 12, 31), freq='1D')

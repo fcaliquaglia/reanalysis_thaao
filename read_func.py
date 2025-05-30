@@ -38,7 +38,7 @@ def read_carra(vr):
     c_tmp_all = pd.DataFrame()
     for year in inpt.years:
         ds = xr.open_dataset(
-            os.path.join(inpt.basefol_c, f'{inpt.extr[vr]['c']['fn']}{year}.nc'), decode_timedelta=True)
+                os.path.join(inpt.basefol_c, f'{inpt.extr[vr]['c']['fn']}{year}.nc'), decode_timedelta=True)
 
         # Wrap longitude if dataset uses 0–360
         if inpt.thaao_lon < 0:
@@ -46,47 +46,49 @@ def read_carra(vr):
 
         dist = ((ds["latitude"] - inpt.thaao_lat) ** 2 + (ds["longitude"] - inpt.thaao_lon) ** 2)
         y_idx, x_idx = np.unravel_index(dist.argmin().values, dist.shape)
-        c_tmp = ds[inpt.extr[vr]['c']['var_name']].isel(y=y_idx, x=x_idx).values
-
+        c_tmp = ds[inpt.extr[vr]['c']['var_name']].isel(y=y_idx, x=x_idx).to_dataframe()
+        print(f"Closest grid point at lat={inpt.thaao_lat} and lon={inpt.thaao_lon} is {c_tmp}")
         c_tmp_all = pd.concat([c_tmp_all, c_tmp], axis=0)
-    print(f"Closest grid point at lat={inpt.thaao_lat} and lon={inpt.thaao_lon} is {c_tmp}")
-    inpt.extr[vr]['c']['data'] = c_tmp_all
-    inpt.extr[vr]['c']['data'].index = pd.to_datetime(
-            inpt.extr[vr]['c']['data'][0] + ' ' + inpt.extr[vr]['c']['data'][1], format='%Y-%m-%d %H:%M:%S')
-    inpt.extr[vr]['c']['data'] = inpt.extr[vr]['c']['data'][[inpt.extr[vr]['c']['column']]]
-    inpt.extr[vr]['c']['data'].columns = [vr]
 
-def read_carra_txt(vr):
-    """
-    Reads and processes Carra dataset based on a specified variable code. The function
-    iterates through defined years, attempts to read the corresponding data files,
-    concatenates the data, and performs transformations such as null value handling
-    and indexing by datetime. If a file corresponding to a year is not found, a
-    notification is printed, and processing continues. The result is stored in the
-    `inpt` structure under the specified variable code.
-
-    :param vr: The variable code to identify specific data to be processed.
-    :type vr: str
-    :return: None. The processed data is stored directly into the `inpt` structure.
-    :rtype: None
-    """
-    c_tmp_all = pd.DataFrame()
-    for year in inpt.years:
-        try:
-            c_tmp = pd.read_table(
-                    os.path.join(inpt.basefol_c, f'{inpt.extr[vr]['c']['fn']}{year}.txt'), sep='\s+', header=None,
-                    skiprows=1, engine='python', skip_blank_lines=True)
-            c_tmp[c_tmp == inpt.var_dict['c']['nanval']] = np.nan
-            c_tmp_all = pd.concat([c_tmp_all, c_tmp], axis=0)
-            print(f'OK: {inpt.extr[vr]['c']['fn']}{year}.txt')
-        except FileNotFoundError:
-            print(f'NOT FOUND: {inpt.extr[vr]['c']['fn']}{year}.txt')
     inpt.extr[vr]['c']['data'] = c_tmp_all
     inpt.extr[vr]['c']['data'].index = pd.to_datetime(
             inpt.extr[vr]['c']['data'][0] + ' ' + inpt.extr[vr]['c']['data'][1], format='%Y-%m-%d %H:%M:%S')
     inpt.extr[vr]['c']['data'] = inpt.extr[vr]['c']['data'][[inpt.extr[vr]['c']['column']]]
     inpt.extr[vr]['c']['data'].columns = [vr]
     return
+
+
+# def read_carra_txt(vr):
+#     """
+#     Reads and processes Carra dataset based on a specified variable code. The function
+#     iterates through defined years, attempts to read the corresponding data files,
+#     concatenates the data, and performs transformations such as null value handling
+#     and indexing by datetime. If a file corresponding to a year is not found, a
+#     notification is printed, and processing continues. The result is stored in the
+#     `inpt` structure under the specified variable code.
+#
+#     :param vr: The variable code to identify specific data to be processed.
+#     :type vr: str
+#     :return: None. The processed data is stored directly into the `inpt` structure.
+#     :rtype: None
+#     """
+#     c_tmp_all = pd.DataFrame()
+#     for year in inpt.years:
+#         try:
+#             c_tmp = pd.read_table(
+#                     os.path.join('H:\\Shared drives\\Reanalysis\\carra\\thaao\\v1\\', f'thaao_{inpt.extr[vr]['c']['fn']}{year}.txt'), sep='\s+', header=None,
+#                     skiprows=1, engine='python', skip_blank_lines=True)
+#             c_tmp[c_tmp == inpt.var_dict['c']['nanval']] = np.nan
+#             c_tmp_all = pd.concat([c_tmp_all, c_tmp], axis=0)
+#             print(f'OK: {inpt.extr[vr]['c']['fn']}{year}.txt')
+#         except FileNotFoundError:
+#             print(f'NOT FOUND: {inpt.extr[vr]['c']['fn']}{year}.txt')
+#     inpt.extr[vr]['c']['data'] = c_tmp_all
+#     inpt.extr[vr]['c']['data'].index = pd.to_datetime(
+#             inpt.extr[vr]['c']['data'][0] + ' ' + inpt.extr[vr]['c']['data'][1], format='%Y-%m-%d %H:%M:%S')
+#     inpt.extr[vr]['c']['data'] = inpt.extr[vr]['c']['data'][[inpt.extr[vr]['c']['column']]]
+#     inpt.extr[vr]['c']['data'].columns = [vr]
+#     return
 
 
 def read_era5(vr):
