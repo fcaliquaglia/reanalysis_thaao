@@ -1,3 +1,4 @@
+import gc
 import os
 
 import matplotlib.pyplot as plt
@@ -19,63 +20,47 @@ def find_pixel(ds, lat1, lon1):
     # Check if ds lat/lon are 1D or 2D
     lat_ds = ds["latitude"]
     lon_ds = ds["longitude"]
-
     is_1d = (lat_ds.ndim == 1 and lon_ds.ndim == 1)
 
     for lat, lon in zip(lat1, lon1):
         if is_1d:
-            # Use broadcasting to create 2D distance array
-            lat2d, lon2d = np.meshgrid(lat_ds.values, lon_ds.values, indexing="ij")
+            lat2d, lon2d = np.meshgrid(lat_ds, lon_ds, indexing="ij")
             dist = (lat2d - lat) ** 2 + (lon2d - lon) ** 2
             y_idx, x_idx = np.unravel_index(np.argmin(dist), dist.shape)
 
-            closest_lat = lat_ds[y_idx].values
-            closest_lon = lon_ds[x_idx].values - 360  # Convert back to [-180,180]
+            closest_lat = lat_ds[y_idx].item()
+            closest_lon = lon_ds[x_idx].item() - 360  # Subtract 360 for display
+
             print(
-                f"Closest grid point to ({lat:.4f},{lon - 360:.4f}) is at ({closest_lat:.4f}, {closest_lon:.4f}) index=({y_idx}, {x_idx})")
+                    f"Closest grid point to ({lat:.4f},{lon - 360:.4f}) is at ({closest_lat:.4f}, {closest_lon:.4f}) index=({y_idx}, {x_idx})")
 
         else:
-            # 2D distance array directly
             dist = (lat_ds - lat) ** 2 + (lon_ds - lon) ** 2
-            y_idx, x_idx = np.unravel_index(dist.argmin().values, dist.shape)
+            y_idx, x_idx = np.unravel_index(dist.argmin().item(), dist.shape)
 
-            closest_lat = lat_ds[y_idx, x_idx].values
-            closest_lon = lon_ds[y_idx, x_idx].values - 360  # Convert back to [-180,180]
+            closest_lat = lat_ds[y_idx, x_idx].item()
+            closest_lon = lon_ds[y_idx, x_idx].item()
+
             print(
-                f"Closest grid point to ({lat:.4f},{lon - 360:.4f}) is at ({closest_lat:.4f}, {closest_lon:.4f}) index=({y_idx}, {x_idx})")
+                    f"Closest grid point to ({lat:.4f},{lon - 360:.4f}) is at ({closest_lat:.4f}, {closest_lon:.4f}) index=({y_idx}, {x_idx})")
 
-        lat_t = np.append(lat_t, closest_lat)
-        lon_t = np.append(lon_t, closest_lon)
+        lat_t.append(closest_lat)
+        lon_t.append(closest_lon)
 
-    return [lat_t, lon_t]
+    return np.array(lat_t), np.array(lon_t)
 
 
-def plot_grid(ds, col, ax, transformer, xmin, xmax, ymin, ymax):
+def plot_grid(ds, color, ax, transformer, xmin, xmax, ymin, ymax):
     """
-    Plots grid lines for the dataset's latitude and longitude coordinates.
-    For rows/columns that intersect with the raster extent, it plots the entire row/column.
-
-    Parameters:
-        ds (xarray.Dataset): Dataset with latitude and longitude coordinates.
-        col (str): Color for the grid lines.
-        ax (matplotlib.axes.Axes): Axes to plot on.
-        transformer (pyproj.Transformer): Transformer from EPSG:4326 to raster CRS.
-        xmin, xmax, ymin, ymax (float): Bounds of the raster in the raster's CRS.
+    Plot grid lines for dataset lat/lon coordinates, only plotting rows/columns that intersect raster extent.
     """
-    # Extract latitude and longitude arrays
     lat = ds['latitude'].values
     lon = ds['longitude'].values
-
-    # Adjust longitude if needed
     if np.any(lon < 0):
-        lon = lon + 360
+        lon += 360
 
-    # Handle 1D or 2D lat/lon
-    if lat.ndim == 1 and lon.ndim == 1:
-        lon2d, lat2d = np.meshgrid(lon, lat)
-    else:
-        lat2d = lat
-        lon2d = lon
+    # Build 2D grid
+    lon2d, lat2d = np.meshgrid(lon, lat) if lat.ndim == 1 else (lon, lat)
 
     # Transform coordinates
     lon_flat = lon2d.flatten()
@@ -86,104 +71,87 @@ def plot_grid(ds, col, ax, transformer, xmin, xmax, ymin, ymax):
     x_grid = x_flat.reshape(lat2d.shape)
     y_grid = y_flat.reshape(lat2d.shape)
 
-    # Check for rows and columns intersecting the extent
-    rows_to_plot = np.where(
+    # Find rows/cols to plot
+    rows = np.where(
             (np.max(x_grid, axis=1) >= xmin) & (np.min(x_grid, axis=1) <= xmax) & (np.max(y_grid, axis=1) >= ymin) & (
                     np.min(y_grid, axis=1) <= ymax))[0]
-
-    cols_to_plot = np.where(
+    cols = np.where(
             (np.max(x_grid, axis=0) >= xmin) & (np.min(x_grid, axis=0) <= xmax) & (np.max(y_grid, axis=0) >= ymin) & (
                     np.min(y_grid, axis=0) <= ymax))[0]
 
-    # Plot full lines for these rows/columns
-    for i in rows_to_plot:
-        ax.plot(x_grid[i, :], y_grid[i, :], color=col, lw=0.5)
-    for j in cols_to_plot:
-        ax.plot(x_grid[:, j], y_grid[:, j], color=col, lw=0.5)
+    # Plot lines
+    for i in rows:
+        ax.plot(x_grid[i, :], y_grid[i, :], color=color, lw=0.5)
+    for j in cols:
+        ax.plot(x_grid[:, j], y_grid[:, j], color=color, lw=0.5)
 
-    # max_labels & skip calculation
+    # Label points (skip to limit clutter)
     max_labels = 500
-    num_points = len(rows_to_plot) * len(cols_to_plot)
+    num_points = len(rows) * len(cols)
     skip = max(1, int(np.ceil(np.sqrt(num_points / max_labels))))
 
-    # Label points that are inside the extent only
-    for i in rows_to_plot[::skip]:
-        for j in cols_to_plot[::skip]:
-            # Check if this point is inside the raster extent
-            if (x_grid[i, j] >= xmin and x_grid[i, j] <= xmax and y_grid[i, j] >= ymin and y_grid[i, j] <= ymax):
-                ax.text(
-                        x_grid[i, j], y_grid[i, j], f"({i},{j})", fontsize=4, ha='center', va='center', color='black')
+    for i in rows[::skip]:
+        for j in cols[::skip]:
+            if xmin <= x_grid[i, j] <= xmax and ymin <= y_grid[i, j] <= ymax:
+                ax.text(x_grid[i, j], y_grid[i, j], f"({i},{j})", fontsize=4, ha='center', va='center', color='black')
 
 
+def plot_closest(ds, lat1, lon1, transformer, ax):
+    """
+    Plot closest points from dataset to input lat/lon points.
+    """
+    lat2, lon2 = find_pixel(ds, lat1, lon1)
+    colors = ['orange', 'green', 'purple']
+
+    # Adjust longitudes if needed
+    lon1_adj = lon1 + 360 if np.any(lon1 < 0) else lon1
+    lon2_adj = lon2 + 360 if np.any(lon2 < 0) else lon2
+
+    # Transform
+    x1, y1 = transformer.transform(lon1_adj, lat1)
+    x2, y2 = transformer.transform(lon2_adj, lat2)
+
+    for idx in range(len(lat1)):
+        ax.plot(
+                x1[idx], y1[idx], marker='o', markersize=5, color=colors[idx],
+                label=f'PICK:({lat1[idx]:.4f}, {lon1[idx]:.4f})')
+        ax.plot(
+                x2[idx], y2[idx], marker='x', markersize=7, color=colors[idx],
+                label=f'REF:({lat2[idx]:.4f}, {lon2[idx]:.4f})')
+        ax.plot([x1[idx], x2[idx]], [y1[idx], y2[idx]], color=colors[idx], linestyle='--', linewidth=1)
+
+    ax.legend(loc='upper left', ncols=2, bbox_to_anchor=(0, 1), ncol=1, fancybox=True, shadow=True, fontsize=12)
+
+
+# Input data
 lat1 = np.array([76.5149, 76.52, 76.5])
 lon1 = np.array([-68.7477, -68.74, -68.8])
 
-# lat2 = [76.4918, 76.5226, 76.5110]
-# lon2 = [-68.7533, -68.7207, -68.8030]
+basefol = r"H:\Shared drives\Reanalysis"
+ds_c = xr.open_dataset(os.path.join(basefol, "carra\\raw", "carra_2m_temperature_2023.nc"), decode_timedelta=True)
+ds_e = xr.open_dataset(os.path.join(basefol, "era5\\raw", "era5_2m_temperature_2023.nc"), decode_timedelta=True)
 
-basefol = "H:\\Shared drives\\Reanalysis"
-ds_c_path = os.path.join(basefol, "carra\\raw", "carra_2m_temperature_2023.nc")
-ds_c = xr.open_dataset(ds_c_path, decode_timedelta=True, engine='netcdf4')
-ds_e_path = os.path.join(basefol, "era5\\raw", "era5_2m_temperature_2023.nc")
-ds_e = xr.open_dataset(ds_e_path, decode_timedelta=True, engine='netcdf4')
-
-image_path = os.path.join(basefol, "pituffik.tif")
-
-with rasterio.open(image_path) as src:
+# Plot
+with rasterio.open(os.path.join(basefol, "pituffik.tif")) as src:
     fig, ax = plt.subplots(figsize=(10, 10))
-
-    # Plot raster
     show(src, ax=ax)
 
-# Raster CRS transformer
-transformer = Transformer.from_crs("EPSG:4326", src.crs, always_xy=True)
+    transformer = Transformer.from_crs("EPSG:4326", src.crs, always_xy=True)
+    xmin, ymin, xmax, ymax = src.bounds
 
-# Get raster bounds in its CRS
-bounds = src.bounds
-xmin, ymin, xmax, ymax = bounds.left, bounds.bottom, bounds.right, bounds.top
+    plot_grid(ds_c, 'red', ax, transformer, xmin, xmax, ymin, ymax)
+    plot_grid(ds_e, 'blue', ax, transformer, xmin, xmax, ymin, ymax)
 
-plot_grid(ds_c, 'red', ax, transformer, xmin, xmax, ymin, ymax)
-plot_grid(ds_e, 'blue', ax, transformer, xmin, xmax, ymin, ymax)
+    plot_closest(ds_c, lat1, lon1, transformer, ax)
+    plot_closest(ds_e, lat1, lon1, transformer, ax)
 
+    ax.set_xlim(xmin, xmax)
+    ax.set_ylim(ymin, ymax)
+    ax.set_title('Reanalyses grid', fontsize=24, pad=0)
+    ax.axis('off')
 
-def plot_closest(ds):
-    lat2, lon2 = find_pixel(ds, lat1, lon1)
-    colors = ['red', 'green', 'purple']
-    for idx, ((lat1_local, lon1_local), (lat2_local, lon2_local)) in enumerate(
-            zip(zip(list(lat1), list(lon1)), zip(list(lat2), list(lon2)))):
-        # Transform points from lat/lon to raster CRS
-        x1, y1 = transformer.transform(lon1_local, lat1_local)
-        x2, y2 = transformer.transform(lon2_local, lat2_local)
+    plt.savefig(os.path.join(basefol, 'rean.png'), dpi=200, bbox_inches='tight')
 
-        # Plot first marker (from first list)
-        ax.plot(x1, y1, marker='o', markersize=5, color=colors[idx], label=f'PICK:({lat1_local:.4f}, {lon1_local:.4f})')
-
-        # Plot second marker (from second list)
-        ax.plot(x2, y2, marker='x', markersize=7, color=colors[idx], label=f'REF:({lat2_local:.4f}, {lon2_local:.4f})')
-
-        # Plot line connecting them
-        ax.plot([x1, x2], [y1, y2], color=colors[idx], linestyle='--', linewidth=1)
-    ax.legend(
-            loc='upper left', ncols=2, bbox_to_anchor=(0.0, 1.0), ncol=1, fancybox=True, shadow=True, fontsize=12)
-
-
-plot_closest(ds_c)
-plot_closest(ds_e)
-
-ax.set_xlim(xmin, xmax)
-ax.set_ylim(ymin, ymax)
-
-ax.set_title('Reanalyses grid', fontsize=24, pad=0)
-ax.axis('off')
-# plt.show()
-plt.savefig(os.path.join(basefol, 'rean.png'), dpi=200, bbox_inches='tight')
-
-# cleanup memory
-import gc
-import matplotlib.pyplot as plt
-
-# Close all matplotlib figures
+# Cleanup
 plt.close('all')
-
-# Collect garbage (free memory)
 gc.collect()
