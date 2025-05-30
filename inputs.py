@@ -30,21 +30,20 @@ import numpy as np
 import pandas as pd
 
 # THAAO COORDS
-thaao_lat = 76.5
-thaao_lon = -68.8
+thaao_lat = 76.52
+thaao_lon = -68.74
 
 ## FOLDERS
 basefol_c = os.path.join('H:\\Shared drives', 'Reanalysis', 'carra', 'raw')
-# basefol_c = os.path.join('H:\\Shared drives', 'Reanalysis', 'carra', 'thaao', 'v1')
-basefol_e = os.path.join('H:\\Shared drives', 'Reanalysis', 'era5', 'thaao', 'v1')
-basefol_l = os.path.join('H:\\Shared drives', 'Reanalysis', 'era5-land', 'thaao', 'v1')
+basefol_e = os.path.join('H:\\Shared drives', 'Reanalysis', 'era5', 'raw')
+basefol_l = os.path.join('H:\\Shared drives', 'Reanalysis', 'era5-land', 'raw')
 basefol_t = os.path.join('H:\\Shared drives', 'Dati_THAAO')
 basefol_out = os.path.join('H:\\Shared drives', 'Dati_elab_docs', 'thaao_reanalysis')
 
 # thaao_c = 'thaao_carra'
 thaao_c = 'carra'
-thaao_e = 'thaao_era5'
-thaao_l = 'thaao_era5-land'
+thaao_e = 'era5'
+thaao_l = 'era5-land'
 thaao_t = 'thaao'
 
 ##
