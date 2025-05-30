@@ -144,6 +144,9 @@
 - [5 reanalyses] 'Improved Performance of ERA5 in Arctic Gateway Relative to Four Global Atmospheric
   Reanalyses', https://doi.org/10.1029/2019GL082781
 - [other] Unlike CARRA, ERA5 lacks a parameterization of a snow layer on top of the sea-ice (Batrak & Muller, 2019).
+- [ERA5, MAR, RACMO, temp] Covi, Federico, Regine Hock, Åsa Rennermalm, Xavier Fettweis, and Brice Noël. 2025.
+  ‘Spatiotemporal Variability of Air Temperature Biases in Regional Climate Models over the Greenland Ice Sheet’.
+  Journal of Glaciology 71:e64. https://doi.org/10.1017/jog.2025.38.
 
 # THAAO reference instruments
 
@@ -256,7 +259,9 @@ Excluding nan values. x(t): reference value; y(t): reanalysis or other
 > 2023 at 7:00 UTC. All the radiation dataset have been cleaned for values <0.
 
 > [!WARNING]
-> Accumulations rates for ERA5-Land >> from https://confluence.ecmwf.int/display/CKB/ERA5-Land%3A+data+documentation#ERA5Land:datadocumentation-Temporalfrequency
+> Accumulations rates for ERA5-Land >>
+>
+from https://confluence.ecmwf.int/display/CKB/ERA5-Land%3A+data+documentation#ERA5Land:datadocumentation-Temporalfrequency
 > Please, note that the convention for accumulations used in ERA5-Land differs with that for ERA5. The accumulations in
 > the short forecasts of ERA5-Land (with hourly steps from 01 to 24) are treated the same as those in ERA-Interim or
 > ERA-Interim/Land, i.e., they are accumulated from the beginning of the forecast to the end of the forecast step. For
@@ -266,7 +271,8 @@ Excluding nan values. x(t): reference value; y(t): reanalysis or other
 > - For the CDS time, or validity time, of 00 UTC, the accumulations are over the 24 hours ending at 00 UTC i.e. the
     > accumulation is during the previous day
 > - Synoptic monthly means (stream=mnth): accumulations have units of "variable_units per forecast_step hours"
-    Monthly means of daily means (stream=moda): accumulations have units that include "per day", see section Monthly means
+    Monthly means of daily means (stream=moda): accumulations have units that include "per day", see section Monthly
+    means
 
 ### Downward shortwave irradiance - DSI (``sw_down``)
 
