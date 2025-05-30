@@ -30,8 +30,8 @@ import numpy as np
 import pandas as pd
 
 # THAAO COORDS
-thaao_lat = 76.51493833333333
-thaao_lon = -68.7476766666666
+thaao_lat = 76.5200
+thaao_lon = -68.7400
 
 ## FOLDERS
 basefol_c = os.path.join('H:\\Shared drives', 'Reanalysis', 'carra', 'raw')
