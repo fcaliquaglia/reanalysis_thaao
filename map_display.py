@@ -7,6 +7,7 @@ import rasterio
 import xarray as xr
 from pyproj import Transformer
 from rasterio.plot import show
+from rasterio.warp import calculate_default_transform, reproject, Resampling
 
 
 def find_pixel(ds, lat1, lon1):
@@ -65,12 +66,13 @@ def plot_grid(ds, color, ax, transformer, xmin, xmax, ymin, ymax):
     # Transform coordinates
     lon_flat = lon2d.flatten()
     lat_flat = lat2d.flatten()
-    x_flat, y_flat = transformer.transform(lon_flat, lat_flat)
+    x_flat, y_flat = lon_flat, lat_flat  # transformer.transform(lon_flat, lat_flat)
 
     # Reshape back
     x_grid = x_flat.reshape(lat2d.shape)
     y_grid = y_flat.reshape(lat2d.shape)
-
+    print(np.min(x_grid), np.max(x_grid), xmin, xmax)
+    print(np.min(y_grid), np.max(y_grid), ymin, ymax)
     # Find rows/cols to plot
     rows = np.where(
             (np.max(x_grid, axis=1) >= xmin) & (np.min(x_grid, axis=1) <= xmax) & (np.max(y_grid, axis=1) >= ymin) & (
@@ -85,10 +87,7 @@ def plot_grid(ds, color, ax, transformer, xmin, xmax, ymin, ymax):
     for j in cols:
         ax.plot(x_grid[:, j], y_grid[:, j], color=color, lw=0.5)
 
-    # Label points (skip to limit clutter)
-    max_labels = 500
-    num_points = len(rows) * len(cols)
-    skip = max(1, int(np.ceil(np.sqrt(num_points / max_labels))))
+    skip = 1
 
     for i in rows[::skip]:
         for j in cols[::skip]:
@@ -120,23 +119,49 @@ def plot_closest(ds, lat1, lon1, transformer, ax):
                 label=f'REF:({lat2[idx]:.4f}, {lon2[idx]:.4f})')
         ax.plot([x1[idx], x2[idx]], [y1[idx], y2[idx]], color=colors[idx], linestyle='--', linewidth=1)
 
-    ax.legend(loc='upper left', ncols=2, bbox_to_anchor=(0, 1), ncol=1, fancybox=True, shadow=True, fontsize=12)
+    # ax.legend(loc='upper left', ncols=2, bbox_to_anchor=(0, 1), ncol=1, fancybox=True, shadow=True, fontsize=12)
 
 
 # Input data
 lat1 = np.array([76.5149, 76.52, 76.5])
 lon1 = np.array([-68.7477, -68.74, -68.8])
 
+dst_crs = "EPSG:4326"
+
 basefol = r"H:\Shared drives\Reanalysis"
 ds_c = xr.open_dataset(os.path.join(basefol, "carra\\raw", "carra_2m_temperature_2023.nc"), decode_timedelta=True)
 ds_e = xr.open_dataset(os.path.join(basefol, "era5\\raw", "era5_2m_temperature_2023.nc"), decode_timedelta=True)
 
+input_path = os.path.join(basefol, "pituffik.tif")
+output_path = os.path.join(basefol, "pituffik_reproj.tif")
+
+def reproj_tif():
+
+
+    with rasterio.open(input_path) as src:
+        transform, width, height = calculate_default_transform(
+                src.crs, dst_crs, src.width, src.height, *src.bounds)
+
+        kwargs = src.meta.copy()
+        kwargs.update(
+                {'crs': dst_crs, 'transform': transform, 'width': width, 'height': height})
+
+        with rasterio.open(output_path, 'w', **kwargs) as dst:
+            for i in range(1, src.count + 1):
+                reproject(
+                        source=rasterio.band(src, i), destination=rasterio.band(dst, i), src_transform=src.transform,
+                        src_crs=src.crs, dst_transform=transform, dst_crs=dst_crs, resampling=Resampling.nearest)
+    return output_path
+
+
+# output_path = reproj_tif()
+
 # Plot
-with rasterio.open(os.path.join(basefol, "pituffik.tif")) as src:
+with rasterio.open(output_path) as src:
     fig, ax = plt.subplots(figsize=(10, 10))
     show(src, ax=ax)
 
-    transformer = Transformer.from_crs("EPSG:4326", src.crs, always_xy=True)
+    transformer = None  # Transformer.from_crs(dst_crs, src.crs, always_xy=True)
     xmin, ymin, xmax, ymax = src.bounds
 
     plot_grid(ds_c, 'red', ax, transformer, xmin, xmax, ymin, ymax)
