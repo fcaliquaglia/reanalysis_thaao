@@ -4,11 +4,13 @@ import matplotlib.pyplot as plt
 import rasterio
 import xarray as xr
 from pyproj import Transformer
-import numpy as np
 from rasterio.plot import show
 
-lat1 = [76.51493833333333, 76.52, 76.5]
-lon1 = [-68.7476766666666, -68.74, -68.8]
+lat1 = [76.5149, 76.52, 76.5]
+lon1 = [-68.7477, -68.74, -68.8]
+
+lat2 = [76.4918, 76.5226, 76.5110]
+lon2 = [-68.7533, -68.7207, -68.8030]
 
 basefol = "H:\\Shared drives\\Reanalysis"
 ds_path = os.path.join(basefol, "carra\\raw", "carra_2m_temperature_2023.nc")
@@ -43,30 +45,33 @@ x_flat, y_flat = transformer.transform(lon_flat, lat_flat)
 x_grid = x_flat.reshape(lon.shape)[::-1, :]
 y_grid = y_flat.reshape(lat.shape)[::-1, :]
 
-for lat_local, lon_local in zip(lat1, lon1):
+
+# Plot grid lines for rows inside bounds
+for i in range(x_grid.shape[0]):
+    ax.plot(x_grid[i, :], y_grid[i, :], color='red', lw=0.5)
+
+
+
+colors1=['red', 'green', 'blue']
+colors2=['red', 'green', 'blue']
+for idx, (lat_local, lon_local) in enumerate(zip(lat1, lon1)):
     x, y = transformer.transform(lon_local, lat_local)
-    ax.plot(x, y, marker='o', markersize=2, label=(lat_local, lon_local))
+    ax.plot(
+            x, y, marker='o', markersize=2, color=colors1[idx], label=f'PICK:({lat_local:.4f}, {lon_local:.4f})')
+for idx, (lat_local, lon_local) in enumerate(zip(lat2, lon2)):
+    x, y = transformer.transform(lon_local, lat_local)
+    ax.plot(
+            x, y, marker='x', markersize=5, color=colors2[idx], label=f'REF({lat_local:.4f}, {lon_local:.4f})')
 ax.legend(
         loc='upper left', bbox_to_anchor=(0.0, 1.0), ncol=1, fancybox=True, shadow=True, fontsize=12)
 
-# mask
-# inside_mask = (x_grid > xmin) & (x_grid < xmax) & (y_grid > ymin) & (y_grid < ymax)
-# no mask
-inside_mask = (x_grid != np.nan) & (x_grid != np.nan) & (y_grid != np.nan) & (y_grid != np.nan)
-rows_with_points = np.where(np.any(inside_mask, axis=1))[0]
-cols_with_points = np.where(np.any(inside_mask, axis=0))[0]
-# Plot grid lines for rows inside bounds
-for i in rows_with_points[::10]:  # adjust step for clarity
-    ax.plot(x_grid[i, :], y_grid[i, :], color='red', lw=0.5)
+ax.set_xlim(xmin, xmax)
+ax.set_ylim(ymin, ymax)
 
 # Plot grid lines for columns inside bounds
-for j in cols_with_points[::10]:  # adjust step for clarity
+for j in range(y_grid.shape[1]):  # adjust step for clarity
     ax.plot(x_grid[:, j], y_grid[:, j], color='red', lw=0.5)
 ax.set_title('Reanalyses grid', fontsize=24, pad=0)
 ax.axis('off')
-
-# ax.set_xlim(xmin, xmax)
-# ax.set_ylim(ymin, ymax)
-
 # plt.show()
 plt.savefig(os.path.join(basefol, 'rean.png'), dpi=200, bbox_inches='tight')
