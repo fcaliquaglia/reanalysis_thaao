@@ -1,6 +1,7 @@
 import os
 
 import matplotlib.pyplot as plt
+import numpy as np
 import rasterio
 import xarray as xr
 from pyproj import Transformer
@@ -19,7 +20,7 @@ ds = xr.open_dataset(ds_path, decode_timedelta=True, engine='netcdf4')
 image_path = os.path.join(basefol, "pituffik.tif")
 
 with rasterio.open(image_path) as src:
-    fig, ax = plt.subplots(figsize=(20, 20))
+    fig, ax = plt.subplots(figsize=(10, 10))
 
     # Plot raster
     show(src, ax=ax)
@@ -42,26 +43,57 @@ x_flat, y_flat = transformer.transform(lon_flat, lat_flat)
 
 # Reshape back to grid shape
 
-x_grid = x_flat.reshape(lon.shape)[::-1, :]
-y_grid = y_flat.reshape(lat.shape)[::-1, :]
+x_grid = x_flat.reshape(lon.shape)
+y_grid = y_flat.reshape(lat.shape)
 
-# Plot grid lines for rows inside bounds
-for i in range(x_grid.shape[0]):
-    ax.plot(x_grid[i, :], y_grid[i, :], color='red', lw=0.5)
+# Boolean masks for x and y inside bounds separately
+inside_x = (x_grid >= xmin) & (x_grid <= xmax)
+inside_y = (y_grid >= ymin) & (y_grid <= ymax)
 
-# Plot grid lines for columns inside bounds
-for j in range(y_grid.shape[1]):  # adjust step for clarity
-    ax.plot(x_grid[:, j], y_grid[:, j], color='red', lw=0.5)
+# Combined mask: points inside both bounds simultaneously
+inside_mask = inside_x & inside_y
 
-for i in range(0, x_grid.shape[0], 5):
-    for j in range(0, y_grid.shape[1], 5):
-        x_val = x_grid[i, j]
-        y_val = y_grid[i, j]
-        ax.text(
-            x_val, y_val,
-            f"({i},{j})",
-            fontsize=4, color='black', ha='center', va='center'
-        )
+rows_with_points = np.where(np.any(inside_mask, axis=1))[0]
+cols_with_points = np.where(np.any(inside_mask, axis=0))[0]
+
+# Plot grid lines for rows inside raster extent
+for i in rows_with_points:
+    ax.plot(x_grid[i, cols_with_points], y_grid[i, cols_with_points], color='red', lw=0.5)
+
+for j in cols_with_points:
+    ax.plot(x_grid[rows_with_points, j], y_grid[rows_with_points, j], color='red', lw=0.5)
+
+# # Plot grid lines for rows inside bounds
+# for i in range(x_grid.shape[0]):
+#     ax.plot(x_grid[i, :], y_grid[i, :], color='red', lw=0.5)
+#
+# # Plot grid lines for columns inside bounds
+# for j in range(y_grid.shape[1]):  # adjust step for clarity
+#     ax.plot(x_grid[:, j], y_grid[:, j], color='red', lw=0.5)
+
+# max_labels = 50  # maximum number of text labels you want
+# num_pixels = x_grid.shape[0] * x_grid.shape[1]
+#
+# skip = int(np.ceil(np.sqrt(num_pixels / max_labels)))
+# if skip < 1:
+#     skip = 1
+#
+# for i in range(0, x_grid.shape[0], skip):
+#     for j in range(0, y_grid.shape[1], skip):
+#         x_val = x_grid[i, j]
+#         y_val = y_grid[i, j]
+#         ax.text(
+#                 x_val, y_val, f"({i},{j})", fontsize=4, color='black', ha='center', va='center')
+
+max_labels = 500
+num_points = len(rows_with_points) * len(cols_with_points)
+skip = max(1, int(np.ceil(np.sqrt(num_points / max_labels))))
+
+for i in rows_with_points[::skip]:
+    for j in cols_with_points[::skip]:
+        if inside_mask[i, j]:
+            ax.text(x_grid[i, j], y_grid[i, j], f"({i},{j})", fontsize=4, ha='center', va='center', color='black')
+
 
 colors1 = ['red', 'green', 'blue']
 colors2 = ['red', 'green', 'blue']
@@ -83,3 +115,13 @@ ax.set_title('Reanalyses grid', fontsize=24, pad=0)
 ax.axis('off')
 # plt.show()
 plt.savefig(os.path.join(basefol, 'rean.png'), dpi=200, bbox_inches='tight')
+
+# cleanup memory
+import gc
+import matplotlib.pyplot as plt
+
+# Close all matplotlib figures
+plt.close('all')
+
+# Collect garbage (free memory)
+gc.collect()
