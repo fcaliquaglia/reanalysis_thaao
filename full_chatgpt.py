@@ -33,7 +33,7 @@ def find_lat_lon(ds):
     return lat, lon
 
 def extract_and_transform_grid(dataset_path, src_crs_epsg, transformer_to_target):
-    ds = xr.open_dataset(dataset_path)
+    ds = xr.open_dataset(dataset_path, decode_timedelta=True)
     lat, lon = find_lat_lon(ds)
     ds.close()
     del ds
