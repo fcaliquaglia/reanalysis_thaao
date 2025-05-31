@@ -228,17 +228,42 @@ print("Extracting time series for each point ...")
 carra_ts = extract_time_series(ds_c_all, carra_indices, "t2m")
 era5_ts = extract_time_series(ds_e_all, era5_indices, "t2m")
 
-print("Plotting combined time series with stacked panels ...")
+import pandas as pd
+
+# Define time range filter: January 1 to June 30
+start_date = "2023-01-01"
+end_date = "2023-06-30"
+
+# Filter the time dimension for both ERA5 and CARRA time series
+def filter_time(ds):
+    # Find the time coordinate name
+    time_coord = None
+    for coord in ds.coords:
+        if 'time' in coord:
+            time_coord = coord
+            break
+    if time_coord is None:
+        raise ValueError("No time coordinate found in dataset")
+
+    time_index = ds[time_coord].to_index()
+    mask = (time_index >= pd.to_datetime(start_date)) & (time_index <= pd.to_datetime(end_date))
+    return ds.sel({time_coord: mask})
+
+# Filter each time series
+era5_ts_filtered = [filter_time(ts) for ts in era5_ts]
+carra_ts_filtered = [filter_time(ts) for ts in carra_ts]
+
+print("Plotting combined time series with stacked panels (Jan-Jun)...")
 fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8), sharex=True)
 
 # Upper panel: ERA5 + CARRA
-era5_ts[0].plot(ax=ax1, color='blue', label=f"ERA5 ({lat1[0]:.4f},{lon1[0]:.4f})")
+era5_ts_filtered[0].plot(ax=ax1, color='blue', label=f"ERA5 ({lat1[0]:.4f},{lon1[0]:.4f})")
 
 colors = ['orange', 'green', 'purple']
 for i in range(len(lat1)):
-    carra_ts[i].plot(ax=ax1, color=colors[i], label=f"CARRA ({lat1[i]:.4f}, {lon1[i]:.4f})")
+    carra_ts_filtered[i].plot(ax=ax1, color=colors[i], label=f"CARRA ({lat1[i]:.4f}, {lon1[i]:.4f})")
 
-ax1.set_title("ERA5 + CARRA Time Series")
+ax1.set_title("ERA5 + CARRA Time Series (Jan - Jun)")
 ax1.set_ylabel("Temperature (K)")
 ax1.grid(True)
 ax1.legend(loc='upper left')
@@ -247,9 +272,9 @@ ax1.tick_params(axis='x', rotation=30)
 
 # Lower panel: Only CARRA time series
 for i in range(len(lat1)):
-    carra_ts[i].plot(ax=ax2, color=colors[i], label=f"CARRA ({lat1[i]:.4f}, {lon1[i]:.4f})")
+    carra_ts_filtered[i].plot(ax=ax2, color=colors[i], label=f"CARRA ({lat1[i]:.4f}, {lon1[i]:.4f})")
 
-ax2.set_title("CARRA Time Series Only")
+ax2.set_title("CARRA Time Series Only (Jan - Jun)")
 ax2.set_xlabel("Time")
 ax2.set_ylabel("Temperature (K)")
 ax2.grid(True)
@@ -260,11 +285,44 @@ ax2.tick_params(axis='x', rotation=30)
 plt.tight_layout()
 
 # Save figure
-ts_figure_path = os.path.join(basefol, "temperature_time_series_stacked_panels.png")
+ts_figure_path = os.path.join(basefol, "temperature_time_series_stacked_panels_JanJun.png")
 plt.savefig(ts_figure_path, dpi=200, bbox_inches="tight")
 print(f"Stacked panels time series figure saved as: {ts_figure_path}")
 
 plt.show()
+
+# Resample ERA5 series to 3-hourly mean to match CARRA resolution
+def resample_to_3h(ts):
+    # get first dimension name that contains datetime64 dtype
+    time_dim = None
+    for dim in ts.dims:
+        if np.issubdtype(ts[dim].dtype, np.datetime64):
+            time_dim = dim
+            break
+    if time_dim is None:
+        raise ValueError("No datetime dimension found to resample over.")
+    return ts.resample({time_dim: "3H"}).mean()
+
+# Resample all ERA5 series
+era5_ts_3h = [resample_to_3h(ts) for ts in era5_ts_filtered]
+
+# Find common time index after resampling
+common_times = era5_ts_3h[0].time.to_index().intersection(carra_ts_filtered[0].time.to_index())
+
+# Slice to common times
+era5_common = [ts.sel(time=common_times) for ts in era5_ts_3h]
+carra_common = [ts.sel(time=common_times) for ts in carra_ts_filtered]
+
+# Calculate ERA5 mean over points
+era5_values = np.stack([ts.values for ts in era5_common], axis=1)  # shape (time, points)
+era5_mean_series = np.mean(era5_values, axis=1)  # mean over points → (time,)
+
+# Calculate mean difference for each CARRA point
+for i, carra_ts in enumerate(carra_common):
+    carra_vals = carra_ts.values  # shape (time,)
+    diff = carra_vals - era5_mean_series  # difference over time
+    mean_diff = np.mean(diff)  # average difference
+    print(f"CARRA point {i+1} mean difference from ERA5 average (Jan-Jun): {mean_diff:.3f}")
 
 plt.close("all")
 gc.collect()
