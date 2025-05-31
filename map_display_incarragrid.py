@@ -291,9 +291,11 @@ print(f"Stacked panels time series figure saved as: {ts_figure_path}")
 
 plt.show()
 
+import numpy as np
+
 # Resample ERA5 series to 3-hourly mean to match CARRA resolution
 def resample_to_3h(ts):
-    # get first dimension name that contains datetime64 dtype
+    # Dynamically find the time dimension or coordinate with datetime64 dtype
     time_dim = None
     for dim in ts.dims:
         if np.issubdtype(ts[dim].dtype, np.datetime64):
@@ -301,19 +303,30 @@ def resample_to_3h(ts):
             break
     if time_dim is None:
         raise ValueError("No datetime dimension found to resample over.")
-    return ts.resample({time_dim: "3H"}).mean()
+    return ts.resample({time_dim: "3h"}).mean()
+
+# Detect the time coordinate/dimension for further operations from first ERA5 series
+def get_time_dim(ts):
+    for dim in ts.dims:
+        if np.issubdtype(ts[dim].dtype, np.datetime64):
+            return dim
+    raise ValueError("No datetime dimension found.")
 
 # Resample all ERA5 series
 era5_ts_3h = [resample_to_3h(ts) for ts in era5_ts_filtered]
 
+# Get the time dimension name dynamically (assuming all have same time dim)
+time_dim_era5 = get_time_dim(era5_ts_3h[0])
+time_dim_carra = get_time_dim(carra_ts_filtered[0])
+
 # Find common time index after resampling
-common_times = era5_ts_3h[0].time.to_index().intersection(carra_ts_filtered[0].time.to_index())
+common_times = era5_ts_3h[0][time_dim_era5].to_index().intersection(carra_ts_filtered[0][time_dim_carra].to_index())
 
-# Slice to common times
-era5_common = [ts.sel(time=common_times) for ts in era5_ts_3h]
-carra_common = [ts.sel(time=common_times) for ts in carra_ts_filtered]
+# Slice to common times using the detected time dimensions
+era5_common = [ts.sel({time_dim_era5: common_times}) for ts in era5_ts_3h]
+carra_common = [ts.sel({time_dim_carra: common_times}) for ts in carra_ts_filtered]
 
-# Calculate ERA5 mean over points
+# Calculate ERA5 mean over points (stack along new axis=1 for points)
 era5_values = np.stack([ts.values for ts in era5_common], axis=1)  # shape (time, points)
 era5_mean_series = np.mean(era5_values, axis=1)  # mean over points → (time,)
 
