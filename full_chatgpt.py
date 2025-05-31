@@ -92,19 +92,19 @@ _, idx_carra = tree_carra.query(np.vstack([x_points, y_points]).T)
 
 # Plotting
 fig, ax = plt.subplots(figsize=(12, 10))
-ax.imshow(geotiff_img, extent=geotiff_extent, origin='upper', cmap='gray')
+ax.imshow(geotiff_img, extent=geotiff_extent, origin='upper')
 
-ax.scatter(x_era5, y_era5, s=1, color='blue', alpha=0.5, label='ERA5 Grid')
-ax.scatter(x_carra, y_carra, s=1, color='red', alpha=0.5, label='CARRA Grid')
+# ax.scatter(x_era5, y_era5, s=1, color='blue', alpha=0.5, label='ERA5 Grid')
+# ax.scatter(x_carra, y_carra, s=1, color='red', alpha=0.5, label='CARRA Grid')
 
-colors = ['green', 'orange', 'purple']
-for i, color in enumerate(colors):
-    ax.scatter(x_era5[idx_era5[i]], y_era5[idx_era5[i]], s=50, marker='x', color=color, label=f'ERA5 Closest Point {i+1}')
-    ax.scatter(x_carra[idx_carra[i]], y_carra[idx_carra[i]], s=50, marker='x', color=color, label=f'CARRA Closest Point {i+1}')
-    ax.scatter(x_points[i], y_points[i], s=60, marker='o', facecolors='none', edgecolors=color, linewidths=2, label=f'Input Point {i+1}')
+# colors = ['green', 'orange', 'purple']
+# for i, color in enumerate(colors):
+#     ax.scatter(x_era5[idx_era5[i]], y_era5[idx_era5[i]], s=10, marker='x', color=color, label=f'ERA5 Closest Point {i+1}')
+#     ax.scatter(x_carra[idx_carra[i]], y_carra[idx_carra[i]], s=10, marker='x', color=color, label=f'CARRA Closest Point {i+1}')
+#     ax.scatter(x_points[i], y_points[i], s=20, marker='o', facecolors='none', edgecolors=color, linewidths=2, label=f'Input Point {i+1}')
 
 ax.set_title('CARRA and ERA5 Grids with Highlighted Closest Points')
-ax.legend(loc='upper right', fontsize='small', markerscale=0.7)
+# ax.legend(loc='upper right', fontsize='small', markerscale=0.7)
 
 # Save figure
 output_path = os.path.join(basefolder, "grid_points_comparison.png")
