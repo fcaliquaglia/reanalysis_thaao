@@ -147,6 +147,7 @@
 - [ERA5, MAR, RACMO, temp] Covi, Federico, Regine Hock, Åsa Rennermalm, Xavier Fettweis, and Brice Noël. 2025.
   ‘Spatiotemporal Variability of Air Temperature Biases in Regional Climate Models over the Greenland Ice Sheet’.
   Journal of Glaciology 71:e64. https://doi.org/10.1017/jog.2025.38.
+- [CARRA PWV] https://doi.org/10.1016/j.jastp.2025.106431
 
 # THAAO reference instruments
 

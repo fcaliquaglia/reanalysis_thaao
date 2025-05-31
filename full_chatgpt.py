@@ -32,11 +32,25 @@ def find_lat_lon(ds):
         raise ValueError("Latitude or longitude fields not found in dataset.")
     return lat, lon
 
+def normalize_lon(lon_array):
+    """Convert longitudes to the range [-180, 180]."""
+    return (lon_array + 180) % 360 - 180
+
 def extract_and_transform_grid(dataset_path, src_crs_epsg, transformer_to_target):
     ds = xr.open_dataset(dataset_path, decode_timedelta=True)
+    
+    # If 'time' dimension exists, select first timestep and drop others
+    if 'time' in ds.dims:
+        ds = ds.isel(time=0)
+    
     lat, lon = find_lat_lon(ds)
+    
+    # Normalize longitude to [-180, 180]
+    lon = normalize_lon(lon)
+    
     ds.close()
     del ds
+    
     lat_flat = lat.flatten()
     lon_flat = lon.flatten()
     x, y = transformer_to_target.transform(lon_flat, lat_flat)
@@ -95,5 +109,3 @@ ax.legend(loc='upper right', fontsize='small', markerscale=0.7)
 # Save figure
 output_path = os.path.join(basefolder, "grid_points_comparison.png")
 plt.savefig(output_path, dpi=300, bbox_inches='tight')
-
-plt.show()
