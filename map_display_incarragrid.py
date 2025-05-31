@@ -5,14 +5,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import rasterio
 from rasterio.plot import show
-from rasterio.warp import reproject, Resampling
-from rasterio.warp import calculate_default_transform, reproject, Resampling
+from rasterio.warp import reproject, calculate_default_transform, Resampling
 import xarray as xr
 import xesmf as xe
 
 
 def reproj_tif(input_path, output_path, dst_crs="EPSG:4326"):
-    """Reproject a raster to given CRS."""
+    """Reproject a raster to given CRS without changing resolution."""
     with rasterio.open(input_path) as src:
         transform, width, height = calculate_default_transform(
             src.crs, dst_crs, src.width, src.height, *src.bounds)
@@ -23,162 +22,144 @@ def reproj_tif(input_path, output_path, dst_crs="EPSG:4326"):
         with rasterio.open(output_path, "w", **kwargs) as dst:
             for i in range(1, src.count + 1):
                 reproject(
-                    source=rasterio.band(src, i), destination=rasterio.band(dst, i), src_transform=src.transform,
-                    src_crs=src.crs, dst_transform=transform, dst_crs=dst_crs, resampling=Resampling.nearest)
+                    source=rasterio.band(src, i),
+                    destination=rasterio.band(dst, i),
+                    src_transform=src.transform,
+                    src_crs=src.crs,
+                    dst_transform=transform,
+                    dst_crs=dst_crs,
+                    resampling=Resampling.nearest)  # Keep nearest to avoid smoothing
     return
 
 
-# 🔧 Paths
-basefol = r"H:\Shared drives\Reanalysis"
+# Paths
+basefol = os.path.dirname(os.path.abspath(__file__))  # folder of this script
+
 input_tif_path = os.path.join(basefol, "pituffik.tif")
 output_tif_path = os.path.join(basefol, "pituffik_reproj.tif")
 
-# 1️⃣ Open datasets
-ds_c = xr.open_dataset(os.path.join(
-    basefol, "carra\\raw", "carra_2m_temperature_2023.nc"), chunks={'time': 10}, decode_timedelta=True)
-ds_e = xr.open_dataset(os.path.join(
-    basefol, "era5\\raw", "era5_2m_temperature_2023.nc"), chunks={"time": 10}, decode_timedelta=True)
+carra_nc_path = os.path.join(basefol, "carra_2m_temperature_2023.nc")
+era5_nc_path = os.path.join(basefol, "era5_2m_temperature_2023.nc")
 
-reproj_tif(input_tif_path, output_tif_path, dst_crs="EPSG:4326")
+# Open datasets with chunking
+ds_c_all = xr.open_dataset(carra_nc_path, chunks={})
+ds_e_all = xr.open_dataset(era5_nc_path, chunks={})
 
-with rasterio.open(output_tif_path) as src:
-    transform = src.transform
-    width = src.width
-    height = src.height
+# Select one timestep from each to speed up processing
+# Adjust dimension names if needed
+ds_c = ds_c_all.isel(time=0).compute()  # CARRA usually has 'step' as time dim
+ds_e = ds_e_all.isel(valid_time=0).compute()  # ERA5 usually has 'valid_time' as time dim
 
-    # Create grid of row and col indices
-    rows, cols = np.meshgrid(
-        np.arange(height), np.arange(width), indexing="ij")
+print(f"CARRA dataset dims: {ds_c.dims}")
+print(f"ERA5 dataset dims: {ds_e.dims}")
 
-    # rasterio.transform.xy returns flat arrays (not 2D!), so:
-    lon1d, lat1d = rasterio.transform.xy(
-        transform, rows, cols, offset='center')
+# Extract CARRA lat/lon (2D)
+carra_lat = ds_c["latitude"].values
+carra_lon = ds_c["longitude"].values
 
-    # Convert 1D arrays to 2D
-    lon2d = np.array(lon1d).reshape(height, width)
-    lat2d = np.array(lat1d).reshape(height, width)
-
-
-# 1️⃣ Get ERA5 spatial bounds
-era_lon_min = ds_e.longitude.min().item()
-era_lon_max = ds_e.longitude.max().item()
-era_lat_min = ds_e.latitude.min().item()
-era_lat_max = ds_e.latitude.max().item()
-
-# 2️⃣ Subset CARRA coordinates to ERA5 bounds
-carra_lon = ds_c.longitude
-carra_lat = ds_c.latitude
-
-mask_lon = ((carra_lon >= era_lon_min) & (carra_lon <= era_lon_max)).compute()
-mask_lat = ((carra_lat >= era_lat_min) & (carra_lat <= era_lat_max)).compute()
-
-carra_lon_sub = carra_lon.where(mask_lon, drop=True)
-carra_lat_sub = carra_lat.where(mask_lat, drop=True)
-
-
-# 3️⃣ Create 2D meshgrid for subsetted coordinates
-lon2d_sub, lat2d_sub = np.meshgrid(carra_lon_sub.values, carra_lat_sub.values)
-
-# 4️⃣ Build the target grid Dataset
+# Build target grid dataset for regridding (CARRA grid)
 target_grid = xr.Dataset({
-    "lat": (["y", "x"], lat2d_sub),
-    "lon": (["y", "x"], lon2d_sub),
+    "lat": (["y", "x"], carra_lat),
+    "lon": (["y", "x"], carra_lon),
 })
 
-print(f"Target grid shape: lat {lat2d_sub.shape}, lon {lon2d_sub.shape}")
+print(f"Target grid shape: lat {carra_lat.shape}, lon {carra_lon.shape}")
 
+# ERA5 coords (usually 1D)
+era_lat = ds_e["latitude"].values
+era_lon = ds_e["longitude"].values
 
-# 2️⃣ Prepare CARRA’s grid as target
-target_grid = xr.Dataset({
-    "lat": (["y", "x"], lat2d),
-    "lon": (["y", "x"], lon2d),
+# Prepare ERA5 data for regridding
+# Create xarray Dataset with lat/lon dims
+ds_e_sel = ds_e[['t2m']].rename({
+    'latitude': 'lat',
+    'longitude': 'lon'
 })
 
-# 3️⃣ Regrid ds_e to CARRA grid
-print("Regridding ERA5 to CARRA grid ...")
-ds_e = ds_e.unify_chunks()
-print(ds_e.chunks)  # should show consistent chunks like your Frozen output
+# Rechunk if needed for xesmf
+ds_e_sel = ds_e_sel.chunk({'lat': 21, 'lon': 21})
 
-# Use correct dim names for rechunking:
-ds_e_chunked = ds_e.chunk({'valid_time': 10, 'latitude': 100, 'longitude': 100})
+# Create ERA5 grid Dataset
+era5_grid = xr.Dataset({
+    'lat': (['lat'], era_lat),
+    'lon': (['lon'], era_lon),
+})
 
-regridder_e = xe.Regridder(ds_e_chunked, target_grid, method="bilinear", periodic=False, reuse_weights=False)
-ds_e_on_carra = regridder_e(ds_e_chunked)
+print("Creating regridder...")
+regridder = xe.Regridder(ds_e_sel, target_grid, 'bilinear', periodic=False, reuse_weights=False)
 
+print("Regridding ERA5 to CARRA grid...")
+ds_e_on_carra = regridder(ds_e_sel)
+
+# Save regridded ERA5
 era5_regridded_path = os.path.join(basefol, "era5_regridded_to_carra.nc")
 ds_e_on_carra.to_netcdf(era5_regridded_path)
-print("ERA5 regridded dataset saved:", era5_regridded_path)
+print(f"ERA5 regridded dataset saved: {era5_regridded_path}")
 
-# 4️⃣ Regrid raster (pituffik.tif) to CARRA grid
-print("Regridding pituffik.tif to CARRA grid ...")
-with rasterio.open(input_tif_path) as src:
-    # Create new transform matching CARRA’s grid
-    carra_transform = rasterio.transform.from_bounds(
-        west=ds_c["longitude"].min().item(),
-        south=ds_c["latitude"].min().item(),
-        east=ds_c["longitude"].max().item(),
-        north=ds_c["latitude"].max().item(),
-        width=ds_c.dims["lon"],
-        height=ds_c.dims["lat"],
-    )
+# Reproject Pituffik raster to EPSG:4326 (no resampling to CARRA grid)
+print("Reprojecting pituffik.tif to EPSG:4326 (keep native resolution)...")
+reproj_tif(input_tif_path, output_tif_path, dst_crs="EPSG:4326")
+print(f"Raster reprojected and saved: {output_tif_path}")
 
-    # Update metadata
-    kwargs = src.meta.copy()
-    kwargs.update({
-        "crs": "EPSG:4326",
-        "transform": carra_transform,
-        "width": ds_c.dims["lon"],
-        "height": ds_c.dims["lat"],
-    })
-
-    regridded_raster_path = os.path.join(
-        basefol, "pituffik_regridded_to_carra.tif")
-    with rasterio.open(regridded_raster_path, "w", **kwargs) as dst:
-        for i in range(1, src.count + 1):
-            reproject(
-                source=rasterio.band(src, i),
-                destination=rasterio.band(dst, i),
-                src_transform=src.transform,
-                src_crs=src.crs,
-                dst_transform=carra_transform,
-                dst_crs="EPSG:4326",
-                resampling=Resampling.bilinear,
-            )
-print("Raster regridded and saved:", regridded_raster_path)
-
-# 5️⃣ Plot everything
+# Plot everything
 print("Plotting results ...")
-with rasterio.open(regridded_raster_path) as src:
+def convert_lon_360_to_180(lon):
+    lon_new = (lon + 180) % 360 - 180
+    return lon_new
+
+with rasterio.open(output_tif_path) as src:
     fig, ax = plt.subplots(figsize=(10, 10))
+    
+    # Show raster background
     show(src, ax=ax)
+
+    # For CARRA 2D longitudes (numpy array)
+    lon_c_converted = convert_lon_360_to_180(ds_c["longitude"].values)
+    
+    # Get original raster bounds
     xmin, ymin, xmax, ymax = src.bounds
+    
+    # Calculate center of the raster
+    x_center = (xmin + xmax) / 2
+    y_center = (ymin + ymax) / 2
+    
+    # Calculate half-width and half-height of original extent
+    x_half = (xmax - xmin) / 2
+    y_half = (ymax - ymin) / 2
+    
+
+    new_xmin = x_center - 1.5 * x_half
+    new_xmax = x_center + 1.5 * x_half
+    new_ymin = y_center - 4 * y_half
+    new_ymax = y_center + 4 * y_half
 
     # Plot ERA5 grid (blue)
-    lat, lon = ds_e_on_carra["latitude"].values, ds_e_on_carra["longitude"].values
-    lon2d, lat2d = np.meshgrid(lon, lat, indexing="ij")
-    for i in range(0, lon2d.shape[0], 10):
-        ax.plot(lon2d[i, :], lat2d[i, :], color="blue", lw=0.3)
-    for j in range(0, lat2d.shape[1], 10):
-        ax.plot(lon2d[:, j], lat2d[:, j], color="blue", lw=0.3)
+    lat_e = ds_e["latitude"].values   # 1D array
+    lon_e = ds_e["longitude"].values  # 1D array
+    lon2d_e, lat2d_e = np.meshgrid(lon_e, lat_e)
+    for i in range(0, lon2d_e.shape[0], 1):
+        ax.plot(lon2d_e[i, :], lat2d_e[i, :], color="blue", lw=0.3)
+    for j in range(0, lon2d_e.shape[1], 1):
+        ax.plot(lon2d_e[:, j], lat2d_e[:, j], color="blue", lw=0.3)
 
     # Plot CARRA grid (red)
-    lat_c, lon_c = ds_c["latitude"].values, ds_c["longitude"].values
-    lon2d_c, lat2d_c = np.meshgrid(lon_c, lat_c, indexing="ij")
-    for i in range(0, lon2d_c.shape[0], 10):
-        ax.plot(lon2d_c[i, :], lat2d_c[i, :], color="red", lw=0.3)
-    for j in range(0, lat2d_c.shape[1], 10):
-        ax.plot(lon2d_c[:, j], lat2d_c[:, j], color="red", lw=0.3)
+    lat_c = ds_c["latitude"].values
+    lon_c = lon_c_converted
+    for i in range(0, lon_c.shape[0], 1):
+        ax.plot(lon_c[i, :], lat_c[i, :], color="red", lw=0.3)
+    for j in range(0, lon_c.shape[1], 1):
+        ax.plot(lon_c[:, j], lat_c[:, j], color="red", lw=0.3)
 
-    ax.set_xlim(xmin, xmax)
-    ax.set_ylim(ymin, ymax)
-    ax.set_title("Raster & Reanalyses Regridded to CARRA Grid", fontsize=16)
-    ax.axis("off")
-
-    plt.savefig(os.path.join(basefol, "rean_regridded_to_carra.png"),
-                dpi=200, bbox_inches="tight")
+    # Set expanded axis limits
+    ax.set_xlim(new_xmin, new_xmax)
+    ax.set_ylim(new_ymin, new_ymax)
+    ax.set_title("Pituffik Raster (native res.) with ERA5 & CARRA grids", fontsize=16)
+    ax.axis("on")  # show axes and ticks
+    
+    plt.savefig(os.path.join(basefol, "rean_regridded_to_carra.png"), dpi=200, bbox_inches="tight")
     plt.show()
 
-# Cleanup
+
 plt.close("all")
 gc.collect()
 print("✅ All done!")
