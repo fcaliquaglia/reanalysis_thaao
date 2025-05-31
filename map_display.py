@@ -8,6 +8,7 @@ import xarray as xr
 from rasterio.plot import show
 from rasterio.warp import calculate_default_transform, reproject, Resampling
 import xesmf as xe
+import dask
 
 # -------------------
 basefol = r"H:\Shared drives\Reanalysis"
@@ -141,12 +142,23 @@ def reproj_carra_if_needed(ds_c_orig, output_path):
         lon2d_new, lat2d_new = np.meshgrid(lon_new, lat_new)
 
         ds_target = xr.Dataset(
-            {"lat": (["lat", "lon"], lat2d_new),
-             "lon": (["lat", "lon"], lon2d_new)},
+            {"lat2d": (["lat", "lon"], lat2d_new),
+             "lon2d": (["lat", "lon"], lon2d_new)},
             coords={"lat": lat_new, "lon": lon_new})
 
-        regridder = xe.Regridder(
-            ds_c_orig, ds_target, method="bilinear", periodic=False, reuse_weights=True)
+        weights_file = os.path.join(basefol, "carra_to_target_weights.nc")
+        
+        if not os.path.exists(weights_file):
+            # Generate and save weights
+            regridder = xe.Regridder(
+                ds_c_orig, ds_target, method="bilinear", periodic=False,
+                reuse_weights=False, filename=weights_file)
+        else:
+            # Reuse weights from file
+            regridder = xe.Regridder(
+                ds_c_orig, ds_target, method="bilinear", periodic=False,
+                reuse_weights=True, filename=weights_file)
+        
         ds_c = regridder(ds_c_orig["t2m"])
         ds_c.to_netcdf(output_path)
     else:
@@ -160,7 +172,7 @@ def reproj_carra_if_needed(ds_c_orig, output_path):
 
 carra_regrid_path = os.path.join(basefol, "carra_regridded.nc")
 ds_c_orig = xr.open_dataset(os.path.join(
-    basefol, "carra\\raw", "carra_2m_temperature_2023.nc"), decode_timedelta=True)
+    basefol, "carra\\raw", "carra_2m_temperature_2023.nc"), chunks={'time': 10}, decode_timedelta=True)
 ds_c = reproj_carra_if_needed(ds_c_orig, carra_regrid_path)
 ds_e = xr.open_dataset(os.path.join(
     basefol, "era5\\raw", "era5_2m_temperature_2023.nc"), decode_timedelta=True)
