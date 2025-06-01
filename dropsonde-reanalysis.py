@@ -297,42 +297,47 @@ def dropsondes_netcdf(in_path, out_path, output_filename='arcsix_dropsondes_comb
 
     profiles = []
     launch_times = []
-    
+
     for i, nc_file in enumerate(nc_files[20:]):
         ds = xr.open_dataset(nc_file)
         date_time = ds['launch_time'].values
+
         # Drop variables starting with "reference"
         vars_to_drop = [var for var in ds.data_vars if var.startswith('reference')]
         ds = ds.drop_vars(vars_to_drop)
-    
+
         # Add trajectory dimension instead of profile
         ds = ds.expand_dims({'trajectory': [i]})
-    
-        # Assign trajectory_id coordinate (this is fine here)
+
+        # Assign trajectory_id coordinate
         ds = ds.assign_coords(trajectory_id=('trajectory', [os.path.basename(nc_file)]))
-    
-        # Mark 'time' as coordinate with axis='T' and add CF units attribute if missing
+
+        # Handle 'time' variable
         if 'time' in ds.variables:
             ds['time'].attrs['axis'] = 'T'
-            if 'units' not in ds['time'].attrs:
-                ds['time'].attrs['units'] = 'seconds since 1970-01-01 00:00:00 UTC'
+            # Remove 'units' from attrs if it exists
+            ds['time'].attrs.pop('units', None)
+            # Add 'units' in encoding instead (CF compliant)
+            ds['time'].encoding['units'] = 'seconds since 1970-01-01 00:00:00 UTC'
             ds = ds.set_coords('time')
-    
+
         profiles.append(ds)
         launch_times.append(pd.to_datetime(date_time))
-    
+
+    # Concatenate all profiles along 'trajectory' dimension
     combined_ds = xr.concat(profiles, dim='trajectory')
-    
-    # Now assign launch_times coordinate to the concatenated dataset
+
+    # Assign launch_times coordinate
     combined_ds = combined_ds.assign_coords(trajectory_time=('trajectory', launch_times))
-    
+
     # Update global attributes with CF compliant metadata
     combined_ds.attrs.update(attributes_arcsix)
-    
+
+    # Save to NetCDF
     out_file = os.path.join(out_path, output_filename)
     combined_ds.to_netcdf(out_file)
     print(f"Combined dropsonde dataset saved to {out_file}")
-    
+
     return output_filename
 
 
