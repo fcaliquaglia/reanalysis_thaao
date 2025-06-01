@@ -109,6 +109,7 @@
 
 # Useful bibliography
 
+- CARRA Documentation: https://confluence.ecmwf.int/pages/viewpage.action?pageId=272321315
 - [] Batrak, Yurii, Bin Cheng, and Viivi Kallio-Myers. "Sea ice cover in the Copernicus Arctic Regional Reanalysis." The
   Cryosphere 18.3 (2024): 1157-1183.
 - [] Køltzow, Morten, et al. "Value of the Copernicus Arctic Regional Reanalysis (CARRA) in representing near-surface
