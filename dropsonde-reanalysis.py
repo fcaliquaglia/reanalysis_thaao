@@ -141,11 +141,6 @@ def extract_model_profile_at_point(ds_model, time_idx, lat_pt, lon_pt, pres_pt):
 
 
 def radiosondes_netcdf(in_path, out_path):
-    import os
-    import glob
-    import pandas as pd
-    import numpy as np
-    import xarray as xr
 
     output_file = os.path.join(out_path, 'arcsix_radiosondes_combined.nc')
 
@@ -291,14 +286,20 @@ def dropsondes_netcdf(in_path, out_path, output_filename='arcsix_dropsondes_comb
         'comment': 'This file is CF-1.8 compliant and suitable for trajectory profile analysis.',
     }
 
+    output_file = os.path.join(out_path, 'arcsix_dropsondes_combined.nc')
+
+    if os.path.exists(output_file):
+        print(f'NetCDF already exists at: {output_file}')
+        return output_file
+
     nc_files = sorted(glob.glob(os.path.join(in_path, '*.nc')))
     print(f"Found {len(nc_files)} dropsonde files")
 
     profiles = []
 
-    for i, nc_file in enumerate(nc_files):
-        ds = xr.open_dataset(nc_file, decode_times=False)
-
+    for i, nc_file in enumerate(nc_files[20:]):
+        ds = xr.open_dataset(nc_file)
+        date_time=ds['launch_time'].values
         # Drop variables starting with "reference"
         vars_to_drop = [
             var for var in ds.data_vars if var.startswith('reference')]
@@ -308,15 +309,10 @@ def dropsondes_netcdf(in_path, out_path, output_filename='arcsix_dropsondes_comb
         ds = ds.expand_dims({'trajectory': [i]})
 
         # Assign trajectory-level coords
-        launch_time = ds['launch_time']
+
+        launch_time = pd.to_datetime(date_time)
         
-        # If it's scalar (no dims), convert to scalar value
-        if hasattr(launch_time, 'values') and launch_time.values.size == 1:
-            launch_time_val = launch_time.values.item()
-        else:
-            launch_time_val = launch_time
-        
-        ds = ds.assign_coords(trajectory_time=('trajectory', [launch_time_val]))
+        ds = ds.assign_coords(trajectory_time=('trajectory', [launch_time]))
         ds = ds.assign_coords(trajectory_id=(
             'trajectory', [os.path.basename(nc_file)]))
 
@@ -326,7 +322,7 @@ def dropsondes_netcdf(in_path, out_path, output_filename='arcsix_dropsondes_comb
             if 'units' not in ds['time'].attrs:
                 # Attempt to build units string from launch_time reference
                 # fallback example, customize as needed
-                ds['time'].attrs['units'] = f'seconds since 1970-01-01 00:00:00 UTC'
+                ds['time'].attrs['units'] = 'seconds since 1970-01-01 00:00:00 UTC'
             ds = ds.set_coords('time')
 
         profiles.append(ds)
@@ -361,20 +357,18 @@ def main():
     drop_sonde.info
 
     # radiosonde
-    plt.figure(figsize=(8, 6))
-
-    # Loop over all profiles and plot
-    for i in range(radio_sonde.dims['profile']):
-        plt.plot(radio_sonde['temperature'][i],
-                 radio_sonde['pressure'][i], label=f"Profile {i}", lw=0, marker='.', markersize=1)
-
+    
+    temperature = radio_sonde['temperature'].isel(trajectory=0)
+    pressure = radio_sonde['pressure']
+    
+    plt.figure(figsize=(8,6))
+    for i in range(temperature.sizes['profile']):
+        plt.plot(temperature[i], pressure[i], lw=0, marker='.', markersize=1)
+    
     plt.gca().invert_yaxis()
     plt.xlabel('Temperature (°C)')
     plt.ylabel('Pressure (hPa)')
     plt.title('Temperature Profiles of All Radiosondes')
-
-    # Optional: show legend (comment out if too many profiles!)
-    # plt.legend()
     plt.ylim(1013, 0)
     plt.xlim(-60, 20)
     plt.grid(True, linestyle='--', alpha=0.5)
@@ -403,77 +397,18 @@ def main():
     plt.tight_layout()
     plt.show()
 
-    # combined plot
-    radio_times = pd.to_datetime(radio_sonde['time'].values)
-    drop_times = pd.to_datetime(drop_sonde['launch_time'].values)
-
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6), sharey=True)
-
-    # Get min and max pressures across datasets, ignoring NaNs
-    def get_pressure_bounds(arrays):
-        pres_all = np.concatenate([a[~np.isnan(a)] for a in arrays])
-        return pres_all.min(), pres_all.max()
-
-    radio_pres_arrays = [radio_sonde['pressure']
-                         [i].values for i in range(radio_sonde.dims['profile'])]
-    drop_pres_arrays = [drop_sonde['pres'][i].values for i in range(
-        drop_sonde.dims['trajectory'])]
-    min_pres_radio, max_pres_radio = get_pressure_bounds(radio_pres_arrays)
-    min_pres_drop, max_pres_drop = get_pressure_bounds(drop_pres_arrays)
-
-    min_pres = min(min_pres_radio, min_pres_drop)
-    max_pres = max(max_pres_radio, max_pres_drop)
-
-    # --- Radiosonde ---
-    for i in range(radio_sonde.dims['profile']):
-        date = radio_times[i]
-        color = 'blue' if (date.month, date.day) < (7, 15) else 'red'
-
-        temp = radio_sonde['temperature'][i].values
-        pres = radio_sonde['pressure'][i].values
-
-        ax1.plot(temp, pres, color=color, label=f"Profile {i}")
-
-    # Set y-axis limits so lowest pressure is top, highest is bottom
-    # smaller pressure on top, larger on bottom
-    ax1.set_ylim(min_pres, max_pres)
-    ax1.set_xlabel('Temperature (°C)')
-    ax1.set_ylabel('Pressure (hPa)')
-    ax1.set_title(
-        'Radiosonde Temperature Profiles\nBlue: Before 15 July, Red: After')
-    ax1.grid(True, linestyle='--', alpha=0.5)
-
-    # --- Dropsonde ---
-    for i in range(drop_sonde.dims['trajectory']):
-        date = drop_times[i]
-        color = 'blue' if (date.month, date.day) < (7, 15) else 'red'
-
-        temp = drop_sonde['tdry'][i].values
-        pres = drop_sonde['pres'][i].values
-
-        ax2.plot(temp, pres, color=color, marker='.')
-
-    ax2.set_ylim(min_pres, max_pres)
-    ax2.set_xlabel('Temperature (°C)')
-    ax2.set_title(
-        'Dropsonde Temperature Profiles\nBlue: Before 15 July, Red: After')
-    ax2.grid(True, linestyle='--', alpha=0.5)
-
-    plt.tight_layout()
-    plt.show()
-
 
     import matplotlib.dates as mdates
     import matplotlib.colors as mcolors
 
     # Extract times as pandas datetime for colormap normalization
-    radio_times = pd.to_datetime(radio_sonde['time'].values)
-    drop_times = pd.to_datetime(drop_sonde['launch_time'].values)
+    radio_times = pd.Series(pd.to_datetime(radio_sonde['time'].values[0]).ravel())
+    drop_times = pd.Series(pd.to_datetime(drop_sonde['launch_time'].values).ravel())
     
     # Combine all times to get global min/max for normalization
-    all_times = pd.concat([radio_times.to_series(), drop_times.to_series()])
-    min_time = all_times.min()
-    max_time = all_times.max()
+    all_times = pd.concat([radio_times, drop_times], ignore_index=True)
+    min_time = np.min(all_times.values)
+    max_time = np.max(all_times.values)
     
     # Normalize times to [0,1] for colormap
     norm = mcolors.Normalize(mdates.date2num(min_time), mdates.date2num(max_time))
@@ -485,18 +420,22 @@ def main():
     fig, ax = plt.subplots(figsize=(8, 6))
     
     # Plot radiosonde with cold colors scaled by date
-    for i in range(radio_sonde.dims['profile']):
+    for i in range(radio_sonde.sizes['profile']):
         dt_num = mdates.date2num(radio_times[i])
         color = cmap_cold(norm(dt_num))
-        ax.plot(radio_sonde['temperature'][i], radio_sonde['pressure'][i],
-                lw=0, marker='.', markersize=1, color=color)
+        temp_i = radio_sonde['temperature'][0].isel(profile=i)
+        pres_i = radio_sonde['pressure'].isel(profile=i)
+        ax.plot(temp_i, pres_i, lw=0, marker='.', markersize=1, color=color)
     
     # Plot dropsonde with warm colors scaled by date, shifted +20°C
     for i in range(drop_sonde.sizes['trajectory']):
         dt_num = mdates.date2num(drop_times[i])
         color = cmap_warm(norm(dt_num))
-        shifted_temp = drop_sonde['tdry'][i].values + 20
-        ax.plot(shifted_temp, drop_sonde['pres'][i],
+        temp_i = drop_sonde['tdry'].isel(trajectory=i).values  # shape: (level,)
+        pres_i = drop_sonde['pres'].isel(trajectory=i).values  # shape: (level,)
+    
+        shifted_temp = temp_i + 20
+        ax.plot(shifted_temp, pres_i,
                 lw=0, marker='.', markersize=1, color=color)
     
     ax.set_ylim(1013, 0)
@@ -506,30 +445,6 @@ def main():
     ax.set_title('Temperature Profiles Colored by Launch Date\nRadiosondes (Blues), Dropsondes (Oranges, shifted +20°C)')
     ax.grid(True, linestyle='--', alpha=0.5)
     
-    # Secondary x-axis for group labels
-    secax = ax.secondary_xaxis('top')
-    secax.set_xlim(-60, 40)
-    secax.set_xticks([-20, 30])
-    secax.set_xticklabels(['Radiosonde (Cold)', 'Dropsonde (Warm)'])
-    for tick_label, color in zip(secax.get_xticklabels(), ['blue', 'darkorange']):
-        tick_label.set_color(color)
-        tick_label.set_fontweight('bold')
-    secax.minorticks_off()
-    
-    # Add colorbars for dates
-    # Radiosonde colorbar
-    sm_cold = plt.cm.ScalarMappable(cmap=cmap_cold, norm=norm)
-    sm_cold.set_array([])
-    cbar_cold = fig.colorbar(sm_cold, ax=ax, orientation='vertical', fraction=0.03, pad=0.04)
-    cbar_cold.set_label('Radiosonde Launch Date')
-    cbar_cold.ax.yaxis.set_major_formatter(mdates.DateFormatter('%b %d'))
-    
-    # Dropsonde colorbar
-    sm_warm = plt.cm.ScalarMappable(cmap=cmap_warm, norm=norm)
-    sm_warm.set_array([])
-    cbar_warm = fig.colorbar(sm_warm, ax=ax, orientation='vertical', fraction=0.03, pad=0.12)
-    cbar_warm.set_label('Dropsonde Launch Date')
-    cbar_warm.ax.yaxis.set_major_formatter(mdates.DateFormatter('%b %d'))
     
     plt.tight_layout()
     plt.show()
