@@ -47,6 +47,7 @@ buoy_subsample_step = 10
 tracks_subsample_step = 100
 
 proj = ccrs.NorthPolarStereo(central_longitude=-40)
+transform_pc = ccrs.PlateCarree()
 
 # ---------------------------- END SETTINGS ---------------------------- #
 
@@ -77,17 +78,7 @@ def process_nc_folder(path, pattern):
     return sorted(glob.glob(os.path.join(path, pattern)))
 
 
-def get_track_files(folder, pattern=r'_L(\d)\.ict$'):
-    """Include files with no _Lx level or with _L2.ict."""
-    files = glob.glob(os.path.join(folder, '*R0*.ict'))
-    valid_files = []
-    for f in files:
-        base = os.path.basename(f)
-        m = re.search(pattern, base)
-        if m and m.group(1) != '2':
-            continue  # Exclude levels other than L2
-        valid_files.append(f)
-    return sorted(valid_files)
+
 
 
 def plot_ground_sites(ax):
@@ -107,7 +98,7 @@ def plot_ground_sites(ax):
             markersize=12,
             color=color,
             linestyle='None',
-            transform=ccrs.PlateCarree(),
+            transform=transform_pc,
             label=label
         )
         # Plot text label next to marker
@@ -115,7 +106,7 @@ def plot_ground_sites(ax):
             lon, lat, label,
             fontsize=10,
             fontweight='bold',
-            transform=ccrs.PlateCarree(),
+            transform=transform_pc,
             bbox=dict(facecolor='white', alpha=0.7, boxstyle='round,pad=0.2'),
             verticalalignment='center',
             horizontalalignment='left',
@@ -143,7 +134,7 @@ def colorbar_extend(d_all, vmn, vmx):
 
 
 def plot_background(ax, extent, title, add_grid=True):
-    ax.set_extent(extent, crs=ccrs.PlateCarree())
+    ax.set_extent(extent, crs=transform_pc)
     ax.add_feature(NaturalEarthFeature(
         'physical', 'ocean', '10m', facecolor='#a6cee3'))
     ax.add_feature(NaturalEarthFeature('physical', 'land',
@@ -174,10 +165,10 @@ def generate_status_string(drop_files,
         lines.append("Buoys         N={:<4}".format(len(buoy_files)))
 
     if flags.get("p3_tracks"):
-        lines.append("P3 tracks     N={:<4}".format(len(p3_files)))
+        lines.append("P-3 tracks    N={:<4}".format(len(p3_files)))
 
     if flags.get("g3_tracks"):
-        lines.append("GIII tracks     N={:<4}".format(len(g3_files)))
+        lines.append("G-III tracks  N={:<4}".format(len(g3_files)))
 
     return '\n'.join(lines)
 
@@ -191,115 +182,89 @@ def plot_trajectories(seq, plot_flags=plot_flags):
     fig, ax = plt.subplots(figsize=(15, 15), subplot_kw={'projection': proj})
     plot_background(ax, full_extent, 'Trajectory Plot')
 
-    # Plot Buoys
-    if plot_flags["buoys"]:
-        first_buoy = True
-        for d in buoy_data:
-            ax.scatter(
-                d['lon'],
-                d['lat'],
-                color='blue',
-                transform=ccrs.PlateCarree(),
-                label='Buoys (not all plotted)' if first_buoy else None,
-                marker='.',
-                s=10,
-                alpha=0.6,
-                zorder=3
-            )
+    transform_pc = ccrs.PlateCarree()
 
+    # --- Buoys ---
+    if plot_flags["buoys"]:
+        for i, d in enumerate(buoy_data):
+            ax.scatter(
+                d['lon'], d['lat'],
+                color='blue', marker='.', s=10, alpha=0.6,
+                transform=transform_pc, zorder=3,
+                label='Buoys (not all plotted)' if i == 0 else None
+            )
             letter = ''.join(filter(str.isalpha, os.path.basename(bf)))[0]
             ax.text(
-                d['lon'][-1],
-                d['lat'][-1],
-                letter,
-                fontsize=10,
-                fontweight='bold',
-                transform=ccrs.PlateCarree(),
-                bbox=dict(facecolor='white', alpha=0.7,
-                          boxstyle='round,pad=0.2')
+                d['lon'][0], d['lat'][0], letter,
+                fontsize=10, fontweight='bold',
+                transform=transform_pc,
+                bbox=dict(facecolor='white', alpha=0.7, boxstyle='round,pad=0.2')
             )
-            first_buoy = False
 
-    # Plot Dropsondes (only label once)
+    # --- Dropsondes ---
     if plot_flags["dropsondes"]:
-        first_drop = True
-        for d in drop_data:
+        for i, d in enumerate(drop_data):
+            is_first = (i == 0)
             ax.plot(
-                d['lon'],
-                d['lat'],
-                color='darkred',
-                lw=1.5,
-                transform=ccrs.PlateCarree(),
-                label='Dropsondes' if first_drop else None
+                d['lon'], d['lat'],
+                color='darkred', lw=1.5, transform=transform_pc,
+                label='Dropsondes traj.' if is_first else None
             )
             ax.plot(
-                d['lon'][-1],
-                d['lat'][-1],
-                'o',
-                color='black',
-                markeredgecolor='yellow',
-                markersize=6,
-                transform=ccrs.PlateCarree(),
-                label='Dropsondes@surface' if first_drop else None
-            )
-            first_drop = False
-
-    # Plot P3 (label only on first file)
-    if plot_flags["p3_tracks"]:
-        for idx, f in enumerate(p3_files):
-            df = read_ict_file(f)
-            ax.plot(
-                df["Longitude"][::tracks_subsample_step],
-                df["Latitude"][::tracks_subsample_step],
-                label='P-3' if idx == 0 else None,
-                transform=ccrs.PlateCarree(),
-                lw=0.7,
-                linestyle='--',
-                color='orange',
-                alpha=0.6
+                d['lon'][-1], d['lat'][-1],
+                'o', color='black', markeredgecolor='yellow', markersize=6,
+                transform=transform_pc,
+                label='Dropsondes@surface' if is_first else None
             )
 
-    # Plot G3 (label only on first file)
+    # --- G3 Aircraft Tracks ---
     if plot_flags["g3_tracks"]:
-        for idx, f in enumerate(g3_files):
-            df = read_ict_file(f)
+        for idx, f in enumerate(g3_data):
+            is_first = (i == 0)
             ax.plot(
                 df["Longitude"][::tracks_subsample_step],
                 df["Latitude"][::tracks_subsample_step],
-                label='G-3' if idx == 0 else None,
-                transform=ccrs.PlateCarree(),
-                lw=0.7,
-                linestyle='--',
-                color='purple',
-                alpha=0.6
-            )
+                lw=0.7, linestyle='--', alpha=0.6,
+                color='purple', transform=transform_pc,
+                label='G-3' if idx == 0 else None
+        )
 
-    # Ground sites
+    # --- P3 Aircraft Tracks ---
+    if plot_flags["p3_tracks"]:
+        for idx, f in enumerate(g3_data):
+            is_first = (i == 0)
+            ax.plot(
+                df["lon"][::tracks_subsample_step],
+                df["lat"][::tracks_subsample_step],
+                lw=0.7, linestyle='--', alpha=0.6,
+                color='orange', transform=transform_pc,
+                label='P-3' if idx == 0 else None
+        )
+
+    # --- Ground Sites ---
     if plot_flags["ground_sites"]:
         plot_ground_sites(ax)
 
+    # --- Status Text ---
     status_text = generate_status_string(
-        drop_files, buoy_files, p3_files, g3_files, plot_flags)
+        drop_files, buoy_files, p3_files, g3_files, plot_flags
+    )
+    ax.text(
+        0.02, 0.98, status_text,
+        transform=ax.transAxes,
+        verticalalignment='top', horizontalalignment='left',
+        fontsize=12, fontweight='bold', fontfamily='monospace',
+        bbox=dict(facecolor='white', alpha=0.7, edgecolor='none', boxstyle='round,pad=0.3')
+    )
 
-    ax.text(0.02, 0.98, status_text,
-            transform=ax.transAxes,
-            verticalalignment='top',
-            horizontalalignment='left',
-            fontsize=12,
-            fontweight='bold',
-            fontfamily='monospace',   # <-- use monospace font
-            bbox=dict(facecolor='white', alpha=0.7, edgecolor='none',
-                      boxstyle='round,pad=0.3'))
-
-    # Create legend once
+    # --- Legend ---
     legend = ax.legend(loc='lower right')
     legend.set_zorder(10)
 
-    plt.savefig(
-        f"optimized_trajectories_{seq}.png", dpi=300, bbox_inches='tight')
-    ax.set_extent(zoom_extent, crs=ccrs.PlateCarree())
-    plt.savefig(f"optimized_trajectories_{seq}_zoom.png",
-                dpi=300, bbox_inches='tight')
+    # --- Save Plots ---
+    plt.savefig(f"optimized_trajectories_{seq}.png", dpi=300, bbox_inches='tight')
+    ax.set_extent(zoom_extent, crs=transform_pc)
+    plt.savefig(f"optimized_trajectories_{seq}_zoom.png", dpi=300, bbox_inches='tight')
     plt.close()
 
 
@@ -309,7 +274,7 @@ def plot_surf_temp(seq, plot_flags=plot_flags):
     plot_background(ax, full_extent,
                     'Buoy and Dropsonde Surface Temperatures (2024)')
 
-    norm = plt.Normalize(vmin=-10, vmax=10)
+    norm = plt.Normalize(vmin=-10, vmax=10, clip=False)
     cmap = plt.get_cmap('coolwarm')
 
     # --- Gather all buoy data ---
@@ -342,40 +307,30 @@ def plot_surf_temp(seq, plot_flags=plot_flags):
 
         # --- Plot buoy temps scatter ---
         ax.scatter(all_buoy_lons, all_buoy_lats, c=all_buoy_temps,
-                   cmap='coolwarm', norm=norm, s=30, alpha=0.9,
+                   cmap=cmap, norm=norm, s=30, alpha=0.9,
                    edgecolor='none', linewidth=0.5, marker='s',
-                   transform=ccrs.PlateCarree(),
+                   transform=transform_pc,
                    label='Buoys (not all plotted)', zorder=10)
 
     # --- Prepare dropsonde surface temps ---
-    drop_surface_temps = []
-    drop_surface_lats = []
-    drop_surface_lons = []
+    all_drop_surf_temps = []
+    all_drop_surf_lats = []
+    all_drop_surf_lons = []
     if plot_flags['dropsondes']:
         for d in drop_data:
-            lat = np.array(d['lat'])
-            lon = np.array(d['lon'])
-            temp = d['surface_temp']
-
-            if np.isnan(temp):
+            if d['time'] is None or np.all(np.isnan(d['time'])):
                 continue
 
-            valid_indices = np.where(~np.isnan(lat) & ~np.isnan(lon))[0]
-            if len(valid_indices) == 0:
+            valid_mask = (~np.isnan(d['lat']) & ~np.isnan(d['lon']))
+            if np.all(valid_mask) == True:
                 continue
-
-            last_valid_idx = valid_indices[-1]
-
-            drop_surface_temps.append(temp)
-            drop_surface_lats.append(lat[last_valid_idx])
-            drop_surface_lons.append(lon[last_valid_idx])
 
         # --- Plot dropsonde temps scatter ---
-        ax.scatter(drop_surface_lons, drop_surface_lats, c=drop_surface_temps,
-                   cmap='coolwarm', norm=norm, s=30,
+        ax.scatter(all_drop_surf_lons,all_drop_surf_lats, c=all_drop_surf_temps,
+                   cmap=cmap, norm=norm, s=30,
                    edgecolor='none', linewidth=1.2,
                    marker='o', alpha=0.9,
-                   transform=ccrs.PlateCarree(), label='Dropsondes', zorder=11)
+                   transform=transform_pc, label='Dropsondes', zorder=11)
 
     # Ground sites
     if plot_flags['ground_sites']:
@@ -383,7 +338,7 @@ def plot_surf_temp(seq, plot_flags=plot_flags):
 
     # --- Colorbar with inset axis for better sizing ---
     # Check if any data points are outside the norm range
-    data_all = np.array(all_buoy_temps + drop_surface_temps)
+    data_all = np.array(all_buoy_temps + all_drop_surf_temps)
     extend = colorbar_extend(data_all, norm.vmin, norm.vmax)
 
     # Create the colorbar
@@ -421,14 +376,14 @@ def plot_surf_temp(seq, plot_flags=plot_flags):
             horizontalalignment='left',
             fontsize=12,
             fontweight='bold',
-            fontfamily='monospace',   # <-- use monospace font
+            fontfamily='monospace',
             bbox=dict(facecolor='white', alpha=0.7, edgecolor='none',
                       boxstyle='round,pad=0.3'))
 
     plt.savefig(f"combined_surface_temperatures_{seq}.png",
                 dpi=300, bbox_inches='tight')
 
-    ax.set_extent(zoom_extent, crs=ccrs.PlateCarree())
+    ax.set_extent(zoom_extent, crs=transform_pc)
     plt.savefig(f"combined_surface_temperatures_{seq}_zoom.png",
                 dpi=300, bbox_inches='tight')
     plt.close()
@@ -471,19 +426,18 @@ def plot_surf_date(seq, plot_flags=plot_flags):
         all_buoy_dates = all_buoy_dates[::buoy_subsample_step]
         all_buoy_nums = mdates.date2num(np.array(all_buoy_dates))
         # Compute RGBA colors for each point via the colormap
-        # (this gives an (N,4) array where [:,3] is alpha=1.0 by default)
         all_buoy_rgba = cmap(norm(all_buoy_nums))
         mask_buoy_out = (all_buoy_nums < vmin) | (all_buoy_nums > vmax)
-        all_buoy_rgba[mask_buoy_out,    3] = 0.2   # fade out-of-range buoys
-        # --- Single scatter for Buoy Data ---
+        all_buoy_rgba[mask_buoy_out,    3] = 0.2
+
         ax.scatter(
             all_buoy_lons, all_buoy_lats,
-            c=all_buoy_rgba,                # pass the RGBA array directly
+            c=all_buoy_rgba,
             s=30,
             edgecolor='none',
             linewidth=0.5,
             marker='s',
-            transform=ccrs.PlateCarree(),
+            transform=transform_pc,
             label='Buoys',
             zorder=10
         )
@@ -493,7 +447,7 @@ def plot_surf_date(seq, plot_flags=plot_flags):
     all_drop_surf_lats = []
     all_drop_surf_lons = []
     all_drop_surf_nums = []
-    if plot_flags['buoys']:
+    if plot_flags['dropsondes']:
         for d in drop_data:
             if d['time'] is None or np.all(np.isnan(d['time'])):
                 continue
@@ -509,7 +463,6 @@ def plot_surf_date(seq, plot_flags=plot_flags):
         all_drop_surf_rgba = cmap(norm(all_drop_surf_nums))
         all_mask_drop_surf_out = (all_drop_surf_nums < vmin) | (
             all_drop_surf_nums > vmax)
-        # fade out-of-range dropsondes
         all_drop_surf_rgba[all_mask_drop_surf_out, 3] = 0.2
         ax.scatter(
             all_drop_surf_lons, all_drop_surf_lats,
@@ -518,17 +471,17 @@ def plot_surf_date(seq, plot_flags=plot_flags):
             edgecolor='none',
             linewidth=1.2,
             marker='o',
-            transform=ccrs.PlateCarree(),
+            transform=transform_pc,
             label='Dropsondes',
             zorder=11
         )
 
+    if plot_flags['ground_sites']:
+        plot_ground_sites(ax)
+
     # Determine whether to extend colorbar
     data_all = np.concatenate((all_buoy_nums, all_drop_surf_nums))
     extend = colorbar_extend(data_all, vmin, vmax)
-
-    if plot_flags['ground_sites']:
-        plot_ground_sites(ax)
 
     # --- Colorbar with inset axis for better sizing ---
     cax = inset_locator.inset_axes(
@@ -576,7 +529,7 @@ def plot_surf_date(seq, plot_flags=plot_flags):
     plt.savefig(
         f"combined_surface_dates_{seq}.png", dpi=300, bbox_inches='tight')
 
-    ax.set_extent(zoom_extent, crs=ccrs.PlateCarree())
+    ax.set_extent(zoom_extent, crs=transform_pc)
     plt.savefig(f"combined_surface_dates_{seq}_zoom.png",
                 dpi=300, bbox_inches='tight')
     plt.close()
@@ -611,7 +564,7 @@ if __name__ == '__main__':
         idx_surface = np.nanargmax(pres) if np.any(~np.isnan(pres)) else None
         surface_temp = temp[idx_surface] if idx_surface is not None else np.nan
         drop_data.append({
-            "lat": lat.values, "lon": lon.values, "temp": surface_temp, 
+            "lat": lat.values, "lon": lon.values, "temp": surface_temp,
             "time": time
         })
 
@@ -621,8 +574,8 @@ if __name__ == '__main__':
     buoy_data = []
     for bf in buoy_files:
         ds = xr.open_dataset(bf)
-        lat = ds['latitude'].isel(trajectory=0).values
-        lon = ds['longitude'].isel(trajectory=0).values
+        lat = ds['latitude'].isel(trajectory=0)
+        lon = ds['longitude'].isel(trajectory=0)
         temp = ds['air_temp'].isel(trajectory=0).values
         time = ds['time'].isel(trajectory=0).values
         lat, lon = filter_coords(lat, lon, bounds=bounds)
@@ -630,21 +583,51 @@ if __name__ == '__main__':
             print(f"Skipped {bf} – no valid coordinates after filtering.")
             continue
         buoy_data.append({
-            "lat": lat, "lon": lon, "temp": temp, "time": time
+            "lat": lat.values, "lon": lon.values, "temp": temp, "time": time
         })
 
-    # G3 & P3 Tracks
-    g3_files = get_track_files(folders["g3"])
-    p3_files = get_track_files(folders["p3"])
+    # G3 tracks
+    g3_files = glob.glob(os.path.join(folders["g3"], '*R0*.ict'))
+    g3_data = []
+    for gf in g3_files:
+        base = os.path.basename(f)
+        m = re.search(r'_L(\d)\.ict$', base)
+        
+        if m and m.group(1) != '2':
+            continue  # Exclude levels other than L2
+        ds=read_ict_file(m)
+        lat=ds['Latitude']
+        lon=ds['Longitude']
+        lat, lon = filter_coords(lat, lon, bounds=bounds)
+        g3_data.append({
+            "lat": lat.values, "lon": lon.values, "temp": np.nan, "time": np.nan
+        })
+
+    # P3 tracks
+    p3_files = glob.glob(os.path.join(folders["p3"], '*R0*.ict'))
+    p3_data = []
+    for gf in g3_files:
+        base = os.path.basename(f)
+        m = re.search(r'_L(\d)\.ict$', base)
+        if m and m.group(1) != '2':
+            continue  # Exclude levels other than L2
+        ds=read_ict_file(m)
+        lat=ds['Latitude']
+        lon=ds['Longitude']
+        lat, lon = filter_coords(lat, lon, bounds=bounds)
+        p3_data.append({
+            "lat": lat.values, "lon": lon.values, "temp": temp, "time": time
+        })
+
 
     # ---------------------------- EXECUTION ---------------------------- #
-    plot_flags = {k: True for k in plot_flags}
-    plot_trajectories('all', plot_flags)
-    plot_flags = {k: False for k in plot_flags}
-    keys = list(plot_flags.keys())
-    for i, key in enumerate(keys, start=1):
-        current_flags = {k: (j < i) for j, k in enumerate(keys)}
-        plot_trajectories(i, current_flags)
+    # plot_flags = {k: True for k in plot_flags}
+    # plot_trajectories('all', plot_flags)
+    # plot_flags = {k: False for k in plot_flags}
+    # keys = list(plot_flags.keys())
+    # for i, key in enumerate(keys, start=1):
+    #     current_flags = {k: (j < i) for j, k in enumerate(keys)}
+    #     plot_trajectories(i, current_flags)
 
     current_flags = {k: False for k in plot_flags}
     current_flags['ground_sites'] = True
