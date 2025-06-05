@@ -33,39 +33,47 @@ def adjust_lon(lon):
     lon = np.asarray(lon)
     return np.where(lon < 0, lon + 360, lon)
 
-def find_pixel(ds, lat1, lon1):
-    """Find closest pixel in dataset grid to given lat/lon points."""
-    lat_ds, lon_ds = get_lat_lon(ds)
+def wrap_lon(lon):
+    lon = np.array(lon)
+    return ((lon + 180) % 360) - 180
 
+def lon_diff(lon1, lon2):
+    d = lon2 - lon1
+    return (d + 180) % 360 - 180
+
+def find_pixel(ds, lat1, lon1, var_name="t2m"):
+    lat_ds, lon_ds = ds["latitude"], ds["longitude"]
     lon1_adj = adjust_lon(lon1)
-    if lon_ds.ndim == 1:
-        lon_ds_adj = adjust_lon(lon_ds)
-    else:
-        lon_ds_adj = adjust_lon(lon_ds.values)
-
     is_1d = (lat_ds.ndim == 1 and lon_ds.ndim == 1)
     if is_1d:
-        lat2d, lon2d = np.meshgrid(lat_ds, lon_ds_adj, indexing="ij")
+        lon2d, lat2d = np.meshgrid(lon_ds, lat_ds)
     else:
-        lat2d = lat_ds.values
-        lon2d = lon_ds_adj
+        lat2d, lon2d = lat_ds, lon_ds
 
-    lat_t, lon_t = [], []
+    lat_t, lon_t, vals = [], [], []
     for lat, lon in zip(lat1, lon1_adj):
-        dist = (lat2d - lat) ** 2 + (lon2d - lon) ** 2
-        y_idx, x_idx = np.unravel_index(np.argmin(dist), dist.shape)
+        dist = (lat2d - lat) ** 2 + lon_diff(lon2d, lon) ** 2
+        arr = dist.values if hasattr(dist, "values") else dist
+        y_idx, x_idx = np.unravel_index(np.argmin(arr), arr.shape)
         closest_lat = lat2d[y_idx, x_idx] if not is_1d else lat_ds[y_idx]
-        closest_lon = lon2d[y_idx, x_idx] if not is_1d else lon_ds_adj[x_idx]
-        closest_lon = wrap_lon(closest_lon)
+        closest_lon = lon2d[y_idx, x_idx] if not is_1d else lon_ds[x_idx]
+        closest_lon = wrap_lon(closest_lon.item())
+
+        if is_1d:
+            val = ds[var_name].values[y_idx, x_idx]
+        else:
+            val = ds[var_name].values[y_idx, x_idx]
 
         lat_t.append(closest_lat.item())
         lon_t.append(closest_lon)
+        vals.append(val)
 
         print(
             f"Closest grid point to ({lat:.4f},{wrap_lon(lon - 360):.4f}) "
-            f"is at ({closest_lat:.4f}, {closest_lon:.4f}) index=({y_idx}, {x_idx})")
+            f"is at ({closest_lat:.4f}, {closest_lon:.4f}) index=({y_idx}, {x_idx}) "
+            f"with {var_name} value = {val}")
 
-    return np.array(lat_t), np.array(lon_t)
+    return np.array(lat_t), np.array(lon_t), np.array(vals)
 
 def get_lat_lon_names(ds):
     if "lat" in ds:
@@ -174,8 +182,8 @@ def reproj_carra_if_needed(ds_c_orig, output_path):
     """Regrid CARRA only if output does not exist."""
     if not os.path.exists(output_path):
         print(f"Regridding CARRA dataset and saving to {output_path} ...")
-        lon_new = np.arange(-180, 180, 0.1)
-        lat_new = np.arange(-90, 90, 0.1)
+        lon_new = np.arange(-90, 0, 0.1)
+        lat_new = np.arange(50, 90, 0.1)
         lon2d_new, lat2d_new = np.meshgrid(lon_new, lat_new)
 
         ds_target = xr.Dataset(
