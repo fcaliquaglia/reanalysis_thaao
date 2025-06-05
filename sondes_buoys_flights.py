@@ -164,7 +164,9 @@ def generate_status_string(drop_files,
                            g3_files,
                            flags):
     lines = []
-
+    if flags.get("ground_sites"):
+        lines.append("Ground sites  N={:<4}".format(len(sites.keys())))
+        
     if flags.get("dropsondes"):
         lines.append("Dropsondes    N={:<4}".format(len(drop_files)))
 
@@ -175,10 +177,7 @@ def generate_status_string(drop_files,
         lines.append("P3 tracks     N={:<4}".format(len(p3_files)))
 
     if flags.get("g3_tracks"):
-        lines.append("G3 tracks     N={:<4}".format(len(g3_files)))
-
-    if flags.get("ground_sites"):
-        lines.append("Ground sites  N={:<4}".format(len(sites.keys())))
+        lines.append("GIII tracks     N={:<4}".format(len(g3_files)))
 
     return '\n'.join(lines)
 
@@ -226,16 +225,16 @@ def plot_trajectories(seq, plot_flags=plot_flags):
         first_drop = True
         for d in drop_data:
             ax.plot(
-                lon,
-                lat,
+                d['lon'],
+                d['lat'],
                 color='darkred',
                 lw=1.5,
                 transform=ccrs.PlateCarree(),
                 label='Dropsondes' if first_drop else None
             )
             ax.plot(
-                lon[np.argmin(lat)],
-                lat[np.argmin(lat)],
+                d['lon'][-1],
+                d['lat'][-1],
                 'o',
                 color='black',
                 markeredgecolor='yellow',
@@ -612,7 +611,8 @@ if __name__ == '__main__':
         idx_surface = np.nanargmax(pres) if np.any(~np.isnan(pres)) else None
         surface_temp = temp[idx_surface] if idx_surface is not None else np.nan
         drop_data.append({
-            "lat": lat, "lon": lon, "surface_temp": surface_temp, "time": time
+            "lat": lat.values, "lon": lon.values, "temp": surface_temp, 
+            "time": time
         })
 
     # Buoys
@@ -630,7 +630,7 @@ if __name__ == '__main__':
             print(f"Skipped {bf} – no valid coordinates after filtering.")
             continue
         buoy_data.append({
-            "lat": lat, "lon": lon, "surface_temp": temp, "time": time
+            "lat": lat, "lon": lon, "temp": temp, "time": time
         })
 
     # G3 & P3 Tracks
