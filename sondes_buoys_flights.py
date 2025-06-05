@@ -78,9 +78,6 @@ def process_nc_folder(path, pattern):
     return sorted(glob.glob(os.path.join(path, pattern)))
 
 
-
-
-
 def plot_ground_sites(ax):
     """
     Plot ground site markers and labels on the given axis.
@@ -157,7 +154,7 @@ def generate_status_string(drop_files,
     lines = []
     if flags.get("ground_sites"):
         lines.append("Ground sites  N={:<4}".format(len(sites.keys())))
-        
+
     if flags.get("dropsondes"):
         lines.append("Dropsondes    N={:<4}".format(len(drop_files)))
 
@@ -198,7 +195,8 @@ def plot_trajectories(seq, plot_flags=plot_flags):
                 d['lon'][0], d['lat'][0], letter,
                 fontsize=10, fontweight='bold',
                 transform=transform_pc,
-                bbox=dict(facecolor='white', alpha=0.7, boxstyle='round,pad=0.2')
+                bbox=dict(facecolor='white', alpha=0.7,
+                          boxstyle='round,pad=0.2')
             )
 
     # --- Dropsondes ---
@@ -219,27 +217,27 @@ def plot_trajectories(seq, plot_flags=plot_flags):
 
     # --- G3 Aircraft Tracks ---
     if plot_flags["g3_tracks"]:
-        for idx, f in enumerate(g3_data):
+        for i, d in enumerate(g3_data):
             is_first = (i == 0)
             ax.plot(
-                df["Longitude"][::tracks_subsample_step],
-                df["Latitude"][::tracks_subsample_step],
+                d["lon"][::tracks_subsample_step],
+                d["lat"][::tracks_subsample_step],
                 lw=0.7, linestyle='--', alpha=0.6,
                 color='purple', transform=transform_pc,
-                label='G-3' if idx == 0 else None
-        )
+                label='G-3' if is_first == 0 else None
+            )
 
     # --- P3 Aircraft Tracks ---
     if plot_flags["p3_tracks"]:
-        for idx, f in enumerate(g3_data):
+        for i, d in enumerate(p3_data):
             is_first = (i == 0)
             ax.plot(
-                df["lon"][::tracks_subsample_step],
-                df["lat"][::tracks_subsample_step],
+                d["lon"][::tracks_subsample_step],
+                d["lat"][::tracks_subsample_step],
                 lw=0.7, linestyle='--', alpha=0.6,
                 color='orange', transform=transform_pc,
-                label='P-3' if idx == 0 else None
-        )
+                label='P-3' if is_first == 0 else None
+            )
 
     # --- Ground Sites ---
     if plot_flags["ground_sites"]:
@@ -254,7 +252,8 @@ def plot_trajectories(seq, plot_flags=plot_flags):
         transform=ax.transAxes,
         verticalalignment='top', horizontalalignment='left',
         fontsize=12, fontweight='bold', fontfamily='monospace',
-        bbox=dict(facecolor='white', alpha=0.7, edgecolor='none', boxstyle='round,pad=0.3')
+        bbox=dict(facecolor='white', alpha=0.7,
+                  edgecolor='none', boxstyle='round,pad=0.3')
     )
 
     # --- Legend ---
@@ -262,9 +261,11 @@ def plot_trajectories(seq, plot_flags=plot_flags):
     legend.set_zorder(10)
 
     # --- Save Plots ---
-    plt.savefig(f"optimized_trajectories_{seq}.png", dpi=300, bbox_inches='tight')
+    plt.savefig(
+        f"optimized_trajectories_{seq}.png", dpi=300, bbox_inches='tight')
     ax.set_extent(zoom_extent, crs=transform_pc)
-    plt.savefig(f"optimized_trajectories_{seq}_zoom.png", dpi=300, bbox_inches='tight')
+    plt.savefig(
+        f"optimized_trajectories_{seq}_zoom.png", dpi=300, bbox_inches='tight')
     plt.close()
 
 
@@ -326,7 +327,7 @@ def plot_surf_temp(seq, plot_flags=plot_flags):
                 continue
 
         # --- Plot dropsonde temps scatter ---
-        ax.scatter(all_drop_surf_lons,all_drop_surf_lats, c=all_drop_surf_temps,
+        ax.scatter(all_drop_surf_lons, all_drop_surf_lats, c=all_drop_surf_temps,
                    cmap=cmap, norm=norm, s=30,
                    edgecolor='none', linewidth=1.2,
                    marker='o', alpha=0.9,
@@ -592,12 +593,12 @@ if __name__ == '__main__':
     for gf in g3_files:
         base = os.path.basename(f)
         m = re.search(r'_L(\d)\.ict$', base)
-        
+
         if m and m.group(1) != '2':
             continue  # Exclude levels other than L2
-        ds=read_ict_file(m)
-        lat=ds['Latitude']
-        lon=ds['Longitude']
+        ds = read_ict_file(m)
+        lat = ds['Latitude']
+        lon = ds['Longitude']
         lat, lon = filter_coords(lat, lon, bounds=bounds)
         g3_data.append({
             "lat": lat.values, "lon": lon.values, "temp": np.nan, "time": np.nan
@@ -611,14 +612,13 @@ if __name__ == '__main__':
         m = re.search(r'_L(\d)\.ict$', base)
         if m and m.group(1) != '2':
             continue  # Exclude levels other than L2
-        ds=read_ict_file(m)
-        lat=ds['Latitude']
-        lon=ds['Longitude']
+        ds = read_ict_file(m)
+        lat = ds['Latitude']
+        lon = ds['Longitude']
         lat, lon = filter_coords(lat, lon, bounds=bounds)
         p3_data.append({
             "lat": lat.values, "lon": lon.values, "temp": temp, "time": time
         })
-
 
     # ---------------------------- EXECUTION ---------------------------- #
     # plot_flags = {k: True for k in plot_flags}
