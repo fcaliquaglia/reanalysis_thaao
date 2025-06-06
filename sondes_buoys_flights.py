@@ -582,7 +582,7 @@ if __name__ == "__main__":
         idx_surf = np.nanargmax(pres) if np.any(~np.isnan(pres)) else None
         surf_temp = temp[idx_surf] if idx_surf is not None else np.nan
         drop_data.append({
-            "lat": lat, "lon": lon, "temp": surf_temp, 
+            "lat": lat, "lon": lon, "temp": surf_temp,
             "time": time, "pres": pres
         })
 
@@ -649,6 +649,7 @@ if __name__ == "__main__":
                 "lat": lat, "lon": lon, "temp": np.nan, "time": np.nan
             })
 
+    del ds, temp, time, pres, lat, lon, msk
     # ---------------------------- EXECUTION ---------------------------- #
     plot_flags = {k: True for k in plot_flags}
     plot_trajectories("all", plot_flags)
