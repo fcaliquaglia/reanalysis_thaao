@@ -16,9 +16,9 @@ import mpl_toolkits.axes_grid1.inset_locator as inset_locator
 plot_flags = dict(
     ground_sites=True,
     buoys=True,
+    dropsondes=True,
     p3_tracks=True,
     g3_tracks=True,
-    dropsondes=True
 )
 
 basefol = r"H:\Shared drives\Dati_THAAO"
@@ -54,6 +54,8 @@ tracks_subsample_step = 100
 
 proj = ccrs.NorthPolarStereo(central_longitude=-40)
 transform_pc = ccrs.PlateCarree()
+
+dpi = 100
 
 # ---------------------------- END SETTINGS ---------------------------- #
 
@@ -193,10 +195,10 @@ def plot_trajectories(seq, plot_flags=plot_flags):
             ax.scatter(
                 d["lon"], d["lat"],
                 color="blue", marker=".", s=10, alpha=0.6,
-                transform=transform_pc, zorder=3,
-                label="Buoys (not all plotted)" if i == 0 else None
+                transform=transform_pc,
+                label="Buoys" if i == 0 else None
             )
-            letter = "".join(filter(str.isalpha, os.path.basename(bf)))[0]
+            letter = "".join(filter(str.isalpha, os.path.basename(d['name'])))[0]
             ax.text(
                 d["lon"][0], d["lat"][0], letter,
                 fontsize=10, fontweight="bold",
@@ -275,10 +277,10 @@ def plot_trajectories(seq, plot_flags=plot_flags):
 
     # --- Save Plots ---
     plt.savefig(
-        f"optimized_trajectories_{seq}.png", dpi=300, bbox_inches="tight")
+        f"all_trajectories_{seq}.png", dpi=dpi, bbox_inches="tight")
     ax.set_extent(zoom_extent, crs=transform_pc)
     plt.savefig(
-        f"optimized_trajectories_{seq}_zoom.png", dpi=300, bbox_inches="tight")
+        f"all_trajectories_{seq}_zoom.png", dpi=dpi, bbox_inches="tight")
     plt.close()
 
 
@@ -297,14 +299,13 @@ def plot_surf_temp(seq, plot_flags=plot_flags):
     all_buoy_lons = []
     if plot_flags["buoys"]:
         for d in buoy_data:
+            if d["time"] is None or np.all(np.isnan(d["time"])):
+                continue
+
             valid_mask = (
                 ~np.isnan(d["lat"]) &
                 ~np.isnan(d["lon"]) &
                 ~np.isnan(d["temp"]) &
-                (d["lat"] >= lat_min) &
-                (d["lat"] <= lat_max) &
-                (d["lon"] >= lon_min) &
-                (d["lon"] <= lon_max) &
                 (d["time"] >= start_arcsix) &
                 (d["time"] <= end_arcsix)
             )
@@ -322,7 +323,7 @@ def plot_surf_temp(seq, plot_flags=plot_flags):
                    cmap=cmap, norm=norm, s=30, alpha=0.9,
                    edgecolor="none", linewidth=0.5, marker="s",
                    transform=transform_pc,
-                   label="Buoys (not all plotted)", zorder=10)
+                   label=f"Buoys (eveery {buoy_subsample_step}th)", zorder=10)
 
     # --- Prepare dropsonde surface temps ---
     all_drop_surf_temps = []
@@ -333,11 +334,7 @@ def plot_surf_temp(seq, plot_flags=plot_flags):
             if d["time"] is None or np.all(np.isnan(d["time"])):
                 continue
 
-            valid_mask = (~np.isnan(d["lat"]) & ~np.isnan(d["lon"]))
-            if np.all(valid_mask) == True:
-                continue
-
-            idx_surf = np.nargmax(d["pres"]) if np.any(
+            idx_surf = np.max(d["pres"]) if np.any(
                 ~np.isnan(d["pres"])) else None
             surf_temp = temp[idx_surf] if idx_surf is not None else np.nan
             all_drop_surf_temps.append(surf_temp)
@@ -397,11 +394,11 @@ def plot_surf_temp(seq, plot_flags=plot_flags):
                       boxstyle="round,pad=0.3"))
 
     plt.savefig(f"combined_surface_temperatures_{seq}.png",
-                dpi=300, bbox_inches="tight")
+                dpi=dpi, bbox_inches="tight")
 
     ax.set_extent(zoom_extent, crs=transform_pc)
     plt.savefig(f"combined_surface_temperatures_{seq}_zoom.png",
-                dpi=300, bbox_inches="tight")
+                dpi=dpi, bbox_inches="tight")
     plt.close()
 
 
@@ -545,11 +542,11 @@ def plot_surf_date(seq, plot_flags=plot_flags):
                       boxstyle="round,pad=0.3"))
 
     plt.savefig(
-        f"combined_surface_dates_{seq}.png", dpi=300, bbox_inches="tight")
+        f"combined_surface_dates_{seq}.png", dpi=dpi, bbox_inches="tight")
 
     ax.set_extent(zoom_extent, crs=transform_pc)
     plt.savefig(f"combined_surface_dates_{seq}_zoom.png",
-                dpi=300, bbox_inches="tight")
+                dpi=dpi, bbox_inches="tight")
     plt.close()
 
 # ------------------------ END PLOTTING FUNCTIONS ------------------------ #
@@ -568,7 +565,7 @@ if __name__ == "__main__":
         temp = ds["air_temperature"][0].values - 273.15
         pres = ds["air_pressure"][0].values
         radio_data.append(
-            {
+            {   "filename":os.path.basename(rf),
                 "time": time,
                 "temp": temp,
                 "pres": pres
@@ -593,7 +590,7 @@ if __name__ == "__main__":
         time = ds["time"][msk].values
         temp = np.where(temp == -999.0, np.nan, temp)
         pres = np.where(pres == -999.0, np.nan, pres)
-        drop_data.append({
+        drop_data.append({"filename":os.path.basename(df),
             "lat": lat, "lon": lon, "temp": temp,
             "time": time, "pres": pres
         })
@@ -615,7 +612,7 @@ if __name__ == "__main__":
             print("OK")
         temp = ds["air_temp"].isel(trajectory=0).values[msk]
         time = ds["time"].isel(trajectory=0).values[msk]
-        buoy_data.append({
+        buoy_data.append({"filename":os.path.basename(bf),
             "lat": lat, "lon": lon, "temp": temp, "time": time
         })
 
@@ -636,7 +633,7 @@ if __name__ == "__main__":
                 continue
             else:
                 print("OK")
-            g3_data.append({
+            g3_data.append({"filename":os.path.basename(gf),
                 "lat": lat, "lon": lon, "temp": np.nan, "time": np.nan
             })
 
@@ -657,19 +654,19 @@ if __name__ == "__main__":
                 continue
             else:
                 print("OK")
-            p3_data.append({
+            p3_data.append({"filename":os.path.basename(pf),
                 "lat": lat, "lon": lon, "temp": np.nan, "time": np.nan
             })
 
     del ds, temp, time, pres, lat, lon, msk
     # ---------------------------- EXECUTION ---------------------------- #
-    plot_flags = {k: True for k in plot_flags}
-    plot_trajectories("all", plot_flags)
-    plot_flags = {k: False for k in plot_flags}
-    keys = list(plot_flags.keys())
-    for i, key in enumerate(keys, start=1):
-        current_flags = {k: (j < i) for j, k in enumerate(keys)}
-        plot_trajectories(i, current_flags)
+    # plot_flags = {k: True for k in plot_flags}
+    # plot_trajectories("all", plot_flags)
+    # plot_flags = {k: False for k in plot_flags}
+    # keys = list(plot_flags.keys())
+    # for i, key in enumerate(keys, start=1):
+    #     current_flags = {k: (j < i) for j, k in enumerate(keys)}
+    #     plot_trajectories(i, current_flags)
 
     current_flags = {k: False for k in plot_flags}
     current_flags["ground_sites"] = True
