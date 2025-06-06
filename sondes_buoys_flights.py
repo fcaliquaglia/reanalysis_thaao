@@ -198,7 +198,8 @@ def plot_trajectories(seq, plot_flags=plot_flags):
                 transform=transform_pc,
                 label="Buoys" if i == 0 else None
             )
-            letter = "".join(filter(str.isalpha, os.path.basename(d['name'])))[0]
+            letter = "".join(
+                filter(str.isalpha, os.path.basename(d['name'])))[0]
             ax.text(
                 d["lon"][0], d["lat"][0], letter,
                 fontsize=10, fontweight="bold",
@@ -323,7 +324,7 @@ def plot_surf_temp(seq, plot_flags=plot_flags):
                    cmap=cmap, norm=norm, s=30, alpha=0.9,
                    edgecolor="none", linewidth=0.5, marker="s",
                    transform=transform_pc,
-                   label=f"Buoys (eveery {buoy_subsample_step}th)", zorder=10)
+                   label=f"Buoys (aech {buoy_subsample_step}th pnt)", zorder=10)
 
     # --- Prepare dropsonde surface temps ---
     all_drop_surf_temps = []
@@ -334,9 +335,9 @@ def plot_surf_temp(seq, plot_flags=plot_flags):
             if d["time"] is None or np.all(np.isnan(d["time"])):
                 continue
 
-            idx_surf = np.max(d["pres"]) if np.any(
-                ~np.isnan(d["pres"])) else None
-            surf_temp = temp[idx_surf] if idx_surf is not None else np.nan
+            idx_surf = np.nanargmax(d["pres"]) if np.any(~np.isnan(d["pres"])) else None
+
+            surf_temp = d["temp"][idx_surf] if idx_surf is not None else np.nan
             all_drop_surf_temps.append(surf_temp)
         # --- Plot dropsonde temps scatter ---
         ax.scatter(all_drop_surf_lons, all_drop_surf_lats, c=all_drop_surf_temps,
@@ -393,11 +394,11 @@ def plot_surf_temp(seq, plot_flags=plot_flags):
             bbox=dict(facecolor="white", alpha=0.7, edgecolor="none",
                       boxstyle="round,pad=0.3"))
 
-    plt.savefig(f"combined_surface_temperatures_{seq}.png",
+    plt.savefig(f"all_surface_temperatures_{seq}.png",
                 dpi=dpi, bbox_inches="tight")
 
     ax.set_extent(zoom_extent, crs=transform_pc)
-    plt.savefig(f"combined_surface_temperatures_{seq}_zoom.png",
+    plt.savefig(f"all_surface_temperatures_{seq}_zoom.png",
                 dpi=dpi, bbox_inches="tight")
     plt.close()
 
@@ -542,10 +543,10 @@ def plot_surf_date(seq, plot_flags=plot_flags):
                       boxstyle="round,pad=0.3"))
 
     plt.savefig(
-        f"combined_surface_dates_{seq}.png", dpi=dpi, bbox_inches="tight")
+        f"all_surface_dates_{seq}.png", dpi=dpi, bbox_inches="tight")
 
     ax.set_extent(zoom_extent, crs=transform_pc)
-    plt.savefig(f"combined_surface_dates_{seq}_zoom.png",
+    plt.savefig(f"all_surface_dates_{seq}_zoom.png",
                 dpi=dpi, bbox_inches="tight")
     plt.close()
 
@@ -565,11 +566,11 @@ if __name__ == "__main__":
         temp = ds["air_temperature"][0].values - 273.15
         pres = ds["air_pressure"][0].values
         radio_data.append(
-            {   "filename":os.path.basename(rf),
+            {"filename": os.path.basename(rf),
                 "time": time,
                 "temp": temp,
                 "pres": pres
-            })
+             })
 
     # Dropsondes
     drop_files = process_nc_folder(
@@ -590,10 +591,10 @@ if __name__ == "__main__":
         time = ds["time"][msk].values
         temp = np.where(temp == -999.0, np.nan, temp)
         pres = np.where(pres == -999.0, np.nan, pres)
-        drop_data.append({"filename":os.path.basename(df),
-            "lat": lat, "lon": lon, "temp": temp,
-            "time": time, "pres": pres
-        })
+        drop_data.append({"filename": os.path.basename(df),
+                          "lat": lat, "lon": lon, "temp": temp,
+                          "time": time, "pres": pres
+                          })
 
     # Buoys
     buoy_files = [f for f in process_nc_folder(
@@ -612,9 +613,9 @@ if __name__ == "__main__":
             print("OK")
         temp = ds["air_temp"].isel(trajectory=0).values[msk]
         time = ds["time"].isel(trajectory=0).values[msk]
-        buoy_data.append({"filename":os.path.basename(bf),
-            "lat": lat, "lon": lon, "temp": temp, "time": time
-        })
+        buoy_data.append({"filename": os.path.basename(bf),
+                          "lat": lat, "lon": lon, "temp": temp, "time": time
+                          })
 
     # G3 tracks
     g3_files = glob.glob(os.path.join(folders["g3"], "*R0*.ict"))
@@ -633,9 +634,9 @@ if __name__ == "__main__":
                 continue
             else:
                 print("OK")
-            g3_data.append({"filename":os.path.basename(gf),
-                "lat": lat, "lon": lon, "temp": np.nan, "time": np.nan
-            })
+            g3_data.append({"filename": os.path.basename(gf),
+                            "lat": lat, "lon": lon, "temp": np.nan, "time": np.nan
+                            })
 
     # P3 tracks
     p3_files = glob.glob(os.path.join(folders["p3"], "*R0*.ict"))
@@ -654,9 +655,9 @@ if __name__ == "__main__":
                 continue
             else:
                 print("OK")
-            p3_data.append({"filename":os.path.basename(pf),
-                "lat": lat, "lon": lon, "temp": np.nan, "time": np.nan
-            })
+            p3_data.append({"filename": os.path.basename(pf),
+                            "lat": lat, "lon": lon, "temp": np.nan, "time": np.nan
+                            })
 
     del ds, temp, time, pres, lat, lon, msk
     # ---------------------------- EXECUTION ---------------------------- #
