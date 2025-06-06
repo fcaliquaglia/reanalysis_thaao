@@ -454,7 +454,7 @@ def plot_surf_date(seq, plot_flags=plot_flags):
         all_drop_surf_times = []
         for d in drop_data:
             print(d['filename'])
-            valid_idx = -1
+            valid_idx = -1            
             all_drop_surf_lats.append(d["lat"][valid_idx])
             all_drop_surf_lons.append(d["lon"][valid_idx])
             all_drop_surf_times.append(d["time"][valid_idx])
@@ -576,6 +576,7 @@ if __name__ == "__main__":
             msk, lat, lon = filter_coords(lat, lon, bounds=bounds)
             if not msk.any():
                 print("Skipped – no valid coordinates after filtering.")
+                continue
             else:
                 print("OK")
             temp = ds["tdry"][msk].values
