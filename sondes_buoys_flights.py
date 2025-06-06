@@ -192,7 +192,7 @@ def plot_trajectories(seq, plot_flags=plot_flags):
             ax.scatter(
                 d["lon"], d["lat"],
                 color="blue", marker=".", s=10, alpha=0.6,
-                transform=transform_pc,
+                transform=transform_pc, zorder=8,
                 label="Buoys" if i == 0 else None
             )
             letter = "".join(
@@ -346,9 +346,15 @@ def plot_surf_temp(seq, plot_flags=plot_flags):
         plot_ground_sites(ax)
 
     # --- Colorbar with inset axis for better sizing ---
-    # Check if any data points are outside the norm range
-    data_all = np.array(all_buoy_temps + all_drop_surf_temps)
-    extend = colorbar_extend(data_all, norm.vmin, norm.vmax)
+    # Determine whether to extend colorbar
+        vmin = norm.vmin
+        vmax = norm.vmax
+    try:
+        data_all = np.array(all_buoy_temps + all_drop_surf_temps)
+    except Exception:
+        data_all = np.array([])
+
+    extend = colorbar_extend(data_all, vmin, vmax)
 
     # Create the colorbar
     cax = inset_locator.inset_axes(
@@ -447,7 +453,7 @@ def plot_surf_date(seq, plot_flags=plot_flags):
         all_drop_surf_lats = []
         all_drop_surf_times = []
         for d in drop_data:
-            print(drop_data['filename'])
+            print(d['filename'])
             valid_idx = -1
             all_drop_surf_lats.append(d["lat"][valid_idx])
             all_drop_surf_lons.append(d["lon"][valid_idx])
