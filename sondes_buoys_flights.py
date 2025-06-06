@@ -662,21 +662,21 @@ if __name__ == "__main__":
             print(f"Variable '{var_name}' not found.")
 
     # ---------------------------- EXECUTION ---------------------------- #
-    plot_flags = {k: True for k in plot_flags}
-    plot_trajectories("all", plot_flags)
-    plot_flags = {k: False for k in plot_flags}
-    keys = list(plot_flags.keys())
-    for i, key in enumerate(keys, start=1):
-        current_flags = {k: (j < i) for j, k in enumerate(keys)}
-        plot_trajectories(i, current_flags)
+    # plot_flags = {k: True for k in plot_flags}
+    # plot_trajectories("all", plot_flags)
+    # plot_flags = {k: False for k in plot_flags}
+    # keys = list(plot_flags.keys())
+    # for i, key in enumerate(keys, start=1):
+    #     current_flags = {k: (j < i) for j, k in enumerate(keys)}
+    #     plot_trajectories(i, current_flags)
 
-    current_flags = {k: False for k in plot_flags}
-    current_flags["ground_sites"] = True
-    plot_surf_temp("1", current_flags)
-    current_flags["buoys"] = True
-    plot_surf_temp("2", current_flags)
-    current_flags["dropsondes"] = True
-    plot_surf_temp("3", current_flags)
+    # current_flags = {k: False for k in plot_flags}
+    # current_flags["ground_sites"] = True
+    # plot_surf_temp("1", current_flags)
+    # current_flags["buoys"] = True
+    # plot_surf_temp("2", current_flags)
+    # current_flags["dropsondes"] = True
+    # plot_surf_temp("3", current_flags)
 
     current_flags = {k: False for k in plot_flags}
     current_flags["ground_sites"] = True

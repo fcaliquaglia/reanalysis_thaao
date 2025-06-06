@@ -4,7 +4,7 @@ save_data_on_exit = True
 save_history = True
 save_non_project_files = False
 project_type = 'empty-project-type'
-recent_files = ['README.md', 'radio_drop_sondes\\plot_drop-radio_sondes.py', 'buoys\\plot_buoys.py', 'sondes_and_buoys.py', 'flight_tracks.py']
+recent_files = ['README.md', 'radio_drop_sondes\\plot_drop-radio_sondes.py', 'buoys\\plot_buoys.py', 'flight_tracks.py', 'sondes_buoys_flights.py']
 
 [main]
 version = 0.2.0
