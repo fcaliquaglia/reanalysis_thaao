@@ -21,7 +21,7 @@ plot_flags = dict(
     dropsondes=True
 )
 
-basefol = r'H:\Shared drives\Dati_THAAO'
+basefol = r"H:\Shared drives\Dati_THAAO"
 folders = {
     "dropsondes": os.path.join(basefol, r"thaao_arcsix\dropsondes"),
     "radiosondes": os.path.join(basefol, r"thaao_rs_sondes\txt\2024"),
@@ -31,17 +31,17 @@ folders = {
 }
 
 sites = {
-    'THAAO': (-68.7477, 76.5149, 'red'),
-    'Villum': (-16.6667, 81.6, 'cyan'),
-    'Alert': (-62.5072, 82.4508, 'green')
+    "THAAO": (-68.7477, 76.5149, "red"),
+    "Villum": (-16.6667, 81.6, "cyan"),
+    "Alert": (-62.5072, 82.4508, "green")
 }
 
 zoom_extent = [-80, -5, 75, 87]
-full_extent = [-105, -10, 60, 84]
+full_extent = [-105, -10, 60, 85]
 bounds = (full_extent[2], full_extent[3], full_extent[0], full_extent[1])
 
-start_arcsix = np.datetime64('2024-05-15')
-end_arcsix = np.datetime64('2024-08-15')
+start_arcsix = np.datetime64("2024-05-15")
+end_arcsix = np.datetime64("2024-08-15")
 
 buoy_subsample_step = 10
 tracks_subsample_step = 100
@@ -55,13 +55,13 @@ transform_pc = ccrs.PlateCarree()
 
 
 def read_ict_file(filepath):
-    """Reads second 'Time_Start' header in an ICT file into a DataFrame."""
-    with open(filepath, 'r') as f:
+    """Reads second "Time_Start" header in an ICT file into a DataFrame."""
+    with open(filepath, "r") as f:
         header_line = [i for i, line in enumerate(
             f) if line.startswith("Time_Start")]
     if len(header_line) < 2:
-        raise ValueError(f"Second 'Time_Start' header not found: {filepath}")
-    return pd.read_csv(filepath, skiprows=header_line[1], index_col='Time_Start')
+        raise ValueError(f"Second Time_Start header not found: {filepath}")
+    return pd.read_csv(filepath, skiprows=header_line[1], index_col="Time_Start")
 
 
 def filter_coords(lat, lon, bounds=None):
@@ -71,7 +71,7 @@ def filter_coords(lat, lon, bounds=None):
         lat_min, lat_max, lon_min, lon_max = bounds
         mask &= (lat >= lat_min) & (lat <= lat_max) & (
             lon >= lon_min) & (lon <= lon_max)
-    return lat[mask], lon[mask]
+    return mask, lat[mask], lon[mask]
 
 
 def process_nc_folder(path, pattern):
@@ -91,10 +91,10 @@ def plot_ground_sites(ax):
         # Plot marker
         ax.plot(
             lon, lat,
-            marker='X',
+            marker="X",
             markersize=12,
             color=color,
-            linestyle='None',
+            linestyle="None",
             transform=transform_pc,
             label=label
         )
@@ -102,11 +102,11 @@ def plot_ground_sites(ax):
         ax.text(
             lon, lat, label,
             fontsize=10,
-            fontweight='bold',
+            fontweight="bold",
             transform=transform_pc,
-            bbox=dict(facecolor='white', alpha=0.7, boxstyle='round,pad=0.2'),
-            verticalalignment='center',
-            horizontalalignment='left',
+            bbox=dict(facecolor="white", alpha=0.7, boxstyle="round,pad=0.2"),
+            verticalalignment="center",
+            horizontalalignment="left",
             zorder=15
         )
 
@@ -117,15 +117,15 @@ def colorbar_extend(d_all, vmn, vmx):
         extend_max = np.nanmax(d_all) > vmx
 
         if extend_min and extend_max:
-            ext = 'both'
+            ext = "both"
         elif extend_min:
-            ext = 'min'
+            ext = "min"
         elif extend_max:
-            ext = 'max'
+            ext = "max"
         else:
-            ext = 'neither'
+            ext = "neither"
     else:
-        ext = 'neither'
+        ext = "neither"
 
     return ext
 
@@ -133,12 +133,12 @@ def colorbar_extend(d_all, vmn, vmx):
 def plot_background(ax, extent, title, add_grid=True):
     ax.set_extent(extent, crs=transform_pc)
     ax.add_feature(NaturalEarthFeature(
-        'physical', 'ocean', '10m', facecolor='#a6cee3'))
-    ax.add_feature(NaturalEarthFeature('physical', 'land',
-                   '10m', edgecolor='black', facecolor='#f0e6d2'))
-    ax.coastlines('10m')
-    ax.add_feature(cfeature.LAND, facecolor='lightgray')
-    ax.add_feature(cfeature.OCEAN, facecolor='azure')
+        "physical", "ocean", "10m", facecolor="#a6cee3"))
+    ax.add_feature(NaturalEarthFeature("physical", "land",
+                   "10m", edgecolor="black", facecolor="#f0e6d2"))
+    ax.coastlines("10m")
+    ax.add_feature(cfeature.LAND, facecolor="lightgray")
+    ax.add_feature(cfeature.OCEAN, facecolor="azure")
 
     if add_grid:
         ax.gridlines(draw_labels=True, dms=True,
@@ -167,7 +167,7 @@ def generate_status_string(drop_files,
     if flags.get("g3_tracks"):
         lines.append("G-III tracks  N={:<4}".format(len(g3_files)))
 
-    return '\n'.join(lines)
+    return "\n".join(lines)
 
 # ---------------------------- END FUNCTIONS ---------------------------- #
 
@@ -176,8 +176,8 @@ def generate_status_string(drop_files,
 
 
 def plot_trajectories(seq, plot_flags=plot_flags):
-    fig, ax = plt.subplots(figsize=(15, 15), subplot_kw={'projection': proj})
-    plot_background(ax, full_extent, 'Trajectory Plot')
+    fig, ax = plt.subplots(figsize=(15, 15), subplot_kw={"projection": proj})
+    plot_background(ax, full_extent, "Trajectory Plot")
 
     transform_pc = ccrs.PlateCarree()
 
@@ -185,18 +185,18 @@ def plot_trajectories(seq, plot_flags=plot_flags):
     if plot_flags["buoys"]:
         for i, d in enumerate(buoy_data):
             ax.scatter(
-                d['lon'], d['lat'],
-                color='blue', marker='.', s=10, alpha=0.6,
+                d["lon"], d["lat"],
+                color="blue", marker=".", s=10, alpha=0.6,
                 transform=transform_pc, zorder=3,
-                label='Buoys (not all plotted)' if i == 0 else None
+                label="Buoys (not all plotted)" if i == 0 else None
             )
-            letter = ''.join(filter(str.isalpha, os.path.basename(bf)))[0]
+            letter = "".join(filter(str.isalpha, os.path.basename(bf)))[0]
             ax.text(
-                d['lon'][0], d['lat'][0], letter,
-                fontsize=10, fontweight='bold',
+                d["lon"][0], d["lat"][0], letter,
+                fontsize=10, fontweight="bold",
                 transform=transform_pc,
-                bbox=dict(facecolor='white', alpha=0.7,
-                          boxstyle='round,pad=0.2')
+                bbox=dict(facecolor="white", alpha=0.7,
+                          boxstyle="round,pad=0.2")
             )
 
     # --- Dropsondes ---
@@ -204,15 +204,15 @@ def plot_trajectories(seq, plot_flags=plot_flags):
         for i, d in enumerate(drop_data):
             is_first = (i == 0)
             ax.plot(
-                d['lon'], d['lat'],
-                color='darkred', lw=1.5, transform=transform_pc,
-                label='Dropsondes traj.' if is_first else None
+                d["lon"], d["lat"],
+                color="darkred", lw=1.5, transform=transform_pc,
+                label="Dropsondes traj." if is_first else None
             )
             ax.plot(
-                d['lon'][-1], d['lat'][-1],
-                'o', color='black', markeredgecolor='yellow', markersize=6,
+                d["lon"][-1], d["lat"][-1],
+                "o", color="black", markeredgecolor="yellow", markersize=6,
                 transform=transform_pc,
-                label='Dropsondes@surface' if is_first else None
+                label="Dropsondes@surface" if is_first else None
             )
 
     # --- G3 Aircraft Tracks ---
@@ -222,9 +222,9 @@ def plot_trajectories(seq, plot_flags=plot_flags):
             ax.plot(
                 d["lon"][::tracks_subsample_step],
                 d["lat"][::tracks_subsample_step],
-                lw=0.7, linestyle='--', alpha=0.6,
-                color='purple', transform=transform_pc,
-                label='G-3' if is_first == 0 else None
+                lw=0.7, linestyle="--", alpha=0.6,
+                color="purple", transform=transform_pc,
+                label="G-3" if is_first == 0 else None
             )
 
     # --- P3 Aircraft Tracks ---
@@ -234,9 +234,9 @@ def plot_trajectories(seq, plot_flags=plot_flags):
             ax.plot(
                 d["lon"][::tracks_subsample_step],
                 d["lat"][::tracks_subsample_step],
-                lw=0.7, linestyle='--', alpha=0.6,
-                color='orange', transform=transform_pc,
-                label='P-3' if is_first == 0 else None
+                lw=0.7, linestyle="--", alpha=0.6,
+                color="orange", transform=transform_pc,
+                label="P-3" if is_first == 0 else None
             )
 
     # --- Ground Sites ---
@@ -250,57 +250,57 @@ def plot_trajectories(seq, plot_flags=plot_flags):
     ax.text(
         0.02, 0.98, status_text,
         transform=ax.transAxes,
-        verticalalignment='top', horizontalalignment='left',
-        fontsize=12, fontweight='bold', fontfamily='monospace',
-        bbox=dict(facecolor='white', alpha=0.7,
-                  edgecolor='none', boxstyle='round,pad=0.3')
+        verticalalignment="top", horizontalalignment="left",
+        fontsize=12, fontweight="bold", fontfamily="monospace",
+        bbox=dict(facecolor="white", alpha=0.7,
+                  edgecolor="none", boxstyle="round,pad=0.3")
     )
 
     # --- Legend ---
-    legend = ax.legend(loc='lower right')
+    legend = ax.legend(loc="lower right")
     legend.set_zorder(10)
 
     # --- Save Plots ---
     plt.savefig(
-        f"optimized_trajectories_{seq}.png", dpi=300, bbox_inches='tight')
+        f"optimized_trajectories_{seq}.png", dpi=300, bbox_inches="tight")
     ax.set_extent(zoom_extent, crs=transform_pc)
     plt.savefig(
-        f"optimized_trajectories_{seq}_zoom.png", dpi=300, bbox_inches='tight')
+        f"optimized_trajectories_{seq}_zoom.png", dpi=300, bbox_inches="tight")
     plt.close()
 
 
 def plot_surf_temp(seq, plot_flags=plot_flags):
     # --- Setup figure and main axis ---
-    fig, ax = plt.subplots(figsize=(15, 15), subplot_kw={'projection': proj})
+    fig, ax = plt.subplots(figsize=(15, 15), subplot_kw={"projection": proj})
     plot_background(ax, full_extent,
-                    'Buoy and Dropsonde Surface Temperatures (2024)')
+                    "Buoy and Dropsonde Surface Temperatures (2024)")
 
     norm = plt.Normalize(vmin=-10, vmax=10, clip=False)
-    cmap = plt.get_cmap('coolwarm')
+    cmap = plt.get_cmap("coolwarm")
 
     # --- Gather all buoy data ---
     all_buoy_temps = []
     all_buoy_lats = []
     all_buoy_lons = []
-    if plot_flags['buoys']:
+    if plot_flags["buoys"]:
         for d in buoy_data:
             lon_min, lon_max, lat_min, lat_max = full_extent
 
             valid_mask = (
-                ~np.isnan(d['lat']) &
-                ~np.isnan(d['lon']) &
-                ~np.isnan(d['temp']) &
-                (d['lat'] >= lat_min) &
-                (d['lat'] <= lat_max) &
-                (d['lon'] >= lon_min) &
-                (d['lon'] <= lon_max) &
-                (d['time'] >= start_arcsix) &
-                (d['time'] <= end_arcsix)
+                ~np.isnan(d["lat"]) &
+                ~np.isnan(d["lon"]) &
+                ~np.isnan(d["temp"]) &
+                (d["lat"] >= lat_min) &
+                (d["lat"] <= lat_max) &
+                (d["lon"] >= lon_min) &
+                (d["lon"] <= lon_max) &
+                (d["time"] >= start_arcsix) &
+                (d["time"] <= end_arcsix)
             )
 
-            all_buoy_lats.extend(d['lon'][valid_mask])
-            all_buoy_lons.extend(d['lon'][valid_mask])
-            all_buoy_temps.extend(d['temp'][valid_mask])
+            all_buoy_lats.extend(d["lon"][valid_mask])
+            all_buoy_lons.extend(d["lon"][valid_mask])
+            all_buoy_temps.extend(d["temp"][valid_mask])
 
         all_buoy_lats = all_buoy_lats[::buoy_subsample_step]
         all_buoy_lons = all_buoy_lons[::buoy_subsample_step]
@@ -309,32 +309,32 @@ def plot_surf_temp(seq, plot_flags=plot_flags):
         # --- Plot buoy temps scatter ---
         ax.scatter(all_buoy_lons, all_buoy_lats, c=all_buoy_temps,
                    cmap=cmap, norm=norm, s=30, alpha=0.9,
-                   edgecolor='none', linewidth=0.5, marker='s',
+                   edgecolor="none", linewidth=0.5, marker="s",
                    transform=transform_pc,
-                   label='Buoys (not all plotted)', zorder=10)
+                   label="Buoys (not all plotted)", zorder=10)
 
     # --- Prepare dropsonde surface temps ---
     all_drop_surf_temps = []
     all_drop_surf_lats = []
     all_drop_surf_lons = []
-    if plot_flags['dropsondes']:
+    if plot_flags["dropsondes"]:
         for d in drop_data:
-            if d['time'] is None or np.all(np.isnan(d['time'])):
+            if d["time"] is None or np.all(np.isnan(d["time"])):
                 continue
 
-            valid_mask = (~np.isnan(d['lat']) & ~np.isnan(d['lon']))
+            valid_mask = (~np.isnan(d["lat"]) & ~np.isnan(d["lon"]))
             if np.all(valid_mask) == True:
                 continue
 
         # --- Plot dropsonde temps scatter ---
         ax.scatter(all_drop_surf_lons, all_drop_surf_lats, c=all_drop_surf_temps,
                    cmap=cmap, norm=norm, s=30,
-                   edgecolor='none', linewidth=1.2,
-                   marker='o', alpha=0.9,
-                   transform=transform_pc, label='Dropsondes', zorder=11)
+                   edgecolor="none", linewidth=1.2,
+                   marker="o", alpha=0.9,
+                   transform=transform_pc, label="Dropsondes", zorder=11)
 
     # Ground sites
-    if plot_flags['ground_sites']:
+    if plot_flags["ground_sites"]:
         plot_ground_sites(ax)
 
     # --- Colorbar with inset axis for better sizing ---
@@ -347,7 +347,7 @@ def plot_surf_temp(seq, plot_flags=plot_flags):
         ax,
         width="3%",
         height="40%",
-        loc='lower right',
+        loc="lower right",
         bbox_to_anchor=(-0.05, 0, 1, 1),
         bbox_transform=ax.transAxes,
         borderpad=2
@@ -355,72 +355,74 @@ def plot_surf_temp(seq, plot_flags=plot_flags):
     cbar = plt.colorbar(
         plt.cm.ScalarMappable(norm=norm, cmap=cmap),
         cax=cax,
-        orientation='vertical',
-        label='Surface Temperature (°C)',
+        orientation="vertical",
+        label="Surface Temperature (°C)",
         extend=extend
     )
-    plt.setp(cbar.ax.get_yticklabels(), ha='right')
-    cbar.ax.yaxis.set_label_position('left')
-    cbar.ax.set_ylabel('Surface Temperature (°C)', labelpad=10)
+    plt.setp(cbar.ax.get_yticklabels(), ha="right")
+    cbar.ax.yaxis.set_label_position("left")
+    cbar.ax.set_ylabel("Surface Temperature (°C)", labelpad=10)
     cbar.ax.yaxis.tick_right()
-    cbar.ax.tick_params(axis='y', pad=30)
+    cbar.ax.tick_params(axis="y", pad=30)
 
     # --- Legend ---
-    legend = ax.legend(loc='lower left')
+    legend = ax.legend(loc="lower left")
     legend.set_zorder(10)
     status_text = generate_status_string(
         drop_files, buoy_files, p3_files, g3_files, plot_flags)
 
     ax.text(0.02, 0.98, status_text,
             transform=ax.transAxes,
-            verticalalignment='top',
-            horizontalalignment='left',
+            verticalalignment="top",
+            horizontalalignment="left",
             fontsize=12,
-            fontweight='bold',
-            fontfamily='monospace',
-            bbox=dict(facecolor='white', alpha=0.7, edgecolor='none',
-                      boxstyle='round,pad=0.3'))
+            fontweight="bold",
+            fontfamily="monospace",
+            bbox=dict(facecolor="white", alpha=0.7, edgecolor="none",
+                      boxstyle="round,pad=0.3"))
 
     plt.savefig(f"combined_surface_temperatures_{seq}.png",
-                dpi=300, bbox_inches='tight')
+                dpi=300, bbox_inches="tight")
 
     ax.set_extent(zoom_extent, crs=transform_pc)
     plt.savefig(f"combined_surface_temperatures_{seq}_zoom.png",
-                dpi=300, bbox_inches='tight')
+                dpi=300, bbox_inches="tight")
     plt.close()
 
 
 def plot_surf_date(seq, plot_flags=plot_flags):
     # --- Setup figure and main axis ---
-    fig, ax = plt.subplots(figsize=(15, 15), subplot_kw={'projection': proj})
-    plot_background(ax, full_extent, 'Buoy and Dropsonde Surface Dates (2024)')
+    fig, ax = plt.subplots(figsize=(15, 15), subplot_kw={"projection": proj})
+    plot_background(ax, full_extent, "Buoy and Dropsonde Surface Dates (2024)")
     # --- Convert all dates to matplotlib numeric format ---
     vmin = mdates.date2num(start_arcsix)
     vmax = mdates.date2num(end_arcsix)
     norm = plt.Normalize(vmin=vmin, vmax=vmax, clip=False)
-    cmap = plt.get_cmap('viridis')
+    cmap = plt.get_cmap("viridis")
 
     # --- Gather all buoy data ---
     all_buoy_temps = []
     all_buoy_lats = []
     all_buoy_lons = []
     all_buoy_dates = []
-    if plot_flags['buoys']:
+    if plot_flags["buoys"]:
         for d in buoy_data:
             lon_min, lon_max, lat_min, lat_max = full_extent
 
             valid_mask = (
-                ~np.isnan(d['lat']) & ~np.isnan(d['lon']) & ~np.isnan(d['times']) &
-                (d['lat'] >= lat_min) & (d['lat'] <= lat_max) &
-                (d['lon'] >= lon_min) & (d['lon'] <= lon_max)
+                ~np.isnan(d["lat"]) &
+                ~np.isnan(d["lon"]) &
+                ~np.isnan(d["time"]) &
+                (d["lat"] >= lat_min) & (d["lat"] <= lat_max) &
+                (d["lon"] >= lon_min) & (d["lon"] <= lon_max)
             )
             if np.all(valid_mask) == True:
                 continue
 
-            all_buoy_lats.extend(d['lon'][valid_mask])
-            all_buoy_lons.extend(d['lon'][valid_mask])
-            all_buoy_temps.extend(d['temp'][valid_mask])
-            all_buoy_dates.extend(d['times'][valid_mask])
+            all_buoy_lats.extend(d["lon"][valid_mask])
+            all_buoy_lons.extend(d["lon"][valid_mask])
+            all_buoy_temps.extend(d["temp"][valid_mask])
+            all_buoy_dates.extend(d["time"][valid_mask])
 
         all_buoy_lats = all_buoy_lats[::buoy_subsample_step]
         all_buoy_lons = all_buoy_lons[::buoy_subsample_step]
@@ -435,11 +437,11 @@ def plot_surf_date(seq, plot_flags=plot_flags):
             all_buoy_lons, all_buoy_lats,
             c=all_buoy_rgba,
             s=30,
-            edgecolor='none',
+            edgecolor="none",
             linewidth=0.5,
-            marker='s',
+            marker="s",
             transform=transform_pc,
-            label='Buoys',
+            label="Buoys",
             zorder=10
         )
 
@@ -448,18 +450,18 @@ def plot_surf_date(seq, plot_flags=plot_flags):
     all_drop_surf_lats = []
     all_drop_surf_lons = []
     all_drop_surf_nums = []
-    if plot_flags['dropsondes']:
+    if plot_flags["dropsondes"]:
         for d in drop_data:
-            if d['time'] is None or np.all(np.isnan(d['time'])):
+            if d["time"] is None or np.all(np.isnan(d["time"])):
                 continue
 
-            valid_mask = (~np.isnan(d['lat']) & ~np.isnan(d['lon']))
+            valid_mask = (~np.isnan(d["lat"]) & ~np.isnan(d["lon"]))
             if np.all(valid_mask) == True:
                 continue
 
-            all_drop_surf_lats.append(d['lat'][valid_mask][-1])
-            all_drop_surf_lons.append(d['lon'][valid_mask][-1])
-            all_drop_surf_dates.append(d['time'][valid_mask][-1])
+            all_drop_surf_lats.append(d["lat"][valid_mask][-1])
+            all_drop_surf_lons.append(d["lon"][valid_mask][-1])
+            all_drop_surf_dates.append(d["time"][valid_mask][-1])
         all_drop_surf_nums = mdates.date2num(np.array(all_drop_surf_dates))
         all_drop_surf_rgba = cmap(norm(all_drop_surf_nums))
         all_mask_drop_surf_out = (all_drop_surf_nums < vmin) | (
@@ -469,15 +471,15 @@ def plot_surf_date(seq, plot_flags=plot_flags):
             all_drop_surf_lons, all_drop_surf_lats,
             c=all_drop_surf_rgba,
             s=30,
-            edgecolor='none',
+            edgecolor="none",
             linewidth=1.2,
-            marker='o',
+            marker="o",
             transform=transform_pc,
-            label='Dropsondes',
+            label="Dropsondes",
             zorder=11
         )
 
-    if plot_flags['ground_sites']:
+    if plot_flags["ground_sites"]:
         plot_ground_sites(ax)
 
     # Determine whether to extend colorbar
@@ -489,7 +491,7 @@ def plot_surf_date(seq, plot_flags=plot_flags):
         ax,
         width="3%",
         height="40%",
-        loc='lower right',
+        loc="lower right",
         bbox_to_anchor=(-0.05, 0, 1, 1),
         bbox_transform=ax.transAxes,
         borderpad=2
@@ -498,75 +500,90 @@ def plot_surf_date(seq, plot_flags=plot_flags):
     cbar = plt.colorbar(
         plt.cm.ScalarMappable(norm=norm, cmap=cmap),
         cax=cax,
-        orientation='vertical',
-        label='Date',
+        orientation="vertical",
+        label="Date",
         extend=extend  # Automatically determined
     )
 
     # --- Format colorbar ticks as dates ---
-    cbar.ax.yaxis.set_major_formatter(mdates.DateFormatter('%d-%m'))
-    plt.setp(cbar.ax.get_yticklabels(), ha='right')
-    cbar.ax.yaxis.set_label_position('left')
-    cbar.ax.set_ylabel('Date', labelpad=10)
+    cbar.ax.yaxis.set_major_formatter(mdates.DateFormatter("%d-%m"))
+    plt.setp(cbar.ax.get_yticklabels(), ha="right")
+    cbar.ax.yaxis.set_label_position("left")
+    cbar.ax.set_ylabel("Date", labelpad=10)
     cbar.ax.yaxis.tick_right()
-    cbar.ax.tick_params(axis='y', pad=30)
+    cbar.ax.tick_params(axis="y", pad=30)
 
     # --- Legend ---
-    legend = ax.legend(loc='lower left')
+    legend = ax.legend(loc="lower left")
     legend.set_zorder(10)
     status_text = generate_status_string(
         drop_files, buoy_files, p3_files, g3_files, plot_flags)
 
     ax.text(0.02, 0.98, status_text,
             transform=ax.transAxes,
-            verticalalignment='top',
-            horizontalalignment='left',
+            verticalalignment="top",
+            horizontalalignment="left",
             fontsize=12,
-            fontweight='bold',
-            fontfamily='monospace',
-            bbox=dict(facecolor='white', alpha=0.7, edgecolor='none',
-                      boxstyle='round,pad=0.3'))
+            fontweight="bold",
+            fontfamily="monospace",
+            bbox=dict(facecolor="white", alpha=0.7, edgecolor="none",
+                      boxstyle="round,pad=0.3"))
 
     plt.savefig(
-        f"combined_surface_dates_{seq}.png", dpi=300, bbox_inches='tight')
+        f"combined_surface_dates_{seq}.png", dpi=300, bbox_inches="tight")
 
     ax.set_extent(zoom_extent, crs=transform_pc)
     plt.savefig(f"combined_surface_dates_{seq}_zoom.png",
-                dpi=300, bbox_inches='tight')
+                dpi=300, bbox_inches="tight")
     plt.close()
 
 # ------------------------ END PLOTTING FUNCTIONS ------------------------ #
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     # Radiosondes
-    radio_files = process_nc_folder(folders["radiosondes"], '*.nc')
-    radio_data = [
-        {
-            "time": pd.to_datetime(xr.open_dataset(rf).attrs['launch_time'],
-                                   format='%Y%m%d_%H%M'),
-            "temp": xr.open_dataset(rf)['air_temperature'][0].values - 273.15,
-            "pres": xr.open_dataset(rf)['air_pressure'][0].values
-        } for rf in radio_files
-    ]
+    radio_files = process_nc_folder(folders["radiosondes"], "*.nc")
+    radio_data = []
+    for rf in radio_files:
+        print(rf)
+        ds = xr.open_dataset(rf)
+        time = pd.to_datetime(ds.attrs["launch_time"],
+                              format="%Y%m%d_%H%M")
+        temp = ds["air_temperature"][0].values - 273.15
+        pres = ds["air_pressure"][0].values
+        radio_data.append(
+            {
+                "time": time,
+                "temp": temp,
+                "pres": pres
+            })
 
     # Dropsondes
     drop_files = process_nc_folder(
-        folders["dropsondes"], 'ARCSIX-AVAPS-netCDF_G3*.nc')
+        folders["dropsondes"], "ARCSIX-AVAPS-netCDF_G3*.nc")
     drop_data = []
-    for f in drop_files:
-        ds = xr.open_dataset(f)
-        lat, lon = filter_coords(ds["lat"], ds["lon"])
-        temp, pres = ds['tdry'].values, ds['pres'].values
-        time = ds['time'].values
+    for df in drop_files:
+        print(df)
+        ds = xr.open_dataset(df)
+        lat = ds["lat"].values
+        lon = ds["lon"].values
+        msk, lat, lon = filter_coords(lat, lon, bounds=bounds)
+        if not msk.any():
+            print("Skipped – no valid coordinates after filtering.")
+            continue
+        else:
+            print("OK")
+        temp = ds["tdry"][msk].values
+        pres = ds["pres"][msk].values
+        time = ds["time"][msk].values
         temp = np.where(temp == -999.0, np.nan, temp)
         pres = np.where(pres == -999.0, np.nan, pres)
-        idx_surface = np.nanargmax(pres) if np.any(~np.isnan(pres)) else None
-        surface_temp = temp[idx_surface] if idx_surface is not None else np.nan
+        idx_surf = np.nanargmax(pres) if np.any(~np.isnan(pres)) else None
+        surf_temp = temp[idx_surf] if idx_surf is not None else np.nan
         drop_data.append({
-            "lat": lat.values, "lon": lon.values, "temp": surface_temp,
-            "time": time
+            "lat": lat, "lon": lon, "temp": surf_temp, 
+            "time": time, "pres": pres
         })
 
     # Buoys
@@ -574,73 +591,85 @@ if __name__ == '__main__':
         folders["buoys"], "2024*processed.nc")]
     buoy_data = []
     for bf in buoy_files:
+        print(bf)
         ds = xr.open_dataset(bf)
-        lat = ds['latitude'].isel(trajectory=0)
-        lon = ds['longitude'].isel(trajectory=0)
-        temp = ds['air_temp'].isel(trajectory=0).values
-        time = ds['time'].isel(trajectory=0).values
-        lat, lon = filter_coords(lat, lon, bounds=bounds)
-        if len(lat) == 0 or len(lon) == 0:
-            print(f"Skipped {bf} – no valid coordinates after filtering.")
+        lat = ds["latitude"].isel(trajectory=0).values
+        lon = ds["longitude"].isel(trajectory=0).values
+        msk, lat, lon = filter_coords(lat, lon, bounds=bounds)
+        if not msk.any():
+            print("Skipped – no valid coordinates after filtering.")
             continue
+        else:
+            print("OK")
+        temp = ds["air_temp"].isel(trajectory=0).values[msk]
+        time = ds["time"].isel(trajectory=0).values[msk]
         buoy_data.append({
-            "lat": lat.values, "lon": lon.values, "temp": temp, "time": time
+            "lat": lat, "lon": lon, "temp": temp, "time": time
         })
 
     # G3 tracks
-    g3_files = glob.glob(os.path.join(folders["g3"], '*R0*.ict'))
+    g3_files = glob.glob(os.path.join(folders["g3"], "*R0*.ict"))
     g3_data = []
     for gf in g3_files:
-        base = os.path.basename(f)
-        m = re.search(r'_L(\d)\.ict$', base)
-
-        if m and m.group(1) != '2':
-            continue  # Exclude levels other than L2
-        ds = read_ict_file(m)
-        lat = ds['Latitude']
-        lon = ds['Longitude']
-        lat, lon = filter_coords(lat, lon, bounds=bounds)
-        g3_data.append({
-            "lat": lat.values, "lon": lon.values, "temp": np.nan, "time": np.nan
-        })
+        print(gf)
+        base = os.path.basename(gf)
+        m = re.search(r"_L(\d)\.ict$", base)
+        if not m or m.group(1) == "2":
+            ds = read_ict_file(gf)
+            lat = ds["Latitude"].values
+            lon = ds["Longitude"].values
+            msk, lat, lon = filter_coords(lat, lon, bounds=bounds)
+            if not msk.any():
+                print("Skipped – no valid coordinates after filtering.")
+                continue
+            else:
+                print("OK")
+            g3_data.append({
+                "lat": lat, "lon": lon, "temp": np.nan, "time": np.nan
+            })
 
     # P3 tracks
-    p3_files = glob.glob(os.path.join(folders["p3"], '*R0*.ict'))
+    p3_files = glob.glob(os.path.join(folders["p3"], "*R0*.ict"))
     p3_data = []
-    for gf in g3_files:
-        base = os.path.basename(f)
-        m = re.search(r'_L(\d)\.ict$', base)
-        if m and m.group(1) != '2':
-            continue  # Exclude levels other than L2
-        ds = read_ict_file(m)
-        lat = ds['Latitude']
-        lon = ds['Longitude']
-        lat, lon = filter_coords(lat, lon, bounds=bounds)
-        p3_data.append({
-            "lat": lat.values, "lon": lon.values, "temp": temp, "time": time
-        })
+    for pf in p3_files:
+        print(pf)
+        base = os.path.basename(pf)
+        m = re.search(r"_L(\d)\.ict$", base)
+        if not m or m.group(1) == "2":
+            ds = read_ict_file(pf)
+            lat = ds["Latitude"].values
+            lon = ds["Longitude"].values
+            msk, lat, lon = filter_coords(lat, lon, bounds=bounds)
+            if not msk.any():
+                print("Skipped – no valid coordinates after filtering.")
+                continue
+            else:
+                print("OK")
+            p3_data.append({
+                "lat": lat, "lon": lon, "temp": np.nan, "time": np.nan
+            })
 
     # ---------------------------- EXECUTION ---------------------------- #
-    # plot_flags = {k: True for k in plot_flags}
-    # plot_trajectories('all', plot_flags)
-    # plot_flags = {k: False for k in plot_flags}
-    # keys = list(plot_flags.keys())
-    # for i, key in enumerate(keys, start=1):
-    #     current_flags = {k: (j < i) for j, k in enumerate(keys)}
-    #     plot_trajectories(i, current_flags)
+    plot_flags = {k: True for k in plot_flags}
+    plot_trajectories("all", plot_flags)
+    plot_flags = {k: False for k in plot_flags}
+    keys = list(plot_flags.keys())
+    for i, key in enumerate(keys, start=1):
+        current_flags = {k: (j < i) for j, k in enumerate(keys)}
+        plot_trajectories(i, current_flags)
 
     current_flags = {k: False for k in plot_flags}
-    current_flags['ground_sites'] = True
-    plot_surf_temp('1', current_flags)
-    current_flags['buoys'] = True
-    plot_surf_temp('2', current_flags)
-    current_flags['dropsondes'] = True
-    plot_surf_temp('3', current_flags)
+    current_flags["ground_sites"] = True
+    plot_surf_temp("1", current_flags)
+    current_flags["buoys"] = True
+    plot_surf_temp("2", current_flags)
+    current_flags["dropsondes"] = True
+    plot_surf_temp("3", current_flags)
 
     current_flags = {k: False for k in plot_flags}
-    current_flags['ground_sites'] = True
-    plot_surf_date('1', current_flags)
-    current_flags['buoys'] = True
-    plot_surf_date('2', current_flags)
-    current_flags['dropsondes'] = True
-    plot_surf_date('3', current_flags)
+    current_flags["ground_sites"] = True
+    plot_surf_date("1", current_flags)
+    current_flags["buoys"] = True
+    plot_surf_date("2", current_flags)
+    current_flags["dropsondes"] = True
+    plot_surf_date("3", current_flags)
