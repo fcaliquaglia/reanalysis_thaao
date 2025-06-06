@@ -162,16 +162,16 @@ def generate_status_string(drop_files,
         lines.append("Ground sites  N={:<4}".format(len(sites.keys())))
 
     if flags.get("dropsondes"):
-        lines.append("Dropsondes    N={:<4}".format(len(drop_files)))
+        lines.append("Dropsondes    N={:<4}".format(len(drop_data)))
 
     if flags.get("buoys"):
-        lines.append("Buoys         N={:<4}".format(len(buoy_files)))
+        lines.append("Buoys         N={:<4}".format(len(buoy_data)))
 
     if flags.get("p3_tracks"):
-        lines.append("P-3 tracks    N={:<4}".format(len(p3_files)))
+        lines.append("P-3 tracks    N={:<4}".format(len(p3_data)))
 
     if flags.get("g3_tracks"):
-        lines.append("G-III tracks  N={:<4}".format(len(g3_files)))
+        lines.append("G-III tracks  N={:<4}".format(len(g3_data)))
 
     return "\n".join(lines)
 
@@ -214,12 +214,19 @@ def plot_trajectories(seq, plot_flags=plot_flags):
                 color="darkred", lw=1.5, transform=transform_pc,
                 label="Dropsondes traj" if is_first else None
             )
-            ax.plot(
-                d["lon"][-1], d["lat"][-1],
-                "o", color="black", markeredgecolor="yellow", markersize=6,
-                transform=transform_pc,
-                label="Dropsondes@surf" if is_first else None
-            )
+            valid_idx = np.where(~np.isnan(d["lon"]) & ~np.isnan(d["lat"]))[0]
+
+            if len(valid_idx) > 0:
+                last_valid_index = valid_idx[-1]
+                lon = d["lon"][last_valid_index]
+                lat = d["lat"][last_valid_index]
+
+                ax.plot(
+                    lon, lat,
+                    "o", color="black", markeredgecolor="yellow", markersize=6,
+                    transform=transform_pc,
+                    label="Dropsondes@surf" if is_first else None
+                )
 
     # --- G3 Aircraft Tracks ---
     if plot_flags["g3_tracks"]:
@@ -230,7 +237,7 @@ def plot_trajectories(seq, plot_flags=plot_flags):
                 d["lat"][::tracks_subsample_step],
                 lw=0.7, linestyle="--", alpha=0.6,
                 color="purple", transform=transform_pc,
-                label="G-3" if is_first == 0 else None
+                label="G-3" if is_first else None
             )
 
     # --- P3 Aircraft Tracks ---
@@ -242,7 +249,7 @@ def plot_trajectories(seq, plot_flags=plot_flags):
                 d["lat"][::tracks_subsample_step],
                 lw=0.7, linestyle="--", alpha=0.6,
                 color="orange", transform=transform_pc,
-                label="P-3" if is_first == 0 else None
+                label="P-3" if is_first else None
             )
 
     # --- Ground Sites ---
