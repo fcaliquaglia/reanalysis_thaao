@@ -50,13 +50,13 @@ zoom_extent = [-80, -5, 75, 87]
 start_arcsix = np.datetime64("2024-05-15")
 end_arcsix = np.datetime64("2024-08-15")
 
-subsample_step_buoys = 10
+subsample_step_buoys = 3
 subsample_step_tracks = 100
 
 proj = ccrs.NorthPolarStereo(central_longitude=-40)
 transform_pc = ccrs.PlateCarree()
 
-dpi = 100
+dpi = 300
 
 # ---------------------------- END SETTINGS ---------------------------- #
 
@@ -490,32 +490,29 @@ def plot_surf_date(seq, plot_flags=plot_flags):
         vmax = mdates.date2num(end_arcsix)
     extend = colorbar_extend(data_all, vmin, vmax)
 
-    # --- Colorbar with inset axis for better sizing ---
+    # --- Colorbar with inset axis at bottom inside the plot ---
     cax = inset_locator.inset_axes(
         ax,
-        width="3%",
-        height="40%",
-        loc="lower right",
-        bbox_to_anchor=(-0.05, 0, 1, 1),
+        width="100%",            # Width of the colorbar
+        height="100%",            # Height of the colorbar (since it's horizontal)
+        loc="lower center",     # Place at the bottom center
+        bbox_to_anchor=(0.2, 0.05, 0.6, 0.05),  # Fine-tune position (x0, y0, width, height)
         bbox_transform=ax.transAxes,
-        borderpad=2
+        borderpad=1
     )
-
+    
+    # --- Create the horizontal colorbar ---
     cbar = plt.colorbar(
         plt.cm.ScalarMappable(norm=norm, cmap=cmap),
         cax=cax,
-        orientation="vertical",
-        label="Date",
-        extend=extend  # Automatically determined
+        orientation="horizontal",
+        extend=extend
     )
-
-    # --- Format colorbar ticks as dates ---
-    cbar.ax.yaxis.set_major_formatter(mdates.DateFormatter("%d-%m"))
-    plt.setp(cbar.ax.get_yticklabels(), ha="right")
-    cbar.ax.yaxis.set_label_position("left")
-    cbar.ax.set_ylabel("Date", labelpad=10)
-    cbar.ax.yaxis.tick_right()
-    cbar.ax.tick_params(axis="y", pad=30)
+    
+    # --- Format ticks as dates ---
+    cbar.ax.xaxis.set_major_formatter(mdates.DateFormatter("%d-%m"))
+    cbar.ax.tick_params(axis="x", labelsize=8, pad=3)
+    cbar.set_label("Date", labelpad=5, fontsize=9)
 
     # --- Legend ---
     legend = ax.legend(loc="lower left")
