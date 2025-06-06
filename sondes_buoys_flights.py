@@ -19,6 +19,7 @@ plot_flags = dict(
     dropsondes=True,
     p3_tracks=True,
     g3_tracks=True,
+    radiosondes=True
 )
 
 basefol = r"H:\Shared drives\Dati_THAAO"
@@ -49,8 +50,8 @@ zoom_extent = [-80, -5, 75, 87]
 start_arcsix = np.datetime64("2024-05-15")
 end_arcsix = np.datetime64("2024-08-15")
 
-buoy_subsample_step = 10
-tracks_subsample_step = 100
+subsample_step_buoys = 10
+subsample_step_tracks = 100
 
 proj = ccrs.NorthPolarStereo(central_longitude=-40)
 transform_pc = ccrs.PlateCarree()
@@ -154,11 +155,7 @@ def plot_background(ax, extent, title, add_grid=True):
     ax.set_title(title)
 
 
-def generate_status_string(drop_files,
-                           buoy_files,
-                           p3_files,
-                           g3_files,
-                           flags):
+def generate_status_string(flags):
     lines = []
     if flags.get("ground_sites"):
         lines.append("Ground sites  N={:<4}".format(len(sites.keys())))
@@ -199,7 +196,7 @@ def plot_trajectories(seq, plot_flags=plot_flags):
                 label="Buoys" if i == 0 else None
             )
             letter = "".join(
-                filter(str.isalpha, os.path.basename(d['name'])))[0]
+                filter(str.isalpha, os.path.basename(d['filename'])))[0]
             ax.text(
                 d["lon"][0], d["lat"][0], letter,
                 fontsize=10, fontweight="bold",
@@ -236,8 +233,8 @@ def plot_trajectories(seq, plot_flags=plot_flags):
         for i, d in enumerate(g3_data):
             is_first = (i == 0)
             ax.plot(
-                d["lon"][::tracks_subsample_step],
-                d["lat"][::tracks_subsample_step],
+                d["lon"][::subsample_step_tracks],
+                d["lat"][::subsample_step_tracks],
                 lw=0.7, linestyle="--", alpha=0.6,
                 color="purple", transform=transform_pc,
                 label="G-3" if is_first else None
@@ -248,8 +245,8 @@ def plot_trajectories(seq, plot_flags=plot_flags):
         for i, d in enumerate(p3_data):
             is_first = (i == 0)
             ax.plot(
-                d["lon"][::tracks_subsample_step],
-                d["lat"][::tracks_subsample_step],
+                d["lon"][::subsample_step_tracks],
+                d["lat"][::subsample_step_tracks],
                 lw=0.7, linestyle="--", alpha=0.6,
                 color="orange", transform=transform_pc,
                 label="P-3" if is_first else None
@@ -260,9 +257,7 @@ def plot_trajectories(seq, plot_flags=plot_flags):
         plot_ground_sites(ax)
 
     # --- Status Text ---
-    status_text = generate_status_string(
-        drop_files, buoy_files, p3_files, g3_files, plot_flags
-    )
+    status_text = generate_status_string(plot_flags)
     ax.text(
         0.02, 0.98, status_text,
         transform=ax.transAxes,
@@ -295,50 +290,50 @@ def plot_surf_temp(seq, plot_flags=plot_flags):
     cmap = plt.get_cmap("coolwarm")
 
     # --- Gather all buoy data ---
-    all_buoy_temps = []
-    all_buoy_lats = []
-    all_buoy_lons = []
     if plot_flags["buoys"]:
+        all_buoy_lons = []
+        all_buoy_lats = []
+        all_buoy_temps = []
         for d in buoy_data:
-            if d["time"] is None or np.all(np.isnan(d["time"])):
-                continue
+            valid_mask = ((~np.isnan(d["temp"])) &
+                          (d["time"] >= start_arcsix) &
+                          (d["time"] <= end_arcsix)
+                          )
 
-            valid_mask = (
-                ~np.isnan(d["lat"]) &
-                ~np.isnan(d["lon"]) &
-                ~np.isnan(d["temp"]) &
-                (d["time"] >= start_arcsix) &
-                (d["time"] <= end_arcsix)
-            )
-
-            all_buoy_lats.extend(d["lon"][valid_mask])
+            all_buoy_lats.extend(d["lat"][valid_mask])
             all_buoy_lons.extend(d["lon"][valid_mask])
             all_buoy_temps.extend(d["temp"][valid_mask])
 
-        all_buoy_lats = all_buoy_lats[::buoy_subsample_step]
-        all_buoy_lons = all_buoy_lons[::buoy_subsample_step]
-        all_buoy_temps = all_buoy_temps[::buoy_subsample_step]
+        all_buoy_lats = all_buoy_lats[::subsample_step_buoys]
+        all_buoy_lons = all_buoy_lons[::subsample_step_buoys]
+        all_buoy_temps = all_buoy_temps[::subsample_step_buoys]
 
         # --- Plot buoy temps scatter ---
         ax.scatter(all_buoy_lons, all_buoy_lats, c=all_buoy_temps,
-                   cmap=cmap, norm=norm, s=30, alpha=0.9,
+                   cmap=cmap, norm=norm, s=20, alpha=0.9,
                    edgecolor="none", linewidth=0.5, marker="s",
-                   transform=transform_pc,
-                   label=f"Buoys (aech {buoy_subsample_step}th pnt)", zorder=10)
+                   transform=transform_pc, zorder=10,
+                   label=f"Buoys (each {subsample_step_buoys}th pnt)")
 
     # --- Prepare dropsonde surface temps ---
-    all_drop_surf_temps = []
-    all_drop_surf_lats = []
-    all_drop_surf_lons = []
     if plot_flags["dropsondes"]:
+        all_drop_surf_lons = []
+        all_drop_surf_lats = []
+        all_drop_surf_temps = []
+        all_drop_surf_pres = []
         for d in drop_data:
-            if d["time"] is None or np.all(np.isnan(d["time"])):
-                continue
+            valid_idx = np.nanargmax(d["pres"]) if np.any(
+                ~np.isnan(d["pres"])) else None
 
-            idx_surf = np.nanargmax(d["pres"]) if np.any(~np.isnan(d["pres"])) else None
+            all_drop_surf_temps.append(
+                d["temp"][valid_idx] if valid_idx is not None else np.nan)
+            all_drop_surf_pres.append(
+                d["pres"][valid_idx] if valid_idx is not None else np.nan)
+            all_drop_surf_lons.append(
+                d["lon"][valid_idx] if valid_idx is not None else np.nan)
+            all_drop_surf_lats.append(
+                d["lat"][valid_idx] if valid_idx is not None else np.nan)
 
-            surf_temp = d["temp"][idx_surf] if idx_surf is not None else np.nan
-            all_drop_surf_temps.append(surf_temp)
         # --- Plot dropsonde temps scatter ---
         ax.scatter(all_drop_surf_lons, all_drop_surf_lats, c=all_drop_surf_temps,
                    cmap=cmap, norm=norm, s=30,
@@ -381,8 +376,7 @@ def plot_surf_temp(seq, plot_flags=plot_flags):
     # --- Legend ---
     legend = ax.legend(loc="lower left")
     legend.set_zorder(10)
-    status_text = generate_status_string(
-        drop_files, buoy_files, p3_files, g3_files, plot_flags)
+    status_text = generate_status_string(plot_flags)
 
     ax.text(0.02, 0.98, status_text,
             transform=ax.transAxes,
@@ -414,33 +408,22 @@ def plot_surf_date(seq, plot_flags=plot_flags):
     cmap = plt.get_cmap("viridis")
 
     # --- Gather all buoy data ---
-    all_buoy_temps = []
-    all_buoy_lats = []
-    all_buoy_lons = []
-    all_buoy_dates = []
     if plot_flags["buoys"]:
+        all_buoy_lons = []
+        all_buoy_lats = []
+        all_buoy_times = []
         for d in buoy_data:
-            lon_min, lon_max, lat_min, lat_max = full_extent
+            valid_mask = ((d["time"] >= start_arcsix) &
+                          (d["time"] <= end_arcsix)
+                          )
 
-            valid_mask = (
-                ~np.isnan(d["lat"]) &
-                ~np.isnan(d["lon"]) &
-                ~np.isnan(d["time"]) &
-                (d["lat"] >= lat_min) & (d["lat"] <= lat_max) &
-                (d["lon"] >= lon_min) & (d["lon"] <= lon_max)
-            )
-            if np.all(valid_mask) == True:
-                continue
-
-            all_buoy_lats.extend(d["lon"][valid_mask])
-            all_buoy_lons.extend(d["lon"][valid_mask])
-            all_buoy_temps.extend(d["temp"][valid_mask])
-            all_buoy_dates.extend(d["time"][valid_mask])
-
-        all_buoy_lats = all_buoy_lats[::buoy_subsample_step]
-        all_buoy_lons = all_buoy_lons[::buoy_subsample_step]
-        all_buoy_dates = all_buoy_dates[::buoy_subsample_step]
-        all_buoy_nums = mdates.date2num(np.array(all_buoy_dates))
+            all_buoy_lats.append(d["lat"][valid_mask])
+            all_buoy_lons.append(d["lon"][valid_mask])
+            all_buoy_times.append(d["time"][valid_mask])
+        all_buoy_lats = np.concatenate(all_buoy_lats)[::subsample_step_buoys]
+        all_buoy_lons = np.concatenate(all_buoy_lons)[::subsample_step_buoys]
+        all_buoy_times = np.concatenate(all_buoy_times)[::subsample_step_buoys]
+        all_buoy_nums = mdates.date2num(all_buoy_times)
         # Compute RGBA colors for each point via the colormap
         all_buoy_rgba = cmap(norm(all_buoy_nums))
         mask_buoy_out = (all_buoy_nums < vmin) | (all_buoy_nums > vmax)
@@ -459,23 +442,20 @@ def plot_surf_date(seq, plot_flags=plot_flags):
         )
 
     # --- Prepare dropsonde surface temps ---
-    all_drop_surf_dates = []
-    all_drop_surf_lats = []
-    all_drop_surf_lons = []
-    all_drop_surf_nums = []
     if plot_flags["dropsondes"]:
+        all_drop_surf_lons = []
+        all_drop_surf_lats = []
+        all_drop_surf_times = []
         for d in drop_data:
-            if d["time"] is None or np.all(np.isnan(d["time"])):
-                continue
-
-            valid_mask = (~np.isnan(d["lat"]) & ~np.isnan(d["lon"]))
-            if np.all(valid_mask) == True:
-                continue
-
-            all_drop_surf_lats.append(d["lat"][valid_mask][-1])
-            all_drop_surf_lons.append(d["lon"][valid_mask][-1])
-            all_drop_surf_dates.append(d["time"][valid_mask][-1])
-        all_drop_surf_nums = mdates.date2num(np.array(all_drop_surf_dates))
+            print(drop_data['filename'])
+            valid_idx = -1
+            all_drop_surf_lats.append(d["lat"][valid_idx])
+            all_drop_surf_lons.append(d["lon"][valid_idx])
+            all_drop_surf_times.append(d["time"][valid_idx])
+        all_drop_surf_lats = np.array(all_drop_surf_lats)
+        all_drop_surf_lons = np.array(all_drop_surf_lons)
+        all_drop_surf_times = np.array(all_drop_surf_times)
+        all_drop_surf_nums = mdates.date2num(all_drop_surf_times)
         all_drop_surf_rgba = cmap(norm(all_drop_surf_nums))
         all_mask_drop_surf_out = (all_drop_surf_nums < vmin) | (
             all_drop_surf_nums > vmax)
@@ -496,7 +476,12 @@ def plot_surf_date(seq, plot_flags=plot_flags):
         plot_ground_sites(ax)
 
     # Determine whether to extend colorbar
-    data_all = np.concatenate((all_buoy_nums, all_drop_surf_nums))
+    try:
+        data_all = np.concatenate((all_buoy_nums, all_drop_surf_nums))
+    except Exception:
+        data_all = np.array([])
+        vmin = mdates.date2num(start_arcsix)
+        vmax = mdates.date2num(end_arcsix)
     extend = colorbar_extend(data_all, vmin, vmax)
 
     # --- Colorbar with inset axis for better sizing ---
@@ -529,8 +514,7 @@ def plot_surf_date(seq, plot_flags=plot_flags):
     # --- Legend ---
     legend = ax.legend(loc="lower left")
     legend.set_zorder(10)
-    status_text = generate_status_string(
-        drop_files, buoy_files, p3_files, g3_files, plot_flags)
+    status_text = generate_status_string(plot_flags)
 
     ax.text(0.02, 0.98, status_text,
             transform=ax.transAxes,
@@ -556,118 +540,129 @@ def plot_surf_date(seq, plot_flags=plot_flags):
 if __name__ == "__main__":
 
     # Radiosondes
-    radio_files = process_nc_folder(folders["radiosondes"], "*.nc")
-    radio_data = []
-    for rf in radio_files:
-        print(rf)
-        ds = xr.open_dataset(rf)
-        time = pd.to_datetime(ds.attrs["launch_time"],
-                              format="%Y%m%d_%H%M")
-        temp = ds["air_temperature"][0].values - 273.15
-        pres = ds["air_pressure"][0].values
-        radio_data.append(
-            {"filename": os.path.basename(rf),
-                "time": time,
-                "temp": temp,
-                "pres": pres
-             })
+    if plot_flags['radiosondes']:
+        radio_files = process_nc_folder(folders["radiosondes"], "*.nc")
+        radio_data = []
+        for rf in radio_files:
+            print(rf)
+            ds = xr.open_dataset(rf)
+            time = pd.to_datetime(ds.attrs["launch_time"],
+                                  format="%Y%m%d_%H%M")
+            temp = ds["air_temperature"][0].values - 273.15
+            pres = ds["air_pressure"][0].values
+            radio_data.append(
+                {"filename": os.path.basename(rf),
+                    "time": time,
+                    "temp": temp,
+                    "pres": pres
+                 })
 
     # Dropsondes
-    drop_files = process_nc_folder(
-        folders["dropsondes"], "ARCSIX-AVAPS-netCDF_G3*.nc")
-    drop_data = []
-    for df in drop_files:
-        print(df)
-        ds = xr.open_dataset(df)
-        lat = ds["lat"].values
-        lon = ds["lon"].values
-        msk, lat, lon = filter_coords(lat, lon, bounds=bounds)
-        if not msk.any():
-            print("Skipped – no valid coordinates after filtering.")
-        else:
-            print("OK")
-        temp = ds["tdry"][msk].values
-        pres = ds["pres"][msk].values
-        time = ds["time"][msk].values
-        temp = np.where(temp == -999.0, np.nan, temp)
-        pres = np.where(pres == -999.0, np.nan, pres)
-        drop_data.append({"filename": os.path.basename(df),
-                          "lat": lat, "lon": lon, "temp": temp,
-                          "time": time, "pres": pres
-                          })
+    if plot_flags['dropsondes']:
+        drop_files = process_nc_folder(
+            folders["dropsondes"], "ARCSIX-AVAPS-netCDF_G3*.nc")
+        drop_data = []
+        for df in drop_files:
+            print(df)
+            ds = xr.open_dataset(df)
+            lat = ds["lat"].values
+            lon = ds["lon"].values
+            msk, lat, lon = filter_coords(lat, lon, bounds=bounds)
+            if not msk.any():
+                print("Skipped – no valid coordinates after filtering.")
+            else:
+                print("OK")
+            temp = ds["tdry"][msk].values
+            pres = ds["pres"][msk].values
+            time = ds["time"][msk].values
+            temp = np.where(temp == -999.0, np.nan, temp)
+            pres = np.where(pres == -999.0, np.nan, pres)
+            drop_data.append({"filename": os.path.basename(df),
+                              "lat": lat, "lon": lon, "temp": temp,
+                              "time": time, "pres": pres
+                              })
 
     # Buoys
-    buoy_files = [f for f in process_nc_folder(
-        folders["buoys"], "2024*processed.nc")]
-    buoy_data = []
-    for bf in buoy_files:
-        print(bf)
-        ds = xr.open_dataset(bf)
-        lat = ds["latitude"].isel(trajectory=0).values
-        lon = ds["longitude"].isel(trajectory=0).values
-        msk, lat, lon = filter_coords(lat, lon, bounds=bounds)
-        if not msk.any():
-            print("Skipped – no valid coordinates after filtering.")
-            continue
-        else:
-            print("OK")
-        temp = ds["air_temp"].isel(trajectory=0).values[msk]
-        time = ds["time"].isel(trajectory=0).values[msk]
-        buoy_data.append({"filename": os.path.basename(bf),
-                          "lat": lat, "lon": lon, "temp": temp, "time": time
-                          })
+    if plot_flags['buoys']:
+        buoy_files = [f for f in process_nc_folder(
+            folders["buoys"], "2024*processed.nc")]
+        buoy_data = []
+        for bf in buoy_files:
+            print(bf)
+            ds = xr.open_dataset(bf)
+            lat = ds["latitude"].isel(trajectory=0).values
+            lon = ds["longitude"].isel(trajectory=0).values
+            msk, lat, lon = filter_coords(lat, lon, bounds=bounds)
+            if not msk.any():
+                print("Skipped – no valid coordinates after filtering.")
+                continue
+            else:
+                print("OK")
+            temp = ds["air_temp"].isel(trajectory=0).values[msk]
+            time = ds["time"].isel(trajectory=0).values[msk]
+            buoy_data.append({"filename": os.path.basename(bf),
+                              "lat": lat, "lon": lon, "temp": temp, "time": time
+                              })
 
     # G3 tracks
-    g3_files = glob.glob(os.path.join(folders["g3"], "*R0*.ict"))
-    g3_data = []
-    for gf in g3_files:
-        print(gf)
-        base = os.path.basename(gf)
-        m = re.search(r"_L(\d)\.ict$", base)
-        if not m or m.group(1) == "2":
-            ds = read_ict_file(gf)
-            lat = ds["Latitude"].values
-            lon = ds["Longitude"].values
-            msk, lat, lon = filter_coords(lat, lon, bounds=bounds)
-            if not msk.any():
-                print("Skipped – no valid coordinates after filtering.")
-                continue
-            else:
-                print("OK")
-            g3_data.append({"filename": os.path.basename(gf),
-                            "lat": lat, "lon": lon, "temp": np.nan, "time": np.nan
-                            })
+    if plot_flags['g3_tracks']:
+        g3_files = glob.glob(os.path.join(folders["g3"], "*R0*.ict"))
+        g3_data = []
+        for gf in g3_files:
+            print(gf)
+            base = os.path.basename(gf)
+            m = re.search(r"_L(\d)\.ict$", base)
+            if not m or m.group(1) == "2":
+                ds = read_ict_file(gf)
+                lat = ds["Latitude"].values
+                lon = ds["Longitude"].values
+                msk, lat, lon = filter_coords(lat, lon, bounds=bounds)
+                if not msk.any():
+                    print("Skipped – no valid coordinates after filtering.")
+                    continue
+                else:
+                    print("OK")
+                g3_data.append({"filename": os.path.basename(gf),
+                                "lat": lat, "lon": lon, "temp": np.nan, "time": np.nan
+                                })
 
     # P3 tracks
-    p3_files = glob.glob(os.path.join(folders["p3"], "*R0*.ict"))
-    p3_data = []
-    for pf in p3_files:
-        print(pf)
-        base = os.path.basename(pf)
-        m = re.search(r"_L(\d)\.ict$", base)
-        if not m or m.group(1) == "2":
-            ds = read_ict_file(pf)
-            lat = ds["Latitude"].values
-            lon = ds["Longitude"].values
-            msk, lat, lon = filter_coords(lat, lon, bounds=bounds)
-            if not msk.any():
-                print("Skipped – no valid coordinates after filtering.")
-                continue
-            else:
-                print("OK")
-            p3_data.append({"filename": os.path.basename(pf),
-                            "lat": lat, "lon": lon, "temp": np.nan, "time": np.nan
-                            })
+    if plot_flags['p3_tracks']:
+        p3_files = glob.glob(os.path.join(folders["p3"], "*R0*.ict"))
+        p3_data = []
+        for pf in p3_files:
+            print(pf)
+            base = os.path.basename(pf)
+            m = re.search(r"_L(\d)\.ict$", base)
+            if not m or m.group(1) == "2":
+                ds = read_ict_file(pf)
+                lat = ds["Latitude"].values
+                lon = ds["Longitude"].values
+                msk, lat, lon = filter_coords(lat, lon, bounds=bounds)
+                if not msk.any():
+                    print("Skipped – no valid coordinates after filtering.")
+                    continue
+                else:
+                    print("OK")
+                p3_data.append({"filename": os.path.basename(pf),
+                                "lat": lat, "lon": lon, "temp": np.nan, "time": np.nan
+                                })
 
-    del ds, temp, time, pres, lat, lon, msk
+    del_list = ["ds", "temp", "time", "pres", "lat", "lon", "msk"]
+    for var_name in del_list:
+        try:
+            del globals()[var_name]
+        except KeyError:
+            print(f"Variable '{var_name}' not found.")
+
     # ---------------------------- EXECUTION ---------------------------- #
-    # plot_flags = {k: True for k in plot_flags}
-    # plot_trajectories("all", plot_flags)
-    # plot_flags = {k: False for k in plot_flags}
-    # keys = list(plot_flags.keys())
-    # for i, key in enumerate(keys, start=1):
-    #     current_flags = {k: (j < i) for j, k in enumerate(keys)}
-    #     plot_trajectories(i, current_flags)
+    plot_flags = {k: True for k in plot_flags}
+    plot_trajectories("all", plot_flags)
+    plot_flags = {k: False for k in plot_flags}
+    keys = list(plot_flags.keys())
+    for i, key in enumerate(keys, start=1):
+        current_flags = {k: (j < i) for j, k in enumerate(keys)}
+        plot_trajectories(i, current_flags)
 
     current_flags = {k: False for k in plot_flags}
     current_flags["ground_sites"] = True
