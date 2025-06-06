@@ -36,9 +36,15 @@ sites = {
     "Alert": (-62.5072, 82.4508, "green")
 }
 
+
+lon_min = -105
+lon_max = -10
+lat_min = 60
+lat_max = 85
+bounds = (lat_min, lat_max, lon_min, lon_max)
+full_extent = [lon_min, lon_max, lat_min, lat_max]
+
 zoom_extent = [-80, -5, 75, 87]
-full_extent = [-105, -10, 60, 85]
-bounds = (full_extent[2], full_extent[3], full_extent[0], full_extent[1])
 
 start_arcsix = np.datetime64("2024-05-15")
 end_arcsix = np.datetime64("2024-08-15")
@@ -206,13 +212,13 @@ def plot_trajectories(seq, plot_flags=plot_flags):
             ax.plot(
                 d["lon"], d["lat"],
                 color="darkred", lw=1.5, transform=transform_pc,
-                label="Dropsondes traj." if is_first else None
+                label="Dropsondes traj" if is_first else None
             )
             ax.plot(
                 d["lon"][-1], d["lat"][-1],
                 "o", color="black", markeredgecolor="yellow", markersize=6,
                 transform=transform_pc,
-                label="Dropsondes@surface" if is_first else None
+                label="Dropsondes@surf" if is_first else None
             )
 
     # --- G3 Aircraft Tracks ---
@@ -284,8 +290,6 @@ def plot_surf_temp(seq, plot_flags=plot_flags):
     all_buoy_lons = []
     if plot_flags["buoys"]:
         for d in buoy_data:
-            lon_min, lon_max, lat_min, lat_max = full_extent
-
             valid_mask = (
                 ~np.isnan(d["lat"]) &
                 ~np.isnan(d["lon"]) &
@@ -326,6 +330,10 @@ def plot_surf_temp(seq, plot_flags=plot_flags):
             if np.all(valid_mask) == True:
                 continue
 
+            idx_surf = np.nargmax(d["pres"]) if np.any(
+                ~np.isnan(d["pres"])) else None
+            surf_temp = temp[idx_surf] if idx_surf is not None else np.nan
+            all_drop_surf_temps.append(surf_temp)
         # --- Plot dropsonde temps scatter ---
         ax.scatter(all_drop_surf_lons, all_drop_surf_lats, c=all_drop_surf_temps,
                    cmap=cmap, norm=norm, s=30,
@@ -571,7 +579,6 @@ if __name__ == "__main__":
         msk, lat, lon = filter_coords(lat, lon, bounds=bounds)
         if not msk.any():
             print("Skipped – no valid coordinates after filtering.")
-            continue
         else:
             print("OK")
         temp = ds["tdry"][msk].values
@@ -579,10 +586,8 @@ if __name__ == "__main__":
         time = ds["time"][msk].values
         temp = np.where(temp == -999.0, np.nan, temp)
         pres = np.where(pres == -999.0, np.nan, pres)
-        idx_surf = np.nanargmax(pres) if np.any(~np.isnan(pres)) else None
-        surf_temp = temp[idx_surf] if idx_surf is not None else np.nan
         drop_data.append({
-            "lat": lat, "lon": lon, "temp": surf_temp,
+            "lat": lat, "lon": lon, "temp": temp,
             "time": time, "pres": pres
         })
 
