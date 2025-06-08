@@ -73,11 +73,11 @@ def read_rean(vr, dataset_type):
                 if "y" in ds[var_name].dims:
                     ds[var_name] = ds[var_name].isel(y=slice(None, None, -1))
 
-    # Flip latitude and longitude if they depend on y
-    if "latitude" in ds and "y" in ds["latitude"].dims:
-        ds["latitude"] = ds["latitude"].isel(y=slice(None, None, -1))
-    if "longitude" in ds and "y" in ds["longitude"].dims:
-        ds["longitude"] = ds["longitude"].isel(y=slice(None, None, -1))
+            # Flip latitude and longitude if they depend on y
+            if "latitude" in ds and "y" in ds["latitude"].dims:
+                ds["latitude"] = ds["latitude"].isel(y=slice(None, None, -1))
+            if "longitude" in ds and "y" in ds["longitude"].dims:
+                ds["longitude"] = ds["longitude"].isel(y=slice(None, None, -1))
 
         # Adjust longitude if needed
         if inpt.thaao_lon < 0:

@@ -29,6 +29,7 @@ import plot_func as plt_f
 import read_func as rd_f
 import res_func as rs_f
 
+
 def main():
     for tres in inpt.tres_list:
         inpt.tres = tres
@@ -50,6 +51,7 @@ def main():
             plt_f.plot_scatter_cum()
             for seas in inpt.seass:
                 plt_f.plot_scatter(seas)
+
 
 if __name__ == "__main__":
     main()
