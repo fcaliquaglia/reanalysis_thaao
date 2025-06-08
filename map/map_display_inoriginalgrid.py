@@ -7,7 +7,7 @@ import rasterio
 from rasterio.plot import show
 from rasterio.warp import calculate_default_transform, reproject, Resampling, transform
 import xarray as xr
-import xesmf as xe
+#import xesmf as xe
 
 # -------------------
 basefol = r"H:\Shared drives\Reanalysis"
@@ -212,7 +212,7 @@ def reproj_carra_if_needed(ds_c_orig, output_path):
     return xr.open_dataset(output_path)
 
 # ------------------
-# Usage:
+
 
 carra_regrid_path = os.path.join(basefol, "carra_regridded.nc")
 ds_c_orig = xr.open_dataset(os.path.join(

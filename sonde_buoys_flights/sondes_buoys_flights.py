@@ -23,6 +23,7 @@ plot_flags = dict(
 )
 
 basefol = r"H:\Shared drives\Dati_THAAO"
+os.chdir("sonde_buoys_flights")
 folders = {
     "dropsondes": os.path.join(basefol, r"thaao_arcsix\dropsondes"),
     "radiosondes": os.path.join(basefol, r"thaao_rs_sondes\txt\2024"),
