@@ -7,9 +7,9 @@ Brief description
 """
 
 # =============================================================
-# CREATED: 
+# CREATED:
 # AFFILIATION: INGV
-# AUTHORS: Filippo Cali' Quaglia
+# AUTHORS: Filippo Cali" Quaglia
 # =============================================================
 #
 # -------------------------------------------------------------------------------
@@ -41,54 +41,57 @@ def read_rean(vr, dataset_type):
     process it, and store it in the inpt.extr dictionary.
 
     :param vr: The variable key.
-    :param dataset_type: One of ['c', 'e', 'l'] for carra, era5, era5_land respectively.
+    :param dataset_type: One of ["c", "e", "l"] for carra, era5, era5_land respectively.
     :return: None
     """
     data_all = pd.DataFrame()
-    if dataset_type == 'c':
+    if dataset_type == "c":
         basefol = inpt.basefol_c
-    if dataset_type == 'e':
+    if dataset_type == "e":
         basefol = inpt.basefol_e
-    if dataset_type == 'l':
+    if dataset_type == "l":
         basefol = inpt.basefol_l
 
     for year in inpt.years:
-        ds_path = os.path.join(basefol, f"{inpt.extr[vr][dataset_type]['fn']}{year}.nc")
+        ds_path = os.path.join(
+            basefol, f'{inpt.extr[vr][dataset_type]["fn"]}{year}.nc')
         try:
-            ds = xr.open_dataset(ds_path, decode_timedelta=True, engine='netcdf4')
-            print(f'OK: {inpt.extr[vr][dataset_type]['fn']}{year}.nc')
+            ds = xr.open_dataset(
+                ds_path, decode_timedelta=True, engine="netcdf4")
+            print(f'OK: {inpt.extr[vr][dataset_type]["fn"]}{year}.nc')
         except FileNotFoundError:
-            print(f'NOT FOUND: {inpt.extr[vr][dataset_type]['fn']}{year}.nc')
+            print(f'NOT FOUND: {inpt.extr[vr][dataset_type]["fn"]}{year}.nc')
 
         # Adjust longitude if needed
         if inpt.thaao_lon < 0:
             inpt.thaao_lon = 360 + inpt.thaao_lon
 
-        dist = ((ds["latitude"] - inpt.thaao_lat) ** 2 + (ds["longitude"] - inpt.thaao_lon) ** 2)
+        dist = ((ds["latitude"] - inpt.thaao_lat) ** 2 +
+                (ds["longitude"] - inpt.thaao_lon) ** 2)
         y_idx, x_idx = np.unravel_index(dist.argmin().values, dist.shape)
 
-        data_tmp = ds[inpt.extr[vr][dataset_type]['var_name']].isel(y=y_idx, x=x_idx).to_dataframe()
+        data_tmp = ds[inpt.extr[vr][dataset_type]["var_name"]].isel(
+            y=y_idx, x=x_idx).to_dataframe()
         print(
-            f"Closest grid point at lat={inpt.thaao_lat:.4f} and lon={inpt.thaao_lon - 360:.4f} is lat={ds["latitude"][y_idx, x_idx].values:.4f} and lon={ds["longitude"][y_idx, x_idx].values - 360:.4f} index=({int(x_idx)}, {int(y_idx)})")
-
+            f'Closest grid point at lat={inpt.thaao_lat:.4f} and lon={inpt.thaao_lon - 360:.4f} is lat={ds["latitude"][y_idx, x_idx].values:.4f} and lon={ds["longitude"][y_idx, x_idx].values - 360:.4f} index=({int(x_idx)}, {int(y_idx)})')
         data_all = pd.concat([data_all, data_tmp], axis=0)
 
-    nan_val = inpt.var_dict[dataset_type]['nanval']
+    nan_val = inpt.var_dict[dataset_type]["nanval"]
     data_all[data_all == nan_val] = np.nan
-    data_all = data_all[inpt.extr[vr][dataset_type]['var_name']].to_frame()
+    data_all = data_all[inpt.extr[vr][dataset_type]["var_name"]].to_frame()
 
-    inpt.extr[vr][dataset_type]['data'] = data_all
-    # inpt.extr[vr][dataset_type]['data'].index = pd.to_datetime(
-    #         inpt.extr[vr][dataset_type]['data'][0] + ' ' + inpt.extr[vr][dataset_type]['data'][1],
-    #         format='%Y-%m-%d %H:%M:%S')
+    inpt.extr[vr][dataset_type]["data"] = data_all
+    # inpt.extr[vr][dataset_type]["data"].index = pd.to_datetime(
+    #         inpt.extr[vr][dataset_type]["data"][0] + " " + inpt.extr[vr][dataset_type]["data"][1],
+    #         format="%Y-%m-%d %H:%M:%S")
     # Select and rename columns
-    # col = inpt.extr[vr][dataset_type]['column']
-    # inpt.extr[vr][dataset_type]['data'] = inpt.extr[vr][dataset_type]['data'][[col]]
-    inpt.extr[vr][dataset_type]['data'].columns = pd.Index([vr])
+    # col = inpt.extr[vr][dataset_type]["column"]
+    # inpt.extr[vr][dataset_type]["data"] = inpt.extr[vr][dataset_type]["data"][[col]]
+    inpt.extr[vr][dataset_type]["data"].columns = pd.Index([vr])
 
     # Radiation calculation for era5_land
-    if dataset_type == 'l' and inpt.var in ['sw_up', 'sw_down', 'lw_up', 'lw_down']:
-        print('RAD CALCULATION NOT IMPLEMENTED for ERA5-L')
+    if dataset_type == "l" and inpt.var in ["sw_up", "sw_down", "lw_up", "lw_down"]:
+        print("RAD CALCULATION NOT IMPLEMENTED for ERA5-L")
         sys.exit()
     # calc_rad_acc_era5_land(vr)
 
@@ -99,23 +102,23 @@ def read_rean(vr, dataset_type):
 #     c_tmp_all = pd.DataFrame()
 #     for year in inpt.years:
 #         ds = xr.open_dataset(
-#                 os.path.join(inpt.basefol_c, f'{inpt.extr[vr]['c']['fn']}{year}.nc'), decode_timedelta=True)
-# 
+#                 os.path.join(inpt.basefol_c, f'{inpt.extr[vr]["c"]["fn"]}{year}.nc'), decode_timedelta=True)
+#
 #         # Wrap longitude if dataset uses 0–360
 #         if inpt.thaao_lon < 0:
 #             inpt.thaao_lon = 360 + inpt.thaao_lon
-# 
+#
 #         dist = ((ds["latitude"] - inpt.thaao_lat) ** 2 + (ds["longitude"] - inpt.thaao_lon) ** 2)
 #         y_idx, x_idx = np.unravel_index(dist.argmin().values, dist.shape)
-#         c_tmp = ds[inpt.extr[vr]['c']['var_name']].isel(y=y_idx, x=x_idx).to_dataframe()
-#         print(f"Closest grid point at lat={inpt.thaao_lat} and lon={inpt.thaao_lon} is {c_tmp}")
+#         c_tmp = ds[inpt.extr[vr]["c"]["var_name"]].isel(y=y_idx, x=x_idx).to_dataframe()
+#         print(f'Closest grid point at lat={inpt.thaao_lat} and lon={inpt.thaao_lon} is {c_tmp}')
 #         c_tmp_all = pd.concat([c_tmp_all, c_tmp], axis=0)
-# 
-#     inpt.extr[vr]['c']['data'] = c_tmp_all
-#     inpt.extr[vr]['c']['data'].index = pd.to_datetime(
-#             inpt.extr[vr]['c']['data'][0] + ' ' + inpt.extr[vr]['c']['data'][1], format='%Y-%m-%d %H:%M:%S')
-#     inpt.extr[vr]['c']['data'] = inpt.extr[vr]['c']['data'][[inpt.extr[vr]['c']['column']]]
-#     inpt.extr[vr]['c']['data'].columns = [vr]
+#
+#     inpt.extr[vr]["c"]["data"] = c_tmp_all
+#     inpt.extr[vr]["c"]["data"].index = pd.to_datetime(
+#             inpt.extr[vr]["c"]["data"][0] + " " + inpt.extr[vr]["c"]["data"][1], format="%Y-%m-%d %H:%M:%S")
+#     inpt.extr[vr]["c"]["data"] = inpt.extr[vr]["c"]["data"][[inpt.extr[vr]["c"]["column"]]]
+#     inpt.extr[vr]["c"]["data"].columns = [vr]
 #     return
 
 
@@ -137,29 +140,29 @@ def read_rean(vr, dataset_type):
 #     for year in inpt.years:
 #         try:
 #             c_tmp = pd.read_table(
-#                     os.path.join('H:\\Shared drives\\Reanalysis\\carra\\thaao\\v1\\', f'thaao_{inpt.extr[vr]['c']['fn']}{year}.txt'), sep='\s+', header=None,
-#                     skiprows=1, engine='python', skip_blank_lines=True)
-#             c_tmp[c_tmp == inpt.var_dict['c']['nanval']] = np.nan
+#                     os.path.join("H:\\Shared drives\\Reanalysis\\carra\\thaao\\v1\\", f'thaao_{inpt.extr[vr]["c"]["fn"]}{year}.txt'), sep="\s+", header=None,
+#                     skiprows=1, engine="python", skip_blank_lines=True)
+#             c_tmp[c_tmp == inpt.var_dict["c"]["nanval"]] = np.nan
 #             c_tmp_all = pd.concat([c_tmp_all, c_tmp], axis=0)
-#             print(f'OK: {inpt.extr[vr]['c']['fn']}{year}.txt')
+#             print(f'OK: {inpt.extr[vr]["c"]["fn"]}{year}.txt')
 #         except FileNotFoundError:
-#             print(f'NOT FOUND: {inpt.extr[vr]['c']['fn']}{year}.txt')
-#     inpt.extr[vr]['c']['data'] = c_tmp_all
-#     inpt.extr[vr]['c']['data'].index = pd.to_datetime(
-#             inpt.extr[vr]['c']['data'][0] + ' ' + inpt.extr[vr]['c']['data'][1], format='%Y-%m-%d %H:%M:%S')
-#     inpt.extr[vr]['c']['data'] = inpt.extr[vr]['c']['data'][[inpt.extr[vr]['c']['column']]]
-#     inpt.extr[vr]['c']['data'].columns = [vr]
+#             print(f'NOT FOUND: {inpt.extr[vr]["c"]["fn"]}{year}.txt')
+#     inpt.extr[vr]["c"]["data"] = c_tmp_all
+#     inpt.extr[vr]["c"]["data"].index = pd.to_datetime(
+#             inpt.extr[vr]["c"]["data"][0] + " " + inpt.extr[vr]["c"]["data"][1], format="%Y-%m-%d %H:%M:%S")
+#     inpt.extr[vr]["c"]["data"] = inpt.extr[vr]["c"]["data"][[inpt.extr[vr]["c"]["column"]]]
+#     inpt.extr[vr]["c"]["data"].columns = [vr]
 #     return
 
 
 # def read_era5(vr):
 #     """
 #     Reads ERA5 data files for the specified variable and aggregates them into a single DataFrame.
-# 
+#
 #     This function processes and consolidates data for a specific variable from multiple annual files,
 #     as determined by the input configuration. Missing data values are replaced with NaN, and the DataFrame
 #     is indexed by a datetime column derived from the input files.
-# 
+#
 #     :param vr: The variable name for which ERA5 data will be read and processed, as specified
 #                in the input configuration.
 #     :return: None. The processed data is directly stored in the global `inpt.extr` dictionary.
@@ -168,31 +171,31 @@ def read_rean(vr, dataset_type):
 #     for year in inpt.years:
 #         try:
 #             e_tmp = pd.read_table(
-#                     os.path.join(inpt.basefol_e, f'{inpt.extr[vr]['e']['fn']}{year}.txt'), sep='\s+', header=None,
-#                     skiprows=1, engine='python')
-#             e_tmp[e_tmp == inpt.var_dict['e']['nanval']] = np.nan
+#                     os.path.join(inpt.basefol_e, f'{inpt.extr[vr]["e"]["fn"]}{year}.txt'), sep="\s+", header=None,
+#                     skiprows=1, engine="python")
+#             e_tmp[e_tmp == inpt.var_dict["e"]["nanval"]] = np.nan
 #             e_tmp_all = pd.concat([e_tmp_all, e_tmp], axis=0)
-#             print(f'OK: {inpt.extr[vr]['e']['fn']}{year}.txt')
+#             print(f'OK: {inpt.extr[vr]["e"]["fn"]}{year}.txt')
 #         except FileNotFoundError:
-#             print(f'NOT FOUND: {inpt.extr[vr]['e']['fn']}{year}.txt')
-#     inpt.extr[vr]['e']['data'] = e_tmp_all
-#     inpt.extr[vr]['e']['data'].index = pd.to_datetime(
-#             inpt.extr[vr]['e']['data'][0] + ' ' + inpt.extr[vr]['e']['data'][1], format='%Y-%m-%d %H:%M:%S')
-#     inpt.extr[vr]['e']['data'] = inpt.extr[vr]['e']['data'][[inpt.extr[vr]['e']['column']]]
-#     inpt.extr[vr]['e']['data'].columns = [vr]
+#             print(f'NOT FOUND: {inpt.extr[vr]["e"]["fn"]}{year}.txt')
+#     inpt.extr[vr]["e"]["data"] = e_tmp_all
+#     inpt.extr[vr]["e"]["data"].index = pd.to_datetime(
+#             inpt.extr[vr]["e"]["data"][0] + " " + inpt.extr[vr]["e"]["data"][1], format="%Y-%m-%d %H:%M:%S")
+#     inpt.extr[vr]["e"]["data"] = inpt.extr[vr]["e"]["data"][[inpt.extr[vr]["e"]["column"]]]
+#     inpt.extr[vr]["e"]["data"].columns = [vr]
 #     return
-# 
-# 
+#
+#
 # def read_era5_land(vr):
 #     """
 #     Reads ERA5-Land data from a series of text files, processes it, and assigns the resulting DataFrame
-#     to a specified key in the input object's structure. It also handles optional radiation variable
+#     to a specified key in the input object"s structure. It also handles optional radiation variable
 #     calculations if applicable.
-# 
+#
 #     The function is designed to handle data files across multiple years, concatenate them into a single
 #     DataFrame, replace specified NaN values with `np.nan`, and perform both index formatting and column
 #     selection based on the input structure.
-# 
+#
 #     :param vr: The variable key to be processed, guiding the extraction and processing of relevant data.
 #     :type vr: str
 #     :return: None
@@ -201,23 +204,23 @@ def read_rean(vr, dataset_type):
 #     for year in inpt.years:
 #         try:
 #             l_tmp = pd.read_table(
-#                     os.path.join(inpt.basefol_l, f'{inpt.extr[vr]['l']['fn']}{year}.txt'), sep='\s+', header=None,
-#                     skiprows=1, engine='python')
-#             l_tmp[l_tmp == inpt.var_dict['l']['nanval']] = np.nan
+#                     os.path.join(inpt.basefol_l, f'{inpt.extr[vr]["l"]["fn"]}{year}.txt"), sep="\s+", header=None,
+#                     skiprows=1, engine="python")
+#             l_tmp[l_tmp == inpt.var_dict["l"]["nanval"]] = np.nan
 #             l_tmp_all = pd.concat([l_tmp_all, l_tmp], axis=0)
-#             print(f'OK: {inpt.extr[vr]['l']['fn']}{year}.txt')
+#             print(f'OK: {inpt.extr[vr]["l"]["fn"]}{year}.txt')
 #         except FileNotFoundError:
-#             print(f'NOT FOUND: {inpt.extr[vr]['l']['fn']}{year}.txt')
-#     inpt.extr[vr]['l']['data'] = l_tmp_all
-#     inpt.extr[vr]['l']['data'].index = pd.to_datetime(
-#             inpt.extr[vr]['l']['data'][0] + ' ' + inpt.extr[vr]['l']['data'][1], format='%Y-%m-%d %H:%M:%S')
-#     inpt.extr[vr]['l']['data'] = inpt.extr[vr]['l']['data'][[inpt.extr[vr]['l']['column']]]
-#     inpt.extr[vr]['l']['data'].columns = [vr]
-# 
+#             print(f'NOT FOUND: {inpt.extr[vr]["l"]["fn"]}{year}.txt')
+#     inpt.extr[vr]["l"]["data"] = l_tmp_all
+#     inpt.extr[vr]["l"]["data"].index = pd.to_datetime(
+#             inpt.extr[vr]["l"]["data"][0] + " " + inpt.extr[vr]["l"]["data"][1], format="%Y-%m-%d %H:%M:%S")
+#     inpt.extr[vr]["l"]["data"] = inpt.extr[vr]["l"]["data"][[inpt.extr[vr]["l"]["column"]]]
+#     inpt.extr[vr]["l"]["data"].columns = [vr]
+#
 #     # only for radiation variables
-#     if inpt.var in ['sw_up', 'sw_down', 'lw_up', 'lw_down']:
+#     if inpt.var in ["sw_up", "sw_down", "lw_up", "lw_down"]:
 #         calc_rad_acc_era5_land(vr)
-# 
+#
 #     return
 
 
@@ -237,14 +240,15 @@ def read_thaao_weather(vr):
     :return: None. The global input structure is updated directly.
     """
     try:
-        inpt.extr[vr]['t']['data'] = xr.open_dataset(
-                os.path.join(inpt.basefol_t, 'thaao_meteo', f'{inpt.extr[vr]['t']['fn']}.nc'),
-                engine='netcdf4').to_dataframe()
-        print(f'OK: {inpt.extr[vr]['t']['fn']}.nc')
+        inpt.extr[vr]["t"]["data"] = xr.open_dataset(
+            os.path.join(inpt.basefol_t, "thaao_meteo", f'{inpt.extr[vr]["t"]["fn"]}.nc'),
+            engine="netcdf4").to_dataframe()
+        print(f'OK: {inpt.extr[vr]["t"]["fn"]}.nc')
     except FileNotFoundError:
-        print(f'NOT FOUND: {inpt.extr[vr]['t']['fn']}.nc')
-    inpt.extr[vr]['t']['data'] = inpt.extr[vr]['t']['data'][[inpt.extr[vr]['t']['column']]]
-    inpt.extr[vr]['t']['data'].columns = [vr]
+        print(f'NOT FOUND: {inpt.extr[vr]["t"]["fn"]}.nc')
+    inpt.extr[vr]["t"]["data"] = inpt.extr[vr]["t"]["data"][[
+        inpt.extr[vr]["t"]["column"]]]
+    inpt.extr[vr]["t"]["data"].columns = [vr]
     return
 
 
@@ -263,24 +267,26 @@ def read_thaao_rad(vr):
     """
     t_tmp_all = pd.DataFrame()
     for i in inpt.rad_daterange[inpt.rad_daterange.year.isin(inpt.years)]:
-        i_fmt = int(i.strftime('%Y'))
+        i_fmt = int(i.strftime("%Y"))
         try:
             t_tmp = pd.read_table(
-                    os.path.join(inpt.basefol_t, 'thaao_rad', f'{inpt.extr[vr]['t']['fn']}{i_fmt}_5MIN.dat'),
-                    engine='python', skiprows=None, header=0, decimal='.', sep='\s+')
-            tmp = np.empty(t_tmp['JDAY_UT'].shape, dtype=dt.datetime)
-            for ii, el in enumerate(t_tmp['JDAY_UT']):
-                new_jd_ass = el + julian.to_jd(dt.datetime(i_fmt - 1, 12, 31, 0, 0), fmt='jd')
-                tmp[ii] = julian.from_jd(new_jd_ass, fmt='jd')
+                os.path.join(inpt.basefol_t, "thaao_rad", f'{inpt.extr[vr]["t"]["fn"]}{i_fmt}_5MIN.dat'),
+                engine="python", skiprows=None, header=0, decimal=".", sep="\s+")
+            tmp = np.empty(t_tmp["JDAY_UT"].shape, dtype=dt.datetime)
+            for ii, el in enumerate(t_tmp["JDAY_UT"]):
+                new_jd_ass = el + \
+                    julian.to_jd(dt.datetime(
+                        i_fmt - 1, 12, 31, 0, 0), fmt="jd")
+                tmp[ii] = julian.from_jd(new_jd_ass, fmt="jd")
                 tmp[ii] = tmp[ii].replace(microsecond=0)
             t_tmp.index = pd.DatetimeIndex(tmp)
-            t_tmp = t_tmp[[inpt.extr[vr]['t']['column']]]
+            t_tmp = t_tmp[[inpt.extr[vr]["t"]["column"]]]
             t_tmp_all = pd.concat([t_tmp_all, t_tmp], axis=0)
-            print(f'OK: {inpt.extr[vr]['t']['fn']}{i_fmt}.txt')
+            print(f'OK: {inpt.extr[vr]["t"]["fn"]}{i_fmt}.txt')
         except FileNotFoundError:
-            print(f'NOT FOUND: {inpt.extr[vr]['t']['fn']}{i_fmt}.txt')
-    inpt.extr[vr]['t']['data'] = t_tmp_all
-    inpt.extr[vr]['t']['data'].columns = [vr]
+            print(f'NOT FOUND: {inpt.extr[vr]["t"]["fn"]}{i_fmt}.txt')
+    inpt.extr[vr]["t"]["data"] = t_tmp_all
+    inpt.extr[vr]["t"]["data"].columns = [vr]
     return
 
 
@@ -300,28 +306,28 @@ def read_thaao_hatpro(vr):
     try:
         #    t1_tmp = pd.read_table(
         #            os.path.join(
-        #                    inpt.basefol_t, 'thaao_hatpro',
-        #                    f'{inpt.extr[vr]['t1']['fn']}', f'{inpt.extr[vr]['t1']['fn']}.DAT'),
-        #            sep='\s+', engine='python', header=0, skiprows=9)
-        # #   t1_tmp.columns = ['Date[y_m_d]', 'Time[h:m]', 'LWP[g/m2]', 'STD_LWP[g/m2]', 'Num']
+        #                    inpt.basefol_t, "thaao_hatpro",
+        #                    f'{inpt.extr[vr]["t1"]["fn"]}', f'{inpt.extr[vr]["t1"]["fn"]}.DAT'),
+        #            sep="\s+", engine="python", header=0, skiprows=9)
+        # #   t1_tmp.columns = ["Date[y_m_d]", "Time[h:m]", "LWP[g/m2]", "STD_LWP[g/m2]", "Num"]
         #    # t1_tmp_all = t1_tmp
 
         #    t1_tmp.index = pd.to_datetime(
-        #    (t1_tmp[['Date_y_m_d']].values + ' ' + t1_tmp[['Time_h:m']].values)[:,0],
-        #    format='%Y-%m-%d %H:%M:%S')
+        #    (t1_tmp[["Date_y_m_d"]].values + " " + t1_tmp[["Time_h:m"]].values)[:,0],
+        #    format="%Y-%m-%d %H:%M:%S")
         t1_tmp = pd.read_table(
-                os.path.join(
-                        inpt.basefol_t, 'thaao_hatpro', f'{inpt.extr[vr]['t1']['fn']}',
-                        f'{inpt.extr[vr]['t1']['fn']}.DAT'), sep='\s+', engine='python', header=0, skiprows=9,
-                parse_dates={'datetime': [0, 1]}, date_format='%Y-%m-%d %H:%M:%S', index_col='datetime')
+            os.path.join(
+                inpt.basefol_t, "thaao_hatpro", f'{inpt.extr[vr]["t1"]["fn"]}',
+                f'{inpt.extr[vr]["t1"]["fn"]}.DAT'), sep="\s+", engine="python", header=0, skiprows=9,
+            parse_dates={"datetime": [0, 1]}, date_format="%Y-%m-%d %H:%M:%S", index_col="datetime")
 
-        inpt.extr[vr]['t1']['data'] = t1_tmp[[inpt.extr[vr]['t1']['column']]]
+        inpt.extr[vr]["t1"]["data"] = t1_tmp[[inpt.extr[vr]["t1"]["column"]]]
 
-        inpt.extr[vr]['t1']['data'].columns = [vr]
+        inpt.extr[vr]["t1"]["data"].columns = [vr]
 
-        print(f'OK: {inpt.extr[vr]['t1']['fn']}.DAT')
+        print(f'OK: {inpt.extr[vr]["t1"]["fn"]}.DAT')
     except FileNotFoundError:
-        print(f'NOT FOUND: {inpt.extr[vr]['t1']['fn']}.DAT')
+        print(f'NOT FOUND: {inpt.extr[vr]["t1"]["fn"]}.DAT')
 
 
 def read_thaao_ceilometer(vr):
@@ -343,26 +349,27 @@ def read_thaao_ceilometer(vr):
     """
     t_tmp_all = pd.DataFrame()
     for i in inpt.ceilometer_daterange[inpt.ceilometer_daterange.year.isin(inpt.years)]:
-        i_fmt = i.strftime('%Y%m%d')
+        i_fmt = i.strftime("%Y%m%d")
         try:
             t_tmp = pd.read_table(
-                    os.path.join(
-                            inpt.basefol_t, 'thaao_ceilometer', 'medie_tat_rianalisi',
-                            f'{i_fmt}{inpt.extr[vr]['t']['fn']}.txt'), skipfooter=0, sep='\s+', header=0, skiprows=9,
-                    engine='python')
-            t_tmp[t_tmp == inpt.var_dict['t']['nanval']] = np.nan
+                os.path.join(
+                    inpt.basefol_t, "thaao_ceilometer", "medie_tat_rianalisi",
+                    f'{i_fmt}{inpt.extr[vr]["t"]["fn"]}.txt'), skipfooter=0, sep="\s+", header=0, skiprows=9,
+                engine="python")
+            t_tmp[t_tmp == inpt.var_dict["t"]["nanval"]] = np.nan
             t_tmp_all = pd.concat([t_tmp_all, t_tmp], axis=0)
-            print(f'OK: {i_fmt}{inpt.extr[vr]['t']['fn']}.txt')
+            print(f'OK: {i_fmt}{inpt.extr[vr]["t"]["fn"]}.txt')
         except (FileNotFoundError, pd.errors.EmptyDataError):
-            print(f'NOT FOUND: {i_fmt}{inpt.extr[vr]['t']['fn']}.txt')
-    inpt.extr[vr]['t']['data'] = t_tmp_all
-    inpt.extr[vr]['t']['data'].index = pd.to_datetime(
-            inpt.extr[vr]['t']['data']['#'] + ' ' + inpt.extr[vr]['t']['data']['date[y-m-d]time[h:m:s]'],
-            format='%Y-%m-%d %H:%M:%S')
-    inpt.extr[vr]['t']['data'].index.name = 'datetime'
-    inpt.extr[vr]['t']['data'] = inpt.extr[vr]['t']['data'].iloc[:, :].filter(
-            [inpt.extr[vr]['t']['column']]).astype(float)
-    inpt.extr[vr]['t']['data'].columns = [vr]
+            print(f'NOT FOUND: {i_fmt}{inpt.extr[vr]["t"]["fn"]}.txt')
+    inpt.extr[vr]["t"]["data"] = t_tmp_all
+    inpt.extr[vr]["t"]["data"].index = pd.to_datetime(
+        inpt.extr[vr]["t"]["data"]["#"] + " " +
+        inpt.extr[vr]["t"]["data"]["date[y-m-d]time[h:m:s]"],
+        format="%Y-%m-%d %H:%M:%S")
+    inpt.extr[vr]["t"]["data"].index.name = "datetime"
+    inpt.extr[vr]["t"]["data"] = inpt.extr[vr]["t"]["data"].iloc[:, :].filter(
+        [inpt.extr[vr]["t"]["column"]]).astype(float)
+    inpt.extr[vr]["t"]["data"].columns = [vr]
 
     return
 
@@ -378,25 +385,27 @@ def read_aws_ecapac(vr):
     """
     t2_tmp_all = pd.DataFrame()
     for i in inpt.aws_ecapac_daterange[inpt.aws_ecapac_daterange.year.isin(inpt.years)]:
-        i_fmt = i.strftime('%Y_%m_%d')
+        i_fmt = i.strftime("%Y_%m_%d")
         try:
             file = os.path.join(
-                    inpt.basefol_t, 'thaao_ecapac_aws_snow', 'AWS_ECAPAC', i.strftime('%Y'),
-                    f'{inpt.extr[vr]['t2']['fn']}{i_fmt}_00_00.dat')
+                inpt.basefol_t, "thaao_ecapac_aws_snow", "AWS_ECAPAC", i.strftime(
+                    "%Y"),
+                f'{inpt.extr[vr]["t2"]["fn"]}{i_fmt}_00_00.dat')
             t2_tmp = pd.read_csv(
-                    file, skiprows=[0, 3], header=0, decimal='.', delimiter=',', engine='python',
-                    index_col='TIMESTAMP').iloc[1:, :]
+                file, skiprows=[0, 3], header=0, decimal=".", delimiter=",", engine="python",
+                index_col="TIMESTAMP").iloc[1:, :]
             t2_tmp_all = pd.concat([t2_tmp_all, t2_tmp], axis=0)
 
-            print(f'OK: {inpt.extr[vr]['t2']['fn']}{i_fmt}_00_00.dat')
+            print(f'OK: {inpt.extr[vr]["t2"]["fn"]}{i_fmt}_00_00.dat')
         except (FileNotFoundError, pd.errors.EmptyDataError):
-            print(f'NOT_FOUND: {inpt.extr[vr]['t2']['fn']}{i_fmt}_00_00.dat')
-    inpt.extr[vr]['t2']['data'] = t2_tmp_all
-    inpt.extr[vr]['t2']['data'].index = pd.DatetimeIndex(inpt.extr[vr]['t2']['data'].index)
-    inpt.extr[vr]['t2']['data'].index.name = 'datetime'
-    inpt.extr[vr]['t2']['data'] = inpt.extr[vr]['t2']['data'].iloc[:, :].filter(
-            [inpt.extr[vr]['t2']['column']]).astype(float)
-    inpt.extr[vr]['t2']['data'].columns = [vr]
+            print(f'NOT_FOUND: {inpt.extr[vr]["t2"]["fn"]}{i_fmt}_00_00.dat')
+    inpt.extr[vr]["t2"]["data"] = t2_tmp_all
+    inpt.extr[vr]["t2"]["data"].index = pd.DatetimeIndex(
+        inpt.extr[vr]["t2"]["data"].index)
+    inpt.extr[vr]["t2"]["data"].index.name = "datetime"
+    inpt.extr[vr]["t2"]["data"] = inpt.extr[vr]["t2"]["data"].iloc[:, :].filter(
+        [inpt.extr[vr]["t2"]["column"]]).astype(float)
+    inpt.extr[vr]["t2"]["data"].columns = [vr]
     return
 
 
@@ -411,17 +420,20 @@ def read_alb():
     :raises ValueError: If data contains invalid values not conforming to the expected range.
     """
     # CARRA
-    read_rean(inpt.var, 'c')
-    inpt.extr[inpt.var]['c']['data'] = inpt.extr[inpt.var]['c']['data'] / 100.
-    inpt.extr[inpt.var]['c']['data'][inpt.extr[inpt.var]['c']['data'] <= 0.] = np.nan
+    read_rean(inpt.var, "c")
+    inpt.extr[inpt.var]["c"]["data"] = inpt.extr[inpt.var]["c"]["data"] / 100.
+    inpt.extr[inpt.var]["c"]["data"][inpt.extr[inpt.var]
+                                     ["c"]["data"] <= 0.] = np.nan
 
     # ERA5
-    read_rean(inpt.var, 'e')
-    inpt.extr[inpt.var]['c']['data'][inpt.extr[inpt.var]['c']['data'] <= 0.] = np.nan
+    read_rean(inpt.var, "e")
+    inpt.extr[inpt.var]["c"]["data"][inpt.extr[inpt.var]
+                                     ["c"]["data"] <= 0.] = np.nan
 
     # ERA5-LAND
-    read_rean(inpt.var, 'l')
-    inpt.extr[inpt.var]['l']['data'][inpt.extr[inpt.var]['l']['data'] <= 0.] = np.nan
+    read_rean(inpt.var, "l")
+    inpt.extr[inpt.var]["l"]["data"][inpt.extr[inpt.var]
+                                     ["l"]["data"] <= 0.] = np.nan
 
     # THAAO
     read_thaao_rad(inpt.var)
@@ -440,10 +452,10 @@ def read_cbh():
     :return: None
     """
     # CARRA
-    read_rean(inpt.var, 'c')
+    read_rean(inpt.var, "c")
 
     # ERA5
-    read_rean(inpt.var, 'e')
+    read_rean(inpt.var, "e")
 
     # THAAO
     read_thaao_ceilometer(inpt.var)
@@ -465,20 +477,22 @@ def read_lwp():
     :return: None
     """
     # CARRA
-    read_rean(inpt.var, 'c')
-    inpt.extr[inpt.var]['c']['data'] = inpt.extr[inpt.var]['c']['data']
-    # inpt.extr[inpt.var]['c']['data'][inpt.extr[inpt.var]['c']['data'] < 0.01] = np.nan
+    read_rean(inpt.var, "c")
+    inpt.extr[inpt.var]["c"]["data"] = inpt.extr[inpt.var]["c"]["data"]
+    # inpt.extr[inpt.var]["c"]["data"][inpt.extr[inpt.var]["c"]["data"] < 0.01] = np.nan
     # c[c < 15] = 0
 
     # ERA5
-    read_rean(inpt.var, 'e')
-    inpt.extr[inpt.var]['e']['data'] = inpt.extr[inpt.var]['e']['data']
-    inpt.extr[inpt.var]['e']['data'][inpt.extr[inpt.var]['e']['data'] < 0.01] = np.nan
+    read_rean(inpt.var, "e")
+    inpt.extr[inpt.var]["e"]["data"] = inpt.extr[inpt.var]["e"]["data"]
+    inpt.extr[inpt.var]["e"]["data"][inpt.extr[inpt.var]
+                                     ["e"]["data"] < 0.01] = np.nan
     # e[e < 15] = 0
 
     # THAAO1
     read_thaao_hatpro(inpt.var)
-    inpt.extr[inpt.var]['t1']['data'][inpt.extr[inpt.var]['t1']['data'] < 0.01] = np.nan
+    inpt.extr[inpt.var]["t1"]["data"][inpt.extr[inpt.var]
+                                      ["t1"]["data"] < 0.01] = np.nan
     # t1[t1 < 15] = 0
 
     return
@@ -496,7 +510,7 @@ def read_msl_pres():
     :return: None
     """
     # CARRA
-    read_rean(inpt.var, 'c')
+    read_rean(inpt.var, "c")
 
     return
 
@@ -514,11 +528,12 @@ def read_precip():
     :return: None
     """
     # CARRA
-    read_rean(inpt.var, 'c')
+    read_rean(inpt.var, "c")
 
     # ERA5
-    read_rean(inpt.var, 'e')
-    inpt.extr[inpt.var]['e']['data'] = inpt.extr[inpt.var]['e']['data'].values * 1000.
+    read_rean(inpt.var, "e")
+    inpt.extr[inpt.var]["e"]["data"] = inpt.extr[inpt.var]["e"]["data"].values * \
+        1000.
 
     # THAAO2
     read_aws_ecapac(inpt.var)
@@ -528,39 +543,46 @@ def read_precip():
 
 def read_lw_down():
     """
-    Reads and processes longwave downward radiation ('lw_down') data from multiple sources such as
+    Reads and processes longwave downward radiation ("lw_down") data from multiple sources such as
     CARRA, ERA5, ERA5-LAND, and THAAO. The function handles data quality issues by filtering out
     non-physical values (values less than 0) and applies conversion factors to the raw data using
     values stored in the `var_dict` dictionary.
 
     The processed data is stored in the `inpt.extr` dictionary under specific keys corresponding to
-    each data source ('c' for CARRA, 'e' for ERA5, 'l' for ERA5-LAND, and 't' for THAAO).
+    each data source ("c" for CARRA, "e" for ERA5, "l" for ERA5-LAND, and "t" for THAAO).
 
     :raises KeyError: If keys expected in `inpt.extr` or `inpt.var_dict` for specific
-        sources ('c', 'e', 'l', 't') are missing.
+        sources ("c", "e", "l", "t") are missing.
     :raises ValueError: If data conversion or filtering operations encounter unexpected
         or malformed data values.
 
     :return: None
     """
     # CARRA
-    read_rean('lw_down', 'c')
-    inpt.extr['lw_down']['c']['data'][inpt.extr['lw_down']['c']['data'] < 0.] = np.nan
-    inpt.extr['lw_down']['c']['data'] = inpt.extr['lw_down']['c']['data'] / inpt.var_dict['c']['rad_conv_factor']
+    read_rean("lw_down", "c")
+    inpt.extr["lw_down"]["c"]["data"][inpt.extr["lw_down"]
+                                      ["c"]["data"] < 0.] = np.nan
+    inpt.extr["lw_down"]["c"]["data"] = inpt.extr["lw_down"]["c"]["data"] / \
+        inpt.var_dict["c"]["rad_conv_factor"]
 
     # ERA5
-    read_rean('lw_down', 'e')
-    inpt.extr['lw_down']['e']['data'][inpt.extr['lw_down']['e']['data'] < 0.] = np.nan
-    inpt.extr['lw_down']['e']['data'] = inpt.extr['lw_down']['e']['data'] / inpt.var_dict['e']['rad_conv_factor']
+    read_rean("lw_down", "e")
+    inpt.extr["lw_down"]["e"]["data"][inpt.extr["lw_down"]
+                                      ["e"]["data"] < 0.] = np.nan
+    inpt.extr["lw_down"]["e"]["data"] = inpt.extr["lw_down"]["e"]["data"] / \
+        inpt.var_dict["e"]["rad_conv_factor"]
 
     # ERA5-LAND
-    read_rean('lw_down', 'l')
-    inpt.extr['lw_down']['l']['data'][inpt.extr['lw_down']['l']['data'] < 0.] = np.nan
-    inpt.extr['lw_down']['l']['data'] = inpt.extr['lw_down']['l']['data'] / inpt.var_dict['l']['rad_conv_factor']
+    read_rean("lw_down", "l")
+    inpt.extr["lw_down"]["l"]["data"][inpt.extr["lw_down"]
+                                      ["l"]["data"] < 0.] = np.nan
+    inpt.extr["lw_down"]["l"]["data"] = inpt.extr["lw_down"]["l"]["data"] / \
+        inpt.var_dict["l"]["rad_conv_factor"]
 
     # THAAO
-    read_thaao_rad('lw_down')
-    inpt.extr['lw_down']['t']['data'][inpt.extr['lw_down']['t']['data'] < 0.] = np.nan
+    read_thaao_rad("lw_down")
+    inpt.extr["lw_down"]["t"]["data"][inpt.extr["lw_down"]
+                                      ["t"]["data"] < 0.] = np.nan
     return
 
 
@@ -574,23 +596,30 @@ def read_sw_down():
     :return: None
     """
     # CARRA
-    read_rean('sw_down', 'c')
-    inpt.extr['sw_down']['c']['data'][inpt.extr['sw_down']['c']['data'] < 0.] = np.nan
-    inpt.extr['sw_down']['c']['data'] = inpt.extr['sw_down']['c']['data'] / inpt.var_dict['c']['rad_conv_factor']
+    read_rean("sw_down", "c")
+    inpt.extr["sw_down"]["c"]["data"][inpt.extr["sw_down"]
+                                      ["c"]["data"] < 0.] = np.nan
+    inpt.extr["sw_down"]["c"]["data"] = inpt.extr["sw_down"]["c"]["data"] / \
+        inpt.var_dict["c"]["rad_conv_factor"]
 
     # ERA5
-    read_rean('sw_down', 'e')
-    inpt.extr['sw_down']['e']['data'][inpt.extr['sw_down']['e']['data'] < 0.] = np.nan
-    inpt.extr['sw_down']['e']['data'] = inpt.extr['sw_down']['e']['data'] / inpt.var_dict['e']['rad_conv_factor']
+    read_rean("sw_down", "e")
+    inpt.extr["sw_down"]["e"]["data"][inpt.extr["sw_down"]
+                                      ["e"]["data"] < 0.] = np.nan
+    inpt.extr["sw_down"]["e"]["data"] = inpt.extr["sw_down"]["e"]["data"] / \
+        inpt.var_dict["e"]["rad_conv_factor"]
 
     # ERA5-LAND
-    read_rean('sw_down', 'l')
-    inpt.extr['sw_down']['l']['data'][inpt.extr['sw_down']['l']['data'] < 0.] = np.nan
-    inpt.extr['sw_down']['l']['data'] = inpt.extr['sw_down']['l']['data'] / inpt.var_dict['l']['rad_conv_factor']
+    read_rean("sw_down", "l")
+    inpt.extr["sw_down"]["l"]["data"][inpt.extr["sw_down"]
+                                      ["l"]["data"] < 0.] = np.nan
+    inpt.extr["sw_down"]["l"]["data"] = inpt.extr["sw_down"]["l"]["data"] / \
+        inpt.var_dict["l"]["rad_conv_factor"]
 
     # THAAO
-    read_thaao_rad('sw_down')
-    inpt.extr['sw_down']['t']['data'][inpt.extr['sw_down']['t']['data'] < 0.] = np.nan
+    read_thaao_rad("sw_down")
+    inpt.extr["sw_down"]["t"]["data"][inpt.extr["sw_down"]
+                                      ["t"]["data"] < 0.] = np.nan
     return
 
 
@@ -619,35 +648,42 @@ def read_lw_up():
     read_lw_down()
 
     # CARRA
-    read_rean('lw_net', 'c')
-    inpt.extr['lw_net']['c']['data'] = inpt.extr['lw_net']['c']['data'] / inpt.var_dict['c']['rad_conv_factor']
-    inpt.extr['lw_up']['c']['data'] = pd.DataFrame(
-            index=inpt.extr['lw_down']['c']['data'].index,
-            data=inpt.extr['lw_down']['c']['data'].values - inpt.extr['lw_net']['c']['data'].values, columns=['lw_up'])
-    inpt.extr['lw_up']['c']['data'][inpt.extr['lw_up']['c']['data'] < 0.] = np.nan
-    # del inpt.extr['lw_net']['c']['data']
+    read_rean("lw_net", "c")
+    inpt.extr["lw_net"]["c"]["data"] = inpt.extr["lw_net"]["c"]["data"] / \
+        inpt.var_dict["c"]["rad_conv_factor"]
+    inpt.extr["lw_up"]["c"]["data"] = pd.DataFrame(
+        index=inpt.extr["lw_down"]["c"]["data"].index,
+        data=inpt.extr["lw_down"]["c"]["data"].values - inpt.extr["lw_net"]["c"]["data"].values, columns=["lw_up"])
+    inpt.extr["lw_up"]["c"]["data"][inpt.extr["lw_up"]
+                                    ["c"]["data"] < 0.] = np.nan
+    # del inpt.extr["lw_net"]["c"]["data"]
 
     # ERA5
-    read_rean('lw_net', 'e')
-    inpt.extr['lw_net']['e']['data'] = inpt.extr['lw_net']['e']['data'] / inpt.var_dict['e']['rad_conv_factor']
-    inpt.extr['lw_up']['e']['data'] = pd.DataFrame(
-            index=inpt.extr['lw_down']['e']['data'].index,
-            data=inpt.extr['lw_down']['e']['data'].values - inpt.extr['lw_net']['e']['data'].values, columns=['lw_up'])
-    inpt.extr['lw_up']['e']['data'][inpt.extr['lw_up']['e']['data'] < 0.] = np.nan
-    # del inpt.extr['lw_net']['e']['data']
+    read_rean("lw_net", "e")
+    inpt.extr["lw_net"]["e"]["data"] = inpt.extr["lw_net"]["e"]["data"] / \
+        inpt.var_dict["e"]["rad_conv_factor"]
+    inpt.extr["lw_up"]["e"]["data"] = pd.DataFrame(
+        index=inpt.extr["lw_down"]["e"]["data"].index,
+        data=inpt.extr["lw_down"]["e"]["data"].values - inpt.extr["lw_net"]["e"]["data"].values, columns=["lw_up"])
+    inpt.extr["lw_up"]["e"]["data"][inpt.extr["lw_up"]
+                                    ["e"]["data"] < 0.] = np.nan
+    # del inpt.extr["lw_net"]["e"]["data"]
 
     # ERA5-LAND
-    read_rean('lw_net', 'l')
-    inpt.extr['lw_net']['l']['data'] = inpt.extr['lw_net']['l']['data'] / inpt.var_dict['l']['rad_conv_factor']
-    inpt.extr['lw_up']['l']['data'] = pd.DataFrame(
-            index=inpt.extr['lw_down']['l']['data'].index,
-            data=inpt.extr['lw_down']['l']['data'].values - inpt.extr['lw_net']['l']['data'].values, columns=['lw_up'])
-    inpt.extr['lw_up']['l']['data'][inpt.extr['lw_up']['l']['data'] < 0.] = np.nan
-    # del inpt.extr['lw_net']['l']['data']
+    read_rean("lw_net", "l")
+    inpt.extr["lw_net"]["l"]["data"] = inpt.extr["lw_net"]["l"]["data"] / \
+        inpt.var_dict["l"]["rad_conv_factor"]
+    inpt.extr["lw_up"]["l"]["data"] = pd.DataFrame(
+        index=inpt.extr["lw_down"]["l"]["data"].index,
+        data=inpt.extr["lw_down"]["l"]["data"].values - inpt.extr["lw_net"]["l"]["data"].values, columns=["lw_up"])
+    inpt.extr["lw_up"]["l"]["data"][inpt.extr["lw_up"]
+                                    ["l"]["data"] < 0.] = np.nan
+    # del inpt.extr["lw_net"]["l"]["data"]
 
     # THAAO
-    read_thaao_rad('lw_up')
-    inpt.extr['lw_up']['t']['data'][inpt.extr['lw_up']['t']['data'] < 0.] = np.nan
+    read_thaao_rad("lw_up")
+    inpt.extr["lw_up"]["t"]["data"][inpt.extr["lw_up"]
+                                    ["t"]["data"] < 0.] = np.nan
 
     return
 
@@ -668,35 +704,42 @@ def read_sw_up():
     read_sw_down()
 
     # CARRA
-    read_rean('sw_net', 'c')
-    inpt.extr['sw_net']['c']['data'] = inpt.extr['sw_net']['c']['data'] / inpt.var_dict['c']['rad_conv_factor']
-    inpt.extr['sw_up']['c']['data'] = pd.DataFrame(
-            index=inpt.extr['sw_down']['c']['data'].index,
-            data=inpt.extr['sw_down']['c']['data'].values - inpt.extr['sw_net']['c']['data'].values, columns=['sw_up'])
-    inpt.extr['sw_up']['c']['data'][inpt.extr['sw_up']['c']['data'] < 0.] = np.nan
-    del inpt.extr['sw_net']['c']['data']
+    read_rean("sw_net", "c")
+    inpt.extr["sw_net"]["c"]["data"] = inpt.extr["sw_net"]["c"]["data"] / \
+        inpt.var_dict["c"]["rad_conv_factor"]
+    inpt.extr["sw_up"]["c"]["data"] = pd.DataFrame(
+        index=inpt.extr["sw_down"]["c"]["data"].index,
+        data=inpt.extr["sw_down"]["c"]["data"].values - inpt.extr["sw_net"]["c"]["data"].values, columns=["sw_up"])
+    inpt.extr["sw_up"]["c"]["data"][inpt.extr["sw_up"]
+                                    ["c"]["data"] < 0.] = np.nan
+    del inpt.extr["sw_net"]["c"]["data"]
 
     # ERA5
-    read_rean('sw_net', 'e')
-    inpt.extr['sw_net']['e']['data'] = inpt.extr['sw_net']['e']['data'] / inpt.var_dict['e']['rad_conv_factor']
-    inpt.extr['sw_up']['e']['data'] = pd.DataFrame(
-            index=inpt.extr['sw_down']['e']['data'].index,
-            data=inpt.extr['sw_down']['e']['data'].values - inpt.extr['sw_net']['e']['data'].values, columns=['sw_up'])
-    inpt.extr['sw_up']['e']['data'][inpt.extr['sw_up']['e']['data'] < 0.] = np.nan
-    del inpt.extr['sw_net']['e']['data']
+    read_rean("sw_net", "e")
+    inpt.extr["sw_net"]["e"]["data"] = inpt.extr["sw_net"]["e"]["data"] / \
+        inpt.var_dict["e"]["rad_conv_factor"]
+    inpt.extr["sw_up"]["e"]["data"] = pd.DataFrame(
+        index=inpt.extr["sw_down"]["e"]["data"].index,
+        data=inpt.extr["sw_down"]["e"]["data"].values - inpt.extr["sw_net"]["e"]["data"].values, columns=["sw_up"])
+    inpt.extr["sw_up"]["e"]["data"][inpt.extr["sw_up"]
+                                    ["e"]["data"] < 0.] = np.nan
+    del inpt.extr["sw_net"]["e"]["data"]
 
     # ERA5-LAND
-    read_rean('sw_net', 'l')
-    inpt.extr['sw_net']['l']['data'] = inpt.extr['sw_net']['l']['data'] / inpt.var_dict['l']['rad_conv_factor']
-    inpt.extr['sw_up']['l']['data'] = pd.DataFrame(
-            index=inpt.extr['sw_down']['l']['data'].index,
-            data=inpt.extr['sw_down']['l']['data'].values - inpt.extr['sw_net']['l']['data'].values, columns=['sw_up'])
-    inpt.extr['sw_up']['l']['data'][inpt.extr['sw_up']['l']['data'] < 0.] = np.nan
-    del inpt.extr['sw_net']['l']['data']
+    read_rean("sw_net", "l")
+    inpt.extr["sw_net"]["l"]["data"] = inpt.extr["sw_net"]["l"]["data"] / \
+        inpt.var_dict["l"]["rad_conv_factor"]
+    inpt.extr["sw_up"]["l"]["data"] = pd.DataFrame(
+        index=inpt.extr["sw_down"]["l"]["data"].index,
+        data=inpt.extr["sw_down"]["l"]["data"].values - inpt.extr["sw_net"]["l"]["data"].values, columns=["sw_up"])
+    inpt.extr["sw_up"]["l"]["data"][inpt.extr["sw_up"]
+                                    ["l"]["data"] < 0.] = np.nan
+    del inpt.extr["sw_net"]["l"]["data"]
 
     # THAAO
-    read_thaao_rad('sw_up')
-    inpt.extr['sw_up']['t']['data'][inpt.extr['sw_up']['t']['data'] < 0.] = np.nan
+    read_thaao_rad("sw_up")
+    inpt.extr["sw_up"]["t"]["data"][inpt.extr["sw_up"]
+                                    ["t"]["data"] < 0.] = np.nan
 
     return
 
@@ -713,18 +756,18 @@ def read_rh():
     :raises ValueError: Raised if an unexpected data inconsistency is encountered.
     """
     # CARRA
-    read_rean(inpt.var, 'c')
+    read_rean(inpt.var, "c")
 
     # ERA5
-    read_rean(inpt.var, 'e')
-    if inpt.extr[inpt.var]['l']['data'].empty:
-        read_rean('temp', 'e')
+    read_rean(inpt.var, "e")
+    if inpt.extr[inpt.var]["l"]["data"].empty:
+        read_rean("temp", "e")
     calc_rh_from_tdp()
 
     # ERA5-LAND
-    read_rean(inpt.var, 'l')
-    if inpt.extr[inpt.var]['l']['data'].empty:
-        read_rean('temp', 'l')
+    read_rean(inpt.var, "l")
+    if inpt.extr[inpt.var]["l"]["data"].empty:
+        read_rean("temp", "l")
     calc_rh_from_tdp()
 
     # e.g. l_td[l_td_tmp == -32767.0] = np.nan
@@ -750,11 +793,12 @@ def calc_rh_from_tdp():
     """
     # TODO not working
 
-    # e = pd.concat([inpt.extr[inpt.var]['t']['data'], e_t], axis=1)
+    # e = pd.concat([inpt.extr[inpt.var]["t"]["data"], e_t], axis=1)
 
-    # e['rh'] = relative_humidity_from_dewpoint(e['e_t'].values * units.K, e['e_td'].values * units.K).to('percent')
-    inpt.extr[inpt.var]['e']['data'].drop(columns=['e_t', 'e_td'], inplace=True)
-    inpt.extr[inpt.var]['e']['data'].columns = [inpt.var]
+    # e["rh"] = relative_humidity_from_dewpoint(e["e_t"].values * units.K, e["e_td"].values * units.K).to("percent")
+    inpt.extr[inpt.var]["e"]["data"].drop(
+        columns=["e_t", "e_td"], inplace=True)
+    inpt.extr[inpt.var]["e"]["data"].columns = [inpt.var]
 
     return
 
@@ -769,20 +813,23 @@ def read_surf_pres():
              fields are incomplete or missing.
     """
     # CARRA
-    read_rean(inpt.var, 'c')
-    inpt.extr[inpt.var]['c']['data'] = inpt.extr[inpt.var]['c']['data'] / 100.
-    inpt.extr[inpt.var]['c']['data'][inpt.extr[inpt.var]['c']['data'] <= 900] = np.nan
+    read_rean(inpt.var, "c")
+    inpt.extr[inpt.var]["c"]["data"] = inpt.extr[inpt.var]["c"]["data"] / 100.
+    inpt.extr[inpt.var]["c"]["data"][inpt.extr[inpt.var]
+                                     ["c"]["data"] <= 900] = np.nan
 
     # ERA5
-    read_rean(inpt.var, 'e')
-    inpt.extr[inpt.var]['e']['data'] = inpt.extr[inpt.var]['e']['data'] / 100.
-    inpt.extr[inpt.var]['e']['data'][inpt.extr[inpt.var]['e']['data'] <= 900] = np.nan
+    read_rean(inpt.var, "e")
+    inpt.extr[inpt.var]["e"]["data"] = inpt.extr[inpt.var]["e"]["data"] / 100.
+    inpt.extr[inpt.var]["e"]["data"][inpt.extr[inpt.var]
+                                     ["e"]["data"] <= 900] = np.nan
 
     # THAAO
     read_thaao_weather(inpt.var)
-    inpt.extr[inpt.var]['t']['data'][inpt.extr[inpt.var]['t']['data'] <= 900] = np.nan
-    inpt.extr[inpt.var]['t']['data'].loc['2021-10-11 00:00:00':'2021-10-19 00:00:00'] = np.nan
-    inpt.extr[inpt.var]['t']['data'].loc['2024-4-26 00:00:00':'2024-5-4 00:00:00'] = np.nan
+    inpt.extr[inpt.var]["t"]["data"][inpt.extr[inpt.var]
+                                     ["t"]["data"] <= 900] = np.nan
+    inpt.extr[inpt.var]["t"]["data"].loc["2021-10-11 00:00:00":"2021-10-19 00:00:00"] = np.nan
+    inpt.extr[inpt.var]["t"]["data"].loc["2024-4-26 00:00:00":"2024-5-4 00:00:00"] = np.nan
 
     # THAAO2
     read_aws_ecapac(inpt.var)
@@ -803,11 +850,11 @@ def read_tcc():
     :return: None
     """
     # CARRA
-    read_rean(inpt.var, 'c')
+    read_rean(inpt.var, "c")
 
     # ERA5
-    read_rean(inpt.var, 'e')
-    inpt.extr[inpt.var]['e']['data'] = inpt.extr[inpt.var]['e']['data'].values * 100.
+    read_rean(inpt.var, "e")
+    inpt.extr[inpt.var]["e"]["data"] = inpt.extr[inpt.var]["e"]["data"].values * 100.
 
     # THAAO
     read_thaao_ceilometer(inpt.var)
@@ -825,20 +872,20 @@ def read_temp():
     :return: None
     """
     # CARRA
-    read_rean(inpt.var, 'c')
-    inpt.extr[inpt.var]['c']['data'] = inpt.extr[inpt.var]['c']['data'] - 273.15
+    read_rean(inpt.var, "c")
+    inpt.extr[inpt.var]["c"]["data"] = inpt.extr[inpt.var]["c"]["data"] - 273.15
 
     # ERA5
-    read_rean(inpt.var, 'e')
-    inpt.extr[inpt.var]['e']['data'] = inpt.extr[inpt.var]['e']['data'] - 273.15
+    read_rean(inpt.var, "e")
+    inpt.extr[inpt.var]["e"]["data"] = inpt.extr[inpt.var]["e"]["data"] - 273.15
 
     # ERA5-LAND
-    read_rean(inpt.var, 'l')
-    inpt.extr[inpt.var]['l']['data'] = inpt.extr[inpt.var]['l']['data'] - 273.15
+    read_rean(inpt.var, "l")
+    inpt.extr[inpt.var]["l"]["data"] = inpt.extr[inpt.var]["l"]["data"] - 273.15
 
     # THAAO
     read_thaao_weather(inpt.var)
-    inpt.extr[inpt.var]['t']['data'] = inpt.extr[inpt.var]['t']['data'] - 273.15
+    inpt.extr[inpt.var]["t"]["data"] = inpt.extr[inpt.var]["t"]["data"] - 273.15
 
     # THAAO2
     read_aws_ecapac(inpt.var)
@@ -858,55 +905,55 @@ def read_wind():
     due to unavailable data.
 
     :param inpt: Input structure that contains extracted data for various
-        wind component keys such as 'windu' and 'windv' from different
-        models. The method updates wind speed ('winds') and wind direction
-        ('windd') within this structure based on computed results.
+        wind component keys such as "windu" and "windv" from different
+        models. The method updates wind speed ("winds") and wind direction
+        ("windd") within this structure based on computed results.
         Must already contain placeholders for updated wind speed and direction
         data for respective datasets.
     :type inpt: object
 
     :return: Updates the `inpt` structure in place with calculated wind speed
-        ('winds') and wind direction ('windd') for available datasets.
+        ("winds") and wind direction ("windd") for available datasets.
     :rtype: None
     """
     # CARRA
-    read_rean('winds', 'c')
-    read_rean('windd', 'c')
+    read_rean("winds", "c")
+    read_rean("windd", "c")
 
     # ERA5
-    read_rean('windu', 'e')
-    read_rean('windv', 'e')
+    read_rean("windu", "e")
+    read_rean("windv", "e")
     e_ws = wind_speed(
-            inpt.extr['windu']['e']['data'].values * units('m/s'),
-            inpt.extr['windv']['e']['data'].values * units('m/s'))
-    inpt.extr['winds']['e']['data'] = pd.DataFrame(
-            index=inpt.extr['windu']['e']['data'].index, data=e_ws.magnitude, columns=['winds'])
+        inpt.extr["windu"]["e"]["data"].values * units("m/s"),
+        inpt.extr["windv"]["e"]["data"].values * units("m/s"))
+    inpt.extr["winds"]["e"]["data"] = pd.DataFrame(
+        index=inpt.extr["windu"]["e"]["data"].index, data=e_ws.magnitude, columns=["winds"])
 
     e_wd = wind_direction(
-            inpt.extr['windu']['e']['data'].values * units('m/s'),
-            inpt.extr['windv']['e']['data'].values * units('m/s'))
-    inpt.extr['windd']['e']['data'] = pd.DataFrame(
-            index=inpt.extr['windu']['e']['data'].index, data=e_wd.magnitude, columns=['windd'])
+        inpt.extr["windu"]["e"]["data"].values * units("m/s"),
+        inpt.extr["windv"]["e"]["data"].values * units("m/s"))
+    inpt.extr["windd"]["e"]["data"] = pd.DataFrame(
+        index=inpt.extr["windu"]["e"]["data"].index, data=e_wd.magnitude, columns=["windd"])
 
     # ERA5-LAND
     # TODO activate when files are available
-    # read_era5_land('windu')
-    # read_era5_land('windv')
+    # read_era5_land("windu")
+    # read_era5_land("windv")
     # l_ws = wind_speed(
-    #         inpt.extr['windu']['l']['data'].values * units('m/s'),
-    #         inpt.extr['windv']['l']['data'].values * units('m/s'))
-    # inpt.extr['winds']['l']['data'] = pd.DataFrame(
-    #     index=inpt.extr['windu']['l']['data'].index, data=l_ws.magnitude, columns=['winds'])
+    #         inpt.extr["windu"]["l"]["data"].values * units("m/s"),
+    #         inpt.extr["windv"]["l"]["data"].values * units("m/s"))
+    # inpt.extr["winds"]["l"]["data"] = pd.DataFrame(
+    #     index=inpt.extr["windu"]["l"]["data"].index, data=l_ws.magnitude, columns=["winds"])
     #
     # l_wd = wind_direction(
-    #         inpt.extr['windu']['l']['data'].values * units('m/s'),
-    #         inpt.extr['windv']['l']['data'].values * units('m/s'))
-    # inpt.extr['windd']['l']['data'] = pd.DataFrame(
-    #     index=inpt.extr['windu']['l']['data'].index, data=l_wd.magnitude, columns=['windd'])
+    #         inpt.extr["windu"]["l"]["data"].values * units("m/s"),
+    #         inpt.extr["windv"]["l"]["data"].values * units("m/s"))
+    # inpt.extr["windd"]["l"]["data"] = pd.DataFrame(
+    #     index=inpt.extr["windu"]["l"]["data"].index, data=l_wd.magnitude, columns=["windd"])
 
     # THAAO2
-    read_aws_ecapac('winds')
-    read_aws_ecapac('windd')
+    read_aws_ecapac("winds")
+    read_aws_ecapac("windd")
 
     return
 
@@ -925,26 +972,29 @@ def calc_rad_acc_era5_land(vr):
     :return: None
     """
     # calculating instantaneous as difference with previous timestep
-    inpt.extr[vr]['l']['data_diff'] = inpt.extr[vr]['l']['data'][vr].diff()
+    inpt.extr[vr]["l"]["data_diff"] = inpt.extr[vr]["l"]["data"][vr].diff()
     # dropping value at 0100 which does not need any subtraction (it is the first of the day)
-    inpt.extr[vr]['l']['data_diff'] = inpt.extr[vr]['l']['data_diff'][inpt.extr[vr]['l']['data_diff'].index.hour != 1]
+    inpt.extr[vr]["l"]["data_diff"] = inpt.extr[vr]["l"]["data_diff"][inpt.extr[vr]
+                                                                      ["l"]["data_diff"].index.hour != 1]
     # selecting original value at 0100
-    orig_filtered_data = inpt.extr[vr]['l']['data'][inpt.extr[vr]['l']['data'].index.hour == 1]
+    orig_filtered_data = inpt.extr[vr]["l"]["data"][inpt.extr[vr]
+                                                    ["l"]["data"].index.hour == 1]
     # appending original value at 0100
-    inpt.extr[vr]['l']['data_diff'] = pd.concat([inpt.extr[vr]['l']['data_diff'], orig_filtered_data]).sort_index()
-    inpt.extr[vr]['l']['data'] = inpt.extr[vr]['l']['data_diff']
+    inpt.extr[vr]["l"]["data_diff"] = pd.concat(
+        [inpt.extr[vr]["l"]["data_diff"], orig_filtered_data]).sort_index()
+    inpt.extr[vr]["l"]["data"] = inpt.extr[vr]["l"]["data_diff"]
 
-    print('ERA5-LAND data for radiation corrected because they are values daily-accumulated!')
+    print("ERA5-LAND data for radiation corrected because they are values daily-accumulated!")
     return
 
 
 # def extract_values(fn, year):
-#     if not os.path.exists(os.path.join(inpt.basefol_c, fn + str(year) + '.nc')):
+#     if not os.path.exists(os.path.join(inpt.basefol_c, fn + str(year) + ".nc")):
 #         try:
-#             filen = os.path.join(inpt.basefol_t, 'reanalysis', 'carra', '_'.join(fn.split('_')[1:]) + str(year) + '.nc')
+#             filen = os.path.join(inpt.basefol_t, "reanalysis", "carra", "_".join(fn.split("_")[1:]) + str(year) + ".nc")
 #             NC = xr.open_dataset(str(filen), decode_cf=True, decode_times=True)
 #
-#             # tmp = NC.sel(x=y, y=x, method='nearest')
+#             # tmp = NC.sel(x=y, y=x, method="nearest")
 #         except FileNotFoundError:
 #             print(f'cannot find {filen}')
 #
@@ -955,7 +1005,7 @@ def read():
     """
     Reads data based on the variable type given in the `inpt` object and determines
     the appropriate function to be called. Different types of data such as
-    'alb', 'cbh', 'msl_pres', 'lwp', and others are supported, with each type
+    "alb", "cbh", "msl_pres", "lwp", and others are supported, with each type
     corresponding to a specified reading function. The method selects and
     executes the specific reader function based on the value assigned to
     `inpt.var`.
@@ -963,31 +1013,31 @@ def read():
     :return: The result of the specific data reading operation. The type of return
        value depends on the reader function executed.
     """
-    if inpt.var == 'alb':
+    if inpt.var == "alb":
         return read_alb()
-    if inpt.var == 'cbh':
+    if inpt.var == "cbh":
         return read_cbh()
-    if inpt.var == 'msl_pres':
+    if inpt.var == "msl_pres":
         return read_msl_pres()
-    if inpt.var == 'lwp':
+    if inpt.var == "lwp":
         return read_lwp()
-    if inpt.var == 'lw_down':
+    if inpt.var == "lw_down":
         return read_lw_down()
-    if inpt.var == 'lw_up':
+    if inpt.var == "lw_up":
         return read_lw_up()
-    if inpt.var == 'precip':
+    if inpt.var == "precip":
         return read_precip()
-    if inpt.var == 'rh':
+    if inpt.var == "rh":
         return read_rh()
-    if inpt.var == 'surf_pres':
+    if inpt.var == "surf_pres":
         return read_surf_pres()
-    if inpt.var == 'sw_down':
+    if inpt.var == "sw_down":
         return read_sw_down()
-    if inpt.var == 'sw_up':
+    if inpt.var == "sw_up":
         return read_sw_up()
-    if inpt.var == 'tcc':
+    if inpt.var == "tcc":
         return read_tcc()
-    if inpt.var == 'temp':
+    if inpt.var == "temp":
         return read_temp()
-    if inpt.var in ['winds', 'windd']:
+    if inpt.var in ["winds", "windd"]:
         return read_wind()
