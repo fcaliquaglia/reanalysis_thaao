@@ -50,7 +50,8 @@ zoom_extent = [-80, -5, 75, 87]
 start_arcsix = np.datetime64("2024-05-15")
 end_arcsix = np.datetime64("2024-08-15")
 
-subsample_step_buoys = 3
+subsample_step_buoys = 3  # 3 equals every 12 hr
+# 100 equals every 5 s (1.2 km --> G-III and 800 m --> P-3)
 subsample_step_tracks = 100
 
 proj = ccrs.NorthPolarStereo(central_longitude=-40)
@@ -411,7 +412,7 @@ def plot_surf_date(seq, plot_flags=plot_flags):
     vmin = mdates.date2num(start_arcsix)
     vmax = mdates.date2num(end_arcsix)
     norm = plt.Normalize(vmin=vmin, vmax=vmax, clip=False)
-    cmap = plt.get_cmap("viridis")
+    cmap = plt.get_cmap("tab20b")
 
     # --- Gather all buoy data ---
     if plot_flags["buoys"]:
@@ -454,7 +455,7 @@ def plot_surf_date(seq, plot_flags=plot_flags):
         all_drop_surf_times = []
         for d in drop_data:
             print(d['filename'])
-            valid_idx = -1            
+            valid_idx = -1
             all_drop_surf_lats.append(d["lat"][valid_idx])
             all_drop_surf_lons.append(d["lon"][valid_idx])
             all_drop_surf_times.append(d["time"][valid_idx])
@@ -494,13 +495,15 @@ def plot_surf_date(seq, plot_flags=plot_flags):
     cax = inset_locator.inset_axes(
         ax,
         width="100%",            # Width of the colorbar
-        height="100%",            # Height of the colorbar (since it's horizontal)
+        # Height of the colorbar (since it's horizontal)
+        height="100%",
         loc="lower center",     # Place at the bottom center
-        bbox_to_anchor=(0.2, 0.05, 0.6, 0.05),  # Fine-tune position (x0, y0, width, height)
+        # Fine-tune position (x0, y0, width, height)
+        bbox_to_anchor=(0.2, 0.05, 0.6, 0.05),
         bbox_transform=ax.transAxes,
         borderpad=1
     )
-    
+
     # --- Create the horizontal colorbar ---
     cbar = plt.colorbar(
         plt.cm.ScalarMappable(norm=norm, cmap=cmap),
@@ -508,7 +511,7 @@ def plot_surf_date(seq, plot_flags=plot_flags):
         orientation="horizontal",
         extend=extend
     )
-    
+
     # --- Format ticks as dates ---
     cbar.ax.xaxis.set_major_formatter(mdates.DateFormatter("%d-%m"))
     cbar.ax.tick_params(axis="x", labelsize=8, pad=3)
@@ -660,21 +663,21 @@ if __name__ == "__main__":
             print(f"Variable '{var_name}' not found.")
 
     # ---------------------------- EXECUTION ---------------------------- #
-    # plot_flags = {k: True for k in plot_flags}
-    # plot_trajectories("all", plot_flags)
-    # plot_flags = {k: False for k in plot_flags}
-    # keys = list(plot_flags.keys())
-    # for i, key in enumerate(keys, start=1):
-    #     current_flags = {k: (j < i) for j, k in enumerate(keys)}
-    #     plot_trajectories(i, current_flags)
+    plot_flags = {k: True for k in plot_flags}
+    plot_trajectories("all", plot_flags)
+    plot_flags = {k: False for k in plot_flags}
+    keys = list(plot_flags.keys())
+    for i, key in enumerate(keys, start=1):
+        current_flags = {k: (j < i) for j, k in enumerate(keys)}
+        plot_trajectories(i, current_flags)
 
-    # current_flags = {k: False for k in plot_flags}
-    # current_flags["ground_sites"] = True
-    # plot_surf_temp("1", current_flags)
-    # current_flags["buoys"] = True
-    # plot_surf_temp("2", current_flags)
-    # current_flags["dropsondes"] = True
-    # plot_surf_temp("3", current_flags)
+    current_flags = {k: False for k in plot_flags}
+    current_flags["ground_sites"] = True
+    plot_surf_temp("1", current_flags)
+    current_flags["buoys"] = True
+    plot_surf_temp("2", current_flags)
+    current_flags["dropsondes"] = True
+    plot_surf_temp("3", current_flags)
 
     current_flags = {k: False for k in plot_flags}
     current_flags["ground_sites"] = True
