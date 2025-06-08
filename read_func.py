@@ -47,9 +47,9 @@ def read_rean(vr, dataset_type):
     data_all = pd.DataFrame()
     if dataset_type == "c":
         basefol = inpt.basefol_c
-    if dataset_type == "e":
+    elif dataset_type == "e":
         basefol = inpt.basefol_e
-    if dataset_type == "l":
+    elif dataset_type == "l":
         basefol = inpt.basefol_l
 
     for year in inpt.years:
@@ -61,6 +61,23 @@ def read_rean(vr, dataset_type):
             print(f'OK: {inpt.extr[vr][dataset_type]["fn"]}{year}.nc')
         except FileNotFoundError:
             print(f'NOT FOUND: {inpt.extr[vr][dataset_type]["fn"]}{year}.nc')
+            continue
+
+        # Flip latitude for CARRA
+        if dataset_type == "c":
+            # Flip y-axis to reorder from south to north
+            ds = ds.assign_coords(y=ds.y[::-1])
+
+            # Flip all data variables along y
+            for var_name in ds.data_vars:
+                if "y" in ds[var_name].dims:
+                    ds[var_name] = ds[var_name].isel(y=slice(None, None, -1))
+
+    # Flip latitude and longitude if they depend on y
+    if "latitude" in ds and "y" in ds["latitude"].dims:
+        ds["latitude"] = ds["latitude"].isel(y=slice(None, None, -1))
+    if "longitude" in ds and "y" in ds["longitude"].dims:
+        ds["longitude"] = ds["longitude"].isel(y=slice(None, None, -1))
 
         # Adjust longitude if needed
         if inpt.thaao_lon < 0:
@@ -72,8 +89,10 @@ def read_rean(vr, dataset_type):
 
         data_tmp = ds[inpt.extr[vr][dataset_type]["var_name"]].isel(
             y=y_idx, x=x_idx).to_dataframe()
+
         print(
-            f'Closest grid point at lat={inpt.thaao_lat:.4f} and lon={inpt.thaao_lon - 360:.4f} is lat={ds["latitude"][y_idx, x_idx].values:.4f} and lon={ds["longitude"][y_idx, x_idx].values - 360:.4f} index=({int(x_idx)}, {int(y_idx)})')
+            f"Closest grid point at lat={inpt.thaao_lat:.4f} and lon={inpt.thaao_lon - 360:.4f} is lat={ds['latitude'][y_idx, x_idx].values:.4f} and lon={ds['longitude'][y_idx, x_idx].values - 360:.4f} index=({int(x_idx)}, {int(y_idx)})")
+
         data_all = pd.concat([data_all, data_tmp], axis=0)
 
     nan_val = inpt.var_dict[dataset_type]["nanval"]
@@ -81,19 +100,12 @@ def read_rean(vr, dataset_type):
     data_all = data_all[inpt.extr[vr][dataset_type]["var_name"]].to_frame()
 
     inpt.extr[vr][dataset_type]["data"] = data_all
-    # inpt.extr[vr][dataset_type]["data"].index = pd.to_datetime(
-    #         inpt.extr[vr][dataset_type]["data"][0] + " " + inpt.extr[vr][dataset_type]["data"][1],
-    #         format="%Y-%m-%d %H:%M:%S")
-    # Select and rename columns
-    # col = inpt.extr[vr][dataset_type]["column"]
-    # inpt.extr[vr][dataset_type]["data"] = inpt.extr[vr][dataset_type]["data"][[col]]
     inpt.extr[vr][dataset_type]["data"].columns = pd.Index([vr])
 
     # Radiation calculation for era5_land
     if dataset_type == "l" and inpt.var in ["sw_up", "sw_down", "lw_up", "lw_down"]:
         print("RAD CALCULATION NOT IMPLEMENTED for ERA5-L")
         sys.exit()
-    # calc_rad_acc_era5_land(vr)
 
     return
 
@@ -241,7 +253,8 @@ def read_thaao_weather(vr):
     """
     try:
         inpt.extr[vr]["t"]["data"] = xr.open_dataset(
-            os.path.join(inpt.basefol_t, "thaao_meteo", f'{inpt.extr[vr]["t"]["fn"]}.nc'),
+            os.path.join(inpt.basefol_t, "thaao_meteo",
+                         f'{inpt.extr[vr]["t"]["fn"]}.nc'),
             engine="netcdf4").to_dataframe()
         print(f'OK: {inpt.extr[vr]["t"]["fn"]}.nc')
     except FileNotFoundError:
@@ -270,7 +283,8 @@ def read_thaao_rad(vr):
         i_fmt = int(i.strftime("%Y"))
         try:
             t_tmp = pd.read_table(
-                os.path.join(inpt.basefol_t, "thaao_rad", f'{inpt.extr[vr]["t"]["fn"]}{i_fmt}_5MIN.dat'),
+                os.path.join(inpt.basefol_t, "thaao_rad",
+                             f'{inpt.extr[vr]["t"]["fn"]}{i_fmt}_5MIN.dat'),
                 engine="python", skiprows=None, header=0, decimal=".", sep="\s+")
             tmp = np.empty(t_tmp["JDAY_UT"].shape, dtype=dt.datetime)
             for ii, el in enumerate(t_tmp["JDAY_UT"]):

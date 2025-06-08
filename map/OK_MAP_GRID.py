@@ -184,18 +184,27 @@ def get_time_dim(ts):
     raise ValueError("No datetime dimension found.")
 
 
-def flip_latitude(ds):
+def flip_latitude_and_y(ds):
     """
-    Flip latitude coordinates and data variables that depend on latitude dimension.
+    Flip y dimension and latitude/longitude coordinates and data variables that depend on y.
+    Intended for datasets where latitude is a 2D variable with dims (y, x).
     """
-    if "latitude" not in ds.coords:
-        print("No latitude coordinate found. Skipping flip.")
+    if "y" not in ds.dims:
+        print("No 'y' dimension found. Skipping flip.")
         return ds
 
-    ds = ds.assign_coords(latitude=ds.latitude[::-1])
+    # Flip y coordinate
+    ds = ds.assign_coords(y=ds.y[::-1])
+
+    # Flip all data variables that depend on y
     for var_name in ds.data_vars:
-        if "latitude" in ds[var_name].dims:
-            ds[var_name] = ds[var_name].isel(latitude=slice(None, None, -1))
+        if "y" in ds[var_name].dims:
+            ds[var_name] = ds[var_name].isel(y=slice(None, None, -1))
+
+    # Flip coordinates that depend on y
+    for coord_name in ["latitude", "longitude"]:
+        if coord_name in ds and "y" in ds[coord_name].dims:
+            ds[coord_name] = ds[coord_name].isel(y=slice(None, None, -1))
 
     return ds
 
