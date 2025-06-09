@@ -53,7 +53,8 @@ def plot_ts(period_label):
     # with plt.xkcd():
     print('TIMESERIES')
     plt.ioff()
-    fig, ax = plt.subplots(len(inpt.years), 1, figsize=(12, 17), dpi=300)
+    fig, ax = plt.subplots(len(inpt.years), 1, figsize=(12, 17), dpi=inpt.dpi)
+    ax = np.atleast_1d(ax)
     fig.suptitle(f"{inpt.var.upper()} all {inpt.tres}", fontweight='bold')
     kwargs_ori = {'alpha': 0.02, 'lw': 0, 'marker': '.', 'ms': 1}
     kwargs = {'lw': 0, 'marker': '.', 'ms': 2}
@@ -100,7 +101,8 @@ def plot_residuals(period_label):
     """
     print('RESIDUALS')
     plt.ioff()
-    fig, ax = plt.subplots(len(inpt.years), 1, figsize=(12, 17), dpi=300)
+    fig, ax = plt.subplots(len(inpt.years), 1, figsize=(12, 17), dpi=inpt.dpi)
+    ax = np.atleast_1d(ax)
     fig.suptitle(f"residuals {inpt.var.upper()} all {inpt.tres}", fontweight='bold')
     kwargs = {'lw': 1, 'marker': '.', 'ms': 0}
     x = inpt.extr[inpt.var][inpt.extr[inpt.var]['ref_x']]['data_res']
@@ -151,7 +153,8 @@ def plot_scatter(period_label):
     """
     print(f"SCATTERPLOTS {period_label}")
     plt.ioff()
-    fig, ax = plt.subplots(2, 2, figsize=(12, 12), dpi=300)
+    fig, ax = plt.subplots(2, 2, figsize=(12, 12), dpi=inpt.dpi)
+    ax = np.atleast_1d(ax)
     fig.suptitle(f"{inpt.var.upper()} {inpt.seass[period_label]['name']} {inpt.tres}", fontweight='bold')
     axs = ax.ravel()
 
@@ -219,7 +222,8 @@ def plot_scatter_cum():
     given inputs.
     """
     plt.ioff()
-    fig, ax = plt.subplots(2, 2, figsize=(12, 12), dpi=300)
+    fig, ax = plt.subplots(2, 2, figsize=(12, 12), dpi=inpt.dpi)
+    ax = np.atleast_1d(ax)
     fig.suptitle(f"{inpt.var.upper()} cumulative plot", fontweight='bold')
 
     seass_new = cp.copy(inpt.seass)
@@ -391,7 +395,8 @@ def frame_and_axis_removal(ax, len_comps):
 #     print('BLAND-ALTMAN')
 #     [vr_c, vr_e, vr_l, vr_t, vr_t1, vr_t2, vr_c_res, vr_e_res, vr_l_res, vr_t_res, vr_t1_res, vr_t2_res] = avar
 #     seas_name = seass[period_label]['name']
-#     fig, ax = plt.subplots(2, 2, figsize=(12, 12), dpi=300)
+#     fig, ax = plt.subplots(2, 2, figsize=(12, 12), dpi=inpt.dpi)
+#     ax = np.atleast_1d(ax)
 #     axs = ax.ravel()
 #
 #     # define which is the reference measurement for each variable

@@ -33,6 +33,8 @@ import pandas as pd
 thaao_lat = 76.5149
 thaao_lon = -68.7477
 
+dpi = 300
+
 # FOLDERS
 basefol_c = os.path.join('H:\\Shared drives', 'Reanalysis', 'carra', 'raw')
 basefol_e = os.path.join('H:\\Shared drives', 'Reanalysis', 'era5', 'raw')
@@ -49,8 +51,9 @@ thaao_t = 'thaao'
 
 ##
 tres_list = ['3h']
-list_var = ['temp']
-# OK ['lwp', 'surf_pres', 'winds', 'windd', 'cbh', 'alb', 'temp', 'sw_down', 'lw_down', 'sw_up', 'lw_up']
+list_var = ['temp', 'cbh']
+# OK ['lwp', 'surf_pres', 'winds', 'windd', 'cbh', 'alb', 'temp', 'sw_down',
+# 'lw_down', 'sw_up', 'lw_up']
 # NOT OK 'tcc' 'precip' 'rh', 'lwp'
 
 tres = ''
@@ -83,27 +86,34 @@ seass = {'all': {'name': 'all', 'months': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
          # 'SO' : {'name': 'SO', 'months': [9, 10], 'col': 'purple'}
          }
 
-var_dict = {'c': {'name': 'c', 'nanval': np.nan, 'col': 'red', 'col_ori': 'orange', 'label': 'CARRA',
+var_dict = {'c': {'name': 'c', 'nanval': np.nan, 'col': 'red',
+                  'col_ori': 'orange', 'label': 'CARRA',
                   'label_uom': '', 'rad_conv_factor': 3600},
-            'e': {'name': 'e', 'nanval': -32767.0, 'col': 'blue', 'col_ori': 'cyan', 'label': 'ERA5',
+            'e': {'name': 'e', 'nanval': -32767.0, 'col': 'blue',
+                  'col_ori': 'cyan', 'label': 'ERA5',
                   'label_uom': '', 'rad_conv_factor': 3600},
-            'l': {'name': 'l', 'nanval': -32767.0, 'col': 'darkgreen', 'col_ori': 'lightgreen', 'label': 'ERA5-L',
+            'l': {'name': 'l', 'nanval': -32767.0, 'col': 'darkgreen',
+                  'col_ori': 'lightgreen', 'label': 'ERA5-L',
                   'label_uom': '', 'rad_conv_factor': 3600},
-            't': {'name': 't', 'nanval': -9999.9, 'col': 'black', 'col_ori': 'grey', 'label': 'THAAO',
+            't': {'name': 't', 'nanval': -9999.9, 'col': 'black',
+                  'col_ori': 'grey', 'label': 'THAAO',
                   'label_uom': ''},
-            't1': {'name': 't1', 'nanval': np.nan, 'col': 'green', 'col_ori': 'lightgreen', 'label': 'HATPRO',
+            't1': {'name': 't1', 'nanval': np.nan, 'col': 'green',
+                   'col_ori': 'lightgreen', 'label': 'HATPRO',
                    'label_uom': ''},
-            't2': {'name': 't2', 'nanval': np.nan, 'col': 'purple', 'col_ori': 'violet', 'label': 'AWS_ECAPAC',
+            't2': {'name': 't2', 'nanval': np.nan, 'col': 'purple',
+                   'col_ori': 'violet', 'label': 'AWS_ECAPAC',
                    'label_uom': ''}}
 
-extr = {'alb': {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min': -0.5, 'res_max': 0.5,
-                'uom': '[none]', 'comps': ['c', 'e', 'l'], 'bin_nr': 200,
+extr = {'alb': {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1,
+                'res_min': -0.5, 'res_max': 0.5,
+                'uom': '[none]', 'comps': ['c', 'e'], 'bin_nr': 200,
                 'c': {'fn': f'{thaao_c}_albedo_', 'column': 2, 'data': '',
                                'data_res': '', 'var_name': ''},
-                'e': {'fn': f'{thaao_e}_forecast_albedo_', 'column': 2, 'data': '',
-                            'data_res': '', 'var_name': ''},
-                'l': {'fn': f'{thaao_l}_forecast_albedo_', 'column': 4, 'data': '',
-                            'data_res': '', 'var_name': ''},
+                'e': {'fn': f'{thaao_e}_forecast_albedo_', 'column': 2,
+                      'data': '', 'data_res': '', 'var_name': ''},
+                'l': {'fn': f'{thaao_l}_forecast_albedo_', 'column': 4,
+                      'data': '', 'data_res': '', 'var_name': ''},
                 't': {'fn': 'MERGED_SW_LW_UP_DW_METEO_', 'column': 'ALBEDO_SW', 'data': '',
                             'data_res': ''},
                 't1': {'fn': '', 'column': 2, 'data': '', 'data_res': ''},
@@ -140,7 +150,7 @@ extr = {'alb': {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min': -0.5
                              'data_res': ''},
                 't2': {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''}},
         'lw_down': {'name': 'lw_down', 'ref_x': 't', 'min': 100, 'max': 400, 'res_min': -20, 'res_max': 20,
-                    'uom': '[W/m2]', 'comps': ['c', 'e', 'l'], 'bin_nr': 200,
+                    'uom': '[W/m2]', 'comps': ['c', 'e'], 'bin_nr': 200,
                     'c': {'fn': f'{thaao_c}_thermal_surface_radiation_downwards_', 'column': 4,
                             'data': '', 'data_res': '', 'var_name': ''},
                     'e': {'fn': f'{thaao_e}_surface_thermal_radiation_downwards_', 'column': 2,
@@ -152,7 +162,7 @@ extr = {'alb': {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min': -0.5
                     't1': {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
                     't2': {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''}},
         'lw_net': {'name': 'lw_down', 'ref_x': 't', 'min': 0, 'max': 600, 'res_min': -20, 'res_max': 20,
-                   'uom': '[W/m2]', 'comps': ['c', 'e', 'l'], 'bin_nr': 200,
+                   'uom': '[W/m2]', 'comps': ['c', 'e'], 'bin_nr': 200,
                    'c': {'fn': f'{thaao_c}_surface_net_thermal_radiation_', 'column': 4,
                          'data': '', 'data_res': '', 'var_name': ''},
                    'e': {'fn': f'{thaao_e}_surface_net_thermal_radiation_', 'column': 2,
@@ -163,7 +173,7 @@ extr = {'alb': {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min': -0.5
                    't1': {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
                    't2': {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''}},
         'lw_up': {'name': 'lw_up', 'ref_x': 't', 'min': 100, 'max': 500, 'res_min': -20, 'res_max': 20,
-                  'uom': '[W/m2]', 'comps': ['c', 'e', 'l'], 'bin_nr': 200,
+                  'uom': '[W/m2]', 'comps': ['c', 'e'], 'bin_nr': 200,
                   'c': {'fn': '', 'column': np.nan, 'data': '', 'data_res': '', 'var_name': ''},
                   'e': {'fn': '', 'column': np.nan, 'data': '', 'data_res': '', 'var_name': ''},
                   'l': {'fn': '', 'column': np.nan, 'data': '', 'data_res': '', 'var_name': ''},
@@ -192,7 +202,7 @@ extr = {'alb': {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min': -0.5
                    't2': {'fn': 'AWS_THAAO_', 'column': 'RH', 'data': '',
                           'data_res': ''}},
         'rh': {'name': 'rh', 'ref_x': 't', 'min': 0, 'max': 100, 'res_min': -10, 'res_max': 10, 'uom': '[%]',
-               'comps': ['c', 'e', 'l', 't2'], 'bin_nr': 200,
+               'comps': ['c', 'e', 't2'], 'bin_nr': 200,
                'c': {'fn': '', 'column': np.nan, 'data': '', 'data_res': '', 'var_name': ''},
                'e': {'fn': '', 'column': np.nan, 'data': '', 'data_res': '', 'var_name': ''},
                'l': {'fn': '', 'column': np.nan, 'data': '', 'data_res': '', 'var_name': ''},
@@ -214,7 +224,7 @@ extr = {'alb': {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min': -0.5
                       't2': {'fn': 'AWS_THAAO_', 'column': 'BP_mbar', 'data': '',
                              'data_res': ''}},
         'sw_down': {'name': 'sw_down', 'ref_x': 't', 'min': 0, 'max': 700, 'res_min': -20, 'res_max': 20,
-                    'uom': '[W/m2]', 'comps': ['c', 'e', 'l'], 'bin_nr': 200,
+                    'uom': '[W/m2]', 'comps': ['c', 'e'], 'bin_nr': 200,
                     'c': {'fn': f'{thaao_c}_surface_solar_radiation_downwards_', 'column': 4,
                             'data': '', 'data_res': '', 'var_name': ''},
                     'e': {'fn': f'{thaao_e}_surface_solar_radiation_downwards_', 'column': 2,
@@ -226,7 +236,7 @@ extr = {'alb': {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min': -0.5
                     't1': {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
                     't2': {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''}},
         'sw_net': {'name': 'sw_down', 'ref_x': 't', 'min': 0, 'max': 600, 'res_min': -20, 'res_max': 20,
-                   'uom': '[W/m2]', 'comps': ['c', 'e', 'l'], 'bin_nr': 200,
+                   'uom': '[W/m2]', 'comps': ['c', 'e'], 'bin_nr': 200,
                    'c': {'fn': f'{thaao_c}_surface_net_solar_radiation_', 'column': 4,
                          'data': '', 'data_res': '', 'var_name': ''},
                    'e': {'fn': f'{thaao_e}_surface_net_solar_radiation_', 'column': 2,
@@ -237,7 +247,7 @@ extr = {'alb': {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min': -0.5
                    't1': {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
                    't2': {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''}},
         'sw_up': {'name': 'sw_up', 'ref_x': 't', 'min': 0, 'max': 600, 'res_min': -20, 'res_max': 20,
-                  'uom': '[W/m2]', 'comps': ['c', 'e', 'l'], 'bin_nr': 200,
+                  'uom': '[W/m2]', 'comps': ['c', 'e'], 'bin_nr': 200,
                   'c': {'fn': '', 'column': np.nan, 'data': '', 'data_res': '', 'var_name': ''},
                   'e': {'fn': '', 'column': np.nan, 'data': '', 'data_res': '', 'var_name': ''},
                   'l': {'fn': '', 'column': np.nan, 'data': '', 'data_res': '', 'var_name': ''},
@@ -246,11 +256,11 @@ extr = {'alb': {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min': -0.5
                   't1': {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
                   't2': {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''}},
         'temp': {'name': 'temp', 'ref_x': 't', 'min': -40, 'max': 20, 'res_min': -15,
-                 'res_max': 15, 'uom': '[deg]', 'comps': ['c', 'e', 'l', 't2'], 'bin_nr': 200,
+                 'res_max': 15, 'uom': '[deg]', 'comps': ['c', 'e', 't2'], 'bin_nr': 200,
                  'c': {'fn': f'{thaao_c}_2m_temperature_', 'column': 2, 'data': '',
                        'data_res': '', 'var_name': 't2m'},
                  'e': {'fn': f'{thaao_e}_2m_temperature_', 'column': 2, 'data': '',
-                       'data_res': '', 'var_name': ''},
+                       'data_res': '', 'var_name': 't2m'},
                  'l': {'fn': f'{thaao_l}_2m_temperature_', 'column': 2, 'data': '',
                        'data_res': '', 'var_name': ''},
                  't': {'fn': 'Meteo_weekly_all', 'column': 'Air_K', 'data': '',
@@ -271,7 +281,7 @@ extr = {'alb': {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min': -0.5
                 't1': {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
                 't2': {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''}},
         'windd': {'name': 'windd', 'ref_x': 't', 'min': 0, 'max': 360, 'res_min': -90, 'res_max': 90,
-                  'uom': '[deg]', 'comps': ['c', 'e', 'l', 't2'], 'bin_nr': 200,
+                  'uom': '[deg]', 'comps': ['c', 'e', 't2'], 'bin_nr': 200,
                   'c': {'fn': f'{thaao_c}_10m_wind_direction_', 'column': 2, 'data': '',
                         'data_res': '', 'var_name': ''},
                   'e': {'fn': '', 'column': np.nan, 'data': '', 'data_res': '', 'var_name': ''},
@@ -281,7 +291,7 @@ extr = {'alb': {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1, 'res_min': -0.5
                   't2': {'fn': 'AWS_THAAO_', 'column': 'WD_aws', 'data': '',
                          'data_res': ''}},
         'winds': {'name': 'winds', 'ref_x': 't', 'min': 0, 'max': 30, 'res_min': -10, 'res_max': 10,
-                  'uom': '[m/s]', 'comps': ['c', 'e', 'l', 't2'], 'bin_nr': 200,
+                  'uom': '[m/s]', 'comps': ['c', 'e', 't2'], 'bin_nr': 200,
                   'c': {'fn': f'{thaao_c}_10m_wind_speed_', 'column': 2, 'data': pd.DataFrame(),
                         'data_res': '', 'var_name': ''},
                   'e': {'fn': '', 'column': np.nan, 'data': pd.DataFrame(), 'data_res': '', 'var_name': ''},

@@ -47,8 +47,12 @@ def read_rean(vr, dataset_type):
     data_all = pd.DataFrame()
     if dataset_type == "c":
         basefol = inpt.basefol_c
+        lon_name = 'y'
+        lat_name = 'x'
     elif dataset_type == "e":
         basefol = inpt.basefol_e
+        lon_name = 'longitude'
+        lat_name = 'latitude'
     elif dataset_type == "l":
         basefol = inpt.basefol_l
 
@@ -68,16 +72,16 @@ def read_rean(vr, dataset_type):
             # Flip y-axis to reorder from south to north
             ds = ds.assign_coords(y=ds.y[::-1])
 
-            # Flip all data variables along y
-            for var_name in ds.data_vars:
-                if "y" in ds[var_name].dims:
-                    ds[var_name] = ds[var_name].isel(y=slice(None, None, -1))
+        #     # Flip all data variables along y
+        #     for var_name in ds.data_vars:
+        #         if "y" in ds[var_name].dims:
+        #             ds[var_name] = ds[var_name].isel(y=slice(None, None, -1))
 
-            # Flip latitude and longitude if they depend on y
-            if "latitude" in ds and "y" in ds["latitude"].dims:
-                ds["latitude"] = ds["latitude"].isel(y=slice(None, None, -1))
-            if "longitude" in ds and "y" in ds["longitude"].dims:
-                ds["longitude"] = ds["longitude"].isel(y=slice(None, None, -1))
+            # # Flip latitude and longitude if they depend on y
+            # if "latitude" in ds and "y" in ds["latitude"].dims:
+            #     ds["latitude"] = ds["latitude"].isel(y=slice(None, None, -1))
+            # if "longitude" in ds and "y" in ds["longitude"].dims:
+            #     ds["longitude"] = ds["longitude"].isel(y=slice(None, None, -1))
 
         # Adjust longitude if needed
         if inpt.thaao_lon < 0:
@@ -88,11 +92,27 @@ def read_rean(vr, dataset_type):
         y_idx, x_idx = np.unravel_index(dist.argmin().values, dist.shape)
 
         data_tmp = ds[inpt.extr[vr][dataset_type]["var_name"]].isel(
-            y=y_idx, x=x_idx).to_dataframe()
+            {lat_name: y_idx, lon_name: x_idx}).to_dataframe()
+
+        lat_dims = ds['latitude'].dims
+        lon_dims = ds['longitude'].dims
+        
+        if len(lat_dims) == 2:
+            lat_val = ds['latitude'][y_idx, x_idx].values
+        else:
+            # Assume latitude is 1D, indexed by lat_name dimension
+            lat_val = ds['latitude'][y_idx].values
+        
+        if len(lon_dims) == 2:
+            lon_val = ds['longitude'][y_idx, x_idx].values
+        else:
+            # Assume longitude is 1D, indexed by lon_name dimension
+            lon_val = ds['longitude'][x_idx].values
 
         print(
-            f"Closest grid point at lat={inpt.thaao_lat:.4f} and lon={inpt.thaao_lon - 360:.4f} is lat={ds['latitude'][y_idx, x_idx].values:.4f} and lon={ds['longitude'][y_idx, x_idx].values - 360:.4f} index=({int(x_idx)}, {int(y_idx)})")
-
+            f"Closest grid point at lat={inpt.thaao_lat:.4f} and lon={inpt.thaao_lon - 360:.4f} "
+            f"is lat={lat_val:.4f} and lon={lon_val-360:.4f} index=({int(x_idx)}, {int(y_idx)})"
+        )
         data_all = pd.concat([data_all, data_tmp], axis=0)
 
     nan_val = inpt.var_dict[dataset_type]["nanval"]
@@ -253,7 +273,7 @@ def read_thaao_weather(vr):
     """
     try:
         inpt.extr[vr]["t"]["data"] = xr.open_dataset(
-            os.path.join(inpt.basefol_t, "thaao_meteo",
+            os.path.join(inpt.basefol_t, "thaao_aws_vespa",
                          f'{inpt.extr[vr]["t"]["fn"]}.nc'),
             engine="netcdf4").to_dataframe()
         print(f'OK: {inpt.extr[vr]["t"]["fn"]}.nc')
@@ -444,10 +464,10 @@ def read_alb():
     inpt.extr[inpt.var]["c"]["data"][inpt.extr[inpt.var]
                                      ["c"]["data"] <= 0.] = np.nan
 
-    # ERA5-LAND
-    read_rean(inpt.var, "l")
-    inpt.extr[inpt.var]["l"]["data"][inpt.extr[inpt.var]
-                                     ["l"]["data"] <= 0.] = np.nan
+    # # ERA5-LAND
+    # read_rean(inpt.var, "l")
+    # inpt.extr[inpt.var]["l"]["data"][inpt.extr[inpt.var]
+    #                                  ["l"]["data"] <= 0.] = np.nan
 
     # THAAO
     read_thaao_rad(inpt.var)
@@ -586,12 +606,12 @@ def read_lw_down():
     inpt.extr["lw_down"]["e"]["data"] = inpt.extr["lw_down"]["e"]["data"] / \
         inpt.var_dict["e"]["rad_conv_factor"]
 
-    # ERA5-LAND
-    read_rean("lw_down", "l")
-    inpt.extr["lw_down"]["l"]["data"][inpt.extr["lw_down"]
-                                      ["l"]["data"] < 0.] = np.nan
-    inpt.extr["lw_down"]["l"]["data"] = inpt.extr["lw_down"]["l"]["data"] / \
-        inpt.var_dict["l"]["rad_conv_factor"]
+    # # ERA5-LAND
+    # read_rean("lw_down", "l")
+    # inpt.extr["lw_down"]["l"]["data"][inpt.extr["lw_down"]
+    #                                   ["l"]["data"] < 0.] = np.nan
+    # inpt.extr["lw_down"]["l"]["data"] = inpt.extr["lw_down"]["l"]["data"] / \
+    #     inpt.var_dict["l"]["rad_conv_factor"]
 
     # THAAO
     read_thaao_rad("lw_down")
@@ -623,12 +643,12 @@ def read_sw_down():
     inpt.extr["sw_down"]["e"]["data"] = inpt.extr["sw_down"]["e"]["data"] / \
         inpt.var_dict["e"]["rad_conv_factor"]
 
-    # ERA5-LAND
-    read_rean("sw_down", "l")
-    inpt.extr["sw_down"]["l"]["data"][inpt.extr["sw_down"]
-                                      ["l"]["data"] < 0.] = np.nan
-    inpt.extr["sw_down"]["l"]["data"] = inpt.extr["sw_down"]["l"]["data"] / \
-        inpt.var_dict["l"]["rad_conv_factor"]
+    # # ERA5-LAND
+    # read_rean("sw_down", "l")
+    # inpt.extr["sw_down"]["l"]["data"][inpt.extr["sw_down"]
+    #                                   ["l"]["data"] < 0.] = np.nan
+    # inpt.extr["sw_down"]["l"]["data"] = inpt.extr["sw_down"]["l"]["data"] / \
+    #     inpt.var_dict["l"]["rad_conv_factor"]
 
     # THAAO
     read_thaao_rad("sw_down")
@@ -683,16 +703,16 @@ def read_lw_up():
                                     ["e"]["data"] < 0.] = np.nan
     # del inpt.extr["lw_net"]["e"]["data"]
 
-    # ERA5-LAND
-    read_rean("lw_net", "l")
-    inpt.extr["lw_net"]["l"]["data"] = inpt.extr["lw_net"]["l"]["data"] / \
-        inpt.var_dict["l"]["rad_conv_factor"]
-    inpt.extr["lw_up"]["l"]["data"] = pd.DataFrame(
-        index=inpt.extr["lw_down"]["l"]["data"].index,
-        data=inpt.extr["lw_down"]["l"]["data"].values - inpt.extr["lw_net"]["l"]["data"].values, columns=["lw_up"])
-    inpt.extr["lw_up"]["l"]["data"][inpt.extr["lw_up"]
-                                    ["l"]["data"] < 0.] = np.nan
-    # del inpt.extr["lw_net"]["l"]["data"]
+    # # ERA5-LAND
+    # read_rean("lw_net", "l")
+    # inpt.extr["lw_net"]["l"]["data"] = inpt.extr["lw_net"]["l"]["data"] / \
+    #     inpt.var_dict["l"]["rad_conv_factor"]
+    # inpt.extr["lw_up"]["l"]["data"] = pd.DataFrame(
+    #     index=inpt.extr["lw_down"]["l"]["data"].index,
+    #     data=inpt.extr["lw_down"]["l"]["data"].values - inpt.extr["lw_net"]["l"]["data"].values, columns=["lw_up"])
+    # inpt.extr["lw_up"]["l"]["data"][inpt.extr["lw_up"]
+    #                                 ["l"]["data"] < 0.] = np.nan
+    # # del inpt.extr["lw_net"]["l"]["data"]
 
     # THAAO
     read_thaao_rad("lw_up")
@@ -739,16 +759,16 @@ def read_sw_up():
                                     ["e"]["data"] < 0.] = np.nan
     del inpt.extr["sw_net"]["e"]["data"]
 
-    # ERA5-LAND
-    read_rean("sw_net", "l")
-    inpt.extr["sw_net"]["l"]["data"] = inpt.extr["sw_net"]["l"]["data"] / \
-        inpt.var_dict["l"]["rad_conv_factor"]
-    inpt.extr["sw_up"]["l"]["data"] = pd.DataFrame(
-        index=inpt.extr["sw_down"]["l"]["data"].index,
-        data=inpt.extr["sw_down"]["l"]["data"].values - inpt.extr["sw_net"]["l"]["data"].values, columns=["sw_up"])
-    inpt.extr["sw_up"]["l"]["data"][inpt.extr["sw_up"]
-                                    ["l"]["data"] < 0.] = np.nan
-    del inpt.extr["sw_net"]["l"]["data"]
+    # # ERA5-LAND
+    # read_rean("sw_net", "l")
+    # inpt.extr["sw_net"]["l"]["data"] = inpt.extr["sw_net"]["l"]["data"] / \
+    #     inpt.var_dict["l"]["rad_conv_factor"]
+    # inpt.extr["sw_up"]["l"]["data"] = pd.DataFrame(
+    #     index=inpt.extr["sw_down"]["l"]["data"].index,
+    #     data=inpt.extr["sw_down"]["l"]["data"].values - inpt.extr["sw_net"]["l"]["data"].values, columns=["sw_up"])
+    # inpt.extr["sw_up"]["l"]["data"][inpt.extr["sw_up"]
+    #                                 ["l"]["data"] < 0.] = np.nan
+    # del inpt.extr["sw_net"]["l"]["data"]
 
     # THAAO
     read_thaao_rad("sw_up")
@@ -778,13 +798,13 @@ def read_rh():
         read_rean("temp", "e")
     calc_rh_from_tdp()
 
-    # ERA5-LAND
-    read_rean(inpt.var, "l")
-    if inpt.extr[inpt.var]["l"]["data"].empty:
-        read_rean("temp", "l")
-    calc_rh_from_tdp()
+    # # ERA5-LAND
+    # read_rean(inpt.var, "l")
+    # if inpt.extr[inpt.var]["l"]["data"].empty:
+    #     read_rean("temp", "l")
+    # calc_rh_from_tdp()
 
-    # e.g. l_td[l_td_tmp == -32767.0] = np.nan
+    # # e.g. l_td[l_td_tmp == -32767.0] = np.nan
 
     # THAAO2
     read_thaao_weather(inpt.var)
@@ -893,9 +913,9 @@ def read_temp():
     read_rean(inpt.var, "e")
     inpt.extr[inpt.var]["e"]["data"] = inpt.extr[inpt.var]["e"]["data"] - 273.15
 
-    # ERA5-LAND
-    read_rean(inpt.var, "l")
-    inpt.extr[inpt.var]["l"]["data"] = inpt.extr[inpt.var]["l"]["data"] - 273.15
+    # # ERA5-LAND
+    # read_rean(inpt.var, "l")
+    # inpt.extr[inpt.var]["l"]["data"] = inpt.extr[inpt.var]["l"]["data"] - 273.15
 
     # THAAO
     read_thaao_weather(inpt.var)
