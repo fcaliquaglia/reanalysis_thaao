@@ -50,7 +50,7 @@ thaao_l = 'era5-land'
 thaao_t = 'thaao'
 
 ##
-tres_list = ['3h']
+tres_list = ['12h']
 list_var = ['temp', 'cbh']
 # OK ['lwp', 'surf_pres', 'winds', 'windd', 'cbh', 'alb', 'temp', 'sw_down',
 # 'lw_down', 'sw_up', 'lw_up']
@@ -59,7 +59,7 @@ list_var = ['temp', 'cbh']
 tres = ''
 var = ''
 
-years = np.arange(2023, 2024, 1)
+years = np.arange(2016, 2024, 1)
 
 aws_ecapac_daterange = pd.date_range(start=dt.datetime(
     2023, 4, 1), end=dt.datetime(2024, 12, 31), freq='1D')
@@ -118,13 +118,15 @@ extr = {'alb': {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1,
                             'data_res': ''},
                 't1': {'fn': '', 'column': 2, 'data': '', 'data_res': ''},
                 't2': {'fn': '', 'column': 2, 'data': '', 'data_res': ''}},
-        'cbh': {'name': 'cbh', 'ref_x': 't', 'min': 0, 'max': 10000, 'res_min': -1500, 'res_max': 1500,
+        'cbh': {'name': 'cbh', 'ref_x': 't', 'min': 0, 'max': 10000, 
+                'res_min': -1500, 'res_max': 1500,
                 'uom': '[m]', 'comps': ['c', 'e'], 'bin_nr': 200,
                 'c': {'fn': f'{thaao_c}_cloud_base_', 'column': 2, 'data': '',
-                               'data_res': '', 'var_name': ''},
+                               'data_res': '', 'var_name': 'cdcb'},
                 'e': {'fn': f'{thaao_e}_cloud_base_height_', 'column': 2, 'data': '',
-                            'data_res': '', 'var_name': ''},
-                'l': {'fn': '', 'column': np.nan, 'data': '', 'data_res': '', 'var_name': ''},
+                            'data_res': '', 'var_name': 'cbh'},
+                'l': {'fn': '', 'column': np.nan, 'data': '', 
+                      'data_res': '', 'var_name': ''},
                 't': {'fn': '_Thule_CHM190147_000_0060cloud', 'column': 'CBH_L1[m]',
                             'data': pd.DataFrame(),
                             'data_res': ''},

@@ -194,17 +194,18 @@ def flip_latitude_and_y(ds):
         return ds
 
     # Flip y coordinate
-    ds = ds.assign_coords(y=ds.y[::-1])
+    ds = ds.isel(y=slice(None, None, -1))
+    # ds = ds.assign_coords(y=ds.y[::-1])
 
-    # Flip all data variables that depend on y
-    for var_name in ds.data_vars:
-        if "y" in ds[var_name].dims:
-            ds[var_name] = ds[var_name].isel(y=slice(None, None, -1))
+    # # Flip all data variables that depend on y
+    # for var_name in ds.data_vars:
+    #     if "y" in ds[var_name].dims:
+    #         ds[var_name] = ds[var_name].isel(y=slice(None, None, -1))
 
-    # Flip coordinates that depend on y
-    for coord_name in ["latitude", "longitude"]:
-        if coord_name in ds and "y" in ds[coord_name].dims:
-            ds[coord_name] = ds[coord_name].isel(y=slice(None, None, -1))
+    # # Flip coordinates that depend on y
+    # for coord_name in ["latitude", "longitude"]:
+    #     if coord_name in ds and "y" in ds[coord_name].dims:
+    #         ds[coord_name] = ds[coord_name].isel(y=slice(None, None, -1))
 
     return ds
 

@@ -37,11 +37,11 @@ import inputs as inpt
 
 def read_rean(vr, dataset_type):
     """
-    Generalized function to read data from different sources (carra, era5, era5_land),
+    Generalized function to read data from different sources (carra, era5),
     process it, and store it in the inpt.extr dictionary.
 
     :param vr: The variable key.
-    :param dataset_type: One of ["c", "e", "l"] for carra, era5, era5_land respectively.
+    :param dataset_type: One of ["c", "e"] for carra, era5 respectively.
     :return: None
     """
     data_all = pd.DataFrame()
@@ -69,19 +69,7 @@ def read_rean(vr, dataset_type):
 
         # Flip latitude for CARRA
         if dataset_type == "c":
-            # Flip y-axis to reorder from south to north
-            ds = ds.assign_coords(y=ds.y[::-1])
-
-        #     # Flip all data variables along y
-        #     for var_name in ds.data_vars:
-        #         if "y" in ds[var_name].dims:
-        #             ds[var_name] = ds[var_name].isel(y=slice(None, None, -1))
-
-            # # Flip latitude and longitude if they depend on y
-            # if "latitude" in ds and "y" in ds["latitude"].dims:
-            #     ds["latitude"] = ds["latitude"].isel(y=slice(None, None, -1))
-            # if "longitude" in ds and "y" in ds["longitude"].dims:
-            #     ds["longitude"] = ds["longitude"].isel(y=slice(None, None, -1))
+            ds = ds.isel(y=slice(None, None, -1))
 
         # Adjust longitude if needed
         if inpt.thaao_lon < 0:
