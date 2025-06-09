@@ -409,7 +409,7 @@ def frame_and_axis_removal(ax, len_comps):
 #         x = vr_t2_res[inpt.var]
 #         xlabel = 'AWS_ECAPAC'
 #     elif vr == 'temp':
-#         comps = ['c', 'e', 'l', 't2']
+#         comps = ['c', 'e', 't2']
 #         x = vr_t_res[inpt.var]
 #         xlabel = 'THAAO'
 #     else:
@@ -432,14 +432,6 @@ def frame_and_axis_removal(ax, len_comps):
 #             axs[i].set_ylabel(label)
 #             try:
 #                 y = vr_e_res[inpt.var]
-#             except KeyError:
-#                 print(f"error with {label}")
-#                 continue
-#         if comp == 'l':
-#             label = 'ERA5-L'
-#             axs[i].set_ylabel(label)
-#             try:
-#                 y = vr_l_res[inpt.var]
 #             except KeyError:
 #                 print(f"error with {label}")
 #                 continue

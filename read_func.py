@@ -35,26 +35,27 @@ from metpy.units import units
 import inputs as inpt
 
 
+def to_180(lon):
+    """Convert 0–360 longitude to -180–180."""
+    return lon - 360 if lon > 180 else lon
+
+
 def read_rean(vr, dataset_type):
     """
     Generalized function to read data from different sources (carra, era5),
     process it, and store it in the inpt.extr dictionary.
 
-    :param vr: The variable key.
-    :param dataset_type: One of ["c", "e"] for carra, era5 respectively.
-    :return: None
+    :param vr: Variable key
+    :param dataset_type: One of ["c", "e"]
     """
     data_all = pd.DataFrame()
+
     if dataset_type == "c":
         basefol = inpt.basefol_c
-        lon_name = 'y'
-        lat_name = 'x'
+        lon_name, lat_name = 'y', 'x'
     elif dataset_type == "e":
         basefol = inpt.basefol_e
-        lon_name = 'longitude'
-        lat_name = 'latitude'
-    elif dataset_type == "l":
-        basefol = inpt.basefol_l
+        lon_name, lat_name = 'longitude', 'latitude'
 
     for year in inpt.years:
         ds_path = os.path.join(
@@ -62,186 +63,52 @@ def read_rean(vr, dataset_type):
         try:
             ds = xr.open_dataset(
                 ds_path, decode_timedelta=True, engine="netcdf4")
-            print(f'OK: {inpt.extr[vr][dataset_type]["fn"]}{year}.nc')
+            print(f'OK: {os.path.basename(ds_path)}')
         except FileNotFoundError:
-            print(f'NOT FOUND: {inpt.extr[vr][dataset_type]["fn"]}{year}.nc')
+            print(f'NOT FOUND: {os.path.basename(ds_path)}')
             continue
 
-        # Flip latitude for CARRA
+        # Flip latitude for CARRA (if lat is 2D y,x)
         if dataset_type == "c":
             ds = ds.isel(y=slice(None, None, -1))
 
-        # Adjust longitude if needed
-        if inpt.thaao_lon < 0:
-            inpt.thaao_lon = 360 + inpt.thaao_lon
+        # Use thaao_lon and convert only for datasets that use 0–360
+        lon_data = ds["longitude"]
+        if dataset_type == "c":
+            # Convert thaao_lon to 0–360 if needed
+            thaao_lon = inpt.thaao_lon if inpt.thaao_lon >= 0 else 360 + inpt.thaao_lon
+        else:
+            # Keep original lon for ERA5
+            thaao_lon = inpt.thaao_lon
 
-        dist = ((ds["latitude"] - inpt.thaao_lat) ** 2 +
-                (ds["longitude"] - inpt.thaao_lon) ** 2)
+        # Calculate distance to target point
+        dist = (ds["latitude"] - inpt.thaao_lat)**2 + \
+            (ds["longitude"] - thaao_lon)**2
         y_idx, x_idx = np.unravel_index(dist.argmin().values, dist.shape)
 
+        # Extract timeseries at closest point
         data_tmp = ds[inpt.extr[vr][dataset_type]["var_name"]].isel(
             {lat_name: y_idx, lon_name: x_idx}).to_dataframe()
 
-        lat_dims = ds['latitude'].dims
-        lon_dims = ds['longitude'].dims
-        
-        if len(lat_dims) == 2:
-            lat_val = ds['latitude'][y_idx, x_idx].values
-        else:
-            # Assume latitude is 1D, indexed by lat_name dimension
-            lat_val = ds['latitude'][y_idx].values
-        
-        if len(lon_dims) == 2:
-            lon_val = ds['longitude'][y_idx, x_idx].values
-        else:
-            # Assume longitude is 1D, indexed by lon_name dimension
-            lon_val = ds['longitude'][x_idx].values
+        # Get actual lat/lon value at that point
+        lat_val = ds['latitude'][y_idx,
+                                 x_idx].values if ds['latitude'].ndim == 2 else ds['latitude'][y_idx].values
+        lon_val = ds['longitude'][y_idx,
+                                  x_idx].values if ds['longitude'].ndim == 2 else ds['longitude'][x_idx].values
 
         print(
-            f"Closest grid point at lat={inpt.thaao_lat:.4f} and lon={inpt.thaao_lon - 360:.4f} "
-            f"is lat={lat_val:.4f} and lon={lon_val-360:.4f} index=({int(x_idx)}, {int(y_idx)})"
+            f"Closest grid point at lat={inpt.thaao_lat:.4f}, lon={inpt.thaao_lon:.4f} "
+            f"=> grid lat={lat_val:.4f}, lon={lon_val:.4f}, index=({x_idx}, {y_idx})"
         )
+
         data_all = pd.concat([data_all, data_tmp], axis=0)
 
+    # Replace nan values
     nan_val = inpt.var_dict[dataset_type]["nanval"]
     data_all[data_all == nan_val] = np.nan
     data_all = data_all[inpt.extr[vr][dataset_type]["var_name"]].to_frame()
-
     inpt.extr[vr][dataset_type]["data"] = data_all
     inpt.extr[vr][dataset_type]["data"].columns = pd.Index([vr])
-
-    # Radiation calculation for era5_land
-    if dataset_type == "l" and inpt.var in ["sw_up", "sw_down", "lw_up", "lw_down"]:
-        print("RAD CALCULATION NOT IMPLEMENTED for ERA5-L")
-        sys.exit()
-
-    return
-
-
-# def read_carra(vr):
-#     c_tmp_all = pd.DataFrame()
-#     for year in inpt.years:
-#         ds = xr.open_dataset(
-#                 os.path.join(inpt.basefol_c, f'{inpt.extr[vr]["c"]["fn"]}{year}.nc'), decode_timedelta=True)
-#
-#         # Wrap longitude if dataset uses 0–360
-#         if inpt.thaao_lon < 0:
-#             inpt.thaao_lon = 360 + inpt.thaao_lon
-#
-#         dist = ((ds["latitude"] - inpt.thaao_lat) ** 2 + (ds["longitude"] - inpt.thaao_lon) ** 2)
-#         y_idx, x_idx = np.unravel_index(dist.argmin().values, dist.shape)
-#         c_tmp = ds[inpt.extr[vr]["c"]["var_name"]].isel(y=y_idx, x=x_idx).to_dataframe()
-#         print(f'Closest grid point at lat={inpt.thaao_lat} and lon={inpt.thaao_lon} is {c_tmp}')
-#         c_tmp_all = pd.concat([c_tmp_all, c_tmp], axis=0)
-#
-#     inpt.extr[vr]["c"]["data"] = c_tmp_all
-#     inpt.extr[vr]["c"]["data"].index = pd.to_datetime(
-#             inpt.extr[vr]["c"]["data"][0] + " " + inpt.extr[vr]["c"]["data"][1], format="%Y-%m-%d %H:%M:%S")
-#     inpt.extr[vr]["c"]["data"] = inpt.extr[vr]["c"]["data"][[inpt.extr[vr]["c"]["column"]]]
-#     inpt.extr[vr]["c"]["data"].columns = [vr]
-#     return
-
-
-# def read_carra_txt(vr):
-#     """
-#     Reads and processes Carra dataset based on a specified variable code. The function
-#     iterates through defined years, attempts to read the corresponding data files,
-#     concatenates the data, and performs transformations such as null value handling
-#     and indexing by datetime. If a file corresponding to a year is not found, a
-#     notification is printed, and processing continues. The result is stored in the
-#     `inpt` structure under the specified variable code.
-#
-#     :param vr: The variable code to identify specific data to be processed.
-#     :type vr: str
-#     :return: None. The processed data is stored directly into the `inpt` structure.
-#     :rtype: None
-#     """
-#     c_tmp_all = pd.DataFrame()
-#     for year in inpt.years:
-#         try:
-#             c_tmp = pd.read_table(
-#                     os.path.join("H:\\Shared drives\\Reanalysis\\carra\\thaao\\v1\\", f'thaao_{inpt.extr[vr]["c"]["fn"]}{year}.txt'), sep="\s+", header=None,
-#                     skiprows=1, engine="python", skip_blank_lines=True)
-#             c_tmp[c_tmp == inpt.var_dict["c"]["nanval"]] = np.nan
-#             c_tmp_all = pd.concat([c_tmp_all, c_tmp], axis=0)
-#             print(f'OK: {inpt.extr[vr]["c"]["fn"]}{year}.txt')
-#         except FileNotFoundError:
-#             print(f'NOT FOUND: {inpt.extr[vr]["c"]["fn"]}{year}.txt')
-#     inpt.extr[vr]["c"]["data"] = c_tmp_all
-#     inpt.extr[vr]["c"]["data"].index = pd.to_datetime(
-#             inpt.extr[vr]["c"]["data"][0] + " " + inpt.extr[vr]["c"]["data"][1], format="%Y-%m-%d %H:%M:%S")
-#     inpt.extr[vr]["c"]["data"] = inpt.extr[vr]["c"]["data"][[inpt.extr[vr]["c"]["column"]]]
-#     inpt.extr[vr]["c"]["data"].columns = [vr]
-#     return
-
-
-# def read_era5(vr):
-#     """
-#     Reads ERA5 data files for the specified variable and aggregates them into a single DataFrame.
-#
-#     This function processes and consolidates data for a specific variable from multiple annual files,
-#     as determined by the input configuration. Missing data values are replaced with NaN, and the DataFrame
-#     is indexed by a datetime column derived from the input files.
-#
-#     :param vr: The variable name for which ERA5 data will be read and processed, as specified
-#                in the input configuration.
-#     :return: None. The processed data is directly stored in the global `inpt.extr` dictionary.
-#     """
-#     e_tmp_all = pd.DataFrame()
-#     for year in inpt.years:
-#         try:
-#             e_tmp = pd.read_table(
-#                     os.path.join(inpt.basefol_e, f'{inpt.extr[vr]["e"]["fn"]}{year}.txt'), sep="\s+", header=None,
-#                     skiprows=1, engine="python")
-#             e_tmp[e_tmp == inpt.var_dict["e"]["nanval"]] = np.nan
-#             e_tmp_all = pd.concat([e_tmp_all, e_tmp], axis=0)
-#             print(f'OK: {inpt.extr[vr]["e"]["fn"]}{year}.txt')
-#         except FileNotFoundError:
-#             print(f'NOT FOUND: {inpt.extr[vr]["e"]["fn"]}{year}.txt')
-#     inpt.extr[vr]["e"]["data"] = e_tmp_all
-#     inpt.extr[vr]["e"]["data"].index = pd.to_datetime(
-#             inpt.extr[vr]["e"]["data"][0] + " " + inpt.extr[vr]["e"]["data"][1], format="%Y-%m-%d %H:%M:%S")
-#     inpt.extr[vr]["e"]["data"] = inpt.extr[vr]["e"]["data"][[inpt.extr[vr]["e"]["column"]]]
-#     inpt.extr[vr]["e"]["data"].columns = [vr]
-#     return
-#
-#
-# def read_era5_land(vr):
-#     """
-#     Reads ERA5-Land data from a series of text files, processes it, and assigns the resulting DataFrame
-#     to a specified key in the input object"s structure. It also handles optional radiation variable
-#     calculations if applicable.
-#
-#     The function is designed to handle data files across multiple years, concatenate them into a single
-#     DataFrame, replace specified NaN values with `np.nan`, and perform both index formatting and column
-#     selection based on the input structure.
-#
-#     :param vr: The variable key to be processed, guiding the extraction and processing of relevant data.
-#     :type vr: str
-#     :return: None
-#     """
-#     l_tmp_all = pd.DataFrame()
-#     for year in inpt.years:
-#         try:
-#             l_tmp = pd.read_table(
-#                     os.path.join(inpt.basefol_l, f'{inpt.extr[vr]["l"]["fn"]}{year}.txt"), sep="\s+", header=None,
-#                     skiprows=1, engine="python")
-#             l_tmp[l_tmp == inpt.var_dict["l"]["nanval"]] = np.nan
-#             l_tmp_all = pd.concat([l_tmp_all, l_tmp], axis=0)
-#             print(f'OK: {inpt.extr[vr]["l"]["fn"]}{year}.txt')
-#         except FileNotFoundError:
-#             print(f'NOT FOUND: {inpt.extr[vr]["l"]["fn"]}{year}.txt')
-#     inpt.extr[vr]["l"]["data"] = l_tmp_all
-#     inpt.extr[vr]["l"]["data"].index = pd.to_datetime(
-#             inpt.extr[vr]["l"]["data"][0] + " " + inpt.extr[vr]["l"]["data"][1], format="%Y-%m-%d %H:%M:%S")
-#     inpt.extr[vr]["l"]["data"] = inpt.extr[vr]["l"]["data"][[inpt.extr[vr]["l"]["column"]]]
-#     inpt.extr[vr]["l"]["data"].columns = [vr]
-#
-#     # only for radiation variables
-#     if inpt.var in ["sw_up", "sw_down", "lw_up", "lw_down"]:
-#         calc_rad_acc_era5_land(vr)
-#
-#     return
 
 
 def read_thaao_weather(vr):
@@ -434,7 +301,7 @@ def read_aws_ecapac(vr):
 def read_alb():
     """
     Reads and processes the input variable data from multiple sources including CARRA, ERA5,
-    ERA5-LAND, and THAAO. Adjusts the datasets by scaling and cleaning data points
+    and THAAO. Adjusts the datasets by scaling and cleaning data points
     as per defined conditions.
 
     :raises KeyError: If required keys are missing in the input dictionary for any source.
@@ -451,11 +318,6 @@ def read_alb():
     read_rean(inpt.var, "e")
     inpt.extr[inpt.var]["c"]["data"][inpt.extr[inpt.var]
                                      ["c"]["data"] <= 0.] = np.nan
-
-    # # ERA5-LAND
-    # read_rean(inpt.var, "l")
-    # inpt.extr[inpt.var]["l"]["data"][inpt.extr[inpt.var]
-    #                                  ["l"]["data"] <= 0.] = np.nan
 
     # THAAO
     read_thaao_rad(inpt.var)
@@ -566,15 +428,15 @@ def read_precip():
 def read_lw_down():
     """
     Reads and processes longwave downward radiation ("lw_down") data from multiple sources such as
-    CARRA, ERA5, ERA5-LAND, and THAAO. The function handles data quality issues by filtering out
+    CARRA, ERA5, and THAAO. The function handles data quality issues by filtering out
     non-physical values (values less than 0) and applies conversion factors to the raw data using
     values stored in the `var_dict` dictionary.
 
     The processed data is stored in the `inpt.extr` dictionary under specific keys corresponding to
-    each data source ("c" for CARRA, "e" for ERA5, "l" for ERA5-LAND, and "t" for THAAO).
+    each data source ("c" for CARRA, "e" for ERA5, and "t" for THAAO).
 
     :raises KeyError: If keys expected in `inpt.extr` or `inpt.var_dict` for specific
-        sources ("c", "e", "l", "t") are missing.
+        sources ("c", "e", "t") are missing.
     :raises ValueError: If data conversion or filtering operations encounter unexpected
         or malformed data values.
 
@@ -593,13 +455,6 @@ def read_lw_down():
                                       ["e"]["data"] < 0.] = np.nan
     inpt.extr["lw_down"]["e"]["data"] = inpt.extr["lw_down"]["e"]["data"] / \
         inpt.var_dict["e"]["rad_conv_factor"]
-
-    # # ERA5-LAND
-    # read_rean("lw_down", "l")
-    # inpt.extr["lw_down"]["l"]["data"][inpt.extr["lw_down"]
-    #                                   ["l"]["data"] < 0.] = np.nan
-    # inpt.extr["lw_down"]["l"]["data"] = inpt.extr["lw_down"]["l"]["data"] / \
-    #     inpt.var_dict["l"]["rad_conv_factor"]
 
     # THAAO
     read_thaao_rad("lw_down")
@@ -630,13 +485,6 @@ def read_sw_down():
                                       ["e"]["data"] < 0.] = np.nan
     inpt.extr["sw_down"]["e"]["data"] = inpt.extr["sw_down"]["e"]["data"] / \
         inpt.var_dict["e"]["rad_conv_factor"]
-
-    # # ERA5-LAND
-    # read_rean("sw_down", "l")
-    # inpt.extr["sw_down"]["l"]["data"][inpt.extr["sw_down"]
-    #                                   ["l"]["data"] < 0.] = np.nan
-    # inpt.extr["sw_down"]["l"]["data"] = inpt.extr["sw_down"]["l"]["data"] / \
-    #     inpt.var_dict["l"]["rad_conv_factor"]
 
     # THAAO
     read_thaao_rad("sw_down")
@@ -691,17 +539,6 @@ def read_lw_up():
                                     ["e"]["data"] < 0.] = np.nan
     # del inpt.extr["lw_net"]["e"]["data"]
 
-    # # ERA5-LAND
-    # read_rean("lw_net", "l")
-    # inpt.extr["lw_net"]["l"]["data"] = inpt.extr["lw_net"]["l"]["data"] / \
-    #     inpt.var_dict["l"]["rad_conv_factor"]
-    # inpt.extr["lw_up"]["l"]["data"] = pd.DataFrame(
-    #     index=inpt.extr["lw_down"]["l"]["data"].index,
-    #     data=inpt.extr["lw_down"]["l"]["data"].values - inpt.extr["lw_net"]["l"]["data"].values, columns=["lw_up"])
-    # inpt.extr["lw_up"]["l"]["data"][inpt.extr["lw_up"]
-    #                                 ["l"]["data"] < 0.] = np.nan
-    # # del inpt.extr["lw_net"]["l"]["data"]
-
     # THAAO
     read_thaao_rad("lw_up")
     inpt.extr["lw_up"]["t"]["data"][inpt.extr["lw_up"]
@@ -747,17 +584,6 @@ def read_sw_up():
                                     ["e"]["data"] < 0.] = np.nan
     del inpt.extr["sw_net"]["e"]["data"]
 
-    # # ERA5-LAND
-    # read_rean("sw_net", "l")
-    # inpt.extr["sw_net"]["l"]["data"] = inpt.extr["sw_net"]["l"]["data"] / \
-    #     inpt.var_dict["l"]["rad_conv_factor"]
-    # inpt.extr["sw_up"]["l"]["data"] = pd.DataFrame(
-    #     index=inpt.extr["sw_down"]["l"]["data"].index,
-    #     data=inpt.extr["sw_down"]["l"]["data"].values - inpt.extr["sw_net"]["l"]["data"].values, columns=["sw_up"])
-    # inpt.extr["sw_up"]["l"]["data"][inpt.extr["sw_up"]
-    #                                 ["l"]["data"] < 0.] = np.nan
-    # del inpt.extr["sw_net"]["l"]["data"]
-
     # THAAO
     read_thaao_rad("sw_up")
     inpt.extr["sw_up"]["t"]["data"][inpt.extr["sw_up"]
@@ -785,14 +611,6 @@ def read_rh():
     if inpt.extr[inpt.var]["l"]["data"].empty:
         read_rean("temp", "e")
     calc_rh_from_tdp()
-
-    # # ERA5-LAND
-    # read_rean(inpt.var, "l")
-    # if inpt.extr[inpt.var]["l"]["data"].empty:
-    #     read_rean("temp", "l")
-    # calc_rh_from_tdp()
-
-    # # e.g. l_td[l_td_tmp == -32767.0] = np.nan
 
     # THAAO2
     read_thaao_weather(inpt.var)
@@ -901,10 +719,6 @@ def read_temp():
     read_rean(inpt.var, "e")
     inpt.extr[inpt.var]["e"]["data"] = inpt.extr[inpt.var]["e"]["data"] - 273.15
 
-    # # ERA5-LAND
-    # read_rean(inpt.var, "l")
-    # inpt.extr[inpt.var]["l"]["data"] = inpt.extr[inpt.var]["l"]["data"] - 273.15
-
     # THAAO
     read_thaao_weather(inpt.var)
     inpt.extr[inpt.var]["t"]["data"] = inpt.extr[inpt.var]["t"]["data"] - 273.15
@@ -957,22 +771,6 @@ def read_wind():
     inpt.extr["windd"]["e"]["data"] = pd.DataFrame(
         index=inpt.extr["windu"]["e"]["data"].index, data=e_wd.magnitude, columns=["windd"])
 
-    # ERA5-LAND
-    # TODO activate when files are available
-    # read_era5_land("windu")
-    # read_era5_land("windv")
-    # l_ws = wind_speed(
-    #         inpt.extr["windu"]["l"]["data"].values * units("m/s"),
-    #         inpt.extr["windv"]["l"]["data"].values * units("m/s"))
-    # inpt.extr["winds"]["l"]["data"] = pd.DataFrame(
-    #     index=inpt.extr["windu"]["l"]["data"].index, data=l_ws.magnitude, columns=["winds"])
-    #
-    # l_wd = wind_direction(
-    #         inpt.extr["windu"]["l"]["data"].values * units("m/s"),
-    #         inpt.extr["windv"]["l"]["data"].values * units("m/s"))
-    # inpt.extr["windd"]["l"]["data"] = pd.DataFrame(
-    #     index=inpt.extr["windu"]["l"]["data"].index, data=l_wd.magnitude, columns=["windd"])
-
     # THAAO2
     read_aws_ecapac("winds")
     read_aws_ecapac("windd")
@@ -1008,19 +806,6 @@ def calc_rad_acc_era5_land(vr):
 
     print("ERA5-LAND data for radiation corrected because they are values daily-accumulated!")
     return
-
-
-# def extract_values(fn, year):
-#     if not os.path.exists(os.path.join(inpt.basefol_c, fn + str(year) + ".nc")):
-#         try:
-#             filen = os.path.join(inpt.basefol_t, "reanalysis", "carra", "_".join(fn.split("_")[1:]) + str(year) + ".nc")
-#             NC = xr.open_dataset(str(filen), decode_cf=True, decode_times=True)
-#
-#             # tmp = NC.sel(x=y, y=x, method="nearest")
-#         except FileNotFoundError:
-#             print(f'cannot find {filen}')
-#
-#     return f'thaao_{fn}'
 
 
 def read():
