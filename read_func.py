@@ -31,6 +31,7 @@ import pandas as pd
 import xarray as xr
 from metpy.calc import wind_direction, wind_speed
 from metpy.units import units
+from geopy.distance import geodesic
 
 import inputs as inpt
 
@@ -38,6 +39,50 @@ import inputs as inpt
 def to_180(lon):
     """Convert 0–360 longitude to -180–180."""
     return lon - 360 if lon > 180 else lon
+
+
+def find_index_in_grid(ds, fn):
+
+    # Flatten lat/lon
+    lat_arr = ds["latitude"].values
+    # Normalize longitudes to [0, 360] if needed
+    lon_arr = ds["longitude"].values % 360
+
+    target_point = (
+        inpt.thaao_lat, inpt.thaao_lon if inpt.thaao_lon >= 0 else 360 + inpt.thaao_lon)
+
+    # Reshape to 1D
+    flat_lat = lat_arr.reshape(-1)
+    flat_lon = lon_arr.reshape(-1)
+
+    # Compute geodesic distance (slow but accurate)
+    distances = np.array([
+        geodesic(target_point, (flat_lat[i], flat_lon[i])).meters
+        for i in range(flat_lat.size)
+    ])
+
+    # Get 1D index of closest point
+    min_idx_1d = np.argmin(distances)
+    y_idx, x_idx = np.unravel_index(min_idx_1d, lat_arr.shape)
+
+    lat_val = lat_arr[y_idx, x_idx]
+    lon_val = lon_arr[y_idx, x_idx]
+    print(
+        f"Matched closest point: lat={lat_val:.4f}, lon={lon_val:.4f}, idx=({y_idx}, {x_idx})")
+
+    # Actual lat/lon
+    lat_val = ds["latitude"][y_idx,
+                             x_idx].values if ds["latitude"].ndim == 2 else ds["latitude"][y_idx].values
+    lon_val = ds["longitude"][y_idx,
+                              x_idx].values if ds["longitude"].ndim == 2 else ds["longitude"][x_idx].values
+
+    print(f"Closest grid point at lat={inpt.thaao_lat:.4f}, lon={inpt.thaao_lon:.4f} "
+          f"=> grid lat={lat_val:.4f}, lon={lon_val:.4f}, index=({x_idx}, {y_idx})")
+
+    with open(fn, "w") as f:
+        f.write(f"{y_idx}, {x_idx}\n")
+
+    return fn
 
 
 def read_rean(vr, dataset_type):
@@ -67,7 +112,8 @@ def read_rean(vr, dataset_type):
         ds_path = os.path.join(
             basefol, f'{inpt.extr[vr][dataset_type]["fn"]}{year}.nc')
         try:
-            ds = xr.open_dataset(ds_path, decode_timedelta=True, engine="netcdf4")
+            ds = xr.open_dataset(
+                ds_path, decode_timedelta=True, engine="netcdf4")
             print(f'OK: {os.path.basename(ds_path)}')
         except FileNotFoundError:
             print(f'NOT FOUND: {os.path.basename(ds_path)}')
@@ -78,47 +124,20 @@ def read_rean(vr, dataset_type):
             ds = ds.isel(y=slice(None, None, -1))
             ds["longitude"] = ds["longitude"] % 360  # Normalize to 0–360
 
-
-        print(f"[DEBUG] Using thaao_lon = {thaao_lon} for dataset_type = {dataset_type}")
-
-        from geopy.distance import geodesic
-        import numpy as np
-        
-        # Flatten lat/lon
-        lat_arr = ds["latitude"].values
-        lon_arr = ds["longitude"].values % 360  # Normalize longitudes to [0, 360] if needed
-        
-        target_point = (inpt.thaao_lat, inpt.thaao_lon if inpt.thaao_lon >= 0 else 360 + inpt.thaao_lon)
-        
-        # Reshape to 1D
-        flat_lat = lat_arr.reshape(-1)
-        flat_lon = lon_arr.reshape(-1)
-        
-        # Compute geodesic distance (slow but accurate)
-        distances = np.array([
-            geodesic(target_point, (flat_lat[i], flat_lon[i])).meters
-            for i in range(flat_lat.size)
-        ])
-        
-        # Get 1D index of closest point
-        min_idx_1d = np.argmin(distances)
-        y_idx, x_idx = np.unravel_index(min_idx_1d, lat_arr.shape)
-
-        lat_val = lat_arr[y_idx, x_idx]
-        lon_val = lon_arr[y_idx, x_idx]
-        print(f"Matched closest point: lat={lat_val:.4f}, lon={lon_val:.4f}, idx=({y_idx}, {x_idx})")
-
+        # find or read indexes
+        filenam = f"{dataset_type}_grid_index_for_thaao.txt"
+        if not os.path.exists(filenam):
+            x_idx, y_idx = find_index_in_grid(ds, filenam)
+        else:
+            with open(filenam, "r") as f:
+                line = f.readline()
+                y_idx_str, x_idx_str = line.strip().split(",")
+                y_idx = int(y_idx_str)
+                x_idx = int(x_idx_str)
 
         # Extract timeseries at closest point
         data_tmp = ds[inpt.extr[vr][dataset_type]["var_name"]].isel(
             {lat_name: y_idx, lon_name: x_idx}).to_dataframe()
-
-        # Actual lat/lon
-        lat_val = ds["latitude"][y_idx, x_idx].values if ds["latitude"].ndim == 2 else ds["latitude"][y_idx].values
-        lon_val = ds["longitude"][y_idx, x_idx].values if ds["longitude"].ndim == 2 else ds["longitude"][x_idx].values
-
-        print(f"Closest grid point at lat={inpt.thaao_lat:.4f}, lon={inpt.thaao_lon:.4f} "
-              f"=> grid lat={lat_val:.4f}, lon={lon_val:.4f}, index=({x_idx}, {y_idx})")
 
         data_all = pd.concat([data_all, data_tmp], axis=0)
 
@@ -128,7 +147,6 @@ def read_rean(vr, dataset_type):
     data_all = data_all[inpt.extr[vr][dataset_type]["var_name"]].to_frame()
     inpt.extr[vr][dataset_type]["data"] = data_all
     inpt.extr[vr][dataset_type]["data"].columns = pd.Index([vr])
-
 
 
 def read_thaao_weather(vr):
