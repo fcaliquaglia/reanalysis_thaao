@@ -25,6 +25,7 @@
 - pandas
 - xarray
 - metpy
+- geopy
 
 ## Reanalysis considered
 

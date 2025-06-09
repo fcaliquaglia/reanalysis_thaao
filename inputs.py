@@ -30,8 +30,8 @@ import numpy as np
 import pandas as pd
 
 # THAAO COORDS
-thaao_lat = 76.5149
-thaao_lon = -68.7477
+thaao_lat = 76.5 # 76.52  # 76.5149
+thaao_lon = -68.8 # -68.74  # -68.7477
 
 dpi = 300
 
@@ -49,7 +49,7 @@ thaao_t = 'thaao'
 
 ##
 tres_list = ['3h']
-list_var = ['temp', 'cbh']
+list_var = ['temp']
 # OK ['lwp', 'surf_pres', 'winds', 'windd', 'cbh', 'alb', 'temp', 'sw_down',
 # 'lw_down', 'sw_up', 'lw_up']
 # NOT OK 'tcc' 'precip' 'rh', 'lwp'

@@ -42,7 +42,7 @@ def to_180(lon):
 
 def read_rean(vr, dataset_type):
     """
-    Generalized function to read data from different sources (carra, era5),
+    Generalized function to read data from different sources (CARRA, ERA5),
     process it, and store it in the inpt.extr dictionary.
 
     :param vr: Variable key
@@ -53,62 +53,82 @@ def read_rean(vr, dataset_type):
     if dataset_type == "c":
         basefol = inpt.basefol_c
         lon_name, lat_name = 'y', 'x'
+        # Convert thaao_lon to 0–360 for CARRA
+        thaao_lon = inpt.thaao_lon if inpt.thaao_lon >= 0 else 360 + inpt.thaao_lon
     elif dataset_type == "e":
         basefol = inpt.basefol_e
         lon_name, lat_name = 'longitude', 'latitude'
+        # Keep -180 to 180 for ERA5
+        thaao_lon = inpt.thaao_lon
+    else:
+        raise ValueError("dataset_type must be 'c' or 'e'")
 
     for year in inpt.years:
         ds_path = os.path.join(
             basefol, f'{inpt.extr[vr][dataset_type]["fn"]}{year}.nc')
         try:
-            ds = xr.open_dataset(
-                ds_path, decode_timedelta=True, engine="netcdf4")
+            ds = xr.open_dataset(ds_path, decode_timedelta=True, engine="netcdf4")
             print(f'OK: {os.path.basename(ds_path)}')
         except FileNotFoundError:
             print(f'NOT FOUND: {os.path.basename(ds_path)}')
             continue
 
-        # Flip latitude for CARRA (if lat is 2D y,x)
+         # Flip latitude for CARRA and normalize longitude
         if dataset_type == "c":
             ds = ds.isel(y=slice(None, None, -1))
+            ds["longitude"] = ds["longitude"] % 360  # Normalize to 0–360
 
-        # Use thaao_lon and convert only for datasets that use 0–360
-        lon_data = ds["longitude"]
-        if dataset_type == "c":
-            # Convert thaao_lon to 0–360 if needed
-            thaao_lon = inpt.thaao_lon if inpt.thaao_lon >= 0 else 360 + inpt.thaao_lon
-        else:
-            # Keep original lon for ERA5
-            thaao_lon = inpt.thaao_lon
 
-        # Calculate distance to target point
-        dist = (ds["latitude"] - inpt.thaao_lat)**2 + \
-            (ds["longitude"] - thaao_lon)**2
-        y_idx, x_idx = np.unravel_index(dist.argmin().values, dist.shape)
+        print(f"[DEBUG] Using thaao_lon = {thaao_lon} for dataset_type = {dataset_type}")
+
+        from geopy.distance import geodesic
+        import numpy as np
+        
+        # Flatten lat/lon
+        lat_arr = ds["latitude"].values
+        lon_arr = ds["longitude"].values % 360  # Normalize longitudes to [0, 360] if needed
+        
+        target_point = (inpt.thaao_lat, inpt.thaao_lon if inpt.thaao_lon >= 0 else 360 + inpt.thaao_lon)
+        
+        # Reshape to 1D
+        flat_lat = lat_arr.reshape(-1)
+        flat_lon = lon_arr.reshape(-1)
+        
+        # Compute geodesic distance (slow but accurate)
+        distances = np.array([
+            geodesic(target_point, (flat_lat[i], flat_lon[i])).meters
+            for i in range(flat_lat.size)
+        ])
+        
+        # Get 1D index of closest point
+        min_idx_1d = np.argmin(distances)
+        y_idx, x_idx = np.unravel_index(min_idx_1d, lat_arr.shape)
+
+        lat_val = lat_arr[y_idx, x_idx]
+        lon_val = lon_arr[y_idx, x_idx]
+        print(f"Matched closest point: lat={lat_val:.4f}, lon={lon_val:.4f}, idx=({y_idx}, {x_idx})")
+
 
         # Extract timeseries at closest point
         data_tmp = ds[inpt.extr[vr][dataset_type]["var_name"]].isel(
             {lat_name: y_idx, lon_name: x_idx}).to_dataframe()
 
-        # Get actual lat/lon value at that point
-        lat_val = ds['latitude'][y_idx,
-                                 x_idx].values if ds['latitude'].ndim == 2 else ds['latitude'][y_idx].values
-        lon_val = ds['longitude'][y_idx,
-                                  x_idx].values if ds['longitude'].ndim == 2 else ds['longitude'][x_idx].values
+        # Actual lat/lon
+        lat_val = ds["latitude"][y_idx, x_idx].values if ds["latitude"].ndim == 2 else ds["latitude"][y_idx].values
+        lon_val = ds["longitude"][y_idx, x_idx].values if ds["longitude"].ndim == 2 else ds["longitude"][x_idx].values
 
-        print(
-            f"Closest grid point at lat={inpt.thaao_lat:.4f}, lon={inpt.thaao_lon:.4f} "
-            f"=> grid lat={lat_val:.4f}, lon={lon_val:.4f}, index=({x_idx}, {y_idx})"
-        )
+        print(f"Closest grid point at lat={inpt.thaao_lat:.4f}, lon={inpt.thaao_lon:.4f} "
+              f"=> grid lat={lat_val:.4f}, lon={lon_val:.4f}, index=({x_idx}, {y_idx})")
 
         data_all = pd.concat([data_all, data_tmp], axis=0)
 
-    # Replace nan values
+    # Replace NaNs
     nan_val = inpt.var_dict[dataset_type]["nanval"]
     data_all[data_all == nan_val] = np.nan
     data_all = data_all[inpt.extr[vr][dataset_type]["var_name"]].to_frame()
     inpt.extr[vr][dataset_type]["data"] = data_all
     inpt.extr[vr][dataset_type]["data"].columns = pd.Index([vr])
+
 
 
 def read_thaao_weather(vr):
