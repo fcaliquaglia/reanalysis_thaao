@@ -20,7 +20,7 @@
 - python3
 - scipy
 - netcdf4
-- mtplotlib
+- matplotlib
 - julian
 - pandas
 - xarray
