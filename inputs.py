@@ -30,19 +30,18 @@ import numpy as np
 import pandas as pd
 
 # THAAO COORDS
-thaao_lat = 76.5149 # 76.52  # 76.5149
-thaao_lon = -68.7477 # -68.74  # -68.7477
+thaao_lat = 76.5149  # 76.52  # 76.5149
+thaao_lon = -68.7477  # -68.74  # -68.7477
 
 dpi = 300
 
 # FOLDERS
-basefol_c = os.path.join('H:\\Shared drives', 'Reanalysis', 'carra', 'raw')
+basefol_c = os.path.join('H:\\Shared drives', 'Reanalysis', 'carra1', 'raw')
 basefol_e = os.path.join('H:\\Shared drives', 'Reanalysis', 'era5', 'raw')
 basefol_t = os.path.join('H:\\Shared drives', 'Dati_THAAO')
 basefol_out = os.path.join(
     'H:\\Shared drives', 'Dati_elab_docs', 'thaao_reanalysis')
 
-# thaao_c = 'thaao_carra'
 thaao_c = 'carra'
 thaao_e = 'era5'
 thaao_t = 'thaao'
@@ -111,7 +110,7 @@ extr = {'alb': {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1,
                             'data_res': ''},
                 't1': {'fn': '', 'column': 2, 'data': '', 'data_res': ''},
                 't2': {'fn': '', 'column': 2, 'data': '', 'data_res': ''}},
-        'cbh': {'name': 'cbh', 'ref_x': 't', 'min': 0, 'max': 10000, 
+        'cbh': {'name': 'cbh', 'ref_x': 't', 'min': 0, 'max': 10000,
                 'res_min': -1500, 'res_max': 1500,
                 'uom': '[m]', 'comps': ['c', 'e'], 'bin_nr': 200,
                 'c': {'fn': f'{thaao_c}_cloud_base_', 'column': 2, 'data': '',
