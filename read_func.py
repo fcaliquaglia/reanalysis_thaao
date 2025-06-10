@@ -32,6 +32,8 @@ import xarray as xr
 from metpy.calc import wind_direction, wind_speed
 from metpy.units import units
 import csv
+
+from math import radians, cos, sin, sqrt, atan2
 from geopy.distance import geodesic
 
 import inputs as inpt
@@ -99,6 +101,22 @@ def to_180(lon):
 #     return y_idx, x_idx
 
 
+def haversine_vectorized(lat1, lon1, lat2, lon2):
+    """
+    Compute distance (in meters) between a point and arrays of lat/lon using the haversine formula.
+    """
+    R = 6371000  # Earth radius in meters
+    lat1, lon1 = radians(lat1), radians(lon1)
+    lat2, lon2 = np.radians(lat2), np.radians(lon2)
+
+    dlat = lat2 - lat1
+    dlon = lon2 - lon1
+
+    a = np.sin(dlat / 2.0) ** 2 + cos(lat1) * \
+        np.cos(lat2) * np.sin(dlon / 2.0) ** 2
+    return 2 * R * np.arcsin(np.sqrt(a))
+
+
 def find_index_in_grid(ds, ds_type, in_file, out_file):
     """
     Find closest grid points for multiple coordinates in a file.
@@ -106,16 +124,11 @@ def find_index_in_grid(ds, ds_type, in_file, out_file):
     Parameters:
     - ds: xarray.Dataset (ERA5 or CARRA)
     - ds_type: str, 'e' for ERA5 (1D lat/lon), 'c' for CARRA (2D lat/lon)
-    - inpt_coord_file: str, input file with lines of: datetime, lat, lon
-
-    Output:
-    - Writes a file with: datetime, input_lat, input_lon, y_idx, x_idx, matched_lat, matched_lon
+    - in_file: str, input CSV with: datetime, lat, lon, elev
+    - out_file: str, output CSV with matched grid info
     """
 
-    import os
-    import numpy as np
-    from geopy.distance import geodesic
-
+    # Read input coordinates
     coords = []
     with open(os.path.join('txt_locations', in_file), "r") as f:
         reader = csv.DictReader(f)
@@ -123,16 +136,13 @@ def find_index_in_grid(ds, ds_type, in_file, out_file):
             try:
                 dt_str = row['datetime']
                 lat = float(row['lat'])
-                lon = float(row['lon'])
+                lon = float(row['lon']) % 360
                 elev = float(row['elev'])
-                if lon < 0:
-                    lon += 360
                 coords.append((dt_str, lat, lon, elev))
             except (ValueError, KeyError):
-                continue  # Skip rows with invalid or missing data
+                continue  # Skip invalid lines
 
-
-    # Handle grid arrays
+    # Prepare grid
     if ds_type == 'c':
         lat_arr = ds['latitude'].values
         lon_arr = ds['longitude'].values % 360
@@ -146,29 +156,25 @@ def find_index_in_grid(ds, ds_type, in_file, out_file):
     flat_lat = lat_arr.ravel()
     flat_lon = lon_arr.ravel()
 
-
+    # Output
     with open(os.path.join('txt_locations', out_file), "w") as out_f:
         header = "datetime,input_lat,input_lon,input_elev,y_idx,x_idx,z_idx,matched_lat,matched_lon,matched_elev\n"
-        print(header)
         out_f.write(header)
 
-        for (dt_str, lat, lon, elev) in coords:
-            distances = np.array([
-                geodesic((lat, lon), (flat_lat[i], flat_lon[i])).meters
-                for i in range(len(flat_lat))
-            ])
+        for dt_str, lat, lon, elev in coords:
+            distances = haversine_vectorized(lat, lon, flat_lat, flat_lon)
             min_idx = np.argmin(distances)
             y_idx, x_idx = np.unravel_index(min_idx, lat_arr.shape)
-            z_idx=np.nan
+
             matched_lat = lat_arr[y_idx, x_idx]
             matched_lon = lon_arr[y_idx, x_idx]
+            z_idx = np.nan
             matched_elev = np.nan
-            str_fmt=f"{dt_str},{lat:.6f},{lon:.6f},{elev:.2f},{y_idx},{x_idx},{z_idx},{matched_lat:.6f},{matched_lon:.6f},{matched_elev:.2f}\n"
-            print(str_fmt)
-            out_f.write(str_fmt)
+
+            out_f.write(
+                f"{dt_str},{lat:.6f},{lon:.6f},{elev:.2f},{y_idx},{x_idx},{z_idx},{matched_lat:.6f},{matched_lon:.6f},{matched_elev:.2f}\n")
 
     print(f"Index mapping written to {out_file}")
-    return 
 
 
 def read_rean(vr, dataset_type):
@@ -210,7 +216,7 @@ def read_rean(vr, dataset_type):
             ds["longitude"] = ds["longitude"] % 360  # Normalize to 0–360
 
         # find or read indexes
-        filenam_loc =f"2024Nprocessed_loc.txt"
+        filenam_loc = f"2024Nprocessed_loc.txt"
         filenam_grid = f"{dataset_type}_grid_index_for_2024Nprocessed_loc.txt"
         if not os.path.exists(os.path.join('txt_locations', filenam_loc)):
             print("missing locations for grid comparison")
@@ -234,7 +240,6 @@ def read_rean(vr, dataset_type):
                         coords.append((dt_str, lat, lon, elev))
                     except (ValueError, KeyError):
                         continue  # Skip rows with invalid or missing data
-
 
         if dataset_type == "c":
             lat_val = ds["latitude"].isel(y=y_idx, x=x_idx).values

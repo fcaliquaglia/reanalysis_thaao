@@ -163,7 +163,7 @@ def plot_background(ax, extent, title, add_grid=True):
 def generate_status_string(flags):
     lines = []
     if flags.get("ground_sites"):
-        lines.append("Ground sites  N={:<4}".format(len(sites.keys())))
+        lines.append("Ground sites  N={:<4}".format(len(ground_sites._datakeys())))
 
     if flags.get("dropsondes"):
         lines.append("Dropsondes    N={:<4}".format(len(drop_data)))
@@ -424,7 +424,7 @@ def write_location_file(d, output_dir):
 
     try:
         filename = f"{d['filename'].split('.')[:-1][0]}_loc.txt"
-    except IndexError:
+    except (IndexError, TypeError):
         filename = f"{d['filename']}_loc.txt"
     filepath = os.path.join(output_dir, filename)
 
@@ -583,8 +583,8 @@ def plot_surf_date(seq, plot_flags=plot_flags):
 if __name__ == "__main__":
 
     if plot_flags['ground_sites']:
+        ground_sites_data = []
         for ground_site in ground_sites:
-            ground_sites_data = []
             elem = {"filename": ground_site,
                     "time": [np.nan],
                     "lat": [ground_sites[ground_site]["lat"]],
@@ -593,6 +593,7 @@ if __name__ == "__main__":
                     }
             ground_sites_data.append(elem)
             write_location_file(elem, folders["txt_location"])
+
     # Radiosondes
     if plot_flags["radiosondes"]:
         radio_files = process_nc_folder(folders["radiosondes"], "*.nc")
