@@ -41,61 +41,134 @@ def to_180(lon):
     return lon - 360 if lon > 180 else lon
 
 
-def find_index_in_grid(ds, ds_type, fn):
+# def find_index_in_grid(ds, ds_type, fn):
+#     """
+#     Find closest grid point in a dataset to a given lat/lon using geodesic distance.
+
+#     Parameters:
+#     - ds: xarray.Dataset (ERA5 or CARRA)
+#     - ds_type: str, 'e' for ERA5 (1D lat/lon), 'c' for CARRA (2D lat/lon)
+#     - fn: str, output file to write indices
+#     - inpt: object with thaao_lat and thaao_lon attributes
+#     """
+
+#     target_point = (
+#         inpt.thaao_lat,
+#         inpt.thaao_lon if inpt.thaao_lon >= 0 else 360 + inpt.thaao_lon
+#     )
+
+#     if ds_type == 'c':
+#         # CARRA: 2D lat/lon
+#         lat_arr = ds['latitude'].values
+#         lon_arr = ds['longitude'].values % 360
+#     elif ds_type == 'e':
+#         # ERA5: 1D lat/lon, need meshgrid
+#         lat_1d = ds['latitude'].values
+#         lon_1d = ds['longitude'].values % 360
+#         lat_arr, lon_arr = np.meshgrid(lat_1d, lon_1d, indexing='ij')
+#     else:
+#         raise ValueError(f"Unknown dataset type: {ds_type}")
+
+#     # Flatten for distance calculation
+#     flat_lat = lat_arr.ravel()
+#     flat_lon = lon_arr.ravel()
+
+#     distances = np.array([
+#         geodesic(target_point, (lat, lon)).meters
+#         for lat, lon in zip(flat_lat, flat_lon)
+#     ])
+
+#     # Find closest index and convert back to 2D
+#     min_idx = np.argmin(distances)
+#     y_idx, x_idx = np.unravel_index(min_idx, lat_arr.shape)
+
+#     # Retrieve matched lat/lon from dataset
+#     lat_val = lat_arr[y_idx, x_idx]
+#     lon_val = lon_arr[y_idx, x_idx]
+
+#     print(
+#         f"Matched closest point: lat={lat_val:.4f}, lon={lon_val:.4f}, idx=({y_idx}, {x_idx})")
+#     print(
+#         f"Closest to input point: lat={inpt.thaao_lat:.4f}, lon={inpt.thaao_lon:.4f}")
+
+#     # Save index
+#     with open(fn, "w") as f:
+#         f.write(f"{y_idx}, {x_idx}\n")
+
+#     return y_idx, x_idx
+
+
+def find_index_in_grid(ds, ds_type, inpt_coord_file):
     """
-    Find closest grid point in a dataset to a given lat/lon using geodesic distance.
+    Find closest grid points for multiple coordinates in a file.
 
     Parameters:
     - ds: xarray.Dataset (ERA5 or CARRA)
     - ds_type: str, 'e' for ERA5 (1D lat/lon), 'c' for CARRA (2D lat/lon)
-    - fn: str, output file to write indices
-    - inpt: object with thaao_lat and thaao_lon attributes
+    - inpt_coord_file: str, input file with lines of: datetime, lat, lon
+
+    Output:
+    - Writes a file with: datetime, input_lat, input_lon, y_idx, x_idx, matched_lat, matched_lon
     """
 
-    target_point = (
-        inpt.thaao_lat,
-        inpt.thaao_lon if inpt.thaao_lon >= 0 else 360 + inpt.thaao_lon
-    )
+    import os
+    import numpy as np
+    from geopy.distance import geodesic
 
+    # Read input coordinates
+    with open(inpt_coord_file, "r") as f:
+        lines = f.readlines()
+
+    coords = []
+    for line in lines:
+        parts = line.strip().split(",")
+        if len(parts) != 3:
+            continue  # skip malformed lines
+        dt_str, lat_str, lon_str = parts
+        try:
+            lat = float(lat_str)
+            lon = float(lon_str)
+            if lon < 0:
+                lon += 360
+            coords.append((dt_str, lat, lon))
+        except ValueError:
+            continue  # skip lines with invalid numbers
+
+    # Handle grid arrays
     if ds_type == 'c':
-        # CARRA: 2D lat/lon
         lat_arr = ds['latitude'].values
         lon_arr = ds['longitude'].values % 360
     elif ds_type == 'e':
-        # ERA5: 1D lat/lon, need meshgrid
         lat_1d = ds['latitude'].values
         lon_1d = ds['longitude'].values % 360
         lat_arr, lon_arr = np.meshgrid(lat_1d, lon_1d, indexing='ij')
     else:
         raise ValueError(f"Unknown dataset type: {ds_type}")
 
-    # Flatten for distance calculation
     flat_lat = lat_arr.ravel()
     flat_lon = lon_arr.ravel()
 
-    distances = np.array([
-        geodesic(target_point, (lat, lon)).meters
-        for lat, lon in zip(flat_lat, flat_lon)
-    ])
+    output_filename = f"{ds_type}_grid_index_for_{os.path.basename(inpt_coord_file)}"
 
-    # Find closest index and convert back to 2D
-    min_idx = np.argmin(distances)
-    y_idx, x_idx = np.unravel_index(min_idx, lat_arr.shape)
+    with open(output_filename, "w") as out_f:
+        header = "datetime,input_lat,input_lon,y_idx,x_idx,matched_lat,matched_lon\n"
+        out_f.write(header)
 
-    # Retrieve matched lat/lon from dataset
-    lat_val = lat_arr[y_idx, x_idx]
-    lon_val = lon_arr[y_idx, x_idx]
+        for dt_str, lat, lon in coords:
+            distances = np.array([
+                geodesic((lat, lon), (flat_lat[i], flat_lon[i])).meters
+                for i in range(len(flat_lat))
+            ])
+            min_idx = np.argmin(distances)
+            y_idx, x_idx = np.unravel_index(min_idx, lat_arr.shape)
 
-    print(
-        f"Matched closest point: lat={lat_val:.4f}, lon={lon_val:.4f}, idx=({y_idx}, {x_idx})")
-    print(
-        f"Closest to input point: lat={inpt.thaao_lat:.4f}, lon={inpt.thaao_lon:.4f}")
+            matched_lat = lat_arr[y_idx, x_idx]
+            matched_lon = lon_arr[y_idx, x_idx]
 
-    # Save index
-    with open(fn, "w") as f:
-        f.write(f"{y_idx}, {x_idx}\n")
+            out_f.write(f"{dt_str},{lat:.6f},{lon:.6f},{y_idx},{x_idx},{matched_lat:.6f},{matched_lon:.6f}\n")
 
-    return y_idx, x_idx
+    print(f"Index mapping written to {output_filename}")
+    return 
 
 
 def read_rean(vr, dataset_type):
@@ -137,15 +210,16 @@ def read_rean(vr, dataset_type):
             ds["longitude"] = ds["longitude"] % 360  # Normalize to 0–360
 
         # find or read indexes
-        filenam = f"{dataset_type}_grid_index_for_thaao.txt"
-        if not os.path.exists(filenam):
-            y_idx, x_idx = find_index_in_grid(ds, dataset_type, filenam)
-        else:
-            with open(filenam, "r") as f:
-                line = f.readline()
-                y_idx_str, x_idx_str = line.strip().split(",")
-                y_idx = int(y_idx_str)
-                x_idx = int(x_idx_str)
+        filenam_pos = "thaao_loc.txt"
+        if not os.path.exists(filenam_pos):
+            find_index_in_grid(ds, dataset_type, filenam_pos)
+
+        filenam_grid = f"{dataset_type}_grid_index_for_{os.path.basename(filenam_pos[-8:])}"
+        with open(filenam_grid, "r") as f:
+            line = f.readline()
+            y_idx_str, x_idx_str = line.strip().split(",")
+            y_idx = int(y_idx_str)
+            x_idx = int(x_idx_str)
 
         if dataset_type == "c":
             lat_val = ds["latitude"].isel(y=y_idx, x=x_idx).values
