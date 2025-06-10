@@ -157,7 +157,8 @@ def find_index_in_grid(ds, ds_type, in_file, out_file):
             input_lat = row.lat
             input_lon = row.lon
             input_elev = row.elev
-            distances = haversine_vectorized(input_lat, input_lon, flat_lat, flat_lon)
+            distances = haversine_vectorized(
+                input_lat, input_lon, flat_lat, flat_lon)
             min_idx = np.argmin(distances)
             y_idx, x_idx = np.unravel_index(min_idx, lat_arr.shape)
             z_idx = np.nan
@@ -168,12 +169,12 @@ def find_index_in_grid(ds, ds_type, in_file, out_file):
             # Parse input datetime
             input_time = pd.to_datetime(dt_str)
             time_diffs = np.abs(ds_times - input_time)
-            if time_diffs:
+            if np.all(np.isnat(time_diffs)):
                 matched_time = np.nan
             else:
                 time_idx = time_diffs.argmin()
                 matched_time = ds_times[time_idx].strftime("%Y-%m-%dT%H:%M:%S")
-            str_fmt=f"{dt_str},{input_lat:.6f},{input_lon:.6f},{input_elev:.2f},{y_idx},{x_idx},{z_idx},{matched_lat:.6f},{matched_lon:.6f},{matched_elev:.2f},{matched_time}\n"
+            str_fmt = f"{dt_str},{input_lat:.6f},{input_lon:.6f},{input_elev:.2f},{y_idx},{x_idx},{z_idx},{matched_lat:.6f},{matched_lon:.6f},{matched_elev:.2f},{matched_time}\n"
             out_f.write(str_fmt)
 
     print(f"Index mapping written to {out_file}")
@@ -218,8 +219,12 @@ def read_rean(vr, dataset_type):
             ds["longitude"] = ds["longitude"] % 360  # Normalize to 0–360
 
         # find or read indexes
-        filenam_loc = f"2024Nprocessed_loc.txt"
-        filenam_grid = f"{dataset_type}_grid_index_for_2024Nprocessed_loc.txt"
+        # TODO: add distinzione tra field sites, buoys, track. serve uno switch, 
+        # cartelle etc. per il momento fisso su THAAO 
+        # oppure usare 2024N_processed per una boa
+        tmp_test = 'THAAO'
+        filenam_loc = f"{tmp_test}_loc.txt"
+        filenam_grid = f"{dataset_type}_grid_index_for_{tmp_test}_loc.txt"
         if not os.path.exists(os.path.join('txt_locations', filenam_loc)):
             print("missing locations for grid comparison")
         else:
@@ -261,7 +266,7 @@ def read_rean(vr, dataset_type):
             data_list.append(df)
 
         # Combine all into one DataFrame
-        #data_all = pd.concat(data_list, ignore_index=True)
+        # data_all = pd.concat(data_list, ignore_index=True)
 
     # Replace NaNs
     nan_val = inpt.var_dict[dataset_type]["nanval"]
