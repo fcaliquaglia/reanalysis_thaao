@@ -666,7 +666,7 @@ if __name__ == "__main__":
                 else:
                     print("OK")
                     elem = {"filename": os.path.basename(gf),
-                            "lat": lat, "lon": lon, "temp": np.nan, "time": np.nan, "elev": np.repeat(np.nan, len(time))
+                            "lat": lat, "lon": lon, "temp": np.nan, "time": np.nan, "elev": np.repeat(np.nan, len(lat))
                             }
                 g3_data.append(elem)
 
@@ -692,7 +692,7 @@ if __name__ == "__main__":
                 else:
                     print("OK")
                     elem = {"filename": os.path.basename(pf),
-                            "lat": lat, "lon": lon, "temp": np.nan, "time": np.nan, "elev": np.repeat(np.nan, len(time))
+                            "lat": lat, "lon": lon, "temp": np.nan, "time": np.nan, "elev": np.repeat(np.nan, len(lon))
                             }
                 p3_data.append(elem)
                 # save location/elevation files
