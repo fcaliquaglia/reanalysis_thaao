@@ -292,14 +292,16 @@ ts_e_jan = extract_time_series(ds_e_jan, era5_indices, varname="t2m")
 
 print("Plotting time series ...")
 fig, ax = plt.subplots(figsize=(12, 6))
-colors = ["red", "blue", "green"]
+colors = ["orange", "green", "purple"]
 
 for i in range(len(ts_c_jan)):
     time_dim_c = get_time_dim(ts_c_jan[i])
-    ax.plot(ts_c_jan[i][time_dim_c], ts_c_jan[i].values, "r-", label=f"CARRA pt{i+1}")
+    ax.plot(ts_c_jan[i][time_dim_c], ts_c_jan[i].values, color=colors[i],
+            label=f"CARRA pt{i+1} ({lat1[i]:.4f}, {lon1[i]:.4f})")
 
     time_dim_e = get_time_dim(ts_e_jan[i])
-    ax.plot(ts_e_jan[i][time_dim_e], ts_e_jan[i].values, "b-", label=f"ERA5 pt{i+1}")
+    ax.plot(ts_e_jan[i][time_dim_e], ts_e_jan[i].values, "b-", 
+            label=f"ERA5 pt{i+1} ({lat1[i]:.4f}, {lon1[i]:.4f})")
 
 ax.set_xlabel("Date")
 ax.set_ylabel("2m Temperature (K)")
