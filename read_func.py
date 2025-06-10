@@ -223,7 +223,7 @@ def read_thaao_rad(vr):
             t_tmp = pd.read_table(
                 os.path.join(inpt.basefol_t, "thaao_rad",
                              f'{inpt.extr[vr]["t"]["fn"]}{i_fmt}_5MIN.dat'),
-                engine="python", skiprows=None, header=0, decimal=".", sep="\s+")
+                engine="python", skiprows=None, header=0, decimal=".", sep=r"\s+")
             tmp = np.empty(t_tmp["JDAY_UT"].shape, dtype=dt.datetime)
             for ii, el in enumerate(t_tmp["JDAY_UT"]):
                 new_jd_ass = el + \
@@ -260,7 +260,7 @@ def read_thaao_hatpro(vr):
         #            os.path.join(
         #                    inpt.basefol_t, "thaao_hatpro",
         #                    f'{inpt.extr[vr]["t1"]["fn"]}', f'{inpt.extr[vr]["t1"]["fn"]}.DAT'),
-        #            sep="\s+", engine="python", header=0, skiprows=9)
+        #            sep=r"\s+", engine="python", header=0, skiprows=9)
         # #   t1_tmp.columns = ["Date[y_m_d]", "Time[h:m]", "LWP[g/m2]", "STD_LWP[g/m2]", "Num"]
         #    # t1_tmp_all = t1_tmp
 
@@ -270,7 +270,7 @@ def read_thaao_hatpro(vr):
         t1_tmp = pd.read_table(
             os.path.join(
                 inpt.basefol_t, "thaao_hatpro", f'{inpt.extr[vr]["t1"]["fn"]}',
-                f'{inpt.extr[vr]["t1"]["fn"]}.DAT'), sep="\s+", engine="python", header=0, skiprows=9,
+                f'{inpt.extr[vr]["t1"]["fn"]}.DAT'), sep=r"\s+", engine="python", header=0, skiprows=9,
             parse_dates={"datetime": [0, 1]}, date_format="%Y-%m-%d %H:%M:%S", index_col="datetime")
 
         inpt.extr[vr]["t1"]["data"] = t1_tmp[[inpt.extr[vr]["t1"]["column"]]]
@@ -306,7 +306,7 @@ def read_thaao_ceilometer(vr):
             t_tmp = pd.read_table(
                 os.path.join(
                     inpt.basefol_t, "thaao_ceilometer", "medie_tat_rianalisi",
-                    f'{i_fmt}{inpt.extr[vr]["t"]["fn"]}.txt'), skipfooter=0, sep="\s+", header=0, skiprows=9,
+                    f'{i_fmt}{inpt.extr[vr]["t"]["fn"]}.txt'), skipfooter=0, sep=r"\s+", header=0, skiprows=9,
                 engine="python")
             t_tmp[t_tmp == inpt.var_dict["t"]["nanval"]] = np.nan
             t_tmp_all = pd.concat([t_tmp_all, t_tmp], axis=0)
