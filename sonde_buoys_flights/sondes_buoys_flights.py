@@ -23,13 +23,13 @@ plot_flags = dict(
 )
 
 basefol = r"H:\Shared drives\Dati_THAAO"
-os.chdir("sonde_buoys_flights")
 folders = {
     "dropsondes": os.path.join(basefol, r"thaao_arcsix\dropsondes"),
     "radiosondes": os.path.join(basefol, r"thaao_rs_sondes\txt\2024"),
     "buoys": os.path.join(basefol, r"thaao_arcsix\buoys\resource_map_doi_10_18739_A2T14TR46\data"),
     "g3": os.path.join(basefol, r"thaao_arcsix\met_nav\G3"),
-    "p3": os.path.join(basefol, r"thaao_arcsix\met_nav\P3")
+    "p3": os.path.join(basefol, r"thaao_arcsix\met_nav\P3"),
+    "txt_location": r"..\txt_locations"
 }
 
 sites = {
@@ -198,7 +198,7 @@ def plot_trajectories(seq, plot_flags=plot_flags):
                 label="Buoys" if i == 0 else None
             )
             letter = "".join(
-                filter(str.isalpha, os.path.basename(d['filename'])))[0]
+                filter(str.isalpha, os.path.basename(d["filename"])))[0]
             ax.text(
                 d["lon"][0], d["lat"][0], letter,
                 fontsize=10, fontweight="bold",
@@ -405,6 +405,32 @@ def plot_surf_temp(seq, plot_flags=plot_flags):
     plt.close()
 
 
+def write_location_file(d, output_dir):
+    """
+    Writes location files for each buoy in the format:
+    datetime,lat,lon
+
+    Parameters:
+    - buoy_data: list of dicts, each containing keys:
+        "filename": base name for output
+        "time": list of datetime strings
+        "lat": list of latitudes (floats)
+        "lon": list of longitudes (floats)
+    - output_dir: directory to save the output files (default: current directory)
+    """
+
+    filename = f"{d['filename'].split('.')[:-1][0]}_loc.txt"
+    filepath = os.path.join(output_dir, filename)
+
+    with open(filepath, "w") as f:
+        f.write("datetime,lat,lon,elev\n")
+        for t, lat, lon, elev in zip(d["time"], d["lat"], d["lon"], d["elev"]):
+            f.write(
+                f"{pd.to_datetime(t).strftime('%Y-%m-%dT%H:%M:%S')},{lat:.6f},{lon:.6f},{elev:.2f}\n")
+
+    print(f"Wrote {filepath}")
+
+
 def plot_surf_date(seq, plot_flags=plot_flags):
     # --- Setup figure and main axis ---
     fig, ax = plt.subplots(figsize=(15, 15), subplot_kw={"projection": proj})
@@ -455,7 +481,7 @@ def plot_surf_date(seq, plot_flags=plot_flags):
         all_drop_surf_lats = []
         all_drop_surf_times = []
         for d in drop_data:
-            print(d['filename'])
+            print(d["filename"])
             valid_idx = -1
             all_drop_surf_lats.append(d["lat"][valid_idx])
             all_drop_surf_lons.append(d["lon"][valid_idx])
@@ -496,7 +522,7 @@ def plot_surf_date(seq, plot_flags=plot_flags):
     cax = inset_locator.inset_axes(
         ax,
         width="100%",            # Width of the colorbar
-        # Height of the colorbar (since it's horizontal)
+        # Height of the colorbar (since it"s horizontal)
         height="100%",
         loc="lower center",     # Place at the bottom center
         # Fine-tune position (x0, y0, width, height)
@@ -547,7 +573,7 @@ def plot_surf_date(seq, plot_flags=plot_flags):
 if __name__ == "__main__":
 
     # Radiosondes
-    if plot_flags['radiosondes']:
+    if plot_flags["radiosondes"]:
         radio_files = process_nc_folder(folders["radiosondes"], "*.nc")
         radio_data = []
         for rf in radio_files:
@@ -557,15 +583,16 @@ if __name__ == "__main__":
                                   format="%Y%m%d_%H%M")
             temp = ds["air_temperature"][0].values - 273.15
             pres = ds["air_pressure"][0].values
-            radio_data.append(
-                {"filename": os.path.basename(rf),
+            elem = {"filename": os.path.basename(rf),
                     "time": time,
                     "temp": temp,
-                    "pres": pres
-                 })
+                    "pres": pres,
+                    }
+            radio_data.append(elem)
+
 
     # Dropsondes
-    if plot_flags['dropsondes']:
+    if plot_flags["dropsondes"]:
         drop_files = process_nc_folder(
             folders["dropsondes"], "ARCSIX-AVAPS-netCDF_G3*.nc")
         drop_data = []
@@ -585,13 +612,17 @@ if __name__ == "__main__":
             time = ds["time"][msk].values
             temp = np.where(temp == -999.0, np.nan, temp)
             pres = np.where(pres == -999.0, np.nan, pres)
-            drop_data.append({"filename": os.path.basename(df),
-                              "lat": lat, "lon": lon, "temp": temp,
-                              "time": time, "pres": pres
-                              })
+            elem = {"filename": os.path.basename(df),
+                    "lat": lat, "lon": lon, "temp": temp,
+                    "time": time, "pres": pres, "elev": np.repeat(np.nan, len(time))
+                    }
+            drop_data.append(elem)
+
+            # save location/elevation files
+            write_location_file(elem, folders["txt_location"])
 
     # Buoys
-    if plot_flags['buoys']:
+    if plot_flags["buoys"]:
         buoy_files = [f for f in process_nc_folder(
             folders["buoys"], "2024*processed.nc")]
         buoy_data = []
@@ -608,12 +639,16 @@ if __name__ == "__main__":
                 print("OK")
             temp = ds["air_temp"].isel(trajectory=0).values[msk]
             time = ds["time"].isel(trajectory=0).values[msk]
-            buoy_data.append({"filename": os.path.basename(bf),
-                              "lat": lat, "lon": lon, "temp": temp, "time": time
-                              })
+            elem = {"filename": os.path.basename(bf),
+                    "lat": lat, "lon": lon, "temp": temp, "time": time, "elev": np.repeat(np.nan, len(time))
+                    }
+            buoy_data.append(elem)
+
+            # save location/elevation file
+            write_location_file(elem, folders["txt_location"])
 
     # G3 tracks
-    if plot_flags['g3_tracks']:
+    if plot_flags["g3_tracks"]:
         g3_files = glob.glob(os.path.join(folders["g3"], "*R0*.ict"))
         g3_data = []
         for gf in g3_files:
@@ -630,12 +665,16 @@ if __name__ == "__main__":
                     continue
                 else:
                     print("OK")
-                g3_data.append({"filename": os.path.basename(gf),
-                                "lat": lat, "lon": lon, "temp": np.nan, "time": np.nan
-                                })
+                    elem = {"filename": os.path.basename(gf),
+                            "lat": lat, "lon": lon, "temp": np.nan, "time": np.nan, "elev": np.repeat(np.nan, len(time))
+                            }
+                g3_data.append(elem)
+
+                # save location/elevation files
+                write_location_file(elem, folders["txt_location"])
 
     # P3 tracks
-    if plot_flags['p3_tracks']:
+    if plot_flags["p3_tracks"]:
         p3_files = glob.glob(os.path.join(folders["p3"], "*R0*.ict"))
         p3_data = []
         for pf in p3_files:
@@ -652,16 +691,19 @@ if __name__ == "__main__":
                     continue
                 else:
                     print("OK")
-                p3_data.append({"filename": os.path.basename(pf),
-                                "lat": lat, "lon": lon, "temp": np.nan, "time": np.nan
-                                })
+                    elem = {"filename": os.path.basename(pf),
+                            "lat": lat, "lon": lon, "temp": np.nan, "time": np.nan, "elev": np.repeat(np.nan, len(time))
+                            }
+                p3_data.append(elem)
+                # save location/elevation files
+                write_location_file(p3_data, folders["txt_location"])
 
     del_list = ["ds", "temp", "time", "pres", "lat", "lon", "msk"]
     for var_name in del_list:
         try:
             del globals()[var_name]
         except KeyError:
-            print(f"Variable '{var_name}' not found.")
+            print(f"Variable {var_name} not found.")
 
     # ---------------------------- EXECUTION ---------------------------- #
     plot_flags = {k: True for k in plot_flags}
