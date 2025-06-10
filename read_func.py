@@ -99,7 +99,7 @@ def to_180(lon):
 #     return y_idx, x_idx
 
 
-def find_index_in_grid(ds, ds_type, inpt_coord_file):
+def find_index_in_grid(ds, ds_type, in_file, out_file):
     """
     Find closest grid points for multiple coordinates in a file.
 
@@ -117,7 +117,7 @@ def find_index_in_grid(ds, ds_type, inpt_coord_file):
     from geopy.distance import geodesic
 
     coords = []
-    with open(os.path.join('txt_locations', inpt_coord_file), "r") as f:
+    with open(os.path.join('txt_locations', in_file), "r") as f:
         reader = csv.DictReader(f)
         for row in reader:
             try:
@@ -146,9 +146,8 @@ def find_index_in_grid(ds, ds_type, inpt_coord_file):
     flat_lat = lat_arr.ravel()
     flat_lon = lon_arr.ravel()
 
-    output_filename = f"{ds_type}_grid_index_for_{os.path.basename(inpt_coord_file)}"
 
-    with open(output_filename, "w") as out_f:
+    with open(os.path.join('txt_locations', out_file), "w") as out_f:
         header = "datetime,input_lat,input_lon,y_idx,x_idx,matched_lat,matched_lon\n"
         out_f.write(header)
 
@@ -208,12 +207,13 @@ def read_rean(vr, dataset_type):
             ds["longitude"] = ds["longitude"] % 360  # Normalize to 0–360
 
         # find or read indexes
-        filenam_pos = f"{dataset_type}_grid_index_for_thaao)"
-        if not os.path.exists(os.path.join('txt_locations', filenam_pos)):
+        filenam_loc =f"2024Nprocessed_loc.txt"
+        filenam_grid = f"{dataset_type}_grid_index_for_2024Nprocessed_loc.txt"
+        if not os.path.exists(os.path.join('txt_locations', filenam_loc)):
             print("missing locations for grid comparison")
         else:
-            if not os.path.exists(os.path.join('txt_locations', filenam_pos)):
-                find_index_in_grid(ds, dataset_type, filenam_pos)
+            if not os.path.exists(os.path.join('txt_locations', filenam_grid)):
+                find_index_in_grid(ds, dataset_type, filenam_loc, filenam_grid)
 
             coords = []
             with open(os.path.join('txt_locations', filenam_pos), "r") as f:
