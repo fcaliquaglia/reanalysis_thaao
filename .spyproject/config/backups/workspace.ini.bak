@@ -4,7 +4,7 @@ save_data_on_exit = True
 save_history = True
 save_non_project_files = False
 project_type = 'empty-project-type'
-recent_files = ['README.md', 'read_func.py', 'main.py', 'inputs.py', 'map\\OK_MAP_GRID.py']
+recent_files = ['README.md']
 
 [main]
 version = 0.2.0

@@ -26,6 +26,7 @@
 - xarray
 - metpy
 - geopy
+- (spyder-kernels=3.0)
 
 ## Reanalysis considered
 
