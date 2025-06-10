@@ -129,18 +129,7 @@ def find_index_in_grid(ds, ds_type, in_file, out_file):
     """
 
     # Read input coordinates
-    coords = []
-    with open(os.path.join('txt_locations', in_file), "r") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            try:
-                dt_str = row['datetime']
-                lat = float(row['lat'])
-                lon = float(row['lon']) % 360
-                elev = float(row['elev'])
-                coords.append((dt_str, lat, lon, elev))
-            except (ValueError, KeyError):
-                continue  # Skip invalid lines
+    coords = pd.read_csv(os.path.join('txt_locations', in_file))
 
     # Prepare grid
     if ds_type == 'c':
@@ -156,23 +145,36 @@ def find_index_in_grid(ds, ds_type, in_file, out_file):
     flat_lat = lat_arr.ravel()
     flat_lon = lon_arr.ravel()
 
+    ds_times = pd.to_datetime(ds['time'].values)
+
     # Output
     with open(os.path.join('txt_locations', out_file), "w") as out_f:
-        header = "datetime,input_lat,input_lon,input_elev,y_idx,x_idx,z_idx,matched_lat,matched_lon,matched_elev\n"
+        header = "datetime,input_lat,input_lon,input_elev,y_idx,x_idx,z_idx,matched_lat,matched_lon,matched_elev,matched_time\n"
         out_f.write(header)
 
-        for dt_str, lat, lon, elev in coords:
-            distances = haversine_vectorized(lat, lon, flat_lat, flat_lon)
+        for row in coords.itertuples(index=False):
+            dt_str = row.datetime
+            input_lat = row.lat
+            input_lon = row.lon
+            input_elev = row.elev
+            distances = haversine_vectorized(input_lat, input_lon, flat_lat, flat_lon)
             min_idx = np.argmin(distances)
             y_idx, x_idx = np.unravel_index(min_idx, lat_arr.shape)
-
+            z_idx = np.nan
             matched_lat = lat_arr[y_idx, x_idx]
             matched_lon = lon_arr[y_idx, x_idx]
-            z_idx = np.nan
             matched_elev = np.nan
 
-            out_f.write(
-                f"{dt_str},{lat:.6f},{lon:.6f},{elev:.2f},{y_idx},{x_idx},{z_idx},{matched_lat:.6f},{matched_lon:.6f},{matched_elev:.2f}\n")
+            # Parse input datetime
+            input_time = pd.to_datetime(dt_str)
+            time_diffs = np.abs(ds_times - input_time)
+            if time_diffs:
+                matched_time = np.nan
+            else:
+                time_idx = time_diffs.argmin()
+                matched_time = ds_times[time_idx].strftime("%Y-%m-%dT%H:%M:%S")
+            str_fmt=f"{dt_str},{input_lat:.6f},{input_lon:.6f},{input_elev:.2f},{y_idx},{x_idx},{z_idx},{matched_lat:.6f},{matched_lon:.6f},{matched_elev:.2f},{matched_time}\n"
+            out_f.write(str_fmt)
 
     print(f"Index mapping written to {out_file}")
 
@@ -229,23 +231,37 @@ def read_rean(vr, dataset_type):
         y_idx = coords['y_idx'].to_numpy()
         x_idx = coords['x_idx'].to_numpy()
         if dataset_type == "c":
-            lat_vals = np.array([ds['latitude'].values[y, x] for y, x in zip(y_idx, x_idx)])
-            lon_vals = np.array([ds['longitude'].values[y, x] for y, x in zip(y_idx, x_idx)])
+            lat_vals = np.array([ds['latitude'].values[y, x]
+                                for y, x in zip(y_idx, x_idx)])
+            lon_vals = np.array([ds['longitude'].values[y, x]
+                                for y, x in zip(y_idx, x_idx)])
+            lat_dim, lon_dim = 'y', 'x'
         elif dataset_type == "e":
             lat_vals = ds["latitude"].isel(latitude=y_idx).values
             lon_vals = ds["longitude"].isel(longitude=x_idx).values
+            lat_dim, lon_dim = 'latitude', 'longitude'
         else:
             raise ValueError(f"Unknown dataset_type: {dataset_type}")
 
         print(f"Selected grid point at indices (y={y_idx}, x={x_idx}):")
         print(f"Latitude = {lat_vals}")
-        print(f"Longitude = {lon_vasl}")
+        print(f"Longitude = {lon_vals}")
 
         # Extract timeseries at closest point
-        data_tmp = ds[inpt.extr[vr][dataset_type]["var_name"]].isel(
-            {lat_name: y_idx, lon_name: x_idx}).to_dataframe()[['latitude', 'longitude', inpt.extr[vr][dataset_type]["var_name"]]]
+        var_name = inpt.extr[vr][dataset_type]["var_name"]
+        data_list = []
+        for i in range(len(y_idx)):
+            da = ds[var_name].isel({lat_dim: y_idx[i], lon_dim: x_idx[i]})
+            da_small = da.drop_vars(
+                ['step', 'surface', 'valid_time'], errors='ignore')
+            df = da_small.to_dataframe().reset_index()[['time']]
+            df['latitude'] = lat_vals[i]
+            df['longitude'] = lon_vals[i]
+            df[var_name] = da.values
+            data_list.append(df)
 
-        data_all = pd.concat([data_all, data_tmp], axis=0)
+        # Combine all into one DataFrame
+        #data_all = pd.concat(data_list, ignore_index=True)
 
     # Replace NaNs
     nan_val = inpt.var_dict[dataset_type]["nanval"]
