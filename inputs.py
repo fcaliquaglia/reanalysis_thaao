@@ -42,7 +42,7 @@ basefol_t = os.path.join('H:\\Shared drives', 'Dati_THAAO')
 basefol_out = os.path.join(
     'H:\\Shared drives', 'Dati_elab_docs', 'thaao_reanalysis')
 
-thaao_c = 'carra'
+thaao_c = 'carra1'
 thaao_e = 'era5'
 thaao_t = 'thaao'
 
