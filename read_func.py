@@ -31,6 +31,7 @@ import pandas as pd
 import xarray as xr
 from metpy.calc import wind_direction, wind_speed
 from metpy.units import units
+import csv
 from geopy.distance import geodesic
 
 import inputs as inpt
@@ -115,24 +116,21 @@ def find_index_in_grid(ds, ds_type, inpt_coord_file):
     import numpy as np
     from geopy.distance import geodesic
 
-    # Read input coordinates
-    with open(inpt_coord_file, "r") as f:
-        lines = f.readlines()
-
     coords = []
-    for line in lines:
-        parts = line.strip().split(",")
-        if len(parts) != 3:
-            continue  # skip malformed lines
-        dt_str, lat_str, lon_str = parts
-        try:
-            lat = float(lat_str)
-            lon = float(lon_str)
-            if lon < 0:
-                lon += 360
-            coords.append((dt_str, lat, lon))
-        except ValueError:
-            continue  # skip lines with invalid numbers
+    with open(os.path.join('txt_locations', inpt_coord_file), "r") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            try:
+                dt_str = row['datetime']
+                lat = float(row['lat'])
+                lon = float(row['lon'])
+                elev = float(row['elev'])
+                if lon < 0:
+                    lon += 360
+                coords.append((dt_str, lat, lon, elev))
+            except (ValueError, KeyError):
+                continue  # Skip rows with invalid or missing data
+
 
     # Handle grid arrays
     if ds_type == 'c':
@@ -210,16 +208,30 @@ def read_rean(vr, dataset_type):
             ds["longitude"] = ds["longitude"] % 360  # Normalize to 0–360
 
         # find or read indexes
-        filenam_pos = "thaao_loc.txt"
-        if not os.path.exists(filenam_pos):
-            find_index_in_grid(ds, dataset_type, filenam_pos)
+        filenam_pos = f"{dataset_type}_grid_index_for_thaao)"
+        if not os.path.exists(os.path.join('txt_locations', filenam_pos)):
+            print("missing locations for grid comparison")
+        else:
+            if not os.path.exists(os.path.join('txt_locations', filenam_pos)):
+                find_index_in_grid(ds, dataset_type, filenam_pos)
 
-        filenam_grid = f"{dataset_type}_grid_index_for_{os.path.basename(filenam_pos[-8:])}"
-        with open(filenam_grid, "r") as f:
-            line = f.readline()
-            y_idx_str, x_idx_str = line.strip().split(",")
-            y_idx = int(y_idx_str)
-            x_idx = int(x_idx_str)
+            coords = []
+            with open(os.path.join('txt_locations', filenam_pos), "r") as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    try:
+                        dt_str = row['datetime']
+                        lat = float(row['lat'])
+                        lon = float(row['lon'])
+                        y_idx = int(row['y_idx'])
+                        x_idx = int(row['x_idx'])
+                        elev = float(row['elev'])
+                        if lon < 0:
+                            lon += 360
+                        coords.append((dt_str, lat, lon, elev))
+                    except (ValueError, KeyError):
+                        continue  # Skip rows with invalid or missing data
+
 
         if dataset_type == "c":
             lat_val = ds["latitude"].isel(y=y_idx, x=x_idx).values
