@@ -224,35 +224,22 @@ def read_rean(vr, dataset_type):
             if not os.path.exists(os.path.join('txt_locations', filenam_grid)):
                 find_index_in_grid(ds, dataset_type, filenam_loc, filenam_grid)
 
-            coords = []
-            with open(os.path.join('txt_locations', filenam_grid), "r") as f:
-                reader = csv.DictReader(f)
-                for row in reader:
-                    try:
-                        dt_str = row['datetime']
-                        lat = float(row['lat'])
-                        lon = float(row['lon'])
-                        y_idx = int(row['y_idx'])
-                        x_idx = int(row['x_idx'])
-                        elev = float(row['elev'])
-                        if lon < 0:
-                            lon += 360
-                        coords.append((dt_str, lat, lon, elev))
-                    except (ValueError, KeyError):
-                        continue  # Skip rows with invalid or missing data
+            coords = pd.read_csv(os.path.join('txt_locations', filenam_grid))
 
+        y_idx = coords['y_idx'].to_numpy()
+        x_idx = coords['x_idx'].to_numpy()
         if dataset_type == "c":
-            lat_val = ds["latitude"].isel(y=y_idx, x=x_idx).values
-            lon_val = ds["longitude"].isel(y=y_idx, x=x_idx).values
+            lat_vals = np.array([ds['latitude'].values[y, x] for y, x in zip(y_idx, x_idx)])
+            lon_vals = np.array([ds['longitude'].values[y, x] for y, x in zip(y_idx, x_idx)])
         elif dataset_type == "e":
-            lat_val = ds["latitude"].isel(latitude=y_idx).values
-            lon_val = ds["longitude"].isel(longitude=x_idx).values
+            lat_vals = ds["latitude"].isel(latitude=y_idx).values
+            lon_vals = ds["longitude"].isel(longitude=x_idx).values
         else:
             raise ValueError(f"Unknown dataset_type: {dataset_type}")
 
         print(f"Selected grid point at indices (y={y_idx}, x={x_idx}):")
-        print(f"Latitude = {lat_val}")
-        print(f"Longitude = {lon_val}")
+        print(f"Latitude = {lat_vals}")
+        print(f"Longitude = {lon_vasl}")
 
         # Extract timeseries at closest point
         data_tmp = ds[inpt.extr[vr][dataset_type]["var_name"]].isel(
