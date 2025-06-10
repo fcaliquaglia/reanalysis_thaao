@@ -148,23 +148,26 @@ def find_index_in_grid(ds, ds_type, in_file, out_file):
 
 
     with open(os.path.join('txt_locations', out_file), "w") as out_f:
-        header = "datetime,input_lat,input_lon,y_idx,x_idx,matched_lat,matched_lon\n"
+        header = "datetime,input_lat,input_lon,input_elev,y_idx,x_idx,z_idx,matched_lat,matched_lon,matched_elev\n"
+        print(header)
         out_f.write(header)
 
-        for dt_str, lat, lon in coords:
+        for (dt_str, lat, lon, elev) in coords:
             distances = np.array([
                 geodesic((lat, lon), (flat_lat[i], flat_lon[i])).meters
                 for i in range(len(flat_lat))
             ])
             min_idx = np.argmin(distances)
             y_idx, x_idx = np.unravel_index(min_idx, lat_arr.shape)
-
+            z_idx=np.nan
             matched_lat = lat_arr[y_idx, x_idx]
             matched_lon = lon_arr[y_idx, x_idx]
+            matched_elev = np.nan
+            str_fmt=f"{dt_str},{lat:.6f},{lon:.6f},{elev:.2f},{y_idx},{x_idx},{z_idx},{matched_lat:.6f},{matched_lon:.6f},{matched_elev:.2f}\n"
+            print(str_fmt)
+            out_f.write(str_fmt)
 
-            out_f.write(f"{dt_str},{lat:.6f},{lon:.6f},{y_idx},{x_idx},{matched_lat:.6f},{matched_lon:.6f}\n")
-
-    print(f"Index mapping written to {output_filename}")
+    print(f"Index mapping written to {out_file}")
     return 
 
 
@@ -216,7 +219,7 @@ def read_rean(vr, dataset_type):
                 find_index_in_grid(ds, dataset_type, filenam_loc, filenam_grid)
 
             coords = []
-            with open(os.path.join('txt_locations', filenam_pos), "r") as f:
+            with open(os.path.join('txt_locations', filenam_grid), "r") as f:
                 reader = csv.DictReader(f)
                 for row in reader:
                     try:

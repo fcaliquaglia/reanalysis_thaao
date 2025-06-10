@@ -33,9 +33,9 @@ folders = {
 }
 
 sites = {
-    "THAAO": (-68.7477, 76.5149, "red"),
-    "Villum": (-16.6667, 81.6, "cyan"),
-    "Alert": (-62.5072, 82.4508, "green")
+    "THAAO": {"lon":-68.7477, "lat": 76.5149, "elev": 220.0, "color":"red"},
+    "Villum": {"lon":-16.6667, "lat":81.6, "elev": 30.0, "color":"cyan"},
+    "Alert": {"lon":-62.5072, "lat":82.4508, "elev": 185.0 , "color":"green"}
 }
 
 
@@ -95,10 +95,13 @@ def plot_ground_sites(ax):
 
     Parameters:
     - ax: matplotlib axis with cartopy projection
-    - sites: dict mapping label -> (lon, lat, color)
     """
 
-    for label, (lon, lat, color) in sites.items():
+    for label, site in sites.items():
+        lon = site["lon"]
+        lat = site["lat"]
+        color = site["color"]
+
         # Plot marker
         ax.plot(
             lon, lat,
@@ -419,7 +422,10 @@ def write_location_file(d, output_dir):
     - output_dir: directory to save the output files (default: current directory)
     """
 
-    filename = f"{d['filename'].split('.')[:-1][0]}_loc.txt"
+    try:
+        filename = f"{d['filename'].split('.')[:-1][0]}_loc.txt"
+    except IndexError:
+        filename = "d['filename']_loc.txt"
     filepath = os.path.join(output_dir, filename)
 
     with open(filepath, "w") as f:
@@ -572,6 +578,15 @@ def plot_surf_date(seq, plot_flags=plot_flags):
 
 if __name__ == "__main__":
 
+    if plot_flags['ground_sites']:
+        for site in sites:
+            elem = {"filename": site,
+                    "time": np.nan,
+                    "lat": sites[site]["lat"],
+                    "lon": sites[site]["lon"],
+                    "elev": sites[site]["elev"]
+                    }
+            write_location_file(elem, folders["txt_location"])
     # Radiosondes
     if plot_flags["radiosondes"]:
         radio_files = process_nc_folder(folders["radiosondes"], "*.nc")
@@ -589,7 +604,6 @@ if __name__ == "__main__":
                     "pres": pres,
                     }
             radio_data.append(elem)
-
 
     # Dropsondes
     if plot_flags["dropsondes"]:
@@ -614,7 +628,8 @@ if __name__ == "__main__":
             pres = np.where(pres == -999.0, np.nan, pres)
             elem = {"filename": os.path.basename(df),
                     "lat": lat, "lon": lon, "temp": temp,
-                    "time": time, "pres": pres, "elev": np.repeat(np.nan, len(time))
+                    "time": time, "pres": pres,
+                    "elev": np.repeat(np.nan, len(time))
                     }
             drop_data.append(elem)
 
@@ -640,7 +655,8 @@ if __name__ == "__main__":
             temp = ds["air_temp"].isel(trajectory=0).values[msk]
             time = ds["time"].isel(trajectory=0).values[msk]
             elem = {"filename": os.path.basename(bf),
-                    "lat": lat, "lon": lon, "temp": temp, "time": time, "elev": np.repeat(np.nan, len(time))
+                    "lat": lat, "lon": lon, "temp": temp, "time": time,
+                    "elev": np.repeat(np.nan, len(time))
                     }
             buoy_data.append(elem)
 
@@ -666,7 +682,10 @@ if __name__ == "__main__":
                 else:
                     print("OK")
                     elem = {"filename": os.path.basename(gf),
-                            "lat": lat, "lon": lon, "temp": np.nan, "time": np.nan, "elev": np.repeat(np.nan, len(lat))
+                            "lat": lat, "lon": lon,
+                            "temp": np.repeat(np.nan, len(lat)),
+                            "time": np.repeat(np.nan, len(lat)),
+                            "elev": np.repeat(np.nan, len(lat))
                             }
                 g3_data.append(elem)
 
@@ -692,7 +711,10 @@ if __name__ == "__main__":
                 else:
                     print("OK")
                     elem = {"filename": os.path.basename(pf),
-                            "lat": lat, "lon": lon, "temp": np.nan, "time": np.nan, "elev": np.repeat(np.nan, len(lon))
+                            "lat": lat, "lon": lon,
+                            "temp": np.repeat(np.nan, len(lon)),
+                            "time": np.repeat(np.nan, len(lon)),
+                            "elev": np.repeat(np.nan, len(lon))
                             }
                 p3_data.append(elem)
                 # save location/elevation files
