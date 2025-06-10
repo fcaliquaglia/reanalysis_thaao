@@ -32,7 +32,7 @@ folders = {
     "txt_location": r"..\txt_locations"
 }
 
-sites = {
+ground_sites = {
     "THAAO": {"lon":-68.7477, "lat": 76.5149, "elev": 220.0, "color":"red"},
     "Villum": {"lon":-16.6667, "lat":81.6, "elev": 30.0, "color":"cyan"},
     "Alert": {"lon":-62.5072, "lat":82.4508, "elev": 185.0 , "color":"green"}
@@ -97,10 +97,10 @@ def plot_ground_sites(ax):
     - ax: matplotlib axis with cartopy projection
     """
 
-    for label, site in sites.items():
-        lon = site["lon"]
-        lat = site["lat"]
-        color = site["color"]
+    for label, ground_site in ground_sites.items():
+        lon = ground_site["lon"]
+        lat = ground_site["lat"]
+        color = ground_site["color"]
 
         # Plot marker
         ax.plot(
@@ -425,14 +425,18 @@ def write_location_file(d, output_dir):
     try:
         filename = f"{d['filename'].split('.')[:-1][0]}_loc.txt"
     except IndexError:
-        filename = "d['filename']_loc.txt"
+        filename = f"{d['filename']}_loc.txt"
     filepath = os.path.join(output_dir, filename)
 
     with open(filepath, "w") as f:
         f.write("datetime,lat,lon,elev\n")
-        for t, lat, lon, elev in zip(d["time"], d["lat"], d["lon"], d["elev"]):
+        for (t, lat, lon, elev) in zip(d["time"], d["lat"], d["lon"], d["elev"]):
+            try:
+                t_fmt=pd.to_datetime(t).strftime('%Y-%m-%dT%H:%M:%S')
+            except ValueError:
+                t_fmt = np.nan
             f.write(
-                f"{pd.to_datetime(t).strftime('%Y-%m-%dT%H:%M:%S')},{lat:.6f},{lon:.6f},{elev:.2f}\n")
+                f"{t_fmt},{lat:.6f},{lon:.6f},{elev:.2f}\n")
 
     print(f"Wrote {filepath}")
 
@@ -579,13 +583,15 @@ def plot_surf_date(seq, plot_flags=plot_flags):
 if __name__ == "__main__":
 
     if plot_flags['ground_sites']:
-        for site in sites:
-            elem = {"filename": site,
-                    "time": np.nan,
-                    "lat": sites[site]["lat"],
-                    "lon": sites[site]["lon"],
-                    "elev": sites[site]["elev"]
+        for ground_site in ground_sites:
+            ground_sites_data = []
+            elem = {"filename": ground_site,
+                    "time": [np.nan],
+                    "lat": [ground_sites[ground_site]["lat"]],
+                    "lon": [ground_sites[ground_site]["lon"]],
+                    "elev": [ground_sites[ground_site]["elev"]]
                     }
+            ground_sites_data.append(elem)
             write_location_file(elem, folders["txt_location"])
     # Radiosondes
     if plot_flags["radiosondes"]:
