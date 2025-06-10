@@ -46,12 +46,15 @@ thaao_c = 'carra1'
 thaao_e = 'era5'
 thaao_t = 'thaao'
 
+met = ['surf_pres',  'temp', 'rh', 'iwv']
+rad = ['sw_down', 'lw_down', 'sw_up', 'lw_up', 'alb']
+clouds = ['lwp', 'cbh', 'tcc', 'precip']
+extra = ['winds', 'windd']
+
 ##
-tres_list = ['3h']
-list_var = ['cbh']
-# OK ['lwp', 'surf_pres', 'winds', 'windd', 'cbh', 'alb', 'temp', 'sw_down',
-# 'lw_down', 'sw_up', 'lw_up']
-# NOT OK 'tcc' 'precip' 'rh', 'lwp'
+tres_list = ['24h']
+list_var = met + rad
+
 
 tres = ''
 var = ''
@@ -196,9 +199,9 @@ extr = {'alb': {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1,
         'surf_pres': {'name': 'surf_pres', 'ref_x': 't', 'min': 935, 'max': 1013, 'res_min': -10, 'res_max': 10,
                       'uom': '[hPa]', 'comps': ['c', 'e', 't2'], 'bin_nr': 200,
                       'c': {'fn': f'{thaao_c}_surface_pressure_', 'column': 2, 'data': '',
-                            'data_res': '', 'var_name': ''},
+                            'data_res': '', 'var_name': 'sp'},
                       'e': {'fn': f'{thaao_e}_surface_pressure_', 'column': 2, 'data': '',
-                            'data_res': '', 'var_name': ''},
+                            'data_res': '', 'var_name': 'sp'},
                       't': {'fn': 'Meteo_weekly_all', 'column': 'BP_hPa', 'data': '',
                             'data_res': ''},
                       't1': {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
