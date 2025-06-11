@@ -71,20 +71,20 @@ def plot_ts(period_label):
         print(f"plotting {year}")
 
         # Boolean mask for original and resampled data for this year
-        for varname in plot_vars:
+        for data_typ in plot_vars:
             # Original data for the year
-            data_ori = var_data[varname]['data']
+            data_ori = var_data[data_typ]['data'][inpt.var]
             mask_ori = data_ori.index.year == year
             if mask_ori.any():
                 ax[i].plot(data_ori.loc[mask_ori],
-                           color=inpt.var_dict[varname]['col_ori'], **kwargs_ori)
+                           color=inpt.var_dict[data_typ]['col_ori'], **kwargs_ori)
 
             # Resampled data for the year
-            data_res = var_data[varname]['data_res']
+            data_res = var_data[data_typ]['data_res'][inpt.var]
             mask_res = data_res.index.year == year
             if mask_res.any():
-                ax[i].plot(data_res.loc[mask_res], color=inpt.var_dict[varname]['col'],
-                           label=inpt.var_dict[varname]['label'], **kwargs_res)
+                ax[i].plot(data_res.loc[mask_res], color=inpt.var_dict[data_typ]['col'],
+                           label=inpt.var_dict[data_typ]['label'], **kwargs_res)
 
         # Plot vertical lines for 'alb' variable during specific date ranges
         if inpt.var == 'alb':
@@ -122,7 +122,8 @@ def plot_residuals(period_label):
     n_years = len(inpt.years)
     fig, ax = plt.subplots(n_years, 1, figsize=(12, 17), dpi=inpt.dpi)
     ax = np.atleast_1d(ax)
-    fig.suptitle(f"residuals {inpt.var.upper()} all {inpt.tres}", fontweight='bold')
+    fig.suptitle(
+        f"residuals {inpt.var.upper()} all {inpt.tres}", fontweight='bold')
 
     plot_kwargs = {'lw': 1, 'marker': '.', 'ms': 0}
 
@@ -135,8 +136,10 @@ def plot_residuals(period_label):
         print(f"plotting {year}")
 
         # Plot horizontal zero line for residual reference
-        daterange = pd.date_range(start=pd.Timestamp(year, 1, 1), end=pd.Timestamp(year, 12, 31))
-        ax[i].plot(daterange, np.zeros(len(daterange)), color='black', lw=2, ls='--')
+        daterange = pd.date_range(start=pd.Timestamp(
+            year, 1, 1), end=pd.Timestamp(year, 12, 31))
+        ax[i].plot(daterange, np.zeros(len(daterange)),
+                   color='black', lw=2, ls='--')
 
         # Plot residuals (component - reference) for the year
         for comp_var in comps:
@@ -144,15 +147,18 @@ def plot_residuals(period_label):
             mask_comp = comp_data_res.index.year == year
             mask_ref = ref_data_res.index.year == year
             if mask_comp.any() and mask_ref.any():
-                residuals = comp_data_res.loc[mask_comp] - ref_data_res.loc[mask_ref]
+                residuals = comp_data_res.loc[mask_comp] - \
+                    ref_data_res.loc[mask_ref]
                 ax[i].plot(residuals, color=inpt.var_dict[comp_var]['col'],
                            label=inpt.var_dict[comp_var]['label'], **plot_kwargs)
 
         # Add seasonal vertical lines for 'alb' variable
         if inpt.var == 'alb':
             freq = inpt.tres
-            range1 = pd.date_range(start=pd.Timestamp(year, 1, 1), end=pd.Timestamp(year, 2, 15), freq=freq)
-            range2 = pd.date_range(start=pd.Timestamp(year, 11, 1), end=pd.Timestamp(year, 12, 31), freq=freq)
+            range1 = pd.date_range(start=pd.Timestamp(
+                year, 1, 1), end=pd.Timestamp(year, 2, 15), freq=freq)
+            range2 = pd.date_range(start=pd.Timestamp(
+                year, 11, 1), end=pd.Timestamp(year, 12, 31), freq=freq)
             ax[i].vlines(range1.values, -0.5, 0.5, color='grey', alpha=0.3)
             ax[i].vlines(range2.values, -0.5, 0.5, color='grey', alpha=0.3)
 
@@ -161,10 +167,10 @@ def plot_residuals(period_label):
 
     plt.xlabel('Time')
     plt.legend()
-    save_path = os.path.join(inpt.basefol['out']['base'], inpt.tres, f"{inpt.tres}_{period_label}_residuals_{inpt.var}.png")
+    save_path = os.path.join(
+        inpt.basefol['out']['base'], inpt.tres, f"{inpt.tres}_{period_label}_residuals_{inpt.var}.png")
     plt.savefig(save_path, bbox_inches='tight')
     plt.close(fig)
-
 
 
 def plot_scatter(period_label):
@@ -184,7 +190,8 @@ def plot_scatter(period_label):
     axs = ax.ravel()
 
     # Title with variable and season name
-    fig.suptitle(f"{inpt.var.upper()} {inpt.seass[period_label]['name']} {inpt.tres}", fontweight='bold')
+    fig.suptitle(
+        f"{inpt.var.upper()} {inpt.seass[period_label]['name']} {inpt.tres}", fontweight='bold')
 
     var_data = inpt.extr[inpt.var]
     comps = var_data['comps']
@@ -214,7 +221,8 @@ def plot_scatter(period_label):
         # Boolean index where neither x nor y are NaN for the variable
         valid_idx = ~(x_season[inpt.var].isna() | y_season[inpt.var].isna())
 
-        print(f"plotting scatter {inpt.var_dict['t']['label']}-{inpt.var_dict[comp]['label']}")
+        print(
+            f"plotting scatter {inpt.var_dict['t']['label']}-{inpt.var_dict[comp]['label']}")
 
         if inpt.seass[period_label]['name'] != 'all':
             axs[i].scatter(
@@ -223,20 +231,23 @@ def plot_scatter(period_label):
                 alpha=0.5, label=period_label
             )
         else:
-            bin_edges = np.linspace(var_data['min'], var_data['max'], var_data['bin_nr'])
+            bin_edges = np.linspace(
+                var_data['min'], var_data['max'], var_data['bin_nr'])
             bin_size = (var_data['max'] - var_data['min']) / var_data['bin_nr']
 
             h = axs[i].hist2d(
                 x_season[inpt.var][valid_idx], y_season[inpt.var][valid_idx],
                 bins=[bin_edges, bin_edges], cmap=plt.cm.jet, cmin=1, vmin=1
             )
-            axs[i].text(0.10, 0.90, f"bin_size={bin_size:.3f}", transform=axs[i].transAxes)
+            axs[i].text(
+                0.10, 0.90, f"bin_size={bin_size:.3f}", transform=axs[i].transAxes)
 
         # Check for enough data points to fit
         if valid_idx.sum() < 2:
             print('ERROR: Not enough data points for proper fit (need at least 2).')
         else:
-            calc_draw_fit(axs, i, x_season[inpt.var][valid_idx], y_season[inpt.var][valid_idx], period_label)
+            calc_draw_fit(
+                axs, i, x_season[inpt.var][valid_idx], y_season[inpt.var][valid_idx], period_label)
 
         format_scatterplot(axs, comp, i)
 
@@ -246,7 +257,6 @@ def plot_scatter(period_label):
     )
     plt.savefig(save_path, bbox_inches='tight')
     plt.close(fig)
-
 
 
 def plot_scatter_cum():
@@ -291,7 +301,8 @@ def plot_scatter_cum():
             y_all = y.reindex(time_range).astype(float)
             y_season = y_all.loc[y_all.index.month.isin(season_months)]
 
-            valid_idx = ~(x_season[inpt.var].isna() | y_season[inpt.var].isna())
+            valid_idx = ~(x_season[inpt.var].isna() |
+                          y_season[inpt.var].isna())
 
             axs[i].scatter(
                 x_season[inpt.var][valid_idx], y_season[inpt.var][valid_idx],
@@ -309,10 +320,10 @@ def plot_scatter_cum():
             format_scatterplot(axs, comp, i)
             axs[i].legend()
 
-    save_path = os.path.join(inpt.basefol['out']['base'], inpt.tres, f"{inpt.tres}_scatter_cum_{inpt.var}.png")
+    save_path = os.path.join(
+        inpt.basefol['out']['base'], inpt.tres, f"{inpt.tres}_scatter_cum_{inpt.var}.png")
     plt.savefig(save_path, bbox_inches='tight')
     plt.close(fig)
-
 
 
 def calc_draw_fit(axs, i, xxx, yyy, per_lab, print_stats=True):

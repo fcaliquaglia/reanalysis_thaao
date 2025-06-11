@@ -92,6 +92,7 @@ def process_rean(vr, data_typ, y, loc):
         da_small = da.drop_vars(
             ['step', 'surface', 'expver', 'number'], errors='ignore')
         df = da_small.to_dataframe().reset_index().set_index(time_dim)
+        df.rename(columns={var_name: vr}, inplace=True)
         data_list.append(df)
 
     full_df = pd.concat(data_list)
@@ -737,15 +738,15 @@ def read_temp():
     """
     # CARRA
     read_rean(inpt.var, "c")
-    inpt.extr[inpt.var]["c"]["data"] = inpt.extr[inpt.var]["c"]["data"] - 273.15
+    inpt.extr[inpt.var]["c"]["data"][inpt.var] = inpt.extr[inpt.var]["c"]["data"][inpt.var] - 273.15
 
     # ERA5
     read_rean(inpt.var, "e")
-    inpt.extr[inpt.var]["e"]["data"] = inpt.extr[inpt.var]["e"]["data"] - 273.15
+    inpt.extr[inpt.var]["e"]["data"][inpt.var] = inpt.extr[inpt.var]["e"]["data"][inpt.var] - 273.15
 
     # THAAO
     read_thaao_weather(inpt.var)
-    inpt.extr[inpt.var]["t"]["data"] = inpt.extr[inpt.var]["t"]["data"] - 273.15
+    inpt.extr[inpt.var]["t"]["data"][inpt.var] = inpt.extr[inpt.var]["t"]["data"][inpt.var] - 273.15
 
     # THAAO2
     read_aws_ecapac(inpt.var)
@@ -802,34 +803,34 @@ def read_wind():
     return
 
 
-def calc_rad_acc_era5_land(vr):
-    """
-    Calculates instantaneous radiation accumulation from daily accumulated ERA5-LAND data.
+# def calc_rad_acc_era5_land(vr):
+#     """
+#     Calculates instantaneous radiation accumulation from daily accumulated ERA5-LAND data.
 
-    This function processes the daily-accumulated radiation data for ERA5-LAND by
-    calculating the difference between consecutive timesteps. It also handles specific
-    timesteps (e.g., at 0100 hours), ensuring the data integrity for further analysis.
+#     This function processes the daily-accumulated radiation data for ERA5-LAND by
+#     calculating the difference between consecutive timesteps. It also handles specific
+#     timesteps (e.g., at 0100 hours), ensuring the data integrity for further analysis.
 
-    :param vr: The key or identifier in the `inpt.extr` data dictionary used to locate
-        the radiation dataset for processing.
-    :type vr: str
-    :return: None
-    """
-    # calculating instantaneous as difference with previous timestep
-    inpt.extr[vr]["l"]["data_diff"] = inpt.extr[vr]["l"]["data"][vr].diff()
-    # dropping value at 0100 which does not need any subtraction (it is the first of the day)
-    inpt.extr[vr]["l"]["data_diff"] = inpt.extr[vr]["l"]["data_diff"][inpt.extr[vr]
-                                                                      ["l"]["data_diff"].index.hour != 1]
-    # selecting original value at 0100
-    orig_filtered_data = inpt.extr[vr]["l"]["data"][inpt.extr[vr]
-                                                    ["l"]["data"].index.hour == 1]
-    # appending original value at 0100
-    inpt.extr[vr]["l"]["data_diff"] = pd.concat(
-        [inpt.extr[vr]["l"]["data_diff"], orig_filtered_data]).sort_index()
-    inpt.extr[vr]["l"]["data"] = inpt.extr[vr]["l"]["data_diff"]
+#     :param vr: The key or identifier in the `inpt.extr` data dictionary used to locate
+#         the radiation dataset for processing.
+#     :type vr: str
+#     :return: None
+#     """
+#     # calculating instantaneous as difference with previous timestep
+#     inpt.extr[vr]["l"]["data_diff"] = inpt.extr[vr]["l"]["data"][vr].diff()
+#     # dropping value at 0100 which does not need any subtraction (it is the first of the day)
+#     inpt.extr[vr]["l"]["data_diff"] = inpt.extr[vr]["l"]["data_diff"][inpt.extr[vr]
+#                                                                       ["l"]["data_diff"].index.hour != 1]
+#     # selecting original value at 0100
+#     orig_filtered_data = inpt.extr[vr]["l"]["data"][inpt.extr[vr]
+#                                                     ["l"]["data"].index.hour == 1]
+#     # appending original value at 0100
+#     inpt.extr[vr]["l"]["data_diff"] = pd.concat(
+#         [inpt.extr[vr]["l"]["data_diff"], orig_filtered_data]).sort_index()
+#     inpt.extr[vr]["l"]["data"] = inpt.extr[vr]["l"]["data_diff"]
 
-    print("ERA5-LAND data for radiation corrected because they are values daily-accumulated!")
-    return
+#     print("ERA5-LAND data for radiation corrected because they are values daily-accumulated!")
+#     return
 
 
 def read():
