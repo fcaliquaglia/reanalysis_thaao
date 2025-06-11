@@ -140,12 +140,12 @@ def find_index_in_grid(grid_selection, fol_file, out_file):
                 time_idx = time_diffs.argmin()
                 matched_time = ds_times[time_idx].strftime("%Y-%m-%dT%H:%M:%S")
             # Check for zero values and set to np.nan with warning
-            if x_idx == 0 or x_idx == lon_arr.shape[0]-1:
+            if x_idx == 0 or x_idx == lon_arr.shape[1]-1:
                 print("x index is on the edge. This may indicate that the lat/lon point lies outside the available reanalysis domain. Setting to np.nan as a precaution.")
                 x_idx = np.nan
             else:
                 pass
-            if y_idx == 0 or y_idx == lon_arr.shape[1]-1:
+            if y_idx == 0 or y_idx == lon_arr.shape[0]-1:
                 print("y index is on the edge. This may indicate that the lat/lon point lies outside the available reanalysis domain. Setting to np.nan as a precaution.")
                 y_idx = np.nan
             else:
