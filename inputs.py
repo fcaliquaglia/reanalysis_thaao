@@ -43,7 +43,7 @@ basefol_out = os.path.join(
     'H:\\Shared drives', 'Dati_elab_docs', 'thaao_reanalysis')
 
 thaao_c = 'carra1'
-thaao_e = 'era5'
+thaao_e = 'era5_NG'
 thaao_t = 'thaao'
 
 met = ['temp', 'surf_pres', 'rh', 'iwv']
