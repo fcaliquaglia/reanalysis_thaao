@@ -68,11 +68,11 @@ def process_rean(vr, data_typ, y, loc):
                             for y, x in zip(y_idx, x_idx)])
         lon_vals = np.array([ds['longitude'].values[y, x]
                             for y, x in zip(y_idx, x_idx)])
-        lat_dim, lon_dim = 'y', 'x'
+        lat_dim, lon_dim, time_dim = 'y', 'x', 'time'
     elif data_typ == "e":
         lat_vals = ds["latitude"].isel(latitude=y_idx).values
         lon_vals = ds["longitude"].isel(longitude=x_idx).values
-        lat_dim, lon_dim = 'latitude', 'longitude'
+        lat_dim, lon_dim, time_dim = 'latitude', 'longitude', 'valid_time'
     else:
         raise ValueError(f"Unknown dataset_type: {data_typ}")
 
@@ -90,9 +90,9 @@ def process_rean(vr, data_typ, y, loc):
     for i in range(len(y_idx)):
         da = ds[var_name].isel({lat_dim: y_idx[i], lon_dim: x_idx[i]})
         da_small = da.drop_vars(
-            ['step', 'surface', 'valid_time'], errors='ignore')
+            ['step', 'surface', 'expver', 'number'], errors='ignore')
 
-        df = da_small.to_dataframe().reset_index().set_index('time')
+        df = da_small.to_dataframe().reset_index().set_index(time_dim)
         df['latitude'] = lat_vals[i]
         df['longitude'] = lon_vals[i]
         df[var_name] = da.values  # Optional: might duplicate
