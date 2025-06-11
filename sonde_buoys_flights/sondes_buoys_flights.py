@@ -139,6 +139,12 @@ def find_index_in_grid(grid_selection, fol_file, out_file):
             else:
                 time_idx = time_diffs.argmin()
                 matched_time = ds_times[time_idx].strftime("%Y-%m-%dT%H:%M:%S")
+            # Check for zero values and set to np.nan with warning
+            if x_idx == 0 or y_idx == 0 or z_idx == 0:
+                print("One or more indices are zero. This may indicate that the lat/lon/height point lies outside the available reanalysis domain. Setting to np.nan as a precaution.")
+                x_idx = np.nan if x_idx == 0 else x_idx
+                y_idx = np.nan if y_idx == 0 else y_idx
+                z_idx = np.nan if z_idx == 0 else z_idx
             str_fmt = f"{dt_str},{input_lat:.6f},{input_lon:.6f},{input_elev:.2f},{y_idx},{x_idx},{z_idx},{matched_lat:.6f},{matched_lon:.6f},{matched_elev:.2f},{matched_time}\n"
             out_f.write(str_fmt)
 
@@ -711,21 +717,26 @@ if __name__ == "__main__":
         for rf in radio_files:
             print(rf)
             ds = xr.open_dataset(rf)
-            time = pd.to_datetime(ds.attrs["launch_time"],
-                                  format="%Y%m%d_%H%M")
-            temp = ds["air_temperature"][0].values - 273.15
-            pres = ds["air_pressure"][0].values
-            elev =  ds["altitude"][0].values
+            launch_time = pd.to_datetime(
+                ds.attrs["launch_time"], format="%Y%m%d_%H%M")
+            temp = ds["air_temperature"][0].values[1:] - 273.15
+            pres = ds["air_pressure"][0].values[1:]
+            elev = ds["altitude"][0].values[1:].astype(float)
+            time = pd.date_range(
+                start=launch_time, periods=len(elev), freq="1s").to_list()
+
             elem = {"filename": os.path.basename(rf),
-                    "lat": [ground_sites['THAAO']["lat"]],
-                    "lon": [ground_sites['THAAO']["lon"]],
-                    "time": [time],
-                    "temp": [temp],
-                    "pres": [pres],
-                    "elev": [pres],
+                    "lat":  np.repeat(ground_sites['THAAO']["lat"], len(elev)),
+                    "lon": np.repeat(ground_sites['THAAO']["lon"], len(elev)),
+                    "time": time,
+                    "temp": temp,
+                    "pres": pres,
+                    "elev": elev,
                     }
             radio_data.append(elem)
             fn = write_location_file(elem, folders["txt_location"])
+            # TODO:
+                # THESE lat lon should be calculated from wind!
             for data_typ in grid_sel.keys():
                 filenam_grid = f"{data_typ}_grid_index_for_{fn}"
                 if not os.path.exists(os.path.join(basefol, folders["txt_location"], filenam_grid)):
