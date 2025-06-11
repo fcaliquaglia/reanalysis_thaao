@@ -74,7 +74,7 @@ def read_rean(vr, dataset_type):
             ds["longitude"] = ds["longitude"] % 360  # Normalize to 0–360
 
         filenam_grid = f"{dataset_type}_grid_index_for_THAAO_loc.txt"
-        if not os.path.exists(filenam_grid):
+        if not os.path.join(os.getcwd(),'txt_locations',filenam_grid):
             print(
                 f"File with reference grid point for {dataset_type} NOT found. Exiting \n{filenam_grid}")
             sys.exit()
@@ -107,21 +107,25 @@ def read_rean(vr, dataset_type):
             da = ds[var_name].isel({lat_dim: y_idx[i], lon_dim: x_idx[i]})
             da_small = da.drop_vars(
                 ['step', 'surface', 'valid_time'], errors='ignore')
-            df = da_small.to_dataframe().reset_index()[['time']]
+            df = da_small.to_dataframe().reset_index()
+            # df.index = pd.DatetimeIndex(df['time'])
+            # df.drop(columns=['time'], inplace = True)
             df['latitude'] = lat_vals[i]
             df['longitude'] = lon_vals[i]
             df[var_name] = da.values
             data_list.append(df)
 
         # Combine all into one DataFrame
-        # data_all = pd.concat(data_list, ignore_index=True)
+        data_all = pd.concat(data_list, ignore_index=True)
 
     # Replace NaNs
+    #TO DO implementare il salvataggio dei file txt, non troppo grandi già filtrati, file Monica
     nan_val = inpt.var_dict[dataset_type]["nanval"]
     data_all[data_all == nan_val] = np.nan
     data_all = data_all[inpt.extr[vr][dataset_type]["var_name"]].to_frame()
     inpt.extr[vr][dataset_type]["data"] = data_all
     inpt.extr[vr][dataset_type]["data"].columns = pd.Index([vr])
+
 
 
 def read_thaao_weather(vr):

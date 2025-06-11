@@ -16,11 +16,11 @@ from math import radians, cos
 # ---------------------------- SETTINGS ---------------------------- #
 plot_flags = dict(
     ground_sites=True,
-    buoys=True,
-    dropsondes=True,
-    p3_tracks=True,
-    g3_tracks=True,
-    radiosondes=True
+    buoys=False,
+    dropsondes=False,
+    p3_tracks=False,
+    g3_tracks=False,
+    radiosondes=False
 )
 
 basefol = r"H:\Shared drives\Dati_THAAO"
@@ -68,7 +68,7 @@ dpi = 300
 # ---------------------------- FUNCTIONS ---------------------------- #
 
 
-def grid_point_selection(dataset_type, file_sample):
+def grid_loading(dataset_type, file_sample):
     try:
         ds = xr.open_dataset(os.path.join("..\grid_selection", file_sample),
                              decode_timedelta=True, engine="netcdf4")
@@ -690,8 +690,7 @@ def plot_surf_date(seq, plot_flags=plot_flags):
 if __name__ == "__main__":
 
     print("Extracting CARRA and ERA5 grids for matching with observations")
-    # , 'c': grid_point_selection('c','carra1_2m_temperature_2023.nc')}
-    grid_sel = {'e': grid_point_selection('e', 'era5_2m_temperature_2023.nc')}
+    grid_sel = {'e': grid_loading('e', 'era5_2m_temperature_2023.nc'), 'c': grid_loading('c','carra1_2m_temperature_2023.nc')}
 
     if plot_flags['ground_sites']:
         ground_sites_data = []
