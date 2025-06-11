@@ -130,7 +130,7 @@ def plot_residuals(period_label):
     var_data = inpt.extr[inpt.var]
     comps = var_data['comps']
     ref_x = var_data['ref_x']
-    ref_data_res = var_data[ref_x]['data_res']
+    ref_data_res = var_data[ref_x]['data_res'][inpt.var]
 
     for i, year in enumerate(inpt.years):
         print(f"plotting {year}")
@@ -143,7 +143,7 @@ def plot_residuals(period_label):
 
         # Plot residuals (component - reference) for the year
         for comp_var in comps:
-            comp_data_res = var_data[comp_var]['data_res']
+            comp_data_res = var_data[comp_var]['data_res'][inpt.var]
             mask_comp = comp_data_res.index.year == year
             mask_ref = ref_data_res.index.year == year
             if mask_comp.any() and mask_ref.any():
@@ -196,7 +196,7 @@ def plot_scatter(period_label):
     var_data = inpt.extr[inpt.var]
     comps = var_data['comps']
     ref_x = var_data['ref_x']
-    x = var_data[ref_x]['data_res']
+    x = var_data[ref_x]['data_res'][inpt.var]
 
     # Remove unused frames based on number of components
     frame_and_axis_removal(axs, len(comps))
@@ -214,7 +214,7 @@ def plot_scatter(period_label):
     x_season = x_all.loc[x_all.index.month.isin(season_months)]
 
     for i, comp in enumerate(comps):
-        y = var_data[comp]['data_res']
+        y = var_data[comp]['data_res'][inpt.var]
         y_all = y.reindex(time_range).astype(float)
         y_season = y_all.loc[y_all.index.month.isin(season_months)]
 
@@ -278,7 +278,7 @@ def plot_scatter_cum():
     var_data = inpt.extr[inpt.var]
     comps = var_data['comps']
     ref_x = var_data['ref_x']
-    x = var_data[ref_x]['data_res']
+    x = var_data[ref_x]['data_res'][inpt.var]
 
     # Prepare full time range for reindexing once
     time_range = pd.date_range(
@@ -297,7 +297,7 @@ def plot_scatter_cum():
         x_season = x_all.loc[x_all.index.month.isin(season_months)]
 
         for i, comp in enumerate(comps):
-            y = var_data[comp]['data_res']
+            y = var_data[comp]['data_res'][inpt.var]
             y_all = y.reindex(time_range).astype(float)
             y_season = y_all.loc[y_all.index.month.isin(season_months)]
 
