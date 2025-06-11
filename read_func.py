@@ -103,9 +103,9 @@ def process_rean(vr, data_typ, y, loc):
     full_df = pd.concat(data_list)
     out_path = os.path.join(
         inpt.basefol[data_typ]['processed'],
-        f"{inpt.extr[vr][data_typ]['fn']}{loc}_{y}.txt"
+        f"{inpt.extr[vr][data_typ]['fn']}{loc}_{y}.parquet"
     )
-    full_df.to_csv(out_path)
+    full_df.to_parquet(out_path)
     print(f"Saved processed data to {out_path}")
 
 
@@ -114,12 +114,11 @@ def read_rean(vr, dataset_type):
     Generalized function to read and process data from CARRA or ERA5 datasets.
     """
 
-
-    loc = 'THAAO'  
+    loc = 'THAAO'
     # TODO: Generalize for other stations
 
     # First process missing files
-    for year in tqdm(inpt.years, desc=f"Processing {dataset_type.upper()}"):
+    for year in inpt.years:
         output_file = f"{inpt.extr[vr][dataset_type]['fn']}{loc}_{year}.txt"
         output_path = os.path.join(
             inpt.basefol[dataset_type]['processed'], output_file)
@@ -129,12 +128,11 @@ def read_rean(vr, dataset_type):
 
     # Then read all processed files into a single DataFrame
     data_all = pd.concat([
-        pd.read_csv(os.path.join(
+        pd.read_parquet(os.path.join(
             inpt.basefol[dataset_type]['processed'],
-            f"{inpt.extr[vr][dataset_type]['fn']}{loc}_{year}.txt"
+            f"{inpt.extr[vr][dataset_type]['fn']}{loc}_{year}.parquet"
         ))
-        for year in tqdm(inpt.years, desc=f"Reading {dataset_type.upper()} data")
-    ])
+        for year in inpt.years])
 
     inpt.extr[vr][dataset_type]["data"] = data_all
 
