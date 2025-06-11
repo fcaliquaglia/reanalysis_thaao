@@ -33,9 +33,11 @@ folders = {
 }
 
 ground_sites = {
-    "THAAO": {"lon":-68.7477, "lat": 76.5149, "elev": 220.0, "color":"red"},
-    "Villum": {"lon":-16.6667, "lat":81.6, "elev": 30.0, "color":"cyan"},
-    "Alert": {"lon":-62.5072, "lat":82.4508, "elev": 185.0 , "color":"green"}
+    "THAAO":   {"lon": -68.7477, "lat": 76.5149, "elev":  220.0, "color": "red"},
+    "Villum":  {"lon": -16.6667, "lat": 81.6000, "elev":   30.0, "color": "cyan"},
+    "Alert":   {"lon": -62.5072, "lat": 82.4508, "elev":  185.0, "color": "green"},
+    "Sigma-A": {"lon": -67.6280, "lat": 78.0520, "elev": 1490.0, "color": "purple"},
+    "Sigma-B": {"lon": -69.0620, "lat": 77.5180, "elev":  944.0, "color": "orange"}
 }
 
 
@@ -163,7 +165,8 @@ def plot_background(ax, extent, title, add_grid=True):
 def generate_status_string(flags):
     lines = []
     if flags.get("ground_sites"):
-        lines.append("Ground sites  N={:<4}".format(len(ground_sites._datakeys())))
+        lines.append("Ground sites  N={:<4}".format(
+            len(ground_sites._datakeys())))
 
     if flags.get("dropsondes"):
         lines.append("Dropsondes    N={:<4}".format(len(drop_data)))
@@ -432,7 +435,7 @@ def write_location_file(d, output_dir):
         f.write("datetime,lat,lon,elev\n")
         for (t, lat, lon, elev) in zip(d["time"], d["lat"], d["lon"], d["elev"]):
             try:
-                t_fmt=pd.to_datetime(t).strftime('%Y-%m-%dT%H:%M:%S')
+                t_fmt = pd.to_datetime(t).strftime('%Y-%m-%dT%H:%M:%S')
             except ValueError:
                 t_fmt = np.nan
             f.write(
@@ -725,7 +728,7 @@ if __name__ == "__main__":
                             }
                 p3_data.append(elem)
                 # save location/elevation files
-                write_location_file(p3_data, folders["txt_location"])
+                write_location_file(elem, folders["txt_location"])
 
     del_list = ["ds", "temp", "time", "pres", "lat", "lon", "msk"]
     for var_name in del_list:
