@@ -182,7 +182,7 @@ def read_thaao_rad(vr):
         i_fmt = int(i.strftime("%Y"))
         try:
             t_tmp = pd.read_table(
-                os.path.join(inpt.basefol_t, "thaao_rad",
+                os.path.join(inpt.basefol["t"]['base'], "thaao_rad",
                              f'{inpt.extr[vr]["t"]["fn"]}{i_fmt}_5MIN.dat'),
                 engine="python", skiprows=None, header=0, decimal=".", sep=r"\s+")
             tmp = np.empty(t_tmp["JDAY_UT"].shape, dtype=dt.datetime)
@@ -219,7 +219,7 @@ def read_thaao_hatpro(vr):
     try:
         #    t1_tmp = pd.read_table(
         #            os.path.join(
-        #                    inpt.basefol_t, "thaao_hatpro",
+        #                    inpt.basefol["t"]['base'], "thaao_hatpro",
         #                    f'{inpt.extr[vr]["t1"]["fn"]}', f'{inpt.extr[vr]["t1"]["fn"]}.DAT'),
         #            sep=r"\s+", engine="python", header=0, skiprows=9)
         # #   t1_tmp.columns = ["Date[y_m_d]", "Time[h:m]", "LWP[g/m2]", "STD_LWP[g/m2]", "Num"]
@@ -230,7 +230,7 @@ def read_thaao_hatpro(vr):
         #    format="%Y-%m-%d %H:%M:%S")
         t1_tmp = pd.read_table(
             os.path.join(
-                inpt.basefol_t, "thaao_hatpro", f'{inpt.extr[vr]["t1"]["fn"]}',
+                inpt.basefol["t"]['base'], "thaao_hatpro", f'{inpt.extr[vr]["t1"]["fn"]}',
                 f'{inpt.extr[vr]["t1"]["fn"]}.DAT'), sep=r"\s+", engine="python", header=0, skiprows=9,
             parse_dates={"datetime": [0, 1]}, date_format="%Y-%m-%d %H:%M:%S", index_col="datetime")
 
@@ -266,7 +266,7 @@ def read_thaao_ceilometer(vr):
         try:
             t_tmp = pd.read_table(
                 os.path.join(
-                    inpt.basefol_t, "thaao_ceilometer", "medie_tat_rianalisi",
+                    inpt.basefol["t"]['base'], "thaao_ceilometer", "medie_tat_rianalisi",
                     f'{i_fmt}{inpt.extr[vr]["t"]["fn"]}.txt'), skipfooter=0, sep=r"\s+", header=0, skiprows=9,
                 engine="python")
             t_tmp[t_tmp == inpt.var_dict["t"]["nanval"]] = np.nan
