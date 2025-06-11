@@ -98,7 +98,7 @@ def plot_ts(period_label):
             ax[i].vlines(range2.values, 0, 1, color='grey', alpha=0.3)
 
         # Format the subplot axes (assuming this function is defined elsewhere)
-        format_ts(ax[i], year, i)
+        format_ts(ax, year, i)
 
     plt.xlabel('Time')
     plt.legend(ncol=2)
@@ -157,7 +157,7 @@ def plot_residuals(period_label):
             ax[i].vlines(range2.values, -0.5, 0.5, color='grey', alpha=0.3)
 
         # Format axis (assuming format_ts accepts residuals flag)
-        format_ts(ax[i], year, i, residuals=True)
+        format_ts(ax, year, i, residuals=True)
 
     plt.xlabel('Time')
     plt.legend()
