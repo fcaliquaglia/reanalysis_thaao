@@ -29,7 +29,7 @@ import matplotlib.dates as mdates
 import numpy as np
 import pandas as pd
 
-# THAAO COORDS
+# THAAO COORDS (da rimuovere)
 thaao_lat = 76.5149  # 76.52  # 76.5149
 thaao_lon = -68.7477  # -68.74  # -68.7477
 

@@ -11,6 +11,7 @@ import cartopy.feature as cfeature
 from cartopy.feature import NaturalEarthFeature
 import mpl_toolkits.axes_grid1.inset_locator as inset_locator
 
+from math import radians, cos
 
 # ---------------------------- SETTINGS ---------------------------- #
 plot_flags = dict(
@@ -65,6 +66,99 @@ dpi = 300
 # ---------------------------- END SETTINGS ---------------------------- #
 
 # ---------------------------- FUNCTIONS ---------------------------- #
+
+
+def grid_point_selection(dataset_type, file_sample):
+    try:
+        ds = xr.open_dataset(os.path.join("..\grid_selection", file_sample),
+                             decode_timedelta=True, engine="netcdf4")
+        print(f'OK: {file_sample}')
+    except FileNotFoundError:
+        print(f'NOT FOUND: {file_sample}')
+
+    # Prepare grid
+    if dataset_type == 'c':
+        lat_arr_c = ds['latitude'].values
+        lon_arr_c = ds['longitude'].values % 360
+        flat_lat_c = lat_arr_c.ravel()
+        flat_lon_c = lon_arr_c.ravel()
+        ds_times_c = pd.to_datetime(ds['time'].values)
+        return lat_arr_c, lon_arr_c, flat_lat_c, flat_lon_c, ds_times_c
+    elif dataset_type == 'e':
+        lat_1d_e = ds['latitude'].values
+        lon_1d_e = ds['longitude'].values % 360
+        lat_arr_e, lon_arr_e = np.meshgrid(
+            lat_1d_e, lon_1d_e, indexing='ij')
+        flat_lat_e = lat_arr_e.ravel()
+        flat_lon_e = lon_arr_e.ravel()
+        ds_times_e = pd.to_datetime(ds['valid_time'].values)
+        return lat_arr_e, lon_arr_e, flat_lat_e, flat_lon_e, ds_times_e
+    else:
+        raise ValueError(f"Unknown dataset type: {dataset_type}")
+
+
+def find_index_in_grid(grid_selection, fol_file, out_file):
+    """
+    Find closest grid points for multiple coordinates in a file.
+
+    Parameters:
+    - ds: xarray.Dataset (ERA5 or CARRA)
+    - ds_type: str, 'e' for ERA5 (1D lat/lon), 'c' for CARRA (2D lat/lon)
+    - in_file: str, input CSV with: datetime, lat, lon, elev
+    - out_file: str, output CSV with matched grid info
+    """
+    lat_arr,  lon_arr, flat_lat, flat_lon, ds_times = grid_selection
+    # Read input coordinates
+    in_file = f"{out_file}"[17:]
+    coords = pd.read_csv(os.path.join(fol_file, in_file))
+
+    # Output
+    with open(os.path.join(fol_file, out_file), "w") as out_f:
+        header = "datetime,input_lat,input_lon,input_elev,y_idx,x_idx,z_idx,matched_lat,matched_lon,matched_elev,matched_time\n"
+        out_f.write(header)
+
+        for row in coords.itertuples(index=False):
+            dt_str = row.datetime
+            input_lat = row.lat
+            input_lon = row.lon
+            input_elev = row.elev
+            distances = haversine_vectorized(
+                input_lat, input_lon, flat_lat, flat_lon)
+            min_idx = np.argmin(distances)
+            y_idx, x_idx = np.unravel_index(min_idx, lat_arr.shape)
+            z_idx = np.nan
+            matched_lat = lat_arr[y_idx, x_idx]
+            matched_lon = lon_arr[y_idx, x_idx]
+            matched_elev = np.nan
+
+            # Parse input datetime
+            input_time = pd.to_datetime(dt_str)
+            time_diffs = np.abs(ds_times - input_time)
+            if np.all(np.isnat(time_diffs)):
+                matched_time = np.nan
+            else:
+                time_idx = time_diffs.argmin()
+                matched_time = ds_times[time_idx].strftime("%Y-%m-%dT%H:%M:%S")
+            str_fmt = f"{dt_str},{input_lat:.6f},{input_lon:.6f},{input_elev:.2f},{y_idx},{x_idx},{z_idx},{matched_lat:.6f},{matched_lon:.6f},{matched_elev:.2f},{matched_time}\n"
+            out_f.write(str_fmt)
+
+    print(f"Index mapping written to {out_file}")
+
+
+def haversine_vectorized(lat1, lon1, lat2, lon2):
+    """
+    Compute distance (in meters) between a point and arrays of lat/lon using the haversine formula.
+    """
+    R = 6371000  # Earth radius in meters
+    lat1, lon1 = radians(lat1), radians(lon1)
+    lat2, lon2 = np.radians(lat2), np.radians(lon2)
+
+    dlat = lat2 - lat1
+    dlon = lon2 - lon1
+
+    a = np.sin(dlat / 2.0) ** 2 + cos(lat1) * \
+        np.cos(lat2) * np.sin(dlon / 2.0) ** 2
+    return 2 * R * np.arcsin(np.sqrt(a))
 
 
 def read_ict_file(filepath):
@@ -430,18 +524,22 @@ def write_location_file(d, output_dir):
     except (IndexError, TypeError):
         filename = f"{d['filename']}_loc.txt"
     filepath = os.path.join(output_dir, filename)
+    if not os.path.exists(filepath):
+        with open(filepath, "w") as f:
+            f.write("datetime,lat,lon,elev\n")
+            for (t, lat, lon, elev) in zip(d["time"], d["lat"], d["lon"], d["elev"]):
+                try:
+                    t_fmt = pd.to_datetime(t).strftime('%Y-%m-%dT%H:%M:%S')
+                except ValueError:
+                    t_fmt = np.nan
+                f.write(
+                    f"{t_fmt},{lat:.6f},{lon:.6f},{elev:.2f}\n")
 
-    with open(filepath, "w") as f:
-        f.write("datetime,lat,lon,elev\n")
-        for (t, lat, lon, elev) in zip(d["time"], d["lat"], d["lon"], d["elev"]):
-            try:
-                t_fmt = pd.to_datetime(t).strftime('%Y-%m-%dT%H:%M:%S')
-            except ValueError:
-                t_fmt = np.nan
-            f.write(
-                f"{t_fmt},{lat:.6f},{lon:.6f},{elev:.2f}\n")
+        print(f"Wrote {filepath}")
+    else:
+        print(f"{filepath} ALREADY calculated.")
 
-    print(f"Wrote {filepath}")
+    return filename
 
 
 def plot_surf_date(seq, plot_flags=plot_flags):
@@ -585,6 +683,10 @@ def plot_surf_date(seq, plot_flags=plot_flags):
 
 if __name__ == "__main__":
 
+    print("Extracting CARRA and ERA5 grids for matching with observations")
+    # , 'c': grid_point_selection('c','carra1_2m_temperature_2023.nc')}
+    grid_sel = {'e': grid_point_selection('e', 'era5_2m_temperature_2023.nc')}
+
     if plot_flags['ground_sites']:
         ground_sites_data = []
         for ground_site in ground_sites:
@@ -595,7 +697,12 @@ if __name__ == "__main__":
                     "elev": [ground_sites[ground_site]["elev"]]
                     }
             ground_sites_data.append(elem)
-            write_location_file(elem, folders["txt_location"])
+            fn = write_location_file(elem, folders["txt_location"])
+            for data_typ in grid_sel.keys():
+                filenam_grid = f"{data_typ}_grid_index_for_{fn}"
+                if not os.path.exists(os.path.join(basefol, folders["txt_location"], filenam_grid)):
+                    find_index_in_grid(
+                        grid_sel[data_typ], folders["txt_location"], filenam_grid)
 
     # Radiosondes
     if plot_flags["radiosondes"]:
@@ -608,12 +715,22 @@ if __name__ == "__main__":
                                   format="%Y%m%d_%H%M")
             temp = ds["air_temperature"][0].values - 273.15
             pres = ds["air_pressure"][0].values
+            elev =  ds["altitude"][0].values
             elem = {"filename": os.path.basename(rf),
-                    "time": time,
-                    "temp": temp,
-                    "pres": pres,
+                    "lat": [ground_sites['THAAO']["lat"]],
+                    "lon": [ground_sites['THAAO']["lon"]],
+                    "time": [time],
+                    "temp": [temp],
+                    "pres": [pres],
+                    "elev": [pres],
                     }
             radio_data.append(elem)
+            fn = write_location_file(elem, folders["txt_location"])
+            for data_typ in grid_sel.keys():
+                filenam_grid = f"{data_typ}_grid_index_for_{fn}"
+                if not os.path.exists(os.path.join(basefol, folders["txt_location"], filenam_grid)):
+                    find_index_in_grid(
+                        grid_sel[data_typ], folders["txt_location"], filenam_grid)
 
     # Dropsondes
     if plot_flags["dropsondes"]:
@@ -642,9 +759,12 @@ if __name__ == "__main__":
                     "elev": np.repeat(np.nan, len(time))
                     }
             drop_data.append(elem)
-
-            # save location/elevation files
-            write_location_file(elem, folders["txt_location"])
+            fn = write_location_file(elem, folders["txt_location"])
+            for data_typ in grid_sel.keys():
+                filenam_grid = f"{data_typ}_grid_index_for_{fn}"
+                if not os.path.exists(os.path.join(basefol, folders["txt_location"], filenam_grid)):
+                    find_index_in_grid(
+                        grid_sel[data_typ], folders["txt_location"], filenam_grid)
 
     # Buoys
     if plot_flags["buoys"]:
@@ -669,9 +789,12 @@ if __name__ == "__main__":
                     "elev": np.repeat(np.nan, len(time))
                     }
             buoy_data.append(elem)
-
-            # save location/elevation file
-            write_location_file(elem, folders["txt_location"])
+            fn = write_location_file(elem, folders["txt_location"])
+            for data_typ in grid_sel.keys():
+                filenam_grid = f"{data_typ}_grid_index_for_{fn}"
+                if not os.path.exists(os.path.join(basefol, folders["txt_location"], filenam_grid)):
+                    find_index_in_grid(
+                        grid_sel[data_typ], folders["txt_location"], filenam_grid)
 
     # G3 tracks
     if plot_flags["g3_tracks"]:
@@ -685,6 +808,9 @@ if __name__ == "__main__":
                 ds = read_ict_file(gf)
                 lat = ds["Latitude"].values
                 lon = ds["Longitude"].values
+                temp = ds['Static_Air_Temp'].values
+                elev = ds['GPS_Altitude'].values
+                time = np.repeat(np.nan, len(lat))
                 msk, lat, lon = filter_coords(lat, lon, bounds=bounds)
                 if not msk.any():
                     print("Skipped – no valid coordinates after filtering.")
@@ -692,15 +818,19 @@ if __name__ == "__main__":
                 else:
                     print("OK")
                     elem = {"filename": os.path.basename(gf),
-                            "lat": lat, "lon": lon,
-                            "temp": np.repeat(np.nan, len(lat)),
-                            "time": np.repeat(np.nan, len(lat)),
-                            "elev": np.repeat(np.nan, len(lat))
+                            "lat": lat,
+                            "lon": lon,
+                            "temp": temp,
+                            "time": time,
+                            "elev": elev
                             }
                 g3_data.append(elem)
-
-                # save location/elevation files
-                write_location_file(elem, folders["txt_location"])
+                fn = write_location_file(elem, folders["txt_location"])
+                for data_typ in grid_sel.keys():
+                    filenam_grid = f"{data_typ}_grid_index_for_{fn}"
+                    if not os.path.exists(os.path.join(basefol, folders["txt_location"], filenam_grid)):
+                        find_index_in_grid(
+                            grid_sel[data_typ], folders["txt_location"], filenam_grid)
 
     # P3 tracks
     if plot_flags["p3_tracks"]:
@@ -714,6 +844,9 @@ if __name__ == "__main__":
                 ds = read_ict_file(pf)
                 lat = ds["Latitude"].values
                 lon = ds["Longitude"].values
+                elev = ds["GPS_Altitude"].values
+                temp = np.repeat(np.nan, len(lon))
+                time = np.repeat(np.nan, len(lon))
                 msk, lat, lon = filter_coords(lat, lon, bounds=bounds)
                 if not msk.any():
                     print("Skipped – no valid coordinates after filtering.")
@@ -721,14 +854,19 @@ if __name__ == "__main__":
                 else:
                     print("OK")
                     elem = {"filename": os.path.basename(pf),
-                            "lat": lat, "lon": lon,
-                            "temp": np.repeat(np.nan, len(lon)),
-                            "time": np.repeat(np.nan, len(lon)),
-                            "elev": np.repeat(np.nan, len(lon))
+                            "lat": lat,
+                            "lon": lon,
+                            "temp": temp,
+                            "time": time,
+                            "elev": elev
                             }
                 p3_data.append(elem)
-                # save location/elevation files
-                write_location_file(elem, folders["txt_location"])
+                fn = write_location_file(elem, folders["txt_location"])
+                for data_typ in grid_sel.keys():
+                    filenam_grid = f"{data_typ}_grid_index_for_{fn}"
+                    if not os.path.exists(os.path.join(basefol, folders["txt_location"], filenam_grid)):
+                        find_index_in_grid(
+                            grid_sel[data_typ], folders["txt_location"], filenam_grid)
 
     del_list = ["ds", "temp", "time", "pres", "lat", "lon", "msk"]
     for var_name in del_list:

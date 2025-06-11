@@ -28,6 +28,7 @@ import inputs as inpt
 import plot_func as plt_f
 import read_func as rd_f
 import res_func as rs_f
+import grid_selection as grid_sel
 
 
 def main():
@@ -39,6 +40,9 @@ def main():
             inpt.var = var
             print(f"Processing variable: {var}")
 
+            # Selec relevant pixel for each dataset/reanalyses
+            grid_sel.pixel_sel()
+            
             # Read data
             rd_f.read()
 
