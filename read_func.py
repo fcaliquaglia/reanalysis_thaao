@@ -31,35 +31,39 @@ import pandas as pd
 import xarray as xr
 from metpy.calc import wind_direction, wind_speed
 from metpy.units import units
-
+from tqdm import tqdm
 import inputs as inpt
 
 
 def process_rean(vr, data_typ, y, loc):
-    ds_path = os.path.join(
-        inpt.basefol[data_typ]['raw'], f'{inpt.extr[vr][data_typ]["fn"]}{y}.nc')
+    raw_dir = inpt.basefol[data_typ]['raw']
+    filename = f"{inpt.extr[vr][data_typ]['fn']}{y}.nc"
+    ds_path = os.path.join(raw_dir, filename)
+
     try:
-        ds = xr.open_dataset(
-            ds_path, decode_timedelta=True, engine="netcdf4")
+        ds = xr.open_dataset(ds_path, decode_timedelta=True, engine="netcdf4")
         print(f'OK: {os.path.basename(ds_path)}')
     except FileNotFoundError:
         print(f'NOT FOUND: {os.path.basename(ds_path)}')
+        return
 
     if data_typ == "c":
-        ds["longitude"] = ds["longitude"] % 360  # Normalize to 0–360
+        ds["longitude"] = ds["longitude"] % 360
 
     filenam_grid = f"{data_typ}_grid_index_for_{loc}_loc.txt"
-    if not os.path.join(os.getcwd(), 'txt_locations', filenam_grid):
+    grid_path = os.path.join('txt_locations', filenam_grid)
+
+    if not os.path.exists(grid_path):
         print(
             f"File with reference grid point for {data_typ} NOT found.\n"
-            "You should cleanup folder txt_locations and then run sondes_buoys_flights.py\n"
-            "Now exiting \n{filenam_grid}")
+            f"You should cleanup folder txt_locations and then run sondes_buoys_flights.py\n"
+            f"Now exiting\n{filenam_grid}")
         sys.exit()
-    else:
-        coords = pd.read_csv(os.path.join('txt_locations', filenam_grid))
 
+    coords = pd.read_csv(grid_path)
     y_idx = coords['y_idx'].to_numpy()
     x_idx = coords['x_idx'].to_numpy()
+
     if data_typ == "c":
         lat_vals = np.array([ds['latitude'].values[y, x]
                             for y, x in zip(y_idx, x_idx)])
@@ -75,66 +79,62 @@ def process_rean(vr, data_typ, y, loc):
 
     print(f"Selected grid point at indices (y={y_idx[0]}, x={x_idx[0]}):")
     print(f"(First) Latitude = {lat_vals[0]:.4f}")
-    if data_typ == "e":
-        print(
-            f"(First) Longitude = {lon_vals[0]:.4f} (also {lon_vals[0]:.4f})")
+    print(f"(First) Longitude = {lon_vals[0]:.4f}", end="")
     if data_typ == "c":
-        print(
-            f"(First) Longitude = {lon_vals[0]:.4f} (also {lon_vals[0]-360:.4f})")
-    # Extract timeseries at closest point
+        print(f" (also {lon_vals[0]-360:.4f})")
+    else:
+        print()
+
     var_name = inpt.extr[vr][data_typ]["var_name"]
     data_list = []
+
     for i in range(len(y_idx)):
         da = ds[var_name].isel({lat_dim: y_idx[i], lon_dim: x_idx[i]})
         da_small = da.drop_vars(
             ['step', 'surface', 'valid_time'], errors='ignore')
-        df = da_small.to_dataframe().reset_index()
-        df.index = pd.to_datetime(df.get('time', df.get('valid_time')))
-        df.drop(columns=[col for col in ['time', 'valid_time']
-                if col in df.columns], inplace=True)
+
+        df = da_small.to_dataframe().reset_index().set_index('time')
         df['latitude'] = lat_vals[i]
         df['longitude'] = lon_vals[i]
-        df[var_name] = da.values
+        df[var_name] = da.values  # Optional: might duplicate
+
         data_list.append(df)
 
-    return data_list
+    full_df = pd.concat(data_list)
+    out_path = os.path.join(
+        inpt.basefol[data_typ]['processed'],
+        f"{inpt.extr[vr][data_typ]['fn']}{loc}_{y}.txt"
+    )
+    full_df.to_csv(out_path)
+    print(f"Saved processed data to {out_path}")
 
 
 def read_rean(vr, dataset_type):
     """
-    Generalized function to read data from different sources (CARRA, ERA5),
-    process it, and store it in the inpt.extr dictionary.
-
-    :param vr: Variable key
-    :param dataset_type: One of ["c", "e"]
+    Generalized function to read and process data from CARRA or ERA5 datasets.
     """
 
-    # if dataset_type == "c":
-    #     lon_name, lat_name = 'x', 'y'
-    # elif dataset_type == "e":
-    #     lon_name, lat_name = 'longitude', 'latitude'
-    # else:
-    #     raise ValueError("dataset_type must be 'c' or 'e'")
 
-    # TODO: this should be generalized when considering other locations tha THAAO
-    # (buoys, ...etc)
-    loc = 'THAAO'
+    loc = 'THAAO'  
+    # TODO: Generalize for other stations
 
-    for year in inpt.years:
-        extracted_file = os.path.join(
-            inpt.basefol[dataset_type]['processed'], f"{inpt.extr[vr][dataset_type]['fn']}{loc}_{year}.txt")
-        # Se il file esiste, leggilo e salta il processing
-        if not os.path.exists(os.path.join(inpt.basefol[dataset_type]['processed'], extracted_file)):
+    # First process missing files
+    for year in tqdm(inpt.years, desc=f"Processing {dataset_type.upper()}"):
+        output_file = f"{inpt.extr[vr][dataset_type]['fn']}{loc}_{year}.txt"
+        output_path = os.path.join(
+            inpt.basefol[dataset_type]['processed'], output_file)
+
+        if not os.path.exists(output_path):
             process_rean(vr, dataset_type, year, loc)
-            print(f"Data ready: {extracted_file}")
-        else:
-            continue
 
-    data_all = pd.DataFrame()
-    for year in inpt.years:
-        data_tmp = pd.read_csv(
-            inpt.basefol[dataset_type]['processed'], f"{inpt.extr[vr][dataset_type]['fn']}{loc}_{year}.txt")
-        data_all = pd.concatanate([data_tmp, data_all])
+    # Then read all processed files into a single DataFrame
+    data_all = pd.concat([
+        pd.read_csv(os.path.join(
+            inpt.basefol[dataset_type]['processed'],
+            f"{inpt.extr[vr][dataset_type]['fn']}{loc}_{year}.txt"
+        ))
+        for year in tqdm(inpt.years, desc=f"Reading {dataset_type.upper()} data")
+    ])
 
     inpt.extr[vr][dataset_type]["data"] = data_all
 
