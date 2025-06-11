@@ -48,13 +48,9 @@ def read_rean(vr, dataset_type):
     if dataset_type == "c":
         basefol = inpt.basefol_c
         lon_name, lat_name = 'x', 'y'
-        # Convert thaao_lon to 0–360 for CARRA
-        thaao_lon = inpt.thaao_lon if inpt.thaao_lon >= 0 else 360 + inpt.thaao_lon
     elif dataset_type == "e":
         basefol = inpt.basefol_e
         lon_name, lat_name = 'longitude', 'latitude'
-        # Keep -180 to 180 for ERA5
-        thaao_lon = inpt.thaao_lon
     else:
         raise ValueError("dataset_type must be 'c' or 'e'")
 
