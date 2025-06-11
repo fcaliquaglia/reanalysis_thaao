@@ -236,7 +236,7 @@ def plot_scatter(period_label):
             bin_size = (var_data['max'] - var_data['min']) / var_data['bin_nr']
 
             h = axs[i].hist2d(
-                x_season[inpt.var][valid_idx], y_season[inpt.var][valid_idx],
+                x_season[valid_idx], y_season[valid_idx],
                 bins=[bin_edges, bin_edges], cmap=plt.cm.jet, cmin=1, vmin=1
             )
             axs[i].text(
@@ -247,7 +247,7 @@ def plot_scatter(period_label):
             print('ERROR: Not enough data points for proper fit (need at least 2).')
         else:
             calc_draw_fit(
-                axs, i, x_season[inpt.var][valid_idx], y_season[inpt.var][valid_idx], period_label)
+                axs, i, x_season[valid_idx], y_season[valid_idx], period_label)
 
         format_scatterplot(axs, comp, i)
 
@@ -305,7 +305,7 @@ def plot_scatter_cum():
                           y_season[inpt.var].isna())
 
             axs[i].scatter(
-                x_season[inpt.var][valid_idx], y_season[inpt.var][valid_idx],
+                x_season[valid_idx], y_season[valid_idx],
                 s=5, color=season['col'], edgecolors='none', alpha=0.5, label=period_label
             )
 
@@ -314,7 +314,7 @@ def plot_scatter_cum():
                 # Optionally raise ValueError here if needed
                 # raise ValueError("Insufficient data for fitting.")
             else:
-                calc_draw_fit(axs, i, x_season[inpt.var][valid_idx], y_season[inpt.var][valid_idx],
+                calc_draw_fit(axs, i, x_season[valid_idx], y_season[valid_idx],
                               period_label, print_stats=False)
 
             format_scatterplot(axs, comp, i)
