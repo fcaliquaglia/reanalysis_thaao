@@ -31,7 +31,6 @@ import pandas as pd
 import xarray as xr
 from metpy.calc import wind_direction, wind_speed
 from metpy.units import units
-from tqdm import tqdm
 import inputs as inpt
 
 
