@@ -91,12 +91,7 @@ def process_rean(vr, data_typ, y, loc):
         da = ds[var_name].isel({lat_dim: y_idx[i], lon_dim: x_idx[i]})
         da_small = da.drop_vars(
             ['step', 'surface', 'expver', 'number'], errors='ignore')
-
         df = da_small.to_dataframe().reset_index().set_index(time_dim)
-        df['latitude'] = lat_vals[i]
-        df['longitude'] = lon_vals[i]
-        df[var_name] = da.values  # Optional: might duplicate
-
         data_list.append(df)
 
     full_df = pd.concat(data_list)
@@ -157,7 +152,7 @@ def read_thaao_weather(vr):
     """
     try:
         inpt.extr[vr]["t"]["data"] = xr.open_dataset(
-            os.path.join(inpt.basefol_t, "thaao_aws_vespa",
+            os.path.join(inpt.basefol["t"]['base'], "thaao_aws_vespa",
                          f'{inpt.extr[vr]["t"]["fn"]}.nc'),
             engine="netcdf4").to_dataframe()
         print(f'OK: {inpt.extr[vr]["t"]["fn"]}.nc')
@@ -306,7 +301,7 @@ def read_aws_ecapac(vr):
         i_fmt = i.strftime("%Y_%m_%d")
         try:
             file = os.path.join(
-                inpt.basefol_t, "thaao_ecapac_aws_snow", "AWS_ECAPAC", i.strftime(
+                inpt.basefol["t"]['base'], "thaao_ecapac_aws_snow", "AWS_ECAPAC", i.strftime(
                     "%Y"),
                 f'{inpt.extr[vr]["t2"]["fn"]}{i_fmt}_00_00.dat')
             t2_tmp = pd.read_csv(
