@@ -39,9 +39,6 @@ def main():
         for var in inpt.list_var:
             inpt.var = var
             print(f"Processing variable: {var}")
-
-            # Selec relevant pixel for each dataset/reanalyses
-            grid_sel.pixel_sel()
             
             # Read data
             rd_f.read()
