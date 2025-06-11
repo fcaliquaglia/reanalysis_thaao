@@ -696,7 +696,7 @@ def plot_surf_date(seq, plot_flags=plot_flags):
 if __name__ == "__main__":
 
     print("Extracting CARRA and ERA5 grids for matching with observations")
-    grid_sel = {'e': grid_loading('e', 'era5_2m_temperature_2023.nc'), 'c': grid_loading(
+    grid_sel = {'e': grid_loading('e', 'era5_NG_2m_temperature_2023.nc'), 'c': grid_loading(
         'c', 'carra1_2m_temperature_2023.nc')}
 
     if plot_flags['ground_sites']:
