@@ -93,8 +93,8 @@ def read_rean(vr, dataset_type):
             raise ValueError(f"Unknown dataset_type: {dataset_type}")
 
         print(f"Selected grid point at indices (y={y_idx}, x={x_idx}):")
-        print(f"Latitude = {lat_vals:.4f}")
-        print(f"Longitude = {lon_vals:4.f} (also {lon_vals:.4f}-360)")
+        print(f"(First) Latitude = {lat_vals[0]:.4f}")
+        print(f"(First) Longitude = {lon_vals[0]:4.f} (also {lon_vals[0]:.4f}-360)")
 
         # Extract timeseries at closest point
         var_name = inpt.extr[vr][dataset_type]["var_name"]
