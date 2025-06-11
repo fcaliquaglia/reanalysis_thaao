@@ -130,7 +130,11 @@ def read_rean(vr, dataset_type):
         input_file = f"{inpt.extr[vr][dataset_type]['fn']}{loc}_{year}.parquet"
         input_path = os.path.join(
             inpt.basefol[dataset_type]['processed'], input_file)
-        data_tmp = pd.read_parquet(input_path)
+        try:
+            data_tmp = pd.read_parquet(input_path)
+        except FileNotFoundError as e:
+            print(e)
+            continue
         data_all = pd.concat([data_all, data_tmp])
 
     inpt.extr[vr][dataset_type]["data"] = data_all
