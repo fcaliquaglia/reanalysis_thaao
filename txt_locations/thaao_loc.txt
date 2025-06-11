@@ -1,2 +1,0 @@
-datetime,lat,lon,elev
-nan,76.514900,-68.747700,220.00
