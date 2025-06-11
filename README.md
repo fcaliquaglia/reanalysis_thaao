@@ -25,7 +25,7 @@
 - pandas
 - xarray
 - metpy
-- tqdm
+- pyarrow
 - geopy
 - (spyder-kernels=3.0)
 
