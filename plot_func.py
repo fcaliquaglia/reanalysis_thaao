@@ -219,14 +219,14 @@ def plot_scatter(period_label):
         y_season = y_all.loc[y_all.index.month.isin(season_months)]
 
         # Boolean index where neither x nor y are NaN for the variable
-        valid_idx = ~(x_season[inpt.var].isna() | y_season[inpt.var].isna())
+        valid_idx = ~(x_season.isna() | y_season.isna())
 
         print(
             f"plotting scatter {inpt.var_dict['t']['label']}-{inpt.var_dict[comp]['label']}")
 
         if inpt.seass[period_label]['name'] != 'all':
             axs[i].scatter(
-                x_season[inpt.var][valid_idx], y_season[inpt.var][valid_idx],
+                x_season[valid_idx], y_season[valid_idx],
                 s=5, facecolors='none', edgecolors=inpt.seass[period_label]['col'],
                 alpha=0.5, label=period_label
             )
@@ -301,8 +301,8 @@ def plot_scatter_cum():
             y_all = y.reindex(time_range).astype(float)
             y_season = y_all.loc[y_all.index.month.isin(season_months)]
 
-            valid_idx = ~(x_season[inpt.var].isna() |
-                          y_season[inpt.var].isna())
+            valid_idx = ~(x_season.isna() |
+                          y_season.isna())
 
             axs[i].scatter(
                 x_season[valid_idx], y_season[valid_idx],
