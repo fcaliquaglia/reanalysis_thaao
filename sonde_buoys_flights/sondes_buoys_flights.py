@@ -166,7 +166,7 @@ def generate_status_string(flags):
     lines = []
     if flags.get("ground_sites"):
         lines.append("Ground sites  N={:<4}".format(
-            len(ground_sites._datakeys())))
+            len(ground_sites.keys())))
 
     if flags.get("dropsondes"):
         lines.append("Dropsondes    N={:<4}".format(len(drop_data)))
