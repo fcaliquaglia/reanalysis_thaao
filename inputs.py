@@ -32,11 +32,29 @@ import pandas as pd
 dpi = 300
 
 # FOLDERS
-basefol_c = os.path.join('H:\\Shared drives', 'Reanalysis', 'carra1', 'raw')
-basefol_e = os.path.join('H:\\Shared drives', 'Reanalysis', 'era5', 'raw')
-basefol_t = os.path.join('H:\\Shared drives', 'Dati_THAAO')
-basefol_out = os.path.join(
-    'H:\\Shared drives', 'Dati_elab_docs', 'thaao_reanalysis')
+
+shared = 'H:\\Shared drives'
+
+# Constructed folder dictionary
+basefol = {
+    'c': {
+        'base': f'{shared}\\Reanalysis\\carra1',
+        'processed': f'{shared}\\Reanalysis\\carra1\\processed',
+        'raw': f'{shared}\\Reanalysis\\carra1\\raw'
+    },
+    'e': {
+        'base': f'{shared}\\Reanalysis\\era5',
+        'processed': f'{shared}\\Reanalysis\\era5\\processed',
+        'raw': f'{shared}\\Reanalysis\\era5\\raw'
+    },
+    't': {
+        'base': f'{shared}\\Dati_THAAO'
+    },
+    'out': {
+        'base': f'{shared}\\Dati_elab_docs\\thaao_reanalysis'
+    }
+}
+
 
 thaao_c = 'carra1'
 thaao_e = 'era5_NG'

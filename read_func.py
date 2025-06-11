@@ -9,7 +9,7 @@ Brief description
 # =============================================================
 # CREATED:
 # AFFILIATION: INGV
-# AUTHORS: Filippo Cali" Quaglia
+# AUTHORS: Filippo Cali' Quaglia, Monica Tosco
 # =============================================================
 #
 # -------------------------------------------------------------------------------
@@ -35,6 +35,71 @@ from metpy.units import units
 import inputs as inpt
 
 
+def process_rean(vr, data_typ, y, loc):
+    ds_path = os.path.join(
+        inpt.basefol[data_typ]['raw'], f'{inpt.extr[vr][data_typ]["fn"]}{y}.nc')
+    try:
+        ds = xr.open_dataset(
+            ds_path, decode_timedelta=True, engine="netcdf4")
+        print(f'OK: {os.path.basename(ds_path)}')
+    except FileNotFoundError:
+        print(f'NOT FOUND: {os.path.basename(ds_path)}')
+
+    if data_typ == "c":
+        ds["longitude"] = ds["longitude"] % 360  # Normalize to 0–360
+
+    filenam_grid = f"{data_typ}_grid_index_for_{loc}_loc.txt"
+    if not os.path.join(os.getcwd(), 'txt_locations', filenam_grid):
+        print(
+            f"File with reference grid point for {data_typ} NOT found.\n"
+            "You should cleanup folder txt_locations and then run sondes_buoys_flights.py\n"
+            "Now exiting \n{filenam_grid}")
+        sys.exit()
+    else:
+        coords = pd.read_csv(os.path.join('txt_locations', filenam_grid))
+
+    y_idx = coords['y_idx'].to_numpy()
+    x_idx = coords['x_idx'].to_numpy()
+    if data_typ == "c":
+        lat_vals = np.array([ds['latitude'].values[y, x]
+                            for y, x in zip(y_idx, x_idx)])
+        lon_vals = np.array([ds['longitude'].values[y, x]
+                            for y, x in zip(y_idx, x_idx)])
+        lat_dim, lon_dim = 'y', 'x'
+    elif data_typ == "e":
+        lat_vals = ds["latitude"].isel(latitude=y_idx).values
+        lon_vals = ds["longitude"].isel(longitude=x_idx).values
+        lat_dim, lon_dim = 'latitude', 'longitude'
+    else:
+        raise ValueError(f"Unknown dataset_type: {data_typ}")
+
+    print(f"Selected grid point at indices (y={y_idx[0]}, x={x_idx[0]}):")
+    print(f"(First) Latitude = {lat_vals[0]:.4f}")
+    if data_typ == "e":
+        print(
+            f"(First) Longitude = {lon_vals[0]:.4f} (also {lon_vals[0]:.4f})")
+    if data_typ == "c":
+        print(
+            f"(First) Longitude = {lon_vals[0]:.4f} (also {lon_vals[0]-360:.4f})")
+    # Extract timeseries at closest point
+    var_name = inpt.extr[vr][data_typ]["var_name"]
+    data_list = []
+    for i in range(len(y_idx)):
+        da = ds[var_name].isel({lat_dim: y_idx[i], lon_dim: x_idx[i]})
+        da_small = da.drop_vars(
+            ['step', 'surface', 'valid_time'], errors='ignore')
+        df = da_small.to_dataframe().reset_index()
+        df.index = pd.to_datetime(df.get('time', df.get('valid_time')))
+        df.drop(columns=[col for col in ['time', 'valid_time']
+                if col in df.columns], inplace=True)
+        df['latitude'] = lat_vals[i]
+        df['longitude'] = lon_vals[i]
+        df[var_name] = da.values
+        data_list.append(df)
+
+    return data_list
+
+
 def read_rean(vr, dataset_type):
     """
     Generalized function to read data from different sources (CARRA, ERA5),
@@ -43,87 +108,35 @@ def read_rean(vr, dataset_type):
     :param vr: Variable key
     :param dataset_type: One of ["c", "e"]
     """
-    data_all = pd.DataFrame()
 
-    if dataset_type == "c":
-        basefol = inpt.basefol_c
-        lon_name, lat_name = 'x', 'y'
-    elif dataset_type == "e":
-        basefol = inpt.basefol_e
-        lon_name, lat_name = 'longitude', 'latitude'
-    else:
-        raise ValueError("dataset_type must be 'c' or 'e'")
+    # if dataset_type == "c":
+    #     lon_name, lat_name = 'x', 'y'
+    # elif dataset_type == "e":
+    #     lon_name, lat_name = 'longitude', 'latitude'
+    # else:
+    #     raise ValueError("dataset_type must be 'c' or 'e'")
+
+    # TODO: this should be generalized when considering other locations tha THAAO
+    # (buoys, ...etc)
+    loc = 'THAAO'
 
     for year in inpt.years:
-        ds_path = os.path.join(
-            basefol, f'{inpt.extr[vr][dataset_type]["fn"]}{year}.nc')
-        try:
-            ds = xr.open_dataset(
-                ds_path, decode_timedelta=True, engine="netcdf4")
-            print(f'OK: {os.path.basename(ds_path)}')
-        except FileNotFoundError:
-            print(f'NOT FOUND: {os.path.basename(ds_path)}')
+        extracted_file = os.path.join(
+            inpt.basefol[dataset_type]['processed'], f"{inpt.extr[vr][dataset_type]['fn']}{loc}_{year}.txt")
+        # Se il file esiste, leggilo e salta il processing
+        if not os.path.exists(os.path.join(inpt.basefol[dataset_type]['processed'], extracted_file)):
+            process_rean(vr, dataset_type, year, loc)
+            print(f"Data ready: {extracted_file}")
+        else:
             continue
 
-        if dataset_type == "c":
-            # Normalize longitude coordinate
-            ds["longitude"] = ds["longitude"] % 360  # Normalize to 0–360
+    data_all = pd.DataFrame()
+    for year in inpt.years:
+        data_tmp = pd.read_csv(
+            inpt.basefol[dataset_type]['processed'], f"{inpt.extr[vr][dataset_type]['fn']}{loc}_{year}.txt")
+        data_all = pd.concatanate([data_tmp, data_all])
 
-        filenam_grid = f"{dataset_type}_grid_index_for_THAAO_loc.txt"
-        if not os.path.join(os.getcwd(), 'txt_locations', filenam_grid):
-            print(
-                f"File with reference grid point for {dataset_type} NOT found. Exiting \n{filenam_grid}")
-            sys.exit()
-        else:
-            coords = pd.read_csv(os.path.join('txt_locations', filenam_grid))
-
-        y_idx = coords['y_idx'].to_numpy()
-        x_idx = coords['x_idx'].to_numpy()
-        if dataset_type == "c":
-            lat_vals = np.array([ds['latitude'].values[y, x]
-                                for y, x in zip(y_idx, x_idx)])
-            lon_vals = np.array([ds['longitude'].values[y, x]
-                                for y, x in zip(y_idx, x_idx)])
-            lat_dim, lon_dim = 'y', 'x'
-        elif dataset_type == "e":
-            lat_vals = ds["latitude"].isel(latitude=y_idx).values
-            lon_vals = ds["longitude"].isel(longitude=x_idx).values
-            lat_dim, lon_dim = 'latitude', 'longitude'
-        else:
-            raise ValueError(f"Unknown dataset_type: {dataset_type}")
-
-        print(f"Selected grid point at indices (y={y_idx[0]}, x={x_idx[0]}):")
-        print(f"(First) Latitude = {lat_vals[0]:.4f}")
-        if dataset_type == "e":
-            print(f"(First) Longitude = {lon_vals[0]:.4f} (also {lon_vals[0]:.4f})")
-        if dataset_type == "c":
-            print(f"(First) Longitude = {lon_vals[0]:.4f} (also {lon_vals[0]-360:.4f})")
-        # Extract timeseries at closest point
-        var_name = inpt.extr[vr][dataset_type]["var_name"]
-        data_list = []
-        for i in range(len(y_idx)):
-            da = ds[var_name].isel({lat_dim: y_idx[i], lon_dim: x_idx[i]})
-            da_small = da.drop_vars(
-                ['step', 'surface', 'valid_time'], errors='ignore')
-            df = da_small.to_dataframe().reset_index()
-            df.index = pd.to_datetime(df.get('time', df.get('valid_time')))
-            df.drop(columns=[col for col in ['time', 'valid_time']
-                    if col in df.columns], inplace=True)
-            df['latitude'] = lat_vals[i]
-            df['longitude'] = lon_vals[i]
-            df[var_name] = da.values
-            data_list.append(df)
-
-        # Combine all into one DataFrame
-        data_all = pd.concat(data_list)
-
-    # Replace NaNs
-    # TO DO implementare il salvataggio dei file txt, non troppo grandi già filtrati, file Monica
-    nan_val = inpt.var_dict[dataset_type]["nanval"]
-    data_all[data_all == nan_val] = np.nan
-    data_all = data_all[inpt.extr[vr][dataset_type]["var_name"]].to_frame()
     inpt.extr[vr][dataset_type]["data"] = data_all
-    inpt.extr[vr][dataset_type]["data"].columns = pd.Index([vr])
 
 
 def read_thaao_weather(vr):
