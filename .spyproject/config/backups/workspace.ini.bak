@@ -4,7 +4,7 @@ save_data_on_exit = True
 save_history = True
 save_non_project_files = False
 project_type = 'empty-project-type'
-recent_files = ['README.md', 'main.py', 'plot_func.py', 'read_func.py', 'inputs.py', 'grid_selection\\grid_selection.py']
+recent_files = ['README.md', 'main.py', 'inputs.py', 'sonde_buoys_flights\\sondes_buoys_flights.py', 'plot_func.py', 'read_func.py']
 
 [main]
 version = 0.2.0
