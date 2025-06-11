@@ -17,10 +17,10 @@ from math import radians, cos
 plot_flags = dict(
     ground_sites=True,
     buoys=True,
-    dropsondes=False,
-    p3_tracks=False,
-    g3_tracks=False,
-    radiosondes=False
+    dropsondes=True,
+    p3_tracks=True,
+    g3_tracks=True,
+    radiosondes=True
 )
 
 basefol = r"H:\Shared drives\Dati_THAAO"

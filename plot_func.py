@@ -7,7 +7,7 @@ Brief description
 """
 
 # =============================================================
-# CREATED: 
+# CREATED:
 # AFFILIATION: INGV
 # AUTHORS: Filippo Cali' Quaglia
 # =============================================================
@@ -36,6 +36,7 @@ import inputs as inpt
 # import matplotlib
 # matplotlib.use('WebAgg')
 
+
 def plot_ts(period_label):
     """
     Plots time series data for each year in the provided dataset.
@@ -47,53 +48,70 @@ def plot_ts(period_label):
 
     :param period_label: A string used in the filename to describe the period of the data.
     :type period_label: str
-    :return: This function does not return a value, but saves the generated plot as an image file.
-    :rtype: None
+    :return: None
     """
-    # with plt.xkcd():
     print('TIMESERIES')
     plt.ioff()
-    fig, ax = plt.subplots(len(inpt.years), 1, figsize=(12, 17), dpi=inpt.dpi)
+    n_years = len(inpt.years)
+    fig, ax = plt.subplots(n_years, 1, figsize=(12, 17), dpi=inpt.dpi)
     ax = np.atleast_1d(ax)
     fig.suptitle(f"{inpt.var.upper()} all {inpt.tres}", fontweight='bold')
-    kwargs_ori = {'alpha': 0.02, 'lw': 0, 'marker': '.', 'ms': 1}
-    kwargs = {'lw': 0, 'marker': '.', 'ms': 2}
 
-    for (yy, year) in enumerate(inpt.years):
+    # Plotting style kwargs
+    kwargs_ori = {'alpha': 0.02, 'lw': 0, 'marker': '.', 'ms': 1}
+    kwargs_res = {'lw': 0, 'marker': '.', 'ms': 2}
+
+    # Cache frequently used variables
+    var_data = inpt.extr[inpt.var]
+    comps = var_data['comps']
+    ref_x = var_data['ref_x']
+    plot_vars = comps + [ref_x]
+
+    for i, year in enumerate(inpt.years):
         print(f"plotting {year}")
 
-        # original resolution
-        for varvar in inpt.extr[inpt.var]['comps'] + [inpt.extr[inpt.var]['ref_x']]:
-            data = inpt.extr[inpt.var][varvar]['data'][inpt.extr[inpt.var][varvar]['data'].index.year == year]
-            ax[yy].plot(data, color=inpt.var_dict[varvar]['col_ori'], **kwargs_ori)
+        # Boolean mask for original and resampled data for this year
+        for varname in plot_vars:
+            # Original data for the year
+            data_ori = var_data[varname]['data']
+            mask_ori = data_ori.index.year == year
+            if mask_ori.any():
+                ax[i].plot(data_ori.loc[mask_ori],
+                           color=inpt.var_dict[varname]['col_ori'], **kwargs_ori)
 
-        # resampled resolution
-        for varvar in inpt.extr[inpt.var]['comps'] + [inpt.extr[inpt.var]['ref_x']]:
-            data = inpt.extr[inpt.var][varvar]['data_res'][inpt.extr[inpt.var][varvar]['data_res'].index.year == year]
-            ax[yy].plot(data, color=inpt.var_dict[varvar]['col'], label=inpt.var_dict[varvar]['label'], **kwargs)
+            # Resampled data for the year
+            data_res = var_data[varname]['data_res']
+            mask_res = data_res.index.year == year
+            if mask_res.any():
+                ax[i].plot(data_res.loc[mask_res], color=inpt.var_dict[varname]['col'],
+                           label=inpt.var_dict[varname]['label'], **kwargs_res)
 
+        # Plot vertical lines for 'alb' variable during specific date ranges
         if inpt.var == 'alb':
-            range1 = pd.date_range(dt.datetime(year, 1, 1), dt.datetime(year, 2, 15), freq=inpt.tres)
-            range2 = pd.date_range(dt.datetime(year, 11, 1), dt.datetime(year, 12, 31), freq=inpt.tres)
-            ax[yy].vlines(range1.values, 0, 1, color='grey', alpha=0.3)
-            ax[yy].vlines(range2.values, 0, 1, color='grey', alpha=0.3)
+            freq = inpt.tres
+            # Define date ranges
+            range1 = pd.date_range(start=pd.Timestamp(
+                year, 1, 1), end=pd.Timestamp(year, 2, 15), freq=freq)
+            range2 = pd.date_range(start=pd.Timestamp(
+                year, 11, 1), end=pd.Timestamp(year, 12, 31), freq=freq)
+            ax[i].vlines(range1.values, 0, 1, color='grey', alpha=0.3)
+            ax[i].vlines(range2.values, 0, 1, color='grey', alpha=0.3)
 
-        format_ts(ax, year, yy)
+        # Format the subplot axes (assuming this function is defined elsewhere)
+        format_ts(ax[i], year, i)
 
     plt.xlabel('Time')
     plt.legend(ncol=2)
-    plt.savefig(
-            os.path.join(inpt.basefol_out, inpt.tres, f"{inpt.tres}_{period_label}_{inpt.var}.png"),
-            bbox_inches='tight')
-    plt.close('all')
+    save_path = os.path.join(inpt.basefol_out, inpt.tres,
+                             f"{inpt.tres}_{period_label}_{inpt.var}.png")
+    plt.savefig(save_path, bbox_inches='tight')
+    plt.close(fig)
 
 
 def plot_residuals(period_label):
     """
-    Plots the residuals of data over specified years, creating one subplot per year. The function processes
-    input data for a given variable, compares it against a reference, and applies specific formatting
-    based on the variable's type. Visual elements such as trend lines, markers, and vertical lines are
-    added to the plots to highlight residual patterns and seasonal ranges.
+    Plots residuals for each year in the dataset, comparing components against the reference data.
+    Adds visual guides such as zero lines and seasonal vertical ranges for specific variables.
 
     :param period_label: Label identifying the specific period for the residual plots
     :type period_label: str
@@ -101,289 +119,313 @@ def plot_residuals(period_label):
     """
     print('RESIDUALS')
     plt.ioff()
-    fig, ax = plt.subplots(len(inpt.years), 1, figsize=(12, 17), dpi=inpt.dpi)
+    n_years = len(inpt.years)
+    fig, ax = plt.subplots(n_years, 1, figsize=(12, 17), dpi=inpt.dpi)
     ax = np.atleast_1d(ax)
     fig.suptitle(f"residuals {inpt.var.upper()} all {inpt.tres}", fontweight='bold')
-    kwargs = {'lw': 1, 'marker': '.', 'ms': 0}
-    x = inpt.extr[inpt.var][inpt.extr[inpt.var]['ref_x']]['data_res']
 
-    for [yy, year] in enumerate(inpt.years):
+    plot_kwargs = {'lw': 1, 'marker': '.', 'ms': 0}
+
+    var_data = inpt.extr[inpt.var]
+    comps = var_data['comps']
+    ref_x = var_data['ref_x']
+    ref_data_res = var_data[ref_x]['data_res']
+
+    for i, year in enumerate(inpt.years):
         print(f"plotting {year}")
 
-        daterange = pd.date_range(dt.datetime(year, 1, 1), dt.datetime(year, 12, 31))
-        ax[yy].plot(daterange, np.repeat(0, len(daterange)), color='black', lw=2, ls='--')
+        # Plot horizontal zero line for residual reference
+        daterange = pd.date_range(start=pd.Timestamp(year, 1, 1), end=pd.Timestamp(year, 12, 31))
+        ax[i].plot(daterange, np.zeros(len(daterange)), color='black', lw=2, ls='--')
 
-        for varvar in inpt.extr[inpt.var]['comps']:
-            data = inpt.extr[inpt.var][varvar]['data_res'][inpt.extr[inpt.var][varvar]['data_res'].index.year == year]
-            ax[yy].plot(
-                    data - x[x.index.year == year], color=inpt.var_dict[varvar]['col'],
-                    label=inpt.var_dict[varvar]['label'], **kwargs)
+        # Plot residuals (component - reference) for the year
+        for comp_var in comps:
+            comp_data_res = var_data[comp_var]['data_res']
+            mask_comp = comp_data_res.index.year == year
+            mask_ref = ref_data_res.index.year == year
+            if mask_comp.any() and mask_ref.any():
+                residuals = comp_data_res.loc[mask_comp] - ref_data_res.loc[mask_ref]
+                ax[i].plot(residuals, color=inpt.var_dict[comp_var]['col'],
+                           label=inpt.var_dict[comp_var]['label'], **plot_kwargs)
 
+        # Add seasonal vertical lines for 'alb' variable
         if inpt.var == 'alb':
-            range1 = pd.date_range(dt.datetime(year, 1, 1), dt.datetime(year, 2, 15), freq=inpt.tres)
-            range2 = pd.date_range(dt.datetime(year, 11, 1), dt.datetime(year, 12, 31), freq=inpt.tres)
-            ax[yy].vlines(range1.values, -0.5, 0.5, color='grey', alpha=0.3)
-            ax[yy].vlines(range2.values, -0.5, 0.5, color='grey', alpha=0.3)
+            freq = inpt.tres
+            range1 = pd.date_range(start=pd.Timestamp(year, 1, 1), end=pd.Timestamp(year, 2, 15), freq=freq)
+            range2 = pd.date_range(start=pd.Timestamp(year, 11, 1), end=pd.Timestamp(year, 12, 31), freq=freq)
+            ax[i].vlines(range1.values, -0.5, 0.5, color='grey', alpha=0.3)
+            ax[i].vlines(range2.values, -0.5, 0.5, color='grey', alpha=0.3)
 
-        format_ts(ax, year, yy, residuals=True)
+        # Format axis (assuming format_ts accepts residuals flag)
+        format_ts(ax[i], year, i, residuals=True)
 
     plt.xlabel('Time')
     plt.legend()
-    plt.savefig(
-            os.path.join(inpt.basefol_out, inpt.tres, f"{inpt.tres}_{period_label}_residuals_{inpt.var}.png"),
-            bbox_inches='tight')
-    plt.close('all')
+    save_path = os.path.join(inpt.basefol_out, inpt.tres, f"{inpt.tres}_{period_label}_residuals_{inpt.var}.png")
+    plt.savefig(save_path, bbox_inches='tight')
+    plt.close(fig)
+
 
 
 def plot_scatter(period_label):
     """
-    Generates a 2x2 grid of scatter plots based on input data for the specified period label.
+    Generates a 2x2 grid of scatter plots or 2D histograms for the specified period label.
 
-    The function creates scatter plots or 2D histograms depending on the specified
-    season or whether all data is included. Each subplot corresponds to a different
-    component of the dataset. The function applies data filtering, calculates
-    polynomial fits where applicable, and formats the plots before saving the
-    resulting figure to the file system.
+    Each subplot corresponds to a component of the dataset, filtered by season or 'all'.
+    Polynomial fits are calculated and plots formatted before saving.
 
-    :param period_label: A key that identifies the specific time period (e.g., a season)
-        from the input dataset to process and plot. It corresponds to a label used to
-        filter data and configure plot settings.
+    :param period_label: Identifier for the time period (e.g., season) used to filter and label plots.
     :type period_label: str
     :return: None
     """
     print(f"SCATTERPLOTS {period_label}")
     plt.ioff()
     fig, ax = plt.subplots(2, 2, figsize=(12, 12), dpi=inpt.dpi)
-    ax = np.atleast_1d(ax)
-    fig.suptitle(f"{inpt.var.upper()} {inpt.seass[period_label]['name']} {inpt.tres}", fontweight='bold')
     axs = ax.ravel()
 
-    x = inpt.extr[inpt.var][inpt.extr[inpt.var]['ref_x']]['data_res']
+    # Title with variable and season name
+    fig.suptitle(f"{inpt.var.upper()} {inpt.seass[period_label]['name']} {inpt.tres}", fontweight='bold')
 
-    frame_and_axis_removal(axs, len(inpt.extr[inpt.var]['comps']))
-    for i, comp in enumerate(inpt.extr[inpt.var]['comps']):
-        y = inpt.extr[inpt.var][comp]['data_res']
+    var_data = inpt.extr[inpt.var]
+    comps = var_data['comps']
+    ref_x = var_data['ref_x']
+    x = var_data[ref_x]['data_res']
+
+    # Remove unused frames based on number of components
+    frame_and_axis_removal(axs, len(comps))
+
+    # Create complete time index across all years
+    time_range = pd.date_range(
+        start=pd.Timestamp(inpt.years[0], 1, 1, 0, 0),
+        end=pd.Timestamp(inpt.years[-1], 12, 31, 23, 59),
+        freq=inpt.tres
+    )
+
+    # Reindex reference data once outside the loop
+    x_all = x.reindex(time_range).astype(float)  # ensures NaNs for missing
+    season_months = inpt.seass[period_label]['months']
+    x_season = x_all.loc[x_all.index.month.isin(season_months)]
+
+    for i, comp in enumerate(comps):
+        y = var_data[comp]['data_res']
+        y_all = y.reindex(time_range).astype(float)
+        y_season = y_all.loc[y_all.index.month.isin(season_months)]
+
+        # Boolean index where neither x nor y are NaN for the variable
+        valid_idx = ~(x_season[inpt.var].isna() | y_season[inpt.var].isna())
 
         print(f"plotting scatter {inpt.var_dict['t']['label']}-{inpt.var_dict[comp]['label']}")
-        time_list = pd.date_range(
-                start=dt.datetime(inpt.years[0], 1, 1, 0, 0), end=dt.datetime(inpt.years[-1], 12, 31, 23, 59),
-                freq=inpt.tres)
-
-        x_all = x.reindex(time_list).fillna(np.nan)
-        x_s = x_all.loc[(x_all.index.month.isin(inpt.seass[period_label]['months']))]
-        y_all = y.reindex(time_list).fillna(np.nan)
-        y_s = y_all.loc[(y_all.index.month.isin(inpt.seass[period_label]['months']))]
-        idx = ~(np.isnan(x_s[inpt.var]) | np.isnan(y_s[inpt.var]))
 
         if inpt.seass[period_label]['name'] != 'all':
             axs[i].scatter(
-                    x_s[inpt.var][idx], y_s[inpt.var][idx], s=5, color=inpt.seass[period_label]['col'],
-                    facecolor='none', alpha=0.5, label=period_label)
+                x_season[inpt.var][valid_idx], y_season[inpt.var][valid_idx],
+                s=5, facecolors='none', edgecolors=inpt.seass[period_label]['col'],
+                alpha=0.5, label=period_label
+            )
         else:
-            bin_size = (inpt.extr[inpt.var]['max'] - inpt.extr[inpt.var]['min']) / inpt.extr[inpt.var]['bin_nr']
-            h = axs[i].hist2d(
-                    x_s[inpt.var][idx], y_s[inpt.var][idx], bins=[np.linspace(
-                            inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'], inpt.extr[inpt.var]['bin_nr']),
-                        np.linspace(
-                                inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'], inpt.extr[inpt.var]['bin_nr'])],
-                    cmap=plt.cm.jet, cmin=1, vmin=1)
-            axs[i].text(
-                    0.10, 0.90, f"bin_size={bin_size}",
-                    transform=axs[i].transAxes)  # fig.colorbar(h[3], ax=axs[i], extend='both')
+            bin_edges = np.linspace(var_data['min'], var_data['max'], var_data['bin_nr'])
+            bin_size = (var_data['max'] - var_data['min']) / var_data['bin_nr']
 
-        if len(x_s[idx]) < 2 | len(y_s[idx]) < 2:
-            print('ERROR, ERROR, NO DATA ENOUGH FOR PROPER FIT (i.e. only 1 point available)')
+            h = axs[i].hist2d(
+                x_season[inpt.var][valid_idx], y_season[inpt.var][valid_idx],
+                bins=[bin_edges, bin_edges], cmap=plt.cm.jet, cmin=1, vmin=1
+            )
+            axs[i].text(0.10, 0.90, f"bin_size={bin_size:.3f}", transform=axs[i].transAxes)
+
+        # Check for enough data points to fit
+        if valid_idx.sum() < 2:
+            print('ERROR: Not enough data points for proper fit (need at least 2).')
         else:
-            calc_draw_fit(axs, i, x_s[idx], y_s[idx], period_label)
+            calc_draw_fit(axs, i, x_season[inpt.var][valid_idx], y_season[inpt.var][valid_idx], period_label)
 
         format_scatterplot(axs, comp, i)
 
-    plt.savefig(
-            os.path.join(
-                    inpt.basefol_out, inpt.tres,
-                    f"{inpt.tres}_scatter_{inpt.seass[period_label]['name']}_{inpt.var}.png"), bbox_inches='tight')
-    plt.close('all')
+    save_path = os.path.join(
+        inpt.basefol_out, inpt.tres,
+        f"{inpt.tres}_scatter_{inpt.seass[period_label]['name']}_{inpt.var}.png"
+    )
+    plt.savefig(save_path, bbox_inches='tight')
+    plt.close(fig)
+
 
 
 def plot_scatter_cum():
     """
-    Plots cumulative scatter plots for given data, with specific subplots for each comparison,
-    and includes features like fitting a line, customizing plot appearance, and saving the
-    generated figure. The function processes multiple datasets for specific seasonal or temporal
-    periods, reindexes data for consistency, and handles missing values appropriately. It also
-    uses provided external inputs for settings and configurations required during plotting.
+    Plots cumulative scatter plots for each season (excluding 'all'), comparing components
+    against reference data with fits, customized appearance, and saves the resulting figure.
 
-    :raises ValueError: Raised if there is insufficient data for proper fitting (less than two points).
+    :raises ValueError: If insufficient data points are available for fitting.
 
-    :params None: This function takes no parameters, relying instead on settings and data
-    within the `inpt` global object and other supporting configurations.
-
-    :return: None. The function directly creates and saves scatter plot figures for the
-    given inputs.
+    :return: None
     """
     plt.ioff()
     fig, ax = plt.subplots(2, 2, figsize=(12, 12), dpi=inpt.dpi)
-    ax = np.atleast_1d(ax)
+    axs = ax.ravel()
     fig.suptitle(f"{inpt.var.upper()} cumulative plot", fontweight='bold')
 
-    seass_new = cp.copy(inpt.seass)
-    seass_new.pop('all')
+    seass_new = {k: v for k, v in inpt.seass.items() if k != 'all'}
 
-    for period_label in seass_new:
+    var_data = inpt.extr[inpt.var]
+    comps = var_data['comps']
+    ref_x = var_data['ref_x']
+    x = var_data[ref_x]['data_res']
+
+    # Prepare full time range for reindexing once
+    time_range = pd.date_range(
+        start=pd.Timestamp(inpt.years[0], 1, 1, 0, 0),
+        end=pd.Timestamp(inpt.years[-1], 12, 31, 23, 59),
+        freq=inpt.tres
+    )
+    x_all = x.reindex(time_range).astype(float)
+
+    frame_and_axis_removal(axs, len(comps))
+
+    for period_label, season in seass_new.items():
         print(f"SCATTERPLOTS CUMULATIVE {period_label}")
 
-        axs = ax.ravel()
-        x = inpt.extr[inpt.var][inpt.extr[inpt.var]['ref_x']]['data_res']
-        frame_and_axis_removal(axs, len(inpt.extr[inpt.var]['comps']))
-        for i, comp in enumerate(inpt.extr[inpt.var]['comps']):
-            y = inpt.extr[inpt.var][comp]['data_res']
-            print(
-                    f"plotting scatter {inpt.var_dict[inpt.extr[inpt.var]['ref_x']]['label']}-{inpt.var_dict[comp]['label']}")
-            time_list = pd.date_range(
-                    start=dt.datetime(inpt.years[0], 1, 1, 0, 0), end=dt.datetime(inpt.years[-1], 12, 31, 23, 59),
-                    freq=inpt.tres)
-            x_all = x.reindex(time_list).fillna(np.nan)
-            x_s = x_all.loc[(x_all.index.month.isin(seass_new[period_label]['months']))]
-            y_all = y.reindex(time_list).fillna(np.nan)
-            y_s = y_all.loc[(y_all.index.month.isin(seass_new[period_label]['months']))]
-            idx = ~(np.isnan(x_s[inpt.var]) | np.isnan(y_s[inpt.var]))
+        season_months = season['months']
+        x_season = x_all.loc[x_all.index.month.isin(season_months)]
+
+        for i, comp in enumerate(comps):
+            y = var_data[comp]['data_res']
+            y_all = y.reindex(time_range).astype(float)
+            y_season = y_all.loc[y_all.index.month.isin(season_months)]
+
+            valid_idx = ~(x_season[inpt.var].isna() | y_season[inpt.var].isna())
 
             axs[i].scatter(
-                    x_s[inpt.var][idx], y_s[inpt.var][idx], s=5, color=seass_new[period_label]['col'],
-                    edgecolors='none', alpha=0.5, label=period_label)
+                x_season[inpt.var][valid_idx], y_season[inpt.var][valid_idx],
+                s=5, color=season['col'], edgecolors='none', alpha=0.5, label=period_label
+            )
 
-            if (len(x_s[idx]) < 2) | (len(y_s[idx]) < 2):
-                print('ERROR, ERROR, NO DATA ENOUGH FOR PROPER FIT (i.e. only 1 point available)')
+            if valid_idx.sum() < 2:
+                print('ERROR: Not enough data points for proper fit (need at least 2).')
+                # Optionally raise ValueError here if needed
+                # raise ValueError("Insufficient data for fitting.")
             else:
-                calc_draw_fit(axs, i, x_s[idx], y_s[idx], period_label, print_stats=False)
+                calc_draw_fit(axs, i, x_season[inpt.var][valid_idx], y_season[inpt.var][valid_idx],
+                              period_label, print_stats=False)
 
             format_scatterplot(axs, comp, i)
             axs[i].legend()
 
-    plt.savefig(
-            os.path.join(inpt.basefol_out, inpt.tres, f"{inpt.tres}_scatter_cum_{inpt.var}.png"), bbox_inches='tight')
-    plt.close('all')
+    save_path = os.path.join(inpt.basefol_out, inpt.tres, f"{inpt.tres}_scatter_cum_{inpt.var}.png")
+    plt.savefig(save_path, bbox_inches='tight')
+    plt.close(fig)
+
 
 
 def calc_draw_fit(axs, i, xxx, yyy, per_lab, print_stats=True):
     """
-    Calculates and visualizes a linear fit between two datasets, annotating the plot with statistical
-    information.
+    Performs linear regression on data (xxx, yyy), plots the fit line and 1:1 line,
+    and optionally annotates stats (R, N, MBE, RMSE) on subplot axs[i].
 
-    This function performs a linear regression on the input data, generates a fitted line, and plots
-    it along with a 1:1 reference line. Optionally, it calculates and overlays statistical metrics
-    such as correlation coefficient, mean bias error (MBE), and root mean square error (RMSE) onto the
-    specified subplot axes.
-
-    :param axs: Matplotlib axes array to display the plot.
-    :param i: Index to select a specific subplot from the axes array.
-    :param xxx: Input data (x-coordinates) for the regression.
-    :param yyy: Input data (y-coordinates) for the regression.
-    :param per_lab: Key to extract specific plot attributes from a configuration dictionary.
-    :param print_stats: Flag indicating whether to display statistical metrics on the plot.
-    :return: None
+    :param axs: Matplotlib axes array.
+    :param i: Index of subplot to plot on.
+    :param xxx: x-data (pd.Series or np.array).
+    :param yyy: y-data (pd.Series or np.array).
+    :param per_lab: Key for color in inpt.seass.
+    :param print_stats: Whether to display stats text.
     """
     xx = xxx.values.flatten()
     yy = yyy.values.flatten()
-    b, a = np.polyfit(xx, yy, deg=1)
-    xseq = np.linspace(inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'], num=1000)
-    axs[i].plot(xseq, a + b * xseq, color=inpt.seass[per_lab]['col'], lw=2.5, ls='--', alpha=0.5)
-    axs[i].plot(
-            [inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max']],
-            [inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max']], color='black', lw=1.5, ls='-')
+    b, a = np.polyfit(xx, yy, 1)  # slope, intercept
+    var_min = inpt.extr[inpt.var]['min']
+    var_max = inpt.extr[inpt.var]['max']
+    xseq = np.linspace(var_min, var_max, 1000)
+
+    axs[i].plot(xseq, a + b * xseq,
+                color=inpt.seass[per_lab]['col'],
+                lw=2.5, ls='--', alpha=0.5)
+    axs[i].plot([var_min, var_max], [var_min, var_max],
+                color='black', lw=1.5, ls='-')
+
     if print_stats:
-        corcoef = np.corrcoef(xx, yy)
+        corcoef = np.corrcoef(xx, yy)[0, 1]
         N = len(yy)
         rmse = np.sqrt(np.nanmean((yy - xx) ** 2))
         mbe = np.nanmean(yy - xx)
-        axs[i].text(
-                0.50, 0.30, f"R={corcoef[0, 1]:.2f} N={N} \n y={b:+.2f}x{a:+.2f} \n MBE={mbe:.2f} RMSE={rmse:.2f}",
-                transform=axs[i].transAxes, fontsize=14, color='black', ha='left', va='center',
-                bbox=dict(facecolor='white', edgecolor='white'))
+        stats_text = (f"R={corcoef:.2f} N={N}\n"
+                      f"y={b:+.2f}x{a:+.2f}\n"
+                      f"MBE={mbe:.2f} RMSE={rmse:.2f}")
+        axs[i].text(0.50, 0.30, stats_text,
+                    transform=axs[i].transAxes,
+                    fontsize=14, color='black',
+                    ha='left', va='center',
+                    bbox=dict(facecolor='white', edgecolor='white'))
 
 
 def format_scatterplot(axs, comp, i):
     """
-    Formats a scatterplot by setting the title, axis labels, axis limits, and adding relevant
-    text annotations. This function updates the provided axes object to display the data
-    representation in a visually coherent manner based on a given component and index.
+    Sets title, labels, limits, and annotations for a scatterplot axs[i] of component `comp`.
 
-    :param axs: A list or array-like object of Matplotlib Axes to be formatted.
-    :type axs: list or matplotlib.axes.Axes
-    :param comp: A component key used to retrieve values from `inpt.var_dict` for
-        labeling and scaling the scatterplot.
-    :type comp: str
-    :param i: Index of the specific Axes object within `axs` to format.
-    :type i: int
-    :return: None
+    :param axs: Array-like of matplotlib Axes.
+    :param comp: Component key for labeling.
+    :param i: Index of subplot.
     """
-    axs[i].set_title(inpt.var_dict[comp]['label'])
-    axs[i].set_xlabel(inpt.var_dict[inpt.extr[inpt.var]['ref_x']]['label'])
-    axs[i].set_ylabel(inpt.var_dict[comp]['label'])
-    axs[i].set_xlim(inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'])
-    axs[i].set_ylim(inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'])
-    axs[i].text(0.01, 0.95, inpt.letters[i] + ')', transform=axs[i].transAxes)
-    axs[i].plot(
-            [inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max']],
-            [inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max']], color='black', lw=1.5, ls='-')
+    var = inpt.var
+    var_dict = inpt.var_dict
+    var_min = inpt.extr[var]['min']
+    var_max = inpt.extr[var]['max']
+    ref_x = inpt.extr[var]['ref_x']
+
+    axs[i].set_title(var_dict[comp]['label'])
+    axs[i].set_xlabel(var_dict[ref_x]['label'])
+    axs[i].set_ylabel(var_dict[comp]['label'])
+    axs[i].set_xlim(var_min, var_max)
+    axs[i].set_ylim(var_min, var_max)
+    axs[i].text(0.01, 0.95, inpt.letters[i] + ')',
+                transform=axs[i].transAxes)
+    axs[i].plot([var_min, var_max], [var_min, var_max],
+                color='black', lw=1.5, ls='-')
 
 
 def format_ts(ax, year, yy, residuals=False):
     """
-    Formats a matplotlib Axes object for time series data visualization. This function sets
-    the x-axis formatter, adjusts axis limits, and includes custom labels and text for the
-    specified subplot. Optionally, it adjusts vertical axis limits based on residuals.
+    Formats a time series subplot ax[yy] for a given year, setting x-axis limits, labels,
+    and optionally y-axis limits for residuals.
 
-    :param ax: A dictionary or similar object containing Axes objects of the plot.
-    :param year: The year to set x-axis limits and include in the text label.
-    :type year: int
-    :param yy: The index or key indicating which subplot to format within the `ax` object.
-    :type yy: Any
-    :param residuals: Whether to use vertical axis limits for residual data. Defaults to False.
-    :type residuals: bool
-    :return: None
+    :param ax: Axes array/dict.
+    :param year: Year to plot.
+    :param yy: Index/key of subplot.
+    :param residuals: If True, use residuals y-limits.
     """
     ax[yy].xaxis.set_major_formatter(inpt.myFmt)
     ax[yy].set_xlim(dt.datetime(year, 1, 1), dt.datetime(year, 12, 31))
-
-    ax[yy].text(0.5, 0.90, year, transform=ax[yy].transAxes, horizontalalignment='center')
-    ax[yy].text(0.01, 0.95, inpt.letters[yy] + ')', transform=ax[yy].transAxes)
+    ax[yy].text(0.5, 0.90, str(year),
+                transform=ax[yy].transAxes,
+                horizontalalignment='center')
+    ax[yy].text(0.01, 0.95, inpt.letters[yy] + ')',
+                transform=ax[yy].transAxes)
 
     if residuals:
-        ax[yy].set_ylim(inpt.extr[inpt.var]['res_min'], inpt.extr[inpt.var]['res_max'])
+        ax[yy].set_ylim(inpt.extr[inpt.var]['res_min'],
+                        inpt.extr[inpt.var]['res_max'])
     else:
-        ax[yy].set_ylim(inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'])
-    return
+        ax[yy].set_ylim(inpt.extr[inpt.var]['min'],
+                        inpt.extr[inpt.var]['max'])
 
 
 def frame_and_axis_removal(ax, len_comps):
     """
-    Removes frame and axis elements from the specified subplots in a given matplotlib `Axes` object based on the
-    length of components provided. The function disables both the rectangular frame and the ticks/numbers for
-    subplots according to the specified number of components.
+    Disables frame and axes for unused subplots based on the number of components.
 
-    :param ax: The matplotlib Axes object that contains the subplots to adjust
-    :type ax: matplotlib.axes._axes.Axes
-    :param len_comps: The number of components determining which subplots' frames and axes are removed
-    :type len_comps: int
-    :return: The function does not return any value. It modifies the `Axes` object in place.
-    :rtype: None
+    :param ax: Array-like of matplotlib Axes.
+    :param len_comps: Number of active components.
     """
-    if len_comps >= 4:
-        axis_removal_list = []
-    elif len_comps == 3:
-        axis_removal_list = [3]
-    elif len_comps == 2:
-        axis_removal_list = [2, 3]
-    elif len_comps == 1:
-        axis_removal_list = [1, 2, 3]
+    # Define which axes to disable based on len_comps
+    disable_indices = {
+        1: [1, 2, 3],
+        2: [2, 3],
+        3: [3],
+        4: []
+    }.get(len_comps, [])
 
-    for a in axis_removal_list:
-        ax[a].axis('off')  # this rows the rectangular frame
-        ax[a].get_xaxis().set_visible(False)  # this removes the ticks and numbers for x axis
-        ax[a].get_yaxis().set_visible(False)  # this removes the ticks and numbers for y axis
+    for idx in disable_indices:
+        ax[idx].axis('off')
+        ax[idx].get_xaxis().set_visible(False)
+        ax[idx].get_yaxis().set_visible(False)
 
-    return
 
 # def plot_ba(period_label):
 #     """

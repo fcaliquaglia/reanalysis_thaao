@@ -74,7 +74,7 @@ def read_rean(vr, dataset_type):
             ds["longitude"] = ds["longitude"] % 360  # Normalize to 0–360
 
         filenam_grid = f"{dataset_type}_grid_index_for_THAAO_loc.txt"
-        if not os.path.join(os.getcwd(),'txt_locations',filenam_grid):
+        if not os.path.join(os.getcwd(), 'txt_locations', filenam_grid):
             print(
                 f"File with reference grid point for {dataset_type} NOT found. Exiting \n{filenam_grid}")
             sys.exit()
@@ -108,24 +108,24 @@ def read_rean(vr, dataset_type):
             da_small = da.drop_vars(
                 ['step', 'surface', 'valid_time'], errors='ignore')
             df = da_small.to_dataframe().reset_index()
-            # df.index = pd.DatetimeIndex(df['time'])
-            # df.drop(columns=['time'], inplace = True)
+            df.index = pd.to_datetime(df.get('time', df.get('valid_time')))
+            df.drop(columns=[col for col in ['time', 'valid_time']
+                    if col in df.columns], inplace=True)
             df['latitude'] = lat_vals[i]
             df['longitude'] = lon_vals[i]
             df[var_name] = da.values
             data_list.append(df)
 
         # Combine all into one DataFrame
-        data_all = pd.concat(data_list, ignore_index=True)
+        data_all = pd.concat(data_list)
 
     # Replace NaNs
-    #TO DO implementare il salvataggio dei file txt, non troppo grandi già filtrati, file Monica
+    # TO DO implementare il salvataggio dei file txt, non troppo grandi già filtrati, file Monica
     nan_val = inpt.var_dict[dataset_type]["nanval"]
     data_all[data_all == nan_val] = np.nan
     data_all = data_all[inpt.extr[vr][dataset_type]["var_name"]].to_frame()
     inpt.extr[vr][dataset_type]["data"] = data_all
     inpt.extr[vr][dataset_type]["data"].columns = pd.Index([vr])
-
 
 
 def read_thaao_weather(vr):
@@ -826,42 +826,25 @@ def calc_rad_acc_era5_land(vr):
 
 
 def read():
-    """
-    Reads data based on the variable type given in the `inpt` object and determines
-    the appropriate function to be called. Different types of data such as
-    "alb", "cbh", "msl_pres", "lwp", and others are supported, with each type
-    corresponding to a specified reading function. The method selects and
-    executes the specific reader function based on the value assigned to
-    `inpt.var`.
-
-    :return: The result of the specific data reading operation. The type of return
-       value depends on the reader function executed.
-    """
-    if inpt.var == "alb":
-        return read_alb()
-    if inpt.var == "cbh":
-        return read_cbh()
-    if inpt.var == "msl_pres":
-        return read_msl_pres()
-    if inpt.var == "lwp":
-        return read_lwp()
-    if inpt.var == "lw_down":
-        return read_lw_down()
-    if inpt.var == "lw_up":
-        return read_lw_up()
-    if inpt.var == "precip":
-        return read_precip()
-    if inpt.var == "rh":
-        return read_rh()
-    if inpt.var == "surf_pres":
-        return read_surf_pres()
-    if inpt.var == "sw_down":
-        return read_sw_down()
-    if inpt.var == "sw_up":
-        return read_sw_up()
-    if inpt.var == "tcc":
-        return read_tcc()
-    if inpt.var == "temp":
-        return read_temp()
-    if inpt.var in ["winds", "windd"]:
-        return read_wind()
+    readers = {
+        "alb": read_alb,
+        "cbh": read_cbh,
+        "msl_pres": read_msl_pres,
+        "lwp": read_lwp,
+        "lw_down": read_lw_down,
+        "lw_up": read_lw_up,
+        "precip": read_precip,
+        "rh": read_rh,
+        "surf_pres": read_surf_pres,
+        "sw_down": read_sw_down,
+        "sw_up": read_sw_up,
+        "tcc": read_tcc,
+        "temp": read_temp,
+        "winds": read_wind,
+        "windd": read_wind,
+    }
+    reader_func = readers.get(inpt.var)
+    if reader_func is None:
+        raise ValueError(
+            f"No reader function defined for variable '{inpt.var}'")
+    return reader_func()
