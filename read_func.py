@@ -118,20 +118,20 @@ def read_rean(vr, dataset_type):
 
     # First process missing files
     for year in inpt.years:
-        output_file = f"{inpt.extr[vr][dataset_type]['fn']}{loc}_{year}.txt"
+        output_file = f"{inpt.extr[vr][dataset_type]['fn']}{loc}_{year}.parquet"
         output_path = os.path.join(
             inpt.basefol[dataset_type]['processed'], output_file)
-
         if not os.path.exists(output_path):
             process_rean(vr, dataset_type, year, loc)
 
     # Then read all processed files into a single DataFrame
-    data_all = pd.concat([
-        pd.read_parquet(os.path.join(
-            inpt.basefol[dataset_type]['processed'],
-            f"{inpt.extr[vr][dataset_type]['fn']}{loc}_{year}.parquet"
-        ))
-        for year in inpt.years])
+    data_all = pd.DataFrame()
+    for year in inpt.years:
+        input_file = f"{inpt.extr[vr][dataset_type]['fn']}{loc}_{year}.parquet"
+        input_path = os.path.join(
+            inpt.basefol[dataset_type]['processed'], input_file)
+        data_tmp = pd.read_parquet(input_path)
+        data_all = pd.concat([data_all, data_tmp])
 
     inpt.extr[vr][dataset_type]["data"] = data_all
 
