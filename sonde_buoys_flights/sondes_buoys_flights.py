@@ -18,9 +18,9 @@ plot_flags = dict(
     ground_sites=True,
     buoys=True,
     dropsondes=True,
-    p3_tracks=True,
-    g3_tracks=True,
-    radiosondes=True
+    p3_tracks=False,
+    g3_tracks=False,
+    radiosondes=False
 )
 
 basefol = r"H:\Shared drives\Dati_THAAO"
