@@ -409,29 +409,26 @@ def read_surf_pres():
     """
     # CARRA
     read_rean(inpt.var, "c")
-    if not inpt.extr[inpt.var]["c"]["data"].empty:
-        inpt.extr[inpt.var]["c"]["data"][inpt.var] = inpt.extr[inpt.var]["c"]["data"][inpt.var] / 100.
-        inpt.extr[inpt.var]["c"]["data"][inpt.var][inpt.extr[inpt.var]
+    inpt.extr[inpt.var]["c"]["data"][inpt.var] = inpt.extr[inpt.var]["c"]["data"][inpt.var] / 100.
+    inpt.extr[inpt.var]["c"]["data"][inpt.var][inpt.extr[inpt.var]
                                                    ["c"]["data"][inpt.var] <= 900] = np.nan
 
     # ERA5
     read_rean(inpt.var, "e")
-    if not inpt.extr[inpt.var]["e"]["data"].empty:
-        inpt.extr[inpt.var]["e"]["data"][inpt.var] = inpt.extr[inpt.var]["e"]["data"][inpt.var] / 100.
-        inpt.extr[inpt.var]["e"]["data"][inpt.var][inpt.extr[inpt.var]
+    inpt.extr[inpt.var]["e"]["data"][inpt.var] = inpt.extr[inpt.var]["e"]["data"][inpt.var] / 100.
+    inpt.extr[inpt.var]["e"]["data"][inpt.var][inpt.extr[inpt.var]
                                                    ["e"]["data"][inpt.var] <= 900] = np.nan
 
     # THAAO
     if inpt.datasets['THAAO']['switch']:
         rd_ft.read_thaao_weather(inpt.var)
-        if not inpt.extr[inpt.var]["t"]["data"].empty:
-            inpt.extr[inpt.var]["t"]["data"][inpt.var][inpt.extr[inpt.var]
-                                                       ["t"]["data"][inpt.var] <= 900] = np.nan
-            inpt.extr[inpt.var]["t"]["data"][inpt.var].loc["2021-10-11 00:00:00":"2021-10-19 00:00:00"] = np.nan
-            inpt.extr[inpt.var]["t"]["data"][inpt.var].loc["2024-4-26 00:00:00":"2024-5-4 00:00:00"] = np.nan
-    
-            # THAAO2
-            rd_ft.read_thaao_aws_ecapac(inpt.var)
+        inpt.extr[inpt.var]["t"]["data"][inpt.var][inpt.extr[inpt.var]
+                                                   ["t"]["data"][inpt.var] <= 900] = np.nan
+        inpt.extr[inpt.var]["t"]["data"][inpt.var].loc["2021-10-11 00:00:00":"2021-10-19 00:00:00"] = np.nan
+        inpt.extr[inpt.var]["t"]["data"][inpt.var].loc["2024-4-26 00:00:00":"2024-5-4 00:00:00"] = np.nan
+
+        # THAAO2
+        rd_ft.read_thaao_aws_ecapac(inpt.var)
 
     return
 
