@@ -4,12 +4,12 @@ import matplotlib.pyplot as plt
 
 # Load ERA5 data
 buoy_era5 = pd.read_parquet(
-    r"H:\Shared drives\Reanalysis\era5\processed\era5_NG_2m_temperature_2024Jprocessed_2024.parquet"
+    r"H:\Shared drives\Reanalysis\era5\processed\era5_NG_2m_temperature_2024Kprocessed_2024.parquet"
 )
 
 # Load buoy data
 buoy_original = pd.read_csv(
-    r"H:\Shared drives\Dati_THAAO\thaao_arcsix\buoys\resource_map_doi_10_18739_A2T14TR46\data\2024Jprocessed.csv",
+    r"H:\Shared drives\Dati_THAAO\thaao_arcsix\buoys\resource_map_doi_10_18739_A2T14TR46\data\2024Kprocessed.csv",
     index_col='time_stamp'
 )
 
