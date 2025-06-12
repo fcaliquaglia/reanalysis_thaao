@@ -42,7 +42,6 @@ def read_rean(vr, dataset_type):
 
     location = next((v['fn'] for k, v in inpt.datasets.items() if v.get('switch')), None)
 
-    
     # First process missing files
     for year in inpt.years:
         output_file = f"{inpt.extr[vr][dataset_type]['fn']}{location}_{year}.parquet"
@@ -372,7 +371,7 @@ def read_sw_up():
 def read_rh():
     """
     Reads and processes relative humidity data from various sources including
-    CARRA, ERA5, ERA5-LAND, and THAAO2-based weather datasets. This function
+    CARRA, ERA5, and THAAO2-based weather datasets. This function
     includes checks for missing data and calculates relative humidity from
     temperature and dew point temperature if necessary.
 
@@ -384,10 +383,10 @@ def read_rh():
     read_rean(inpt.var, "c")
 
     # ERA5
-    read_rean(inpt.var, "e")
-    if inpt.extr[inpt.var]["e"]["data"].empty:
-        read_rean("temp", "e")
-    tls.calc_rh_from_tdp()
+    # read_rean(inpt.var, "e")
+    # if inpt.extr[inpt.var]["e"]["data"].empty:
+    #     read_rean("temp", "e")
+    # tls.calc_rh_from_tdp()
 
     # THAAO2
     if inpt.datasets['THAAO']['switch']:

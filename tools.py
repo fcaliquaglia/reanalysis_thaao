@@ -71,11 +71,11 @@ def process_rean(vr, data_typ, y, loc):
                             for y, x in zip(y_idx, x_idx)])
         lon_vals = np.array([ds['longitude'].values[y, x]
                             for y, x in zip(y_idx, x_idx)])
-        lat_dim, lon_dim, time_dim = 'y', 'x', 'time'
+        lat_dim, lon_dim = 'y', 'x'
     elif data_typ == "e":
         lat_vals = ds["latitude"].isel(latitude=y_idx).values
         lon_vals = ds["longitude"].isel(longitude=x_idx).values
-        lat_dim, lon_dim, time_dim = 'latitude', 'longitude', 'valid_time'
+        lat_dim, lon_dim = 'latitude', 'longitude'
     else:
         raise ValueError(f"Unknown dataset_type: {data_typ}")
 
@@ -94,6 +94,7 @@ def process_rean(vr, data_typ, y, loc):
         da = ds[var_name].isel({lat_dim: y_idx[i], lon_dim: x_idx[i]})
         da_small = da.drop_vars(
             ['step', 'surface', 'expver', 'number'], errors='ignore')
+        time_dim = 'valid_time' if 'valid_time' in da_small.dims else 'time'
         df = da_small.to_dataframe().reset_index().set_index(time_dim)
         df.rename(columns={var_name: vr}, inplace=True)
         data_list.append(df)
