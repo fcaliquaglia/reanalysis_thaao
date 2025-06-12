@@ -72,7 +72,7 @@ thaao_c = 'carra1'
 thaao_e = 'era5_NG'
 thaao_t = 'thaao'
 
-met = ['surf_pres', 'temp', 'rh', 'iwv']
+met = ['rh', 'surf_pres', 'temp', 'rh', 'iwv']
 rad = ['sw_down', 'lw_down', 'sw_up', 'lw_up', 'alb']
 clouds = ['lwp', 'cbh', 'tcc', 'precip']
 extra = ['winds', 'windd']
@@ -215,8 +215,8 @@ extr = {'alb': {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1,
                           'data_res': ''}},
         'rh': {'name': 'rh', 'ref_x': 't', 'min': 0, 'max': 100, 'res_min': -10, 'res_max': 10, 'uom': '[%]',
                'comps': ['c', 'e', 't2'], 'bin_nr': 200,
-               'c': {'fn': '', 'column': np.nan, 'data': '', 'data_res': '', 'var_name': ''},
-               'e': {'fn': '', 'column': np.nan, 'data': '', 'data_res': '', 'var_name': ''},
+               'c': {'fn': f'{thaao_c}_2m_relative_humidity_', 'column': np.nan, 'data': '', 'data_res': '', 'var_name': 'r2'},
+               'e': {'fn': f'{thaao_e}_dewpoint_temperature_', 'column': np.nan, 'data': '', 'data_res': '', 'var_name': ''},
                't': {'fn': 'Meteo_weekly_all', 'column': 'RH_%', 'data': '',
                      'data_res': ''},
                't1': {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},

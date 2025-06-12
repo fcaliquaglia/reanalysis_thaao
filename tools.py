@@ -26,7 +26,6 @@ def calc_rh_from_tdp():
 
     :return: None
     """
-    # TODO not working
 
     # e = pd.concat([inpt.extr[inpt.var]["t"]["data"], e_t], axis=1)
 
