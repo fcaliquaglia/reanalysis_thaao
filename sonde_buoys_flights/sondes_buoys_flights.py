@@ -855,7 +855,7 @@ if __name__ == "__main__":
             usi = ds["reflected"].isel(trajectory=0).values[msk]
             time = ds["time"].isel(trajectory=0).values[msk]
             elem = {"filename": os.path.basename(bf),
-                    "lat": lat, "lon": lon, "temp": temp, "time": time, 
+                    "lat": lat, "lon": lon, "temp": temp, "time": time,
                     "usi": usi, "dsi": dsi,
                     "elev": np.repeat(np.nan, len(time))
                     }

@@ -190,7 +190,6 @@ Excluding nan values. x(t): reference value; y(t): reanalysis or other
 
 - CARRA: ``surface_pressure``
 - ERA-5: ``surface_pressure``
-- ERA5-L: /
 - THAAO (vespa): values in these periods have been excluded: 2021-10-11 --> 2021-10-19 and 2024-4-28 --> 2024-5-4
 - THAAO (aws_ECAPAC):
 
@@ -198,7 +197,6 @@ Excluding nan values. x(t): reference value; y(t): reanalysis or other
 
 - CARRA: ``2m_temperature``
 - ERA-5: ``2m_temperature``
-- ERA5-L: ``2m_temperature``
 - THAAO (vespa):
 - THAAO (aws_ECAPAC):
 
@@ -206,7 +204,6 @@ Excluding nan values. x(t): reference value; y(t): reanalysis or other
 
 - CARRA: ``2m_relative_humidity``
 - ERA-5: ``2m_dewpoint_temperature`` + ``2m_temperature`` (descrivere processo per ottenere rh)
-- ERA5-L: /
 - THAAO (vespa):
 - THAAO (aws_ECAPAC):
 
@@ -215,7 +212,6 @@ Excluding nan values. x(t): reference value; y(t): reanalysis or other
 - CARRA:``10m_wind_direction``
 - ERA-5: ``10m_u_component_of_wind`` + ``10m_v_component_of_wind`` (descrivere processo per ottenere velocità e
   direzione)
-- ERA5-L: /
 - THAAO (vespa):
 - THAAO (aws_ECAPAC):
 
@@ -224,7 +220,6 @@ Excluding nan values. x(t): reference value; y(t): reanalysis or other
 - CARRA: ``10m_wind_speed``
 - ERA-5: ``10m_u_component_of_wind`` + ``10m_v_component_of_wind`` (descrivere processo per ottenere velocità e
   direzione)
-- ERA5-L: /
 - THAAO (aws_ECAPAC):
 
 ## RADIATION
@@ -255,35 +250,30 @@ from https://confluence.ecmwf.int/display/CKB/ERA5-Land%3A+data+documentation#ER
 
 - CARRA: ``surface_solar_radiation_downwards`` (forecast) + ``surface_net_solar_radiation`` (forecast).
 - ERA-5: ``surface_net_solar_radiation`` + ``surface_solar_radiation_downwards``
-- ERA5-L: /
 - THAAO (pyrgeometers): ``DSI``
 
 ### Upward shortwave irradiance - USI (``sw_up``)
 
 - CARRA: ``surface_solar_radiation_downwards`` (forecast) + ``surface_net_solar_radiation`` (forecast).
 - ERA-5: ``surface_net_solar_radiation`` + ``surface_solar_radiation_downwards``
-- ERA5-L: /
 - THAAO (pyrgeometers): ``USI``
 
 ### Downward longwave irradiance - DLI (``lw_down``)
 
 - CARRA: ``thermal_surface_radiation_downwards`` (forecast) + ``surface_net_thermal_radiation`` (forecast).
 - ERA-5: ``surface_net_thermal_radiation`` + ``surface_thermal_radiation_downwards``
-- ERA5-L: /
 - THAAO (pyranometers): ``DLI``
 
 ### Upward longwave irradiance - ULI (``lw_up``)
 
 - CARRA: ``thermal_surface_radiation_downwards`` (forecast) + ``surface_net_thermal_radiation`` (forecast).
 - ERA-5: ``surface_net_thermal_radiation`` + ``surface_thermal_radiation_downwards``
-- ERA5-L: /
 - THAAO (pyranometers): ``ULI``
 
 ### Surface albedo (``alb``)
 
 - CARRA: ``albedo`` (forecast). Values masked to nan for alb<0.1, since they are unrealistic.
 - ERA-5: ``forecast_albedo`` (also ``snow_albedo``)
-- ERA5-L: /
 - THAAO (pyrgeometers): ``DSI``+``USI``
 
 ## CLOUD & ATMOSPHERE
@@ -292,14 +282,12 @@ from https://confluence.ecmwf.int/display/CKB/ERA5-Land%3A+data+documentation#ER
 
 - CARRA: ``total_precipitation``
 - ERA-5: ``total_precipitation``
-- ERA5-L: /
 - THAAO (rain gauge): It is calculated as cumulative value over the resampling time.
 
 ## Cloud Base Height (``cbh``)
 
 - CARRA: ``cloud_base``
 - ERA-5: ``cloud_base_height``
-- ERA5-L: /
 - THAAO (ceilometer): ``tcc`` CBH is calculated as the median value over 1 h form the original 15 s time resolution,
   then averaged for the comparison.
 
@@ -307,7 +295,6 @@ from https://confluence.ecmwf.int/display/CKB/ERA5-Land%3A+data+documentation#ER
 
 - CARRA: ``total_cloud_cover``
 - ERA-5: ``total_cloud_cover``
-- ERA5-L: /
 - THAAO (ceilometer): ``cbh`` (lowermost level)
 
 ## Liquid Water Path - LWP (``lwp``)
@@ -318,5 +305,4 @@ from https://confluence.ecmwf.int/display/CKB/ERA5-Land%3A+data+documentation#ER
 
 - CARRA: ``total_column_cloud_liquid_water``
 - ERA-5: ``total_column_cloud_liquid_water``
-- ERA5-L: /
 - THAAO (hatpro): ???
