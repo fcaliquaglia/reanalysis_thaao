@@ -712,7 +712,7 @@ if __name__ == "__main__":
             fn = write_location_file(elem, folders["txt_location"])
             for data_typ in grid_sel.keys():
                 filenam_grid = f"{data_typ}_grid_index_for_{fn}"
-                if not os.path.exists(os.path.join(basefol, folders["txt_location"], filenam_grid)):
+                if not os.path.exists(os.path.join(folders["txt_location"], filenam_grid)):
                     find_index_in_grid(
                         grid_sel[data_typ], folders["txt_location"], filenam_grid)
 
@@ -745,7 +745,7 @@ if __name__ == "__main__":
             # THESE lat lon should be calculated from wind!
             for data_typ in grid_sel.keys():
                 filenam_grid = f"{data_typ}_grid_index_for_{fn}"
-                if not os.path.exists(os.path.join(basefol, folders["txt_location"], filenam_grid)):
+                if not os.path.exists(os.path.join(folders["txt_location"], filenam_grid)):
                     find_index_in_grid(
                         grid_sel[data_typ], folders["txt_location"], filenam_grid)
 
@@ -779,7 +779,7 @@ if __name__ == "__main__":
             fn = write_location_file(elem, folders["txt_location"])
             for data_typ in grid_sel.keys():
                 filenam_grid = f"{data_typ}_grid_index_for_{fn}"
-                if not os.path.exists(os.path.join(basefol, folders["txt_location"], filenam_grid)):
+                if not os.path.exists(os.path.join(folders["txt_location"], filenam_grid)):
                     find_index_in_grid(
                         grid_sel[data_typ], folders["txt_location"], filenam_grid)
 
@@ -809,7 +809,7 @@ if __name__ == "__main__":
             fn = write_location_file(elem, folders["txt_location"])
             for data_typ in grid_sel.keys():
                 filenam_grid = f"{data_typ}_grid_index_for_{fn}"
-                if not os.path.exists(os.path.join(basefol, folders["txt_location"], filenam_grid)):
+                if not os.path.exists(os.path.join(folders["txt_location"], filenam_grid)):
                     find_index_in_grid(
                         grid_sel[data_typ], folders["txt_location"], filenam_grid)
 
@@ -845,7 +845,7 @@ if __name__ == "__main__":
                 fn = write_location_file(elem, folders["txt_location"])
                 for data_typ in grid_sel.keys():
                     filenam_grid = f"{data_typ}_grid_index_for_{fn}"
-                    if not os.path.exists(os.path.join(basefol, folders["txt_location"], filenam_grid)):
+                    if not os.path.exists(os.path.join(folders["txt_location"], filenam_grid)):
                         find_index_in_grid(
                             grid_sel[data_typ], folders["txt_location"], filenam_grid)
 
@@ -881,7 +881,7 @@ if __name__ == "__main__":
                 fn = write_location_file(elem, folders["txt_location"])
                 for data_typ in grid_sel.keys():
                     filenam_grid = f"{data_typ}_grid_index_for_{fn}"
-                    if not os.path.exists(os.path.join(basefol, folders["txt_location"], filenam_grid)):
+                    if not os.path.exists(os.path.join(folders["txt_location"], filenam_grid)):
                         find_index_in_grid(
                             grid_sel[data_typ], folders["txt_location"], filenam_grid)
 
