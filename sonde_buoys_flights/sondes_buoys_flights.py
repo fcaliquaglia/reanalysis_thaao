@@ -17,7 +17,7 @@ from math import radians, cos
 plot_flags = dict(
     ground_sites=True,
     buoys=True,
-    dropsondes=True,
+    dropsondes=False,
     p3_tracks=False,
     g3_tracks=False,
     radiosondes=False
@@ -99,14 +99,30 @@ def grid_loading(dataset_type, file_sample):
 
 def find_index_in_grid(grid_selection, fol_file, out_file):
     """
-    Find closest grid points for multiple coordinates in a file.
+    Matches input coordinates and datetimes to nearest grid points in a dataset.
 
     Parameters:
-    - ds: xarray.Dataset (ERA5 or CARRA)
-    - ds_type: str, 'e' for ERA5 (1D lat/lon), 'c' for CARRA (2D lat/lon)
-    - in_file: str, input CSV with: datetime, lat, lon, elev
-    - out_file: str, output CSV with matched grid info
+    - grid_selection: tuple of (lat_arr, lon_arr, flat_lat, flat_lon, ds_times)
+      Grid data and timestamps from the dataset.
+    - fol_file: str
+      Folder containing input and output CSV files.
+    - out_file: str
+      Output CSV filename; input filename is derived from it.
+
+    Input CSV (derived from out_file):
+    - Columns: datetime (ISO), lat, lon, elev
+
+    Output CSV:
+    - Columns: datetime, input_lat, input_lon, input_elev,
+               y_idx, x_idx, z_idx,
+               matched_lat, matched_lon, matched_elev, matched_time
+
+    Notes:
+    - Time matching ignores year (matches by MM-DD HH:MM within ±24h).
+    - Grid edge indices (0 or max) are set to NaN with a warning.
+    - If no time match within 3h, matched_time is NaN.
     """
+
     lat_arr,  lon_arr, flat_lat, flat_lon, ds_times = grid_selection
     # Read input coordinates
     in_file = f"{out_file}"[17:]
@@ -133,12 +149,22 @@ def find_index_in_grid(grid_selection, fol_file, out_file):
 
             # Parse input datetime
             input_time = pd.to_datetime(dt_str)
-            time_diffs = np.abs(ds_times - input_time)
-            if np.all(np.isnat(time_diffs)):
+            adjusted_ds_times = ds_times.map(
+                lambda t: t.replace(year=input_time.year))
+            time_diffs = np.abs(adjusted_ds_times - input_time)
+            # Filtering time differences below 3 tres
+            if out_file[0] == 'e':
+                thresh = 1
+            if out_file[0] == 'c':
+                thresh = 3
+            threshold = pd.Timedelta(hours=thresh)
+            filtered_diffs = time_diffs.where(time_diffs <= threshold)
+            if filtered_diffs.isnull().all():
                 matched_time = np.nan
             else:
                 time_idx = time_diffs.argmin()
-                matched_time = ds_times[time_idx].strftime("%Y-%m-%dT%H:%M:%S")
+                matched_original = ds_times[time_idx]
+                matched_time = matched_original.replace(year=input_time.year)
             # Check for zero values and set to np.nan with warning
             if x_idx == 0 or x_idx == lon_arr.shape[1]-1:
                 print("x index is on the edge. This may indicate that the lat/lon point lies outside the available reanalysis domain. Setting to np.nan as a precaution.")
@@ -699,6 +725,7 @@ if __name__ == "__main__":
     grid_sel = {'e': grid_loading('e', 'era5_NG_2m_temperature_2023.nc'), 'c': grid_loading(
         'c', 'carra1_2m_temperature_2023.nc')}
 
+    # Ground sites
     if plot_flags['ground_sites']:
         ground_sites_data = []
         for ground_site in ground_sites:
