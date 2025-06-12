@@ -193,7 +193,7 @@ def find_index_in_grid(grid_selection, fol_file, out_file):
                     z_idx = ds_times.get_loc(matched_original)
 
                 days_in_year = 366 if calendar.isleap(input_time.year) else 365
-                index_check = (days_in_year * 24) // 3
+                index_check = (days_in_year * 24) // thresh
                 if z_idx > index_check:
                     print("z index is on the edge. This may indicate that the time point lies outside the available reanalysis domain. Setting to np.nan as a precaution.")
                     z_idx = np.nan
