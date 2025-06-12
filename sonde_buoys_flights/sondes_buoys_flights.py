@@ -9,6 +9,7 @@ import matplotlib.dates as mdates
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 from cartopy.feature import NaturalEarthFeature
+import geopandas as gpd
 import mpl_toolkits.axes_grid1.inset_locator as inset_locator
 
 from math import radians, cos
@@ -167,7 +168,7 @@ def find_index_in_grid(grid_selection, fol_file, out_file):
                 time_idx = time_diffs.argmin()
                 matched_original = ds_times[time_idx]
                 matched_time = matched_original.replace(year=input_time.year)
-                z_idx = ds_times.get_loc(matched_time)
+                z_idx = ds_times.get_loc(matched_original)
 
             # Check for zero values and set to np.nan with warning
             if x_idx == 0 or x_idx == lon_arr.shape[1]-1:
@@ -928,15 +929,23 @@ if __name__ == "__main__":
     if plot_flags["ships"]:
         ships_files = process_nc_folder(
             folders["ships"], "*.kmz")
+        # for sf in ships_files:
+        #     print(sf)
+        #     import zipfile
+        #     with zipfile.ZipFile(sf, "r") as zip_ref:
+        #         zip_ref.extractall(folders["ships"])
         ships_data = []
+        ships_files = process_nc_folder(
+            folders["ships"], "*.kml")
         for sf in ships_files:
             print(sf)
-            import zipfile
-            import geopandas as gpd
-            with zipfile.ZipFile("file.kmz", "r") as zip_ref:
-                zip_ref.extractall("output_folder")
-            gdf = gpd.read_file("output_folder/doc.kml", driver="KML")
-            ds = xr.Dataset.from_dataframe(gdf)
+            ds_gdp = gpd.read_file(sf, driver="KML")
+            ds=pd.DataFrame()
+            ds["time"] = pd.to_datetime(ds_gdp["Name"], format="%d %b %Y")
+            ds["lon"] = ds_gdp.geometry.x
+            ds["lat"] = ds_gdp.geometry.y
+            ds = ds[["time", "lat", "lon"]]
+            ds.set_index('time', inplace=True)
             lat = ds["lat"].values
             lon = ds["lon"].values
             msk, lat, lon = filter_coords(lat, lon, bounds=bounds)
@@ -945,17 +954,15 @@ if __name__ == "__main__":
                 continue
             else:
                 print("OK")
-            temp = ds["tdry"][msk].values
-            pres = ds["pres"][msk].values
-            time = ds["time"][msk].values
-            temp = np.where(temp == -999.0, np.nan, temp)
-            pres = np.where(pres == -999.0, np.nan, pres)
-            elem = {"filename": os.path.basename(df),
-                    "lat": lat, "lon": lon, "temp": temp,
-                    "time": time, "pres": pres,
+            temp = np.nan
+            pres = np.nan
+            time = ds["time"].values
+            elem = {"filename": os.path.basename(sf),
+                    "lat": lat, "lon": lon, "temp": np.repeat(np.nan, len(time)),
+                    "time": time, "pres": np.repeat(np.nan, len(time)),
                     "elev": np.repeat(np.nan, len(time))
                     }
-            drop_data.append(elem)
+            ships_data.append(elem)
             fn = write_location_file(elem, folders["txt_location"])
             for data_typ in grid_sel.keys():
                 filenam_grid = f"{data_typ}_grid_index_for_{fn}"
