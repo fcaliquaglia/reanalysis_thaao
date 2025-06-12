@@ -29,7 +29,6 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 import inputs as inpt
-import tools as tls
 
 
 def read_thaao_weather(vr):

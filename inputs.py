@@ -56,10 +56,16 @@ basefol = {
 }
 
 
-# flag type
-dataset_flags = {
+# flag type --> set to True only one at a time
+dataset = {
     'THAAO': {'switch': True, 'fn': 'THAAO'},
-    'buoys': {'switch': True, 'fn': 'THAAO'}}
+    'Alert': {'switch': False, 'fn': 'Alert'},
+    'Villum': {'switch': False, 'fn': 'Villum'},
+    'buoys': {'switch': False, 'fn': ''},
+    'dropsondes': {'switch': False, 'fn': ''},
+    'p3_tracks': {'switch': False, 'fn': ''},
+    'g3_tracks': {'switch': False, 'fn': ''},
+    'radiosondes': {'switch': False, 'fn': ''}}
 
 thaao_c = 'carra1'
 thaao_e = 'era5_NG'

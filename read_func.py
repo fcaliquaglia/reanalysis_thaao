@@ -39,22 +39,20 @@ def read_rean(vr, dataset_type):
     """
     Generalized function to read and process data from CARRA or ERA5 datasets.
     """
-
-    loc = 'THAAO'
-    # TODO: Generalize for other stations
-
+    location = [inpt.dataset_flags[k]['fn'] for k, v in inpt.dataset_flags.items() if v.get('switch')]
+    
     # First process missing files
     for year in inpt.years:
-        output_file = f"{inpt.extr[vr][dataset_type]['fn']}{loc}_{year}.parquet"
+        output_file = f"{inpt.extr[vr][dataset_type]['fn']}{location}_{year}.parquet"
         output_path = os.path.join(
             inpt.basefol[dataset_type]['processed'], output_file)
         if not os.path.exists(output_path):
-            tls.process_rean(vr, dataset_type, year, loc)
+            tls.process_rean(vr, dataset_type, year, location)
 
     # Then read all processed files into a single DataFrame
     data_all = pd.DataFrame()
     for year in inpt.years:
-        input_file = f"{inpt.extr[vr][dataset_type]['fn']}{loc}_{year}.parquet"
+        input_file = f"{inpt.extr[vr][dataset_type]['fn']}{location}_{year}.parquet"
         input_path = os.path.join(
             inpt.basefol[dataset_type]['processed'], input_file)
         try:
