@@ -470,8 +470,8 @@ def read_temp():
     :return: None
     """
     # CARRA
-    read_rean(inpt.var, "c")
-    inpt.extr[inpt.var]["c"]["data"][inpt.var] = inpt.extr[inpt.var]["c"]["data"][inpt.var] - 273.15
+    # read_rean(inpt.var, "c")
+    # inpt.extr[inpt.var]["c"]["data"][inpt.var] = inpt.extr[inpt.var]["c"]["data"][inpt.var] - 273.15
 
     # ERA5
     read_rean(inpt.var, "e")
