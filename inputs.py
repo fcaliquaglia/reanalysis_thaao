@@ -56,6 +56,11 @@ basefol = {
 }
 
 
+# flag type
+dataset_flags = {
+    'THAAO': {'switch': True, 'fn': 'THAAO'},
+    'buoys': {'switch': True, 'fn': 'THAAO'}}
+
 thaao_c = 'carra1'
 thaao_e = 'era5_NG'
 thaao_t = 'thaao'
