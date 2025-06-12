@@ -39,7 +39,7 @@ def read_rean(vr, dataset_type):
     """
     Generalized function to read and process data from CARRA or ERA5 datasets.
     """
-    location = [inpt.dataset_flags[k]['fn'] for k, v in inpt.dataset_flags.items() if v.get('switch')]
+    location = [inpt.datasets[k]['fn'] for k, v in inpt.datasets.items() if v.get('switch')]
     
     # First process missing files
     for year in inpt.years:
