@@ -15,8 +15,8 @@ from math import radians, cos
 
 # ---------------------------- SETTINGS ---------------------------- #
 plot_flags = dict(
-    ground_sites=True,
-    buoys=False,
+    ground_sites=False,
+    buoys=True,
     dropsondes=False,
     p3_tracks=False,
     g3_tracks=False,
