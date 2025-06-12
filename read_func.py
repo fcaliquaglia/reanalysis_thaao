@@ -679,22 +679,22 @@ def read_surf_pres():
     """
     # CARRA
     read_rean(inpt.var, "c")
-    inpt.extr[inpt.var]["c"]["data"] = inpt.extr[inpt.var]["c"]["data"] / 100.
-    inpt.extr[inpt.var]["c"]["data"][inpt.extr[inpt.var]
-                                     ["c"]["data"] <= 900] = np.nan
+    inpt.extr[inpt.var]["c"]["data"][inpt.var] = inpt.extr[inpt.var]["c"]["data"][inpt.var] / 100.
+    inpt.extr[inpt.var]["c"]["data"][inpt.var][inpt.extr[inpt.var]
+                                     ["c"]["data"][inpt.var] <= 900] = np.nan
 
     # ERA5
     read_rean(inpt.var, "e")
-    inpt.extr[inpt.var]["e"]["data"] = inpt.extr[inpt.var]["e"]["data"] / 100.
-    inpt.extr[inpt.var]["e"]["data"][inpt.extr[inpt.var]
-                                     ["e"]["data"] <= 900] = np.nan
+    inpt.extr[inpt.var]["e"]["data"][inpt.var] = inpt.extr[inpt.var]["e"]["data"][inpt.var] / 100.
+    inpt.extr[inpt.var]["e"]["data"][inpt.var][inpt.extr[inpt.var]
+                                     ["e"]["data"][inpt.var] <= 900] = np.nan
 
     # THAAO
     read_thaao_weather(inpt.var)
-    inpt.extr[inpt.var]["t"]["data"][inpt.extr[inpt.var]
-                                     ["t"]["data"] <= 900] = np.nan
-    inpt.extr[inpt.var]["t"]["data"].loc["2021-10-11 00:00:00":"2021-10-19 00:00:00"] = np.nan
-    inpt.extr[inpt.var]["t"]["data"].loc["2024-4-26 00:00:00":"2024-5-4 00:00:00"] = np.nan
+    inpt.extr[inpt.var]["t"]["data"][inpt.var][inpt.extr[inpt.var]
+                                     ["t"]["data"][inpt.var] <= 900] = np.nan
+    inpt.extr[inpt.var]["t"]["data"][inpt.var].loc["2021-10-11 00:00:00":"2021-10-19 00:00:00"] = np.nan
+    inpt.extr[inpt.var]["t"]["data"][inpt.var].loc["2024-4-26 00:00:00":"2024-5-4 00:00:00"] = np.nan
 
     # THAAO2
     read_aws_ecapac(inpt.var)
@@ -719,7 +719,7 @@ def read_tcc():
 
     # ERA5
     read_rean(inpt.var, "e")
-    inpt.extr[inpt.var]["e"]["data"] = inpt.extr[inpt.var]["e"]["data"].values * 100.
+    inpt.extr[inpt.var]["e"]["data"][inpt.var] = inpt.extr[inpt.var]["e"]["data"][inpt.var].values * 100.
 
     # THAAO
     read_thaao_ceilometer(inpt.var)
@@ -785,16 +785,16 @@ def read_wind():
     read_rean("windu", "e")
     read_rean("windv", "e")
     e_ws = wind_speed(
-        inpt.extr["windu"]["e"]["data"].values * units("m/s"),
-        inpt.extr["windv"]["e"]["data"].values * units("m/s"))
+        inpt.extr["windu"]["e"]["data"][inpt.var].values * units("m/s"),
+        inpt.extr["windv"]["e"]["data"][inpt.var].values * units("m/s"))
     inpt.extr["winds"]["e"]["data"] = pd.DataFrame(
-        index=inpt.extr["windu"]["e"]["data"].index, data=e_ws.magnitude, columns=["winds"])
+        index=inpt.extr["windu"]["e"]["data"][inpt.var].index, data=e_ws.magnitude, columns=["winds"])
 
     e_wd = wind_direction(
-        inpt.extr["windu"]["e"]["data"].values * units("m/s"),
-        inpt.extr["windv"]["e"]["data"].values * units("m/s"))
-    inpt.extr["windd"]["e"]["data"] = pd.DataFrame(
-        index=inpt.extr["windu"]["e"]["data"].index, data=e_wd.magnitude, columns=["windd"])
+        inpt.extr["windu"]["e"]["data"][inpt.var].values * units("m/s"),
+        inpt.extr["windv"]["e"]["data"][inpt.var].values * units("m/s"))
+    inpt.extr["windd"]["e"]["data"][inpt.var] = pd.DataFrame(
+        index=inpt.extr["windu"]["e"]["data"][inpt.var].index, data=e_wd.magnitude, columns=["windd"])
 
     # THAAO2
     read_aws_ecapac("winds")
