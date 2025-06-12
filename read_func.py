@@ -390,7 +390,7 @@ def read_rh():
     tls.calc_rh_from_tdp()
 
     # THAAO2
-    if inpt.dataset_flags['THAAO']['switch']:
+    if inpt.datasets['THAAO']['switch']:
         rd_ft.read_thaao_weather(inpt.var)
         rd_ft.read_thaao_aws_ecapac(inpt.var)
         rd_ft.read_thaao_weather(inpt.var)
@@ -409,26 +409,29 @@ def read_surf_pres():
     """
     # CARRA
     read_rean(inpt.var, "c")
-    inpt.extr[inpt.var]["c"]["data"][inpt.var] = inpt.extr[inpt.var]["c"]["data"][inpt.var] / 100.
-    inpt.extr[inpt.var]["c"]["data"][inpt.var][inpt.extr[inpt.var]
-                                               ["c"]["data"][inpt.var] <= 900] = np.nan
+    if not inpt.extr[inpt.var]["c"]["data"].empty:
+        inpt.extr[inpt.var]["c"]["data"][inpt.var] = inpt.extr[inpt.var]["c"]["data"][inpt.var] / 100.
+        inpt.extr[inpt.var]["c"]["data"][inpt.var][inpt.extr[inpt.var]
+                                                   ["c"]["data"][inpt.var] <= 900] = np.nan
 
     # ERA5
     read_rean(inpt.var, "e")
-    inpt.extr[inpt.var]["e"]["data"][inpt.var] = inpt.extr[inpt.var]["e"]["data"][inpt.var] / 100.
-    inpt.extr[inpt.var]["e"]["data"][inpt.var][inpt.extr[inpt.var]
-                                               ["e"]["data"][inpt.var] <= 900] = np.nan
+    if not inpt.extr[inpt.var]["e"]["data"].empty:
+        inpt.extr[inpt.var]["e"]["data"][inpt.var] = inpt.extr[inpt.var]["e"]["data"][inpt.var] / 100.
+        inpt.extr[inpt.var]["e"]["data"][inpt.var][inpt.extr[inpt.var]
+                                                   ["e"]["data"][inpt.var] <= 900] = np.nan
 
     # THAAO
-    if inpt.dataset_flags['THAAO']['switch']:
+    if inpt.datasets['THAAO']['switch']:
         rd_ft.read_thaao_weather(inpt.var)
-        inpt.extr[inpt.var]["t"]["data"][inpt.var][inpt.extr[inpt.var]
-                                                   ["t"]["data"][inpt.var] <= 900] = np.nan
-        inpt.extr[inpt.var]["t"]["data"][inpt.var].loc["2021-10-11 00:00:00":"2021-10-19 00:00:00"] = np.nan
-        inpt.extr[inpt.var]["t"]["data"][inpt.var].loc["2024-4-26 00:00:00":"2024-5-4 00:00:00"] = np.nan
-
-        # THAAO2
-        rd_ft.read_thaao_aws_ecapac(inpt.var)
+        if not inpt.extr[inpt.var]["t"]["data"].empty:
+            inpt.extr[inpt.var]["t"]["data"][inpt.var][inpt.extr[inpt.var]
+                                                       ["t"]["data"][inpt.var] <= 900] = np.nan
+            inpt.extr[inpt.var]["t"]["data"][inpt.var].loc["2021-10-11 00:00:00":"2021-10-19 00:00:00"] = np.nan
+            inpt.extr[inpt.var]["t"]["data"][inpt.var].loc["2024-4-26 00:00:00":"2024-5-4 00:00:00"] = np.nan
+    
+            # THAAO2
+            rd_ft.read_thaao_aws_ecapac(inpt.var)
 
     return
 
@@ -453,7 +456,7 @@ def read_tcc():
     inpt.extr[inpt.var]["e"]["data"][inpt.var] = inpt.extr[inpt.var]["e"]["data"][inpt.var].values * 100.
 
     # THAAO
-    if inpt.dataset_flags['THAAO']['switch']:
+    if inpt.datasets['THAAO']['switch']:
         rd_ft.read_thaao_ceilometer(inpt.var)
 
     return
@@ -477,7 +480,7 @@ def read_temp():
     inpt.extr[inpt.var]["e"]["data"][inpt.var] = inpt.extr[inpt.var]["e"]["data"][inpt.var] - 273.15
 
     # THAAO
-    if inpt.dataset_flags['THAAO']['switch']:
+    if inpt.datasets['THAAO']['switch']:
         rd_ft.read_thaao_weather(inpt.var)
         inpt.extr[inpt.var]["t"]["data"][inpt.var] = inpt.extr[inpt.var]["t"]["data"][inpt.var] - 273.15
 
@@ -530,7 +533,7 @@ def read_wind():
         index=inpt.extr["windu"]["e"]["data"][inpt.var].index, data=e_wd.magnitude, columns=["windd"])
 
     # THAAO2
-    if inpt.dataset_flags['THAAO']['switch']:
+    if inpt.datasets['THAAO']['switch']:
         rd_ft.read_aws_ecapac("winds")
         rd_ft.read_aws_ecapac("windd")
 
