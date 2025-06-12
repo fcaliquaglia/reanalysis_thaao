@@ -39,7 +39,7 @@ def read_rean(vr, dataset_type):
     """
     Generalized function to read and process data from CARRA or ERA5 datasets.
     """
-    location = [inpt.dataset_flags[k]['fn'] for k, v in inpt.dataset_flags.items() if v.get('switch')]
+    location = next((v['fn'] for k, v in inpt.datasets.items() if v.get('switch')), None)
     
     # First process missing files
     for year in inpt.years:
@@ -87,7 +87,7 @@ def read_alb():
                                                ["c"]["data"][inpt.var] <= 0.] = np.nan
 
     # THAAO
-    if inpt.dataset_flags['THAAO']['switch']:
+    if inpt.datasets['THAAO']['switch']:
         rd_ft.read_thaao_rad(inpt.var)
 
     return
@@ -110,7 +110,7 @@ def read_cbh():
     read_rean(inpt.var, "e")
 
     # THAAO
-    if inpt.dataset_flags['THAAO']['switch']:
+    if inpt.datasets['THAAO']['switch']:
         rd_ft.read_thaao_ceilometer(inpt.var)
 
     return
@@ -143,7 +143,7 @@ def read_lwp():
     # e[e < 15] = 0
 
     # THAAO1
-    if inpt.dataset_flags['THAAO']['switch']:
+    if inpt.datasets['THAAO']['switch']:
         rd_ft.read_thaao_hatpro(inpt.var)
         inpt.extr[inpt.var]["t1"]["data"][inpt.var][inpt.extr[inpt.var]
                                                     ["t1"]["data"][inpt.var] < 0.01] = np.nan
@@ -190,7 +190,7 @@ def read_precip():
         1000.
 
     # THAAO2
-    if inpt.dataset_flags['THAAO']['switch']:
+    if inpt.datasets['THAAO']['switch']:
         rd_ft.read_thaao_aws_ecapac(inpt.var)
 
     return
@@ -228,7 +228,7 @@ def read_lw_down():
         inpt.var_dict["e"]["rad_conv_factor"]
 
     # THAAO
-    if inpt.dataset_flags['THAAO']['switch']:
+    if inpt.datasets['THAAO']['switch']:
         rd_ft.read_thaao_rad("lw_down")
         inpt.extr["lw_down"]["t"]["data"][inpt.extr["lw_down"]
                                           ["t"]["data"] < 0.] = np.nan
@@ -259,7 +259,7 @@ def read_sw_down():
         inpt.var_dict["e"]["rad_conv_factor"]
 
     # THAAO
-    if inpt.dataset_flags['THAAO']['switch']:
+    if inpt.datasets['THAAO']['switch']:
         rd_ft.read_thaao_rad("sw_down")
         inpt.extr["sw_down"]["t"]["data"][inpt.var][inpt.extr["sw_down"]
                                                     ["t"]["data"][inpt.var] < 0.] = np.nan
@@ -313,7 +313,7 @@ def read_lw_up():
     # del inpt.extr["lw_net"]["e"]["data"]
 
     # THAAO
-    if inpt.dataset_flags['THAAO']['switch']:
+    if inpt.datasets['THAAO']['switch']:
         rd_ft.read_thaao_rad("lw_up")
         inpt.extr["lw_up"]["t"]["data"][inpt.extr["lw_up"]
                                         ["t"]["data"][inpt.var] < 0.] = np.nan
@@ -359,7 +359,7 @@ def read_sw_up():
     del inpt.extr["sw_net"]["e"]["data"]
 
     # THAAO
-    if inpt.dataset_flags['THAAO']['switch']:
+    if inpt.datasets['THAAO']['switch']:
         rd_ft.read_thaao_rad("sw_up")
         inpt.extr["sw_up"]["t"]["data"][inpt.var][inpt.extr["sw_up"]
                                                   ["t"]["data"][inpt.var] < 0.] = np.nan
