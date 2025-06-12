@@ -11,18 +11,20 @@ import cartopy.feature as cfeature
 from cartopy.feature import NaturalEarthFeature
 import geopandas as gpd
 import mpl_toolkits.axes_grid1.inset_locator as inset_locator
-
+import calendar
 from math import radians, cos
 
 # ---------------------------- SETTINGS ---------------------------- #
+plot = False
+
 plot_flags = dict(
-    ground_sites=False,
+    ground_sites=True,
     buoys=True,
     dropsondes=False,
     p3_tracks=False,
     g3_tracks=False,
     radiosondes=False,
-    ships=True
+    ships=False
 )
 
 basefol = r"H:\Shared drives\Dati_THAAO"
@@ -137,7 +139,9 @@ def find_index_in_grid(grid_selection, fol_file, out_file):
         out_f.write(header)
 
         for row in coords.itertuples(index=False):
-            dt_str = row.datetime
+            x_idx, y_idx, matched_lat, matched_lon = np.nan, np.nan, np.nan, np.nan
+            y_idx = np.nan
+            # x and y indexes (lat and lon)
             input_lat = row.lat
             input_lon = row.lon
             input_elev = row.elev
@@ -147,28 +151,6 @@ def find_index_in_grid(grid_selection, fol_file, out_file):
             y_idx, x_idx = np.unravel_index(min_idx, lat_arr.shape)
             matched_lat = lat_arr[y_idx, x_idx]
             matched_lon = lon_arr[y_idx, x_idx]
-            matched_elev = np.nan
-
-            # Parse input datetime
-            input_time = pd.to_datetime(dt_str)
-            adjusted_ds_times = ds_times.map(
-                lambda t: t.replace(year=input_time.year))
-            time_diffs = np.abs(adjusted_ds_times - input_time)
-            # Filtering time differences below 3 tres
-            if out_file[0] == 'e':
-                thresh = 1
-            if out_file[0] == 'c':
-                thresh = 3
-            threshold = pd.Timedelta(hours=thresh)
-            filtered_diffs = time_diffs.where(time_diffs <= threshold)
-            if filtered_diffs.isnull().all():
-                matched_time = np.nan
-                z_idx = np.nan
-            else:
-                time_idx = time_diffs.argmin()
-                matched_original = ds_times[time_idx]
-                matched_time = matched_original.replace(year=input_time.year)
-                z_idx = ds_times.get_loc(matched_original)
 
             # Check for zero values and set to np.nan with warning
             if x_idx == 0 or x_idx == lon_arr.shape[1]-1:
@@ -181,14 +163,42 @@ def find_index_in_grid(grid_selection, fol_file, out_file):
                 y_idx = np.nan
             else:
                 pass
-            import calendar
-            days_in_year = 366 if calendar.isleap(input_time.year) else 365
-            index_check = (days_in_year * 24) // 3
-            if z_idx > index_check:
-                print("z index is on the edge. This may indicate that the time point lies outside the available reanalysis domain. Setting to np.nan as a precaution.")
-                y_idx = np.nan
-            else:
-                pass
+
+            matched_elev = np.nan
+
+            # z_idx, time)
+            # Parse input datetime
+            z_idx, matched_time = np.nan, np.nan
+            dt_str = row.datetime
+            if pd.notnull(dt_str):
+                input_time = pd.to_datetime(dt_str)
+                adjusted_ds_times = ds_times.map(
+                    lambda t: t.replace(year=input_time.year))
+                time_diffs = np.abs(adjusted_ds_times - input_time)
+                # Filtering time differences below 3 tres
+                if out_file[0] == 'e':
+                    thresh = 1
+                if out_file[0] == 'c':
+                    thresh = 3
+                threshold = pd.Timedelta(hours=thresh)
+                filtered_diffs = time_diffs.where(time_diffs <= threshold)
+                if filtered_diffs.isnull().all():
+                    matched_time = np.nan
+                    z_idx = np.nan
+                else:
+                    time_idx = time_diffs.argmin()
+                    matched_original = ds_times[time_idx]
+                    matched_time = matched_original.replace(
+                        year=input_time.year)
+                    z_idx = ds_times.get_loc(matched_original)
+
+                days_in_year = 366 if calendar.isleap(input_time.year) else 365
+                index_check = (days_in_year * 24) // 3
+                if z_idx > index_check:
+                    print("z index is on the edge. This may indicate that the time point lies outside the available reanalysis domain. Setting to np.nan as a precaution.")
+                    z_idx = np.nan
+                else:
+                    pass
 
             str_fmt = f"{dt_str},{input_lat:.6f},{input_lon:.6f},{input_elev:.2f},{y_idx},{x_idx},{z_idx},{matched_lat:.6f},{matched_lon:.6f},{matched_elev:.2f},{matched_time}\n"
             out_f.write(str_fmt)
@@ -940,7 +950,7 @@ if __name__ == "__main__":
         for sf in ships_files:
             print(sf)
             ds_gdp = gpd.read_file(sf, driver="KML")
-            ds=pd.DataFrame()
+            ds = pd.DataFrame()
             ds["time"] = pd.to_datetime(ds_gdp["Name"], format="%d %b %Y")
             ds["lon"] = ds_gdp.geometry.x
             ds["lat"] = ds_gdp.geometry.y
@@ -970,7 +980,6 @@ if __name__ == "__main__":
                     find_index_in_grid(
                         grid_sel[data_typ], folders["txt_location"], filenam_grid)
 
-
     del_list = ["ds", "temp", "time", "pres", "lat", "lon", "msk"]
     for var_name in del_list:
         try:
@@ -979,26 +988,27 @@ if __name__ == "__main__":
             print(f"Variable {var_name} not found.")
 
     # ---------------------------- EXECUTION ---------------------------- #
-    plot_flags = {k: True for k in plot_flags}
-    plot_trajectories("all", plot_flags)
-    plot_flags = {k: False for k in plot_flags}
-    keys = list(plot_flags.keys())
-    for i, key in enumerate(keys, start=1):
-        current_flags = {k: (j < i) for j, k in enumerate(keys)}
-        plot_trajectories(i, current_flags)
+    if plot:
+        plot_flags = {k: True for k in plot_flags}
+        plot_trajectories("all", plot_flags)
+        plot_flags = {k: False for k in plot_flags}
+        keys = list(plot_flags.keys())
+        for i, key in enumerate(keys, start=1):
+            current_flags = {k: (j < i) for j, k in enumerate(keys)}
+            plot_trajectories(i, current_flags)
 
-    current_flags = {k: False for k in plot_flags}
-    current_flags["ground_sites"] = True
-    plot_surf_temp("1", current_flags)
-    current_flags["buoys"] = True
-    plot_surf_temp("2", current_flags)
-    current_flags["dropsondes"] = True
-    plot_surf_temp("3", current_flags)
+        current_flags = {k: False for k in plot_flags}
+        current_flags["ground_sites"] = True
+        plot_surf_temp("1", current_flags)
+        current_flags["buoys"] = True
+        plot_surf_temp("2", current_flags)
+        current_flags["dropsondes"] = True
+        plot_surf_temp("3", current_flags)
 
-    current_flags = {k: False for k in plot_flags}
-    current_flags["ground_sites"] = True
-    plot_surf_date("1", current_flags)
-    current_flags["buoys"] = True
-    plot_surf_date("2", current_flags)
-    current_flags["dropsondes"] = True
-    plot_surf_date("3", current_flags)
+        current_flags = {k: False for k in plot_flags}
+        current_flags["ground_sites"] = True
+        plot_surf_date("1", current_flags)
+        current_flags["buoys"] = True
+        plot_surf_date("2", current_flags)
+        current_flags["dropsondes"] = True
+        plot_surf_date("3", current_flags)
