@@ -35,12 +35,14 @@ from metpy.units import units
 import inputs as inpt
 import tools as tls
 
+
 def read_rean(vr, dataset_type):
     """
     Generalized function to read and process data from CARRA or ERA5 datasets.
     """
 
-    location = next((v['fn'] for k, v in inpt.datasets.items() if v.get('switch')), None)
+    location = next(
+        (v['fn'] for k, v in inpt.datasets.items() if v.get('switch')), None)
 
     # First process missing files
     for year in inpt.years:
@@ -410,13 +412,13 @@ def read_surf_pres():
     read_rean(inpt.var, "c")
     inpt.extr[inpt.var]["c"]["data"][inpt.var] = inpt.extr[inpt.var]["c"]["data"][inpt.var] / 100.
     inpt.extr[inpt.var]["c"]["data"][inpt.var][inpt.extr[inpt.var]
-                                                   ["c"]["data"][inpt.var] <= 900] = np.nan
+                                               ["c"]["data"][inpt.var] <= 900] = np.nan
 
     # ERA5
     read_rean(inpt.var, "e")
     inpt.extr[inpt.var]["e"]["data"][inpt.var] = inpt.extr[inpt.var]["e"]["data"][inpt.var] / 100.
     inpt.extr[inpt.var]["e"]["data"][inpt.var][inpt.extr[inpt.var]
-                                                   ["e"]["data"][inpt.var] <= 900] = np.nan
+                                               ["e"]["data"][inpt.var] <= 900] = np.nan
 
     # THAAO
     if inpt.datasets['THAAO']['switch']:
@@ -482,6 +484,9 @@ def read_temp():
 
         # THAAO2
         rd_ft.read_thaao_aws_ecapac(inpt.var)
+
+    # if inpt.datasets['buoys']['switch']:
+
     return
 
 

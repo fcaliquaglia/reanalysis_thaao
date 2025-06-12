@@ -7,7 +7,7 @@ Brief description
 """
 
 # =============================================================
-# CREATED: 
+# CREATED:
 # AFFILIATION: INGV
 # AUTHORS: Filippo Cali' Quaglia
 # =============================================================
