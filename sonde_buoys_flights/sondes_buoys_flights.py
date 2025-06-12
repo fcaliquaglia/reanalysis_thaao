@@ -850,9 +850,13 @@ if __name__ == "__main__":
             else:
                 print("OK")
             temp = ds["air_temp"].isel(trajectory=0).values[msk]
+            pres = ds["air_pressure"].isel(trajectory=0).values[msk]
+            dsi = ds["incident"].isel(trajectory=0).values[msk]
+            usi = ds["reflected"].isel(trajectory=0).values[msk]
             time = ds["time"].isel(trajectory=0).values[msk]
             elem = {"filename": os.path.basename(bf),
-                    "lat": lat, "lon": lon, "temp": temp, "time": time,
+                    "lat": lat, "lon": lon, "temp": temp, "time": time, 
+                    "usi": usi, "dsi": dsi,
                     "elev": np.repeat(np.nan, len(time))
                     }
             buoy_data.append(elem)

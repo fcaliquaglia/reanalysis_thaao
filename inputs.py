@@ -72,7 +72,7 @@ thaao_c = 'carra1'
 thaao_e = 'era5_NG'
 thaao_t = 'thaao'
 
-met = ['rh', 'surf_pres', 'temp', 'rh', 'iwv']
+met = ['temp', 'surf_pres', 'rh', 'iwv']
 rad = ['sw_down', 'lw_down', 'sw_up', 'lw_up', 'alb']
 clouds = ['lwp', 'cbh', 'tcc', 'precip']
 extra = ['winds', 'windd']
