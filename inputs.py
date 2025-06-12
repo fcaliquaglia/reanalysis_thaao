@@ -22,7 +22,6 @@ __status__ = "Research"
 __lastupdate__ = ""
 
 import datetime as dt
-import os
 import string
 
 import matplotlib.dates as mdates
@@ -58,8 +57,8 @@ basefol = {
 
 # flag type --> set to True only one at a time
 datasets = {
-    'THAAO': {'switch': False, 'fn': 'THAAO'},
-    'Alert': {'switch': True, 'fn': 'Alert'},
+    'THAAO': {'switch': True, 'fn': 'THAAO'},
+    'Alert': {'switch': False, 'fn': 'Alert'},
     'Villum': {'switch': False, 'fn': 'Villum'},
     'Sigma-A': {'switch': False, 'fn': 'Sigma-A'},
     'Sigma-B': {'switch': False, 'fn': 'Sigma-B'},
@@ -73,7 +72,7 @@ thaao_c = 'carra1'
 thaao_e = 'era5_NG'
 thaao_t = 'thaao'
 
-met = ['temp', 'surf_pres', 'rh', 'iwv']
+met = ['surf_pres', 'temp', 'rh', 'iwv']
 rad = ['sw_down', 'lw_down', 'sw_up', 'lw_up', 'alb']
 clouds = ['lwp', 'cbh', 'tcc', 'precip']
 extra = ['winds', 'windd']
