@@ -37,7 +37,7 @@ def calc_rh_from_tdp():
 
     return
 
-def wait_for_complete_download(file_path, timeout=300, interval=5):
+def wait_for_complete_download(file_path, timeout=600, interval=5):
     """Wait until the file is fully downloaded by monitoring file size."""
     print(f"Waiting for file to be ready: {file_path}")
     start_time = time.time()
