@@ -103,7 +103,7 @@ def plot_ts(period_label):
     plt.xlabel('Time')
     plt.legend(ncol=2)
     save_path = os.path.join(inpt.basefol['out']['base'], inpt.tres,
-                             f"{inpt.tres}_{period_label}_{inpt.var}_{inpt.var_dict['t']['label']}.png")
+                             f"{inpt.tres}_{period_label}_ts_{inpt.var}_{inpt.var_dict['t']['label']}.png")
     plt.savefig(save_path, bbox_inches='tight')
     plt.close(fig)
 
@@ -253,8 +253,7 @@ def plot_scatter(period_label):
 
     save_path = os.path.join(
         inpt.basefol['out']['base'], inpt.tres,
-        f"{inpt.tres}_scatter_{inpt.seass[period_label]['name']}_{inpt.var}.png"
-    )
+        f"{inpt.tres}_{inpt.seass[period_label]['name']}_scatter_{inpt.var}_{inpt.var_dict['t']['label']}.png")
     plt.savefig(save_path, bbox_inches='tight')
     plt.close(fig)
 
