@@ -18,6 +18,27 @@ import metpy.calc as mpcalc
 from metpy.units import units
 
 
+def check_empty_df(data_e):
+    import pandas as pd
+
+    if data_e is None:
+        print("Empty DataFrame")
+        return pd.DataFrame(columns=[inpt.var])
+
+    # Check if it's an empty string (in case)
+    if isinstance(data_e, str) and data_e.strip() == '':
+        print("Empty DataFrame")
+        return pd.DataFrame(columns=[inpt.var])
+
+    # Check if it's a DataFrame and empty
+    if isinstance(data_e, pd.DataFrame) and data_e.empty:
+        print("Empty DataFrame")
+        return pd.DataFrame(columns=[inpt.var])
+
+    # If it's none of the above, return as is
+    return data_e
+
+
 def plot_vars_cleanup(p_vars, v_data):
 
     for vvrr in p_vars:

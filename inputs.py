@@ -84,13 +84,13 @@ extra = ['winds', 'windd']
 
 ##
 tres_list = ['3h']
-list_var =  met + rad
+list_var =  ['alb'] #  met + rad
 
 
 tres = ''
 var = ''
 
-years = np.arange(2016, 2025, 1)
+years = np.arange(2016, 2018, 1)
 
 aws_ecapac_daterange = pd.date_range(start=dt.datetime(
     2023, 4, 1), end=dt.datetime(2024, 12, 31), freq='1D')
@@ -137,7 +137,7 @@ extr = {'alb': {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1,
                 'res_min': -0.5, 'res_max': 0.5,
                 'uom': '[none]', 'comps': ['c', 'e'], 'bin_nr': 200,
                 'c': {'fn': f'{thaao_c}_albedo_', 'column': 2, 'data': '',
-                               'data_res': '', 'var_name': ''},
+                               'data_res': '', 'var_name': 'al'},
                 'e': {'fn': f'{thaao_e}_forecast_albedo_', 'column': 2,
                       'data': '', 'data_res': '', 'var_name': ''},
                 't': {'fn': 'MERGED_SW_LW_UP_DW_METEO_', 'column': 'ALBEDO_SW', 'data': '',

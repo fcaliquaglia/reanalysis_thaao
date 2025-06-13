@@ -92,16 +92,20 @@ def read_alb():
     :raises TypeError: If data type mismatches occur when processing datasets within sources.
     :raises ValueError: If data contains invalid values not conforming to the expected range.
     """
+    var_dict = inpt.extr[inpt.var]
+
     # CARRA
     read_rean(inpt.var, "c")
-    inpt.extr[inpt.var]["c"]["data"][inpt.var] /= 100.
-    inpt.extr[inpt.var]["c"]["data"][inpt.var].loc[
-        inpt.extr[inpt.var]["c"]["data"][inpt.var] <= 0.] = np.nan
+    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"])
+    var_dict["c"]["data"][inpt.var] /= 100.
+    var_dict["c"]["data"][inpt.var].loc[
+        var_dict["c"]["data"][inpt.var] <= 0.] = np.nan
 
     # ERA5
     read_rean(inpt.var, "e")
-    inpt.extr[inpt.var]["e"]["data"][inpt.var].loc[
-        inpt.extr[inpt.var]["e"]["data"][inpt.var] <= 0.] = np.nan
+    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"])
+    var_dict["e"]["data"][inpt.var].loc[
+        var_dict["e"]["data"][inpt.var] <= 0.] = np.nan
 
     # THAAO
     if inpt.datasets['THAAO']['switch']:
@@ -118,11 +122,14 @@ def read_cbh():
     :raises ValueError: If the specified input variable is invalid or unsupported.
     :return: None
     """
+    var_dict = inpt.extr[inpt.var]
     # CARRA
     read_rean(inpt.var, "c")
+    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"])
 
     # ERA5
     read_rean(inpt.var, "e")
+    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"])
 
     # THAAO ceilometer
     if inpt.datasets['THAAO']['switch']:
@@ -136,25 +143,29 @@ def read_lwp():
     Reads cloud liquid water path (LWP) data from CARRA, ERA5, and THAAO1,
     applies cleaning conditions (setting values < 0.01 to NaN), and updates datasets.
     """
+    var_dict = inpt.extr[inpt.var]
+
     # --- CARRA ---
     read_rean(inpt.var, "c")
-    lwp_c = inpt.extr[inpt.var]["c"]["data"][inpt.var]
+    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"])
+    lwp_c = var_dict["c"]["data"][inpt.var]
     # Uncomment below line if you want to filter small values
     # lwp_c[lwp_c < 0.01] = np.nan
-    inpt.extr[inpt.var]["c"]["data"][inpt.var] = lwp_c
+    var_dict["c"]["data"][inpt.var] = lwp_c
 
     # --- ERA5 ---
     read_rean(inpt.var, "e")
-    lwp_e = inpt.extr[inpt.var]["e"]["data"][inpt.var]
+    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"])
+    lwp_e = var_dict["e"]["data"][inpt.var]
     lwp_e[lwp_e < 0.01] = np.nan
-    inpt.extr[inpt.var]["e"]["data"][inpt.var] = lwp_e
+    var_dict["e"]["data"][inpt.var] = lwp_e
 
     # --- THAAO1 ---
     if inpt.datasets['THAAO']['switch']:
         rd_ft.read_thaao_hatpro(inpt.var)
-        lwp_t1 = inpt.extr[inpt.var]["t1"]["data"][inpt.var]
+        lwp_t1 = var_dict["t1"]["data"][inpt.var]
         lwp_t1[lwp_t1 < 0.01] = np.nan
-        inpt.extr[inpt.var]["t1"]["data"][inpt.var] = lwp_t1
+        var_dict["t1"]["data"][inpt.var] = lwp_t1
 
     return
 
@@ -164,24 +175,33 @@ def read_lw_down():
     Reads and processes longwave downward radiation ("lw_down") data from CARRA, ERA5, and THAAO.
     Filters out negative values by setting them to NaN, then applies radiation conversion factors.
     """
+    vr = "lw_down"
+    var_dict = inpt.extr[vr]
+
     # --- CARRA ---
-    read_rean("lw_down", "c")
-    lw_down_c = inpt.extr["lw_down"]["c"]["data"][inpt.var]
+    vr = "lw_down"
+    var_dict = inpt.extr[vr]
+    read_rean(vr, "c")
+    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"])
+    lw_down_c = var_dict["c"]["data"][inpt.var]
     lw_down_c[lw_down_c < 0.] = np.nan
     lw_down_c /= inpt.var_dict["c"]["rad_conv_factor"]
-    inpt.extr["lw_down"]["c"]["data"][inpt.var] = lw_down_c
+    var_dict["c"]["data"][inpt.var] = lw_down_c
 
     # --- ERA5 ---
+    vr = "lw_down"
+    var_dict = inpt.extr[vr]
     read_rean("lw_down", "e")
-    lw_down_e = inpt.extr["lw_down"]["e"]["data"][inpt.var]
+    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"])
+    lw_down_e = var_dict["e"]["data"][inpt.var]
     lw_down_e[lw_down_e < 0.] = np.nan
     lw_down_e /= inpt.var_dict["e"]["rad_conv_factor"]
-    inpt.extr["lw_down"]["e"]["data"][inpt.var] = lw_down_e
+    var_dict["e"]["data"][inpt.var] = lw_down_e
 
     # --- THAAO ---
     if inpt.datasets['THAAO']['switch']:
         rd_ft.read_thaao_rad("lw_down")
-        lw_down_t = inpt.extr["lw_down"]["t"]["data"]
+        lw_down_t = var_dict["t"]["data"]
         lw_down_t[lw_down_t < 0.] = np.nan
 
     return
@@ -196,29 +216,44 @@ def read_lw_up():
     read_lw_down()
 
     # --- CARRA ---
-    read_rean("lw_net", "c")
-    lw_net_c = inpt.extr["lw_net"]["c"]["data"][inpt.var]
+    vr = "lw_net"
+    var_dict = inpt.extr[vr]
+    read_rean(vr, "c")
+    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"])
+    lw_net_c = inpt.extr[vr]["c"]["data"][inpt.var]
     lw_net_c /= inpt.var_dict["c"]["rad_conv_factor"]
 
-    lw_down_c = inpt.extr["lw_down"]["c"]["data"][inpt.var]
+    lw_down_c = var_dict["c"]["data"][inpt.var]
     lw_up_c = lw_down_c - lw_net_c
     lw_up_c[lw_up_c < 0.] = np.nan
-    inpt.extr["lw_up"]["c"]["data"][inpt.var] = lw_up_c.to_frame(name="lw_up")
+
+    vr = "lw_up"
+    var_dict = inpt.extr[vr]
+    var_dict["data"][inpt.var] = lw_up_c.to_frame(name=vr)
 
     # --- ERA5 ---
-    read_rean("lw_net", "e")
-    lw_net_e = inpt.extr["lw_net"]["e"]["data"][inpt.var]
+    vr = "lw_net"
+    var_dict = inpt.extr[vr]
+
+    read_rean(vr, "e")
+    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"])
+    lw_net_e = var_dict["e"]["data"][inpt.var]
     lw_net_e /= inpt.var_dict["e"]["rad_conv_factor"]
 
-    lw_down_e = inpt.extr["lw_down"]["e"]["data"][inpt.var]
+    lw_down_e = var_dict["e"]["data"][inpt.var]
     lw_up_e = lw_down_e - lw_net_e
     lw_up_e[lw_up_e < 0.] = np.nan
-    inpt.extr["lw_up"]["e"]["data"][inpt.var] = lw_up_e.to_frame(name="lw_up")
+
+    vr = "lw_up"
+    var_dict = inpt.extr[vr]
+    var_dict["e"]["data"][inpt.var] = lw_up_e.to_frame(name=vr)
 
     # --- THAAO ---
+    vr = "lw_up"
+    var_dict = inpt.extr[vr]
     if inpt.datasets['THAAO']['switch']:
-        rd_ft.read_thaao_rad("lw_up")
-        lw_up_t = inpt.extr["lw_up"]["t"]["data"][inpt.var]
+        rd_ft.read_thaao_rad(vr)
+        lw_up_t = var_dict["t"]["data"][inpt.var]
         lw_up_t[lw_up_t < 0.] = np.nan
 
     return
@@ -229,12 +264,16 @@ def read_precip():
     Reads and processes precipitation data from CARRA, ERA5, and THAAO2 datasets.
     Scales ERA5 precipitation from meters to millimeters. Modifies `inpt` in place.
     """
+    var_dict = inpt.extr[inpt.var]
+
     # --- CARRA ---
     read_rean(inpt.var, "c")
+    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"])
 
     # --- ERA5 ---
     read_rean(inpt.var, "e")
-    precip_e = inpt.extr[inpt.var]["e"]["data"][inpt.var]
+    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"])
+    precip_e = var_dict["e"]["data"][inpt.var]
     precip_e *= 1000.  # Convert from meters to mm
 
     # --- THAAO2 ---
@@ -252,21 +291,23 @@ def read_rh():
     :raises KeyError: if data keys are missing.
     :raises ValueError: if unexpected data structure issues arise.
     """
+    var_dict = inpt.extr[inpt.var]
+
     # --- CARRA ---
     read_rean(inpt.var, "c")
+    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"])
 
     # --- ERA5 ---
     read_rean("dewpt", "e")
+    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"])
     read_rean("temp", "e")
+    var_dict["e"]["data"] = tls.check_empty_df(var_dict[""]["data"])
     tls.calc_rh_from_tdp()  # Compute RH from dew point and temp
 
     # --- THAAO2 ---
     if inpt.datasets['THAAO']['switch']:
         rd_ft.read_thaao_weather(inpt.var)
         rd_ft.read_thaao_aws_ecapac(inpt.var)
-        # This call is repeated in your original code — was that intentional?
-        # Removing the duplicate unless you confirm it's necessary.
-        # rd_ft.read_thaao_weather(inpt.var)
 
     return
 
@@ -277,22 +318,26 @@ def read_surf_pres():
     Converts units, filters out invalid data, and handles known corrupted periods.
     Modifies `inpt` in-place.
     """
+    var_dict = inpt.extr[inpt.var]
+
     # --- CARRA ---
     read_rean(inpt.var, "c")
-    pres_c = inpt.extr[inpt.var]["c"]["data"][inpt.var]
+    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"])
+    pres_c = var_dict["c"]["data"][inpt.var]
     pres_c /= 100.
     pres_c[pres_c <= 900.] = np.nan
 
     # --- ERA5 ---
     read_rean(inpt.var, "e")
-    pres_e = inpt.extr[inpt.var]["e"]["data"][inpt.var]
+    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"])
+    pres_e = var_dict["e"]["data"][inpt.var]
     pres_e /= 100.
     pres_e[pres_e <= 900.] = np.nan
 
     # --- THAAO ---
     if inpt.datasets['THAAO']['switch']:
         rd_ft.read_thaao_weather(inpt.var)
-        pres_t = inpt.extr[inpt.var]["t"]["data"][inpt.var]
+        pres_t = var_dict["t"]["data"][inpt.var]
         pres_t[pres_t <= 900.] = np.nan
         pres_t.loc["2021-10-11 00:00:00":"2021-10-19 00:00:00"] = np.nan
         pres_t.loc["2024-04-26 00:00:00":"2024-05-04 00:00:00"] = np.nan
@@ -308,22 +353,30 @@ def read_sw_down():
     Reads and processes shortwave downward radiation data from CARRA, ERA5, ERA5-LAND, and THAAO.
     Negative values are set to NaN, and values are scaled using radiation conversion factors.
     """
+    vr = "sw_down"
+    var_dict = inpt.extr[vr]
     # --- CARRA ---
-    read_rean("sw_down", "c")
-    sw_down_c = inpt.extr["sw_down"]["c"]["data"][inpt.var]
+    read_rean(vr, "c")
+    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"])
+    sw_down_c = var_dict["c"]["data"][inpt.var]
     sw_down_c[sw_down_c < 0.] = np.nan
     sw_down_c /= inpt.var_dict["c"]["rad_conv_factor"]
 
     # --- ERA5 ---
-    read_rean("sw_down", "e")
-    sw_down_e = inpt.extr["sw_down"]["e"]["data"][inpt.var]
+    vr = "sw_down"
+    var_dict = inpt.extr[vr]
+    read_rean(vr, "e")
+    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"])
+    sw_down_e = var_dict["e"]["data"][inpt.var]
     sw_down_e[sw_down_e < 0.] = np.nan
     sw_down_e /= inpt.var_dict["e"]["rad_conv_factor"]
 
     # --- THAAO ---
+    vr = "sw_down"
+    var_dict = inpt.extr[vr]
     if inpt.datasets['THAAO']['switch']:
-        rd_ft.read_thaao_rad("sw_down")
-        sw_down_t = inpt.extr["sw_down"]["t"]["data"][inpt.var]
+        rd_ft.read_thaao_rad(vr)
+        sw_down_t = var_dict["t"]["data"][inpt.var]
         sw_down_t[sw_down_t < 0.] = np.nan
 
     return
@@ -338,35 +391,51 @@ def read_sw_up():
     read_sw_down()
 
     # --- CARRA ---
+    vr = "sw_net"
+    var_dict = inpt.extr[vr]
     read_rean("sw_net", "c")
+    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"])
 
-    sw_net_c = inpt.extr["sw_net"]["c"]["data"][inpt.var]
+    sw_net_c = var_dict["c"]["data"][inpt.var]
     sw_net_c /= inpt.var_dict["c"]["rad_conv_factor"]
 
-    sw_down_c = inpt.extr["sw_down"]["c"]["data"][inpt.var]
+    vr = "sw_down"
+    var_dict = inpt.extr[vr]
+    sw_down_c = var_dict["c"]["data"][inpt.var]
     sw_up_c = sw_down_c - sw_net_c
     sw_up_c[sw_up_c < 0.] = np.nan
 
-    inpt.extr["sw_up"]["c"]["data"][inpt.var] = sw_up_c
-    del inpt.extr["sw_net"]["c"]["data"][inpt.var]
+    vr = "sw_up"
+    var_dict = inpt.extr[vr]
+    var_dict["c"]["data"][inpt.var] = sw_up_c
+    # del inpt.extr["sw_net"]["c"]["data"][inpt.var]
 
     # --- ERA5 ---
-    read_rean("sw_net", "e")
+    vr = "sw_net"
+    var_dict = inpt.extr[vr]
+    read_rean(vr, "e")
+    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"])
 
-    sw_net_e = inpt.extr["sw_net"]["e"]["data"][inpt.var]
+    sw_net_e = var_dict["e"]["data"][inpt.var]
     sw_net_e /= inpt.var_dict["e"]["rad_conv_factor"][inpt.var]
 
-    sw_down_e = inpt.extr["sw_down"]["e"]["data"][inpt.var]
+    vr = "sw_down"
+    var_dict = inpt.extr[vr]
+    sw_down_e = var_dict["e"]["data"][inpt.var]
     sw_up_e = sw_down_e - sw_net_e
     sw_up_e[sw_up_e < 0.] = np.nan
 
-    inpt.extr["sw_up"]["e"]["data"][inpt.var] = sw_up_e
-    del inpt.extr["sw_net"]["e"]["data"]
+    vr = "sw_up"
+    var_dict = inpt.extr[vr]
+    var_dict["e"]["data"][inpt.var] = sw_up_e
+    # del inpt.extr["sw_net"]["e"]["data"]
 
     # --- THAAO ---
+    vr = "sw_up"
+    var_dict = inpt.extr[vr]
     if inpt.datasets['THAAO']['switch']:
-        rd_ft.read_thaao_rad("sw_up")
-        sw_up_t = inpt.extr["sw_up"]["t"]["data"][inpt.var]
+        rd_ft.read_thaao_rad(vr)
+        sw_up_t = var_dict["t"]["data"][inpt.var]
         sw_up_t[sw_up_t < 0.] = np.nan
 
     return
@@ -384,12 +453,15 @@ def read_tcc():
 
     :return: None
     """
+    var_dict = inpt.extr[inpt.var]
     # CARRA
     read_rean(inpt.var, "c")
+    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"])
 
     # ERA5
     read_rean(inpt.var, "e")
-    inpt.extr[inpt.var]["e"]["data"][inpt.var] *= 100.0
+    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"])
+    var_dict["e"]["data"][inpt.var] *= 100.0
 
     # THAAO
     if inpt.datasets['THAAO']['switch']:
@@ -407,18 +479,22 @@ def read_temp():
 
     :return: None
     """
+    var_dict = inpt.extr[inpt.var]
+
     # CARRA
     read_rean(inpt.var, "c")
-    inpt.extr[inpt.var]["c"]["data"][inpt.var] -= 273.15
+    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"])
+    var_dict["c"]["data"][inpt.var] -= 273.15
 
     # ERA5
     read_rean(inpt.var, "e")
-    inpt.extr[inpt.var]["e"]["data"][inpt.var] -= 273.15
+    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"])
+    var_dict["e"]["data"][inpt.var] -= 273.15
 
     # THAAO
     if inpt.datasets['THAAO']['switch']:
         rd_ft.read_thaao_weather(inpt.var)
-        inpt.extr[inpt.var]["t"]["data"][inpt.var] -= 273.15
+        var_dict["t"]["data"][inpt.var] -= 273.15
 
         # THAAO2
         rd_ft.read_thaao_aws_ecapac(inpt.var)
@@ -453,13 +529,27 @@ def read_wind():
         ("winds") and wind direction ("windd") for available datasets.
     :rtype: None
     """
+
     # CARRA
-    read_rean("winds", "c")
-    read_rean("windd", "c")
+    vr = "winds"
+    var_dict = inpt.extr[vr]
+    read_rean(vr, "c")
+    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"])
+    vr = "windd"
+    var_dict = inpt.extr[vr]
+    read_rean(vr, "c")
+    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"])
 
     # ERA5
-    read_rean("windu", "e")
-    read_rean("windv", "e")
+    vr = "windu"
+    var_dict = inpt.extr[vr]
+    read_rean(vr, "e")
+    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"])
+
+    vr = "windv"
+    var_dict = inpt.extr[vr]
+    read_rean("vr", "e")
+    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"])
     e_ws = wind_speed(
         inpt.extr["windu"]["e"]["data"][inpt.var].values * units("m/s"),
         inpt.extr["windv"]["e"]["data"][inpt.var].values * units("m/s"))
