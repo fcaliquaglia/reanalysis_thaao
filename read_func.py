@@ -301,7 +301,7 @@ def read_rh():
     read_rean("dewpt", "e")
     var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"])
     read_rean("temp", "e")
-    var_dict["e"]["data"] = tls.check_empty_df(var_dict[""]["data"])
+    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"])
     tls.calc_rh_from_tdp()  # Compute RH from dew point and temp
 
     # --- THAAO2 ---
