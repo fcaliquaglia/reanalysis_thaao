@@ -48,7 +48,7 @@ basefol = {
     },
     't': {
         'base': f'{shared}\\Dati_THAAO',
-        'arcsix':f'{shared}\\Dati_THAAO\\thaao_arcsix'
+        'arcsix': f'{shared}\\Dati_THAAO\\thaao_arcsix'
     },
     'out': {
         'base': f'{shared}\\Dati_elab_docs\\thaao_reanalysis',
@@ -70,7 +70,7 @@ datasets = {
     'g3_tracks': {'switch': False, 'fn': ''},
     'radiosondes': {'switch': False, 'fn': ''}}
 
-lbl=next((info['fn'] for info in datasets.values() if info['switch']), None)
+lbl = next((info['fn'] for info in datasets.values() if info['switch']), None)
 
 thaao_c = 'carra1'
 thaao_e = 'era5_NG'
