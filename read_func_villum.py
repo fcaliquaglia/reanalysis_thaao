@@ -49,7 +49,7 @@ def read_villum_weather(vr):
         (v['fn'] for k, v in inpt.datasets.items() if v.get('switch')), None)
 
     inout_path = os.path.join(
-        inpt.basefol['out']['processed'], f"{location}_2024.parquet")
+        inpt.basefol['out']['processed'], f"{location}_{vr}.parquet")
     input_path = os.path.join(inpt.basefol['t']['arcsix'])
     if not os.path.exists(inout_path):
         try:
@@ -64,6 +64,7 @@ def read_villum_weather(vr):
             df = pd.read_csv(os.path.join(input_path, file_name), sep=';',
                              names=new_column_names, index_col='datetime', header=0, parse_dates=['datetime'], dayfirst=True)
             df.drop(columns=['null'], inplace=True)
+            df = df[[vr]]
             df.to_parquet(inout_path)
             print(f'OK: {location}')
         except FileNotFoundError:

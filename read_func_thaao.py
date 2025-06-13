@@ -49,7 +49,7 @@ def read_thaao_weather(vr):
     location = next(
         (v['fn'] for k, v in inpt.datasets.items() if v.get('switch')), None)
     inout_path = os.path.join(
-        inpt.basefol['out']['processed'], f"{location}_2024.parquet")
+        inpt.basefol['out']['processed'], f"{location}_VESPA_{vr}.parquet")
     input_path = os.path.join(inpt.basefol['t']['arcsix'])
 
     try:
@@ -91,7 +91,7 @@ def read_thaao_rad(vr):
     location = next(
         (v['fn'] for k, v in inpt.datasets.items() if v.get('switch')), None)
     inout_path = os.path.join(
-        inpt.basefol['out']['processed'], f"{location}_2024.parquet")
+        inpt.basefol['out']['processed'], f"{location}_rad_{vr}.parquet")
     input_path = os.path.join(inpt.basefol['t']['arcsix'])
 
     t_all = pd.DataFrame()
@@ -144,7 +144,7 @@ def read_thaao_hatpro(vr):
     location = next(
         (v['fn'] for k, v in inpt.datasets.items() if v.get('switch')), None)
     inout_path = os.path.join(
-        inpt.basefol['out']['processed'], f"{location}_2024.parquet")
+        inpt.basefol['out']['processed'], f"{location}_HATPRO_{vr}.parquet")
     input_path = os.path.join(inpt.basefol['t']['arcsix'])
 
     # t1_tmp_all = pd.DataFrame()
@@ -206,7 +206,7 @@ def read_thaao_ceilometer(vr):
     location = next(
         (v['fn'] for k, v in inpt.datasets.items() if v.get('switch')), None)
     inout_path = os.path.join(
-        inpt.basefol['out']['processed'], f"{location}_2024.parquet")
+        inpt.basefol['out']['processed'], f"{location}_ceil_{vr}.parquet")
     input_path = os.path.join(inpt.basefol['t']['arcsix'])
 
     t_all = pd.DataFrame()
@@ -254,7 +254,7 @@ def read_thaao_aws_ecapac(vr):
     location = next(
         (v['fn'] for k, v in inpt.datasets.items() if v.get('switch')), None)
     inout_path = os.path.join(
-        inpt.basefol['out']['processed'], f"{location}_2024.parquet")
+        inpt.basefol['out']['processed'], f"{location}_ECAPAC_{vr}.parquet")
     input_path = os.path.join(inpt.basefol['t']['arcsix'])
 
     t2_all = pd.DataFrame()
