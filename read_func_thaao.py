@@ -6,25 +6,18 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 import inputs as inpt
-
-
-def get_common_paths(vr, prefix):
-    location = next((v['fn']
-                    for v in inpt.datasets.values() if v.get('switch')), None)
-    base_out = Path(inpt.basefol['out']['processed'])
-    base_input = Path(inpt.basefol['t']['arcsix'])
-    filename = f"{location}_{prefix}_{vr}.parquet"
-    return base_out / filename, base_input
+import tools as tls
 
 
 def read_thaao_weather(vr):
-    path_out, _ = get_common_paths(vr, "VESPA")
+    path_out, _ = tls.get_common_paths(vr, "VESPA")
     nc_file = Path(inpt.basefol["t"]['base']) / \
         "thaao_aws_vespa" / f"{inpt.extr[vr]['t']['fn']}.nc"
-    
+
     if os.path.exists(path_out):
         df = pd.read_parquet(path_out)
         inpt.extr[vr]["t"]["data"] = df
+        print(f"Loaded {path_out}")
         return
 
     try:
@@ -39,14 +32,15 @@ def read_thaao_weather(vr):
 
 
 def read_thaao_rad(vr):
-    path_out, _ = get_common_paths(vr, "rad")
+    path_out, _ = tls.get_common_paths(vr, "rad")
     t_all = []
 
     if os.path.exists(path_out):
         df = pd.read_parquet(path_out)
         inpt.extr[vr]["t"]["data"] = df
+        print(f"Loaded {path_out}")
         return
-    
+
     for i in inpt.rad_daterange[inpt.rad_daterange.year.isin(inpt.years)]:
         year = i.year
         file = Path(inpt.basefol["t"]['base']) / "thaao_rad" / \
@@ -70,15 +64,16 @@ def read_thaao_rad(vr):
 
 
 def read_thaao_hatpro(vr):
-    path_out, _ = get_common_paths(vr, "HATPRO")
+    path_out, _ = tls.get_common_paths(vr, "HATPRO")
     file = Path(inpt.basefol["t"]['base']) / "thaao_hatpro" / \
         f"{inpt.extr[vr]['t1']['fn']}" / f"{inpt.extr[vr]['t1']['fn']}.DAT"
 
     if os.path.exists(path_out):
         df = pd.read_parquet(path_out)
         inpt.extr[vr]["t1"]["data"] = df
+        print(f"Loaded {path_out}")
         return
-    
+
     try:
         df = pd.read_table(file, sep=r"\s+", engine="python", header=0, skiprows=9,
                            parse_dates={"datetime": [0, 1]}, index_col="datetime",
@@ -93,14 +88,15 @@ def read_thaao_hatpro(vr):
 
 
 def read_thaao_ceilometer(vr):
-    path_out, _ = get_common_paths(vr, "ceil")
+    path_out, _ = tls.get_common_paths(vr, "ceil")
     t_all = []
 
     if os.path.exists(path_out):
         df = pd.read_parquet(path_out)
         inpt.extr[vr]["t"]["data"] = df
+        print(f"Loaded {path_out}")
         return
-    
+
     for i in inpt.ceilometer_daterange[inpt.ceilometer_daterange.year.isin(inpt.years)]:
         date_str = i.strftime("%Y%m%d")
         file = Path(inpt.basefol["t"]['base']) / "thaao_ceilometer" / \
@@ -125,14 +121,15 @@ def read_thaao_ceilometer(vr):
 
 
 def read_thaao_aws_ecapac(vr):
-    path_out, _ = get_common_paths(vr, "ECAPAC")
+    path_out, _ = tls.get_common_paths(vr, "ECAPAC")
     t_all = []
 
     if os.path.exists(path_out):
         df = pd.read_parquet(path_out)
         inpt.extr[vr]["t2"]["data"] = df
+        print(f"Loaded {path_out}")
         return
-    
+
     for i in inpt.aws_ecapac_daterange[inpt.aws_ecapac_daterange.year.isin(inpt.years)]:
         date_str = i.strftime("%Y_%m_%d")
         file = Path(inpt.basefol["t"]['base']) / "thaao_ecapac_aws_snow" / "AWS_ECAPAC" / \

@@ -9,17 +9,18 @@ Created on Thu Jun 12 08:50:17 2025
 import os
 import time
 import sys
-
+from pathlib import Path
 import numpy as np
 import pandas as pd
 import xarray as xr
 import inputs as inpt
 
-def plot_vars_cleanup(p_vars, v_data): 
+
+def plot_vars_cleanup(p_vars, v_data):
 
     for vvrr in p_vars:
         data = v_data[vvrr]['data']
-    
+
         # Remove if it's a string or not a DataFrame
         if isinstance(data, str) and data == '':
             p_vars.remove(vvrr)
@@ -30,8 +31,9 @@ def plot_vars_cleanup(p_vars, v_data):
         # Optionally also remove if it's empty or all NaNs
         if data.empty or data.isna().all().all():
             p_vars.remove(vvrr)
-            
+
     return p_vars
+
 
 def calc_rh_from_tdp():
     """
@@ -53,6 +55,15 @@ def calc_rh_from_tdp():
     inpt.extr[inpt.var]["e"]["data"].columns = [inpt.var]
 
     return
+
+
+def get_common_paths(vr, prefix):
+    location = next((v['fn']
+                    for v in inpt.datasets.values() if v.get('switch')), None)
+    base_out = Path(inpt.basefol['out']['processed'])
+    base_input = Path(inpt.basefol['t']['arcsix'])
+    filename = f"{location}_{prefix}_{vr}.parquet"
+    return base_out / filename, base_input
 
 
 def wait_for_complete_download(file_path, timeout=600, interval=5):

@@ -23,11 +23,12 @@ __lastupdate__ = ""
 
 import datetime as dt
 import os
-
+from pathlib import Path
 import julian
 import numpy as np
 import pandas as pd
 import inputs as inpt
+import tools as tls
 
 
 def read_villum_weather(vr):
@@ -38,16 +39,15 @@ def read_villum_weather(vr):
     :param vr: Variable key to extract (e.g., 'temp', 'winds').
     :type vr: str
     """
-    location = next((v['fn']
-                    for v in inpt.datasets.values() if v.get('switch')), None)
-    if location is None:
-        print("No active dataset found in configuration.")
+    
+    path_out, _ = tls.get_common_paths(vr, "2024")
+    csv_file = Path(inpt.basefol['t']['arcsix']) / f"Villum_2024.csv"
+        
+    if os.path.exists(path_out):
+        df = pd.read_parquet(path_out)
+        inpt.extr[vr]["t2"]["data"] = df
+        print(f"Loaded {path_out}")
         return
-
-    inout_path = os.path.join(
-        inpt.basefol['out']['processed'], f"{location}_{vr}.parquet")
-    input_path = os.path.join(inpt.basefol['t']['arcsix'])
-    csv_file = os.path.join(input_path, f'{location}_2024.csv')
 
     column_map = {
         'DateTime': 'datetime',
@@ -61,37 +61,28 @@ def read_villum_weather(vr):
         'Snow depth(m)': 'snow_depth'
     }
 
-    if not os.path.exists(inout_path):
-        try:
-            df = pd.read_csv(csv_file, sep=';', header=0,
-                             parse_dates=['DateTime'], dayfirst=True)
-            df.rename(columns=column_map, inplace=True)
-            df.set_index('datetime', inplace=True)
-            df.drop(columns=[col for col in [None]
-                    if col in df.columns], inplace=True)
-
-            if vr not in df.columns:
-                print(f"Variable '{vr}' not found in the dataset.")
-                return
-
-            df = df[[vr]]
-            df.to_parquet(inout_path)
-            print(f'Processed and saved: {csv_file}')
-        except FileNotFoundError:
-            print(f'CSV file not found: {csv_file}')
-            return
-        except Exception as e:
-            print(f'Error processing {csv_file}: {e}')
-            return
-
     try:
-        t_all = pd.read_parquet(inout_path, engine='pyarrow')
-        print(f"Loaded: {inout_path}")
-        inpt.extr[vr]['t']["data"] = t_all
+        df = pd.read_csv(csv_file, sep=';', header=0,
+                         parse_dates=['DateTime'], dayfirst=True)
+        df.rename(columns=column_map, inplace=True)
+        df.set_index('datetime', inplace=True)
+        df.drop(columns=[col for col in [None]
+                if col in df.columns], inplace=True)
+
+        if vr not in df.columns:
+            print(f"Variable '{vr}' not found in the dataset.")
+            return
+
+        df = df[[vr]]
+        df.to_parquet(path_out)
+        print(f'Processed and saved: {csv_file}')
     except FileNotFoundError:
-        print(f'Parquet file missing: {inout_path}')
+        print(f'CSV file not found: {csv_file}')
+        return
     except Exception as e:
-        print(f'Failed to load parquet: {e}')
+        print(f'Error processing {csv_file}: {e}')
+        return
+
 
 # #!/usr/local/bin/python3
 # # -*- coding: utf-8 -*-
