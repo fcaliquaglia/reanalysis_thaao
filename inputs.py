@@ -83,7 +83,7 @@ extra = ['winds', 'windd']
 
 ##
 tres_list = ['3h']
-list_var = ['temp']  # met + rad
+list_var = met + rad
 
 
 tres = ''
