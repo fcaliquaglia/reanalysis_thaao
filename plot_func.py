@@ -55,7 +55,9 @@ def plot_ts(period_label):
     n_years = len(inpt.years)
     fig, ax = plt.subplots(n_years, 1, figsize=(12, 17), dpi=inpt.dpi)
     ax = np.atleast_1d(ax)
-    fig.suptitle(f"{inpt.var.upper()} all {inpt.tres}", fontweight='bold')
+    str_name = f"{inpt.tres} {period_label} ts {inpt.var} {inpt.var_dict['t']['label']} {inpt.years[0]}-{inpt.years[-1]}"
+    fig.suptitle(str_name, fontweight='bold')
+    fig.subplots_adjust(top=0.93) 
 
     # Plotting style kwargs
     kwargs_ori = {'alpha': 0.02, 'lw': 0, 'marker': '.', 'ms': 1}
@@ -102,8 +104,8 @@ def plot_ts(period_label):
 
     plt.xlabel('Time')
     plt.legend(ncol=2)
-    save_path = os.path.join(inpt.basefol['out']['base'], inpt.tres,
-                             f"{inpt.tres}_{period_label}_ts_{inpt.var}_{inpt.var_dict['t']['label']}_{inpt.years[0]}-{inpt.years[-1]}.png")
+    save_path = os.path.join(
+        inpt.basefol['out']['base'], inpt.tres, f"{str_name.replace(' ', '_')}.png")
     plt.savefig(save_path, bbox_inches='tight')
     plt.close(fig)
 
@@ -122,8 +124,9 @@ def plot_residuals(period_label):
     n_years = len(inpt.years)
     fig, ax = plt.subplots(n_years, 1, figsize=(12, 17), dpi=inpt.dpi)
     ax = np.atleast_1d(ax)
-    fig.suptitle(
-        f"residuals {inpt.var.upper()} all {inpt.tres}", fontweight='bold')
+    str_name = f"{inpt.tres} {period_label} residuals_{inpt.var} {inpt.var_dict['t']['label']} {inpt.years[0]}-{inpt.years[-1]}"
+    fig.suptitle(str_name, fontweight='bold')
+    fig.subplots_adjust(top=0.93) 
 
     plot_kwargs = {'lw': 1, 'marker': '.', 'ms': 0}
 
@@ -168,7 +171,7 @@ def plot_residuals(period_label):
     plt.xlabel('Time')
     plt.legend()
     save_path = os.path.join(
-        inpt.basefol['out']['base'], inpt.tres, f"{inpt.tres}_{period_label}_residuals_{inpt.var}_{inpt.var_dict['t']['label']}_{inpt.years[0]}-{inpt.years[-1]}.png")
+        inpt.basefol['out']['base'], inpt.tres, f"{str_name.replace(' ', '_')}.png")
     plt.savefig(save_path, bbox_inches='tight')
     plt.close(fig)
 
@@ -189,9 +192,9 @@ def plot_scatter(period_label):
     fig, ax = plt.subplots(2, 2, figsize=(12, 12), dpi=inpt.dpi)
     axs = ax.ravel()
 
-    # Title with variable and season name
-    fig.suptitle(
-        f"{inpt.var.upper()} {inpt.seass[period_label]['name']} {inpt.tres}", fontweight='bold')
+    str_name = f"{inpt.tres} {inpt.seass[period_label]['name']} scatter {inpt.var} {inpt.var_dict['t']['label']} {inpt.years[0]}-{inpt.years[-1]}"
+    fig.suptitle(str_name, fontweight='bold')
+    fig.subplots_adjust(top=0.93) 
 
     var_data = inpt.extr[inpt.var]
     comps = var_data['comps']
@@ -252,8 +255,7 @@ def plot_scatter(period_label):
         format_scatterplot(axs, comp, i)
 
     save_path = os.path.join(
-        inpt.basefol['out']['base'], inpt.tres,
-        f"{inpt.tres}_{inpt.seass[period_label]['name']}_scatter_{inpt.var}_{inpt.var_dict['t']['label']}_{inpt.years[0]}-{inpt.years[-1]}.png")
+        inpt.basefol['out']['base'], inpt.tres, f"{str_name.replace(' ', '_')}.png")
     plt.savefig(save_path, bbox_inches='tight')
     plt.close(fig)
 
@@ -270,7 +272,9 @@ def plot_scatter_cum():
     plt.ioff()
     fig, ax = plt.subplots(2, 2, figsize=(12, 12), dpi=inpt.dpi)
     axs = ax.ravel()
-    fig.suptitle(f"{inpt.var.upper()} cumulative plot", fontweight='bold')
+    str_name = f"{inpt.tres} all CumSeas scatter {inpt.var} {inpt.var_dict['t']['label']} {inpt.years[0]}-{inpt.years[-1]}"
+    fig.suptitle(str_name, fontweight='bold')
+    fig.subplots_adjust(top=0.93) 
 
     seass_new = {k: v for k, v in inpt.seass.items() if k != 'all'}
 
@@ -320,7 +324,7 @@ def plot_scatter_cum():
             axs[i].legend()
 
     save_path = os.path.join(
-        inpt.basefol['out']['base'], inpt.tres, f"{inpt.tres}_all_CumSeas_scatter_{inpt.var}_{inpt.var_dict['t']['label']}_{inpt.years[0]}-{inpt.years[-1]}.png")
+        inpt.basefol['out']['base'], inpt.tres, f"{str_name.replace(' ', '_')}.png")
     plt.savefig(save_path, bbox_inches='tight')
     plt.close(fig)
 

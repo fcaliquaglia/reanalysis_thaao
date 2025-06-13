@@ -63,6 +63,6 @@ def read_villum_weather(vr):
         inpt.extr[vr]["t2"]["data"] = df[vr].to_frame()*np.nan
         print(f'OK: Villum')
     except FileNotFoundError:
-        print(f'NOT FOUND: Villum csv')
+        print(f'NOT FOUND: {file_path}')
 
     return
