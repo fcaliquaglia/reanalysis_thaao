@@ -14,6 +14,8 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 import inputs as inpt
+import metpy.calc as mpcalc
+from metpy.units import units
 
 
 def plot_vars_cleanup(p_vars, v_data):
@@ -46,13 +48,14 @@ def calc_rh_from_tdp():
 
     :return: None
     """
+    dewpoint = inpt.extr["dewpt"]["e"]["data"]["rh"]
+    temperature = inpt.extr["temp"]["e"]["data"]["temp"]
 
-    # e = pd.concat([inpt.extr[inpt.var]["t"]["data"], e_t], axis=1)
+    relh = mpcalc.relative_humidity_from_dewpoint(
+        temperature.values * units.K, dewpoint.values * units.K).to("percent")
 
-    # e["rh"] = relative_humidity_from_dewpoint(e["e_t"].values * units.K, e["e_td"].values * units.K).to("percent")
-    inpt.extr[inpt.var]["e"]["data"].drop(
-        columns=["e_t", "e_td"], inplace=True)
-    inpt.extr[inpt.var]["e"]["data"].columns = [inpt.var]
+    inpt.extr["rh"]["e"]["data"] = pd.DataFrame(
+        {"rh": relh.magnitude}, index=dewpoint.index)
 
     return
 
@@ -204,7 +207,8 @@ def process_rean(vr, data_typ, y, loc):
         if not (len(t_idx) == len(x_idx) == len(y_idx)):
             print("Something's worng with indexes dimension!")
         for i in range(len(y_idx)):
-            da = ds[var_name].isel({lat_dim: y_idx[i], lon_dim: x_idx[i], time_dim: t_idx[i]})
+            da = ds[var_name].isel(
+                {lat_dim: y_idx[i], lon_dim: x_idx[i], time_dim: t_idx[i]})
             da_small = da.drop_vars(
                 ['step', 'surface', 'expver', 'number'], errors='ignore')
             df = pd.DataFrame({

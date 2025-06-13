@@ -294,9 +294,8 @@ def read_rh():
     read_rean(inpt.var, "c")
 
     # ERA5
-    read_rean(inpt.var, "e")
-    if inpt.extr[inpt.var]["e"]["data"].empty:
-        read_rean("temp", "e")
+    read_rean("dewpt", "e")
+    read_rean("temp", "e")
     tls.calc_rh_from_tdp()
 
     # THAAO2
