@@ -98,13 +98,13 @@ def read_alb():
     read_rean(inpt.var, "c")
     var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"])
     var_dict["c"]["data"][inpt.var] /= 100.
-    var_dict["c"]["data"].loc[var_dict["c"]["data"][inpt.var] <= 0., inpt.var] = np.nan
+    # var_dict["c"]["data"].loc[var_dict["c"]["data"][inpt.var] <= 0., inpt.var] = np.nan
 
 
     # ERA5
     read_rean(inpt.var, "e")
     var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"])
-    var_dict["e"]["data"].loc[var_dict["e"]["data"][inpt.var] <= 0., inpt.var] = np.nan
+    # var_dict["e"]["data"].loc[var_dict["e"]["data"][inpt.var] <= 0., inpt.var] = np.nan
 
 
     # THAAO

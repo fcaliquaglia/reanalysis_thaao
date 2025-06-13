@@ -264,7 +264,7 @@ from https://confluence.ecmwf.int/display/CKB/ERA5-Land%3A+data+documentation#ER
 
 ### Surface albedo (``alb``)
 
-- CARRA: ``albedo`` (forecast). Values masked to nan for alb<0.1, since they are unrealistic.
+- CARRA: ``albedo`` (forecast).
 - ERA-5: ``forecast_albedo`` (also ``snow_albedo``)
 - THAAO (pyrgeometers): ``DSI``+``USI``
 
