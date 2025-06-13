@@ -37,6 +37,7 @@ def calc_rh_from_tdp():
 
     return
 
+
 def wait_for_complete_download(file_path, timeout=600, interval=5):
     """Wait until the file is fully downloaded by monitoring file size."""
     print(f"Waiting for file to be ready: {file_path}")
@@ -55,7 +56,8 @@ def wait_for_complete_download(file_path, timeout=600, interval=5):
             break
 
         if time.time() - start_time > timeout:
-            raise TimeoutError(f"File did not complete downloading in {timeout} seconds: {file_path}.\n Increase timeout or download it manually.")
+            raise TimeoutError(
+                f"File did not complete downloading in {timeout} seconds: {file_path}.\n Increase timeout or download it manually.")
 
         prev_size = current_size
         time.sleep(interval)
@@ -69,7 +71,8 @@ def process_rean(vr, data_typ, y, loc):
     if os.path.exists(ds_path):
         try:
             wait_for_complete_download(ds_path)
-            ds = xr.open_dataset(ds_path, decode_timedelta=True, engine="netcdf4")
+            ds = xr.open_dataset(
+                ds_path, decode_timedelta=True, engine="netcdf4")
             print(f'OK: {os.path.basename(ds_path)}')
         except FileNotFoundError:
             print(f'NOT FOUND: {os.path.basename(ds_path)}')
@@ -127,10 +130,17 @@ def process_rean(vr, data_typ, y, loc):
         df.rename(columns={var_name: vr}, inplace=True)
         data_list.append(df)
 
+    if not data_list:
+        print(f"No data extracted for {filename}, skipping write.")
+        return
+
     full_df = pd.concat(data_list)
+    if full_df.empty:
+        print(f"Warning: Empty DataFrame for {filename}, skipping write.")
+        return
     out_path = os.path.join(
         inpt.basefol[data_typ]['processed'],
         f"{inpt.extr[vr][data_typ]['fn']}{loc}_{y}.parquet"
     )
-    full_df.to_parquet(out_path)
+    full_df.to_parquet(out_path, engine="pyarrow")
     print(f"Saved processed data to {out_path}")
