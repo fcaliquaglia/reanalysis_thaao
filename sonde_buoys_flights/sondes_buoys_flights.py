@@ -73,6 +73,15 @@ dpi = 300
 # ---------------------------- FUNCTIONS ---------------------------- #
 
 
+def safe_replace_year(dt, target_year):
+    """Safely replace year in a datetime, avoiding Feb 29 issues."""
+    try:
+        return dt.replace(year=target_year)
+    except ValueError:
+        # Handle Feb 29 on non-leap years
+        return dt.replace(month=2, day=28, year=target_year)
+
+
 def grid_loading(dataset_type, file_sample):
     try:
         ds = xr.open_dataset(os.path.join("..\grid_selection", file_sample),
@@ -172,8 +181,9 @@ def find_index_in_grid(grid_selection, fol_file, out_file):
             if pd.notnull(dt_str):
                 input_time = pd.to_datetime(dt_str)
                 adjusted_ds_times = ds_times.map(
-                    lambda t: t.replace(year=input_time.year))
+                    lambda t: safe_replace_year(t, input_time.year))
                 time_diffs = np.abs(adjusted_ds_times - input_time)
+
                 # Filtering time differences below 3 tres
                 if out_file[0] == 'e':
                     thresh = 1
