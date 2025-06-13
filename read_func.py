@@ -41,20 +41,30 @@ import tools as tls
 def read_rean(vr, dataset_type):
     """
     Generalized function to read and process data from CARRA or ERA5 datasets.
-    """
 
+    This function checks for processed yearly parquet files for the given variable and dataset type.
+    If any yearly file is missing, it triggers the processing function `tls.process_rean` to generate it.
+    Finally, it reads all the yearly parquet files and concatenates them into a single DataFrame,
+    which is stored in the global `inpt.extr` structure.
+
+    :param vr: Variable name to read (e.g., "temp", "sw_down").
+    :param dataset_type: Dataset type identifier ("c" for CARRA, "e" for ERA5).
+    :return: None
+    """
+    # Determine location filename prefix based on active dataset switches
     location = next(
         (v['fn'] for k, v in inpt.datasets.items() if v.get('switch')), None)
 
-    # First process missing files
+    # Process missing yearly files if needed
     for year in inpt.years:
         output_file = f"{inpt.extr[vr][dataset_type]['fn']}{location}_{year}.parquet"
         output_path = os.path.join(
             inpt.basefol[dataset_type]['processed'], output_file)
+
         if not os.path.exists(output_path):
             tls.process_rean(vr, dataset_type, year, location)
 
-    # Then read all processed files into a single DataFrame
+    # Read all yearly parquet files and concatenate into a single DataFrame
     data_all = pd.DataFrame()
     for year in inpt.years:
         input_file = f"{inpt.extr[vr][dataset_type]['fn']}{location}_{year}.parquet"
@@ -64,10 +74,11 @@ def read_rean(vr, dataset_type):
             data_tmp = pd.read_parquet(input_path)
             print(f"Loaded {input_path}")
         except FileNotFoundError as e:
-            print(e)
+            print(f"File not found: {input_path} ({e})")
             continue
-        data_all = pd.concat([data_all, data_tmp])
+        data_all = pd.concat([data_all, data_tmp], ignore_index=True)
 
+    # Store the concatenated data in the input extraction dictionary
     inpt.extr[vr][dataset_type]["data"] = data_all
 
 
@@ -83,14 +94,14 @@ def read_alb():
     """
     # CARRA
     read_rean(inpt.var, "c")
-    inpt.extr[inpt.var]["c"]["data"][inpt.var] = inpt.extr[inpt.var]["c"]["data"][inpt.var] / 100.
-    inpt.extr[inpt.var]["c"]["data"][inpt.var][inpt.extr[inpt.var]
-                                               ["c"]["data"][inpt.var] <= 0.] = np.nan
+    inpt.extr[inpt.var]["c"]["data"][inpt.var] /= 100.
+    inpt.extr[inpt.var]["c"]["data"][inpt.var].loc[
+        inpt.extr[inpt.var]["c"]["data"][inpt.var] <= 0.] = np.nan
 
     # ERA5
     read_rean(inpt.var, "e")
-    inpt.extr[inpt.var]["c"]["data"][inpt.var][inpt.extr[inpt.var]
-                                               ["c"]["data"][inpt.var] <= 0.] = np.nan
+    inpt.extr[inpt.var]["e"]["data"][inpt.var].loc[
+        inpt.extr[inpt.var]["e"]["data"][inpt.var] <= 0.] = np.nan
 
     # THAAO
     if inpt.datasets['THAAO']['switch']:
@@ -101,10 +112,8 @@ def read_alb():
 
 def read_cbh():
     """
-    Reads cloud base height (CBH) data from different sources and processes it
-    based on the specified input variable. This function integrates data from
-    multiple sources including CARRA, ERA5, and THAAO Ceilometer, providing a
-    comprehensive dataset for further analysis.
+    Reads cloud base height (CBH) data from multiple sources and processes it
+    based on the specified input variable. Supports data from CARRA, ERA5, and THAAO ceilometer.
 
     :raises ValueError: If the specified input variable is invalid or unsupported.
     :return: None
@@ -115,7 +124,7 @@ def read_cbh():
     # ERA5
     read_rean(inpt.var, "e")
 
-    # THAAO
+    # THAAO ceilometer
     if inpt.datasets['THAAO']['switch']:
         rd_ft.read_thaao_ceilometer(inpt.var)
 
@@ -124,155 +133,111 @@ def read_cbh():
 
 def read_lwp():
     """
-    Reads cloud liquid water path (LWP) data from multiple sources, processes it, and
-    updates the respective datasets for further analysis. This function specifically
-    handles data from three sources: CARRA, ERA5, and THAAO1. Upon reading the data,
-    conditions are applied to clean and format it appropriately for use.
-
-    :raises ValueError: If any required input data is missing or improperly formatted.
-
-    :param None:
-
-    :return: None
+    Reads cloud liquid water path (LWP) data from CARRA, ERA5, and THAAO1,
+    applies cleaning conditions (setting values < 0.01 to NaN), and updates datasets.
     """
-    # CARRA
+    # --- CARRA ---
     read_rean(inpt.var, "c")
-    inpt.extr[inpt.var]["c"]["data"][inpt.var] = inpt.extr[inpt.var]["c"]["data"][inpt.var]
-    # inpt.extr[inpt.var]["c"]["data"][inpt.var][inpt.extr[inpt.var]["c"]["data"][inpt.var] < 0.01] = np.nan
-    # c[c < 15] = 0
+    lwp_c = inpt.extr[inpt.var]["c"]["data"][inpt.var]
+    # Uncomment below line if you want to filter small values
+    # lwp_c[lwp_c < 0.01] = np.nan
+    inpt.extr[inpt.var]["c"]["data"][inpt.var] = lwp_c
 
-    # ERA5
+    # --- ERA5 ---
     read_rean(inpt.var, "e")
-    inpt.extr[inpt.var]["e"]["data"] = inpt.extr[inpt.var]["e"]["data"]
-    inpt.extr[inpt.var]["e"]["data"][inpt.var][inpt.extr[inpt.var]
-                                               ["e"]["data"][inpt.var] < 0.01] = np.nan
-    # e[e < 15] = 0
+    lwp_e = inpt.extr[inpt.var]["e"]["data"][inpt.var]
+    lwp_e[lwp_e < 0.01] = np.nan
+    inpt.extr[inpt.var]["e"]["data"][inpt.var] = lwp_e
 
-    # THAAO1
+    # --- THAAO1 ---
     if inpt.datasets['THAAO']['switch']:
         rd_ft.read_thaao_hatpro(inpt.var)
-        inpt.extr[inpt.var]["t1"]["data"][inpt.var][inpt.extr[inpt.var]
-                                                    ["t1"]["data"][inpt.var] < 0.01] = np.nan
-    # t1[t1 < 15] = 0
+        lwp_t1 = inpt.extr[inpt.var]["t1"]["data"][inpt.var]
+        lwp_t1[lwp_t1 < 0.01] = np.nan
+        inpt.extr[inpt.var]["t1"]["data"][inpt.var] = lwp_t1
 
     return
 
 
 def read_lw_down():
     """
-    Reads and processes longwave downward radiation ("lw_down") data from multiple sources such as
-    CARRA, ERA5, and THAAO. The function handles data quality issues by filtering out
-    non-physical values (values less than 0) and applies conversion factors to the raw data using
-    values stored in the `var_dict` dictionary.
-
-    The processed data is stored in the `inpt.extr` dictionary under specific keys corresponding to
-    each data source ("c" for CARRA, "e" for ERA5, and "t" for THAAO).
-
-    :raises KeyError: If keys expected in `inpt.extr` or `inpt.var_dict` for specific
-        sources ("c", "e", "t") are missing.
-    :raises ValueError: If data conversion or filtering operations encounter unexpected
-        or malformed data values.
-
-    :return: None
+    Reads and processes longwave downward radiation ("lw_down") data from CARRA, ERA5, and THAAO.
+    Filters out negative values by setting them to NaN, then applies radiation conversion factors.
     """
-    # CARRA
+    # --- CARRA ---
     read_rean("lw_down", "c")
-    inpt.extr["lw_down"]["c"]["data"][inpt.var][inpt.extr["lw_down"]
-                                                ["c"]["data"][inpt.var] < 0.] = np.nan
-    inpt.extr["lw_down"]["c"]["data"][inpt.var] = inpt.extr["lw_down"]["c"]["data"][inpt.var] / \
-        inpt.var_dict["c"]["rad_conv_factor"]
+    lw_down_c = inpt.extr["lw_down"]["c"]["data"][inpt.var]
+    lw_down_c[lw_down_c < 0.] = np.nan
+    lw_down_c /= inpt.var_dict["c"]["rad_conv_factor"]
+    inpt.extr["lw_down"]["c"]["data"][inpt.var] = lw_down_c
 
-    # ERA5
+    # --- ERA5 ---
     read_rean("lw_down", "e")
-    inpt.extr["lw_down"]["e"]["data"][inpt.var][inpt.extr["lw_down"]
-                                                ["e"]["data"][inpt.var] < 0.] = np.nan
-    inpt.extr["lw_down"]["e"]["data"][inpt.var] = inpt.extr["lw_down"]["e"]["data"][inpt.var] / \
-        inpt.var_dict["e"]["rad_conv_factor"]
+    lw_down_e = inpt.extr["lw_down"]["e"]["data"][inpt.var]
+    lw_down_e[lw_down_e < 0.] = np.nan
+    lw_down_e /= inpt.var_dict["e"]["rad_conv_factor"]
+    inpt.extr["lw_down"]["e"]["data"][inpt.var] = lw_down_e
 
-    # THAAO
+    # --- THAAO ---
     if inpt.datasets['THAAO']['switch']:
         rd_ft.read_thaao_rad("lw_down")
-        inpt.extr["lw_down"]["t"]["data"][inpt.extr["lw_down"]
-                                          ["t"]["data"] < 0.] = np.nan
+        lw_down_t = inpt.extr["lw_down"]["t"]["data"]
+        lw_down_t[lw_down_t < 0.] = np.nan
+
     return
 
 
 def read_lw_up():
     """
-    Processes and calculates longwave upwelling radiation data for multiple datasets.
-
-    This function reads and processes longwave radiation data, including
-    net longwave radiation and upward longwave radiation, for various
-    datasets including CARRA, ERA5, ERA5-LAND, and THAAO. The processing
-    includes unit conversions using a radiation conversion factor,
-    subtracting net radiation from downward radiation to compute upward
-    radiation, and handling invalid or unusable data (e.g., setting negative
-    values to NaN).
-
-    The data is categorized into different keys for each dataset, and the
-    relevant computations are conducted based on the respective radiation
-    conversion factors and formulas for each dataset source.
-
-    :raises KeyError: If required data keys are missing in input dictionaries.
-    :raises TypeError: If the input data types are incompatible with the operations.
-    :raises ValueError: If data contains invalid values for computations.
-    :raises AttributeError: If required attributes are missing in the input object.
-    :return: None
+    Reads and processes longwave upwelling radiation data from multiple sources (CARRA, ERA5, THAAO).
+    Performs unit conversions, calculates upward LW radiation from net/downward components,
+    and handles invalid values.
     """
     read_lw_down()
 
-    # CARRA
+    # --- CARRA ---
     read_rean("lw_net", "c")
-    inpt.extr["lw_net"]["c"]["data"][inpt.var] = inpt.extr["lw_net"]["c"]["data"][inpt.var] / \
-        inpt.var_dict["c"]["rad_conv_factor"]
-    inpt.extr["lw_up"]["c"]["data"][inpt.var] = pd.DataFrame(
-        index=inpt.extr["lw_down"]["c"]["data"][inpt.var].index,
-        data=inpt.extr["lw_down"]["c"]["data"][inpt.var].values - inpt.extr["lw_net"]["c"]["data"][inpt.var].values, columns=["lw_up"])
-    inpt.extr["lw_up"]["c"]["data"][inpt.var][inpt.extr["lw_up"]
-                                              ["c"]["data"][inpt.var] < 0.] = np.nan
-    # del inpt.extr["lw_net"]["c"]["data"]
+    lw_net_c = inpt.extr["lw_net"]["c"]["data"][inpt.var]
+    lw_net_c /= inpt.var_dict["c"]["rad_conv_factor"]
 
-    # ERA5
+    lw_down_c = inpt.extr["lw_down"]["c"]["data"][inpt.var]
+    lw_up_c = lw_down_c - lw_net_c
+    lw_up_c[lw_up_c < 0.] = np.nan
+    inpt.extr["lw_up"]["c"]["data"][inpt.var] = lw_up_c.to_frame(name="lw_up")
+
+    # --- ERA5 ---
     read_rean("lw_net", "e")
-    inpt.extr["lw_net"]["e"]["data"][inpt.var] = inpt.extr["lw_net"]["e"]["data"][inpt.var] / \
-        inpt.var_dict["e"]["rad_conv_factor"]
-    inpt.extr["lw_up"]["e"]["data"][inpt.var] = pd.DataFrame(
-        index=inpt.extr["lw_down"]["e"]["data"][inpt.var].index,
-        data=inpt.extr["lw_down"]["e"]["data"][inpt.var].values - inpt.extr["lw_net"]["e"]["data"][inpt.var].values, columns=["lw_up"])
-    inpt.extr["lw_up"]["e"]["data"][inpt.var][inpt.var][inpt.extr["lw_up"]
-                                                        ["e"]["data"][inpt.var] < 0.] = np.nan
-    # del inpt.extr["lw_net"]["e"]["data"]
+    lw_net_e = inpt.extr["lw_net"]["e"]["data"][inpt.var]
+    lw_net_e /= inpt.var_dict["e"]["rad_conv_factor"]
 
-    # THAAO
+    lw_down_e = inpt.extr["lw_down"]["e"]["data"][inpt.var]
+    lw_up_e = lw_down_e - lw_net_e
+    lw_up_e[lw_up_e < 0.] = np.nan
+    inpt.extr["lw_up"]["e"]["data"][inpt.var] = lw_up_e.to_frame(name="lw_up")
+
+    # --- THAAO ---
     if inpt.datasets['THAAO']['switch']:
         rd_ft.read_thaao_rad("lw_up")
-        inpt.extr["lw_up"]["t"]["data"][inpt.extr["lw_up"]
-                                        ["t"]["data"][inpt.var] < 0.] = np.nan
+        lw_up_t = inpt.extr["lw_up"]["t"]["data"][inpt.var]
+        lw_up_t[lw_up_t < 0.] = np.nan
 
     return
 
 
 def read_precip():
     """
-    Reads and processes precipitation data from multiple sources.
-
-    This function integrates data from CARRA, ERA5, and THAAO2 datasets, applying
-    necessary transformations and storing resulting data within the provided input
-    structure. The function is responsible for coordinating the reading of data
-    via corresponding source-specific readers and ensuring compatibility of the
-    processed data across sources.
-
-    :return: None
+    Reads and processes precipitation data from CARRA, ERA5, and THAAO2 datasets.
+    Scales ERA5 precipitation from meters to millimeters. Modifies `inpt` in place.
     """
-    # CARRA
+    # --- CARRA ---
     read_rean(inpt.var, "c")
 
-    # ERA5
+    # --- ERA5 ---
     read_rean(inpt.var, "e")
-    inpt.extr[inpt.var]["e"]["data"][inpt.var] = inpt.extr[inpt.var]["e"]["data"][inpt.var].values * \
-        1000.
+    precip_e = inpt.extr[inpt.var]["e"]["data"][inpt.var]
+    precip_e *= 1000.  # Convert from meters to mm
 
-    # THAAO2
+    # --- THAAO2 ---
     if inpt.datasets['THAAO']['switch']:
         rd_ft.read_thaao_aws_ecapac(inpt.var)
 
@@ -281,62 +246,58 @@ def read_precip():
 
 def read_rh():
     """
-    Reads and processes relative humidity data from various sources including
-    CARRA, ERA5, and THAAO2-based weather datasets. This function
-    includes checks for missing data and calculates relative humidity from
-    temperature and dew point temperature if necessary.
+    Reads and processes relative humidity data from CARRA, ERA5, and THAAO2 datasets.
+    If RH is not directly available, it is calculated from temperature and dew point.
 
-    :raises KeyError: Raised if there is a key-related issue during data access
-        within the input variables.
-    :raises ValueError: Raised if an unexpected data inconsistency is encountered.
+    :raises KeyError: if data keys are missing.
+    :raises ValueError: if unexpected data structure issues arise.
     """
-    # CARRA
+    # --- CARRA ---
     read_rean(inpt.var, "c")
 
-    # ERA5
+    # --- ERA5 ---
     read_rean("dewpt", "e")
     read_rean("temp", "e")
-    tls.calc_rh_from_tdp()
+    tls.calc_rh_from_tdp()  # Compute RH from dew point and temp
 
-    # THAAO2
+    # --- THAAO2 ---
     if inpt.datasets['THAAO']['switch']:
         rd_ft.read_thaao_weather(inpt.var)
         rd_ft.read_thaao_aws_ecapac(inpt.var)
-        rd_ft.read_thaao_weather(inpt.var)
+        # This call is repeated in your original code — was that intentional?
+        # Removing the duplicate unless you confirm it's necessary.
+        # rd_ft.read_thaao_weather(inpt.var)
 
     return
 
 
 def read_surf_pres():
     """
-    Reads surface pressure data from multiple sources, processes the data, and handles exceptional
-    values by setting them to NaN. The function operates on multiple datasets - CARRA, ERA5, THAAO,
-    and THAAO2, adjusting their scales or removing data in certain cases.
-
-    :raises: KeyError if `inpt.var` is not found in the input data structure or if any expected
-             fields are incomplete or missing.
+    Reads surface pressure data from CARRA, ERA5, THAAO, and THAAO2.
+    Converts units, filters out invalid data, and handles known corrupted periods.
+    Modifies `inpt` in-place.
     """
-    # CARRA
+    # --- CARRA ---
     read_rean(inpt.var, "c")
-    inpt.extr[inpt.var]["c"]["data"][inpt.var] = inpt.extr[inpt.var]["c"]["data"][inpt.var] / 100.
-    inpt.extr[inpt.var]["c"]["data"][inpt.var][inpt.extr[inpt.var]
-                                               ["c"]["data"][inpt.var] <= 900] = np.nan
+    pres_c = inpt.extr[inpt.var]["c"]["data"][inpt.var]
+    pres_c /= 100.
+    pres_c[pres_c <= 900.] = np.nan
 
-    # ERA5
+    # --- ERA5 ---
     read_rean(inpt.var, "e")
-    inpt.extr[inpt.var]["e"]["data"][inpt.var] = inpt.extr[inpt.var]["e"]["data"][inpt.var] / 100.
-    inpt.extr[inpt.var]["e"]["data"][inpt.var][inpt.extr[inpt.var]
-                                               ["e"]["data"][inpt.var] <= 900] = np.nan
+    pres_e = inpt.extr[inpt.var]["e"]["data"][inpt.var]
+    pres_e /= 100.
+    pres_e[pres_e <= 900.] = np.nan
 
-    # THAAO
+    # --- THAAO ---
     if inpt.datasets['THAAO']['switch']:
         rd_ft.read_thaao_weather(inpt.var)
-        inpt.extr[inpt.var]["t"]["data"][inpt.var][inpt.extr[inpt.var]
-                                                   ["t"]["data"][inpt.var] <= 900] = np.nan
-        inpt.extr[inpt.var]["t"]["data"][inpt.var].loc["2021-10-11 00:00:00":"2021-10-19 00:00:00"] = np.nan
-        inpt.extr[inpt.var]["t"]["data"][inpt.var].loc["2024-4-26 00:00:00":"2024-5-4 00:00:00"] = np.nan
+        pres_t = inpt.extr[inpt.var]["t"]["data"][inpt.var]
+        pres_t[pres_t <= 900.] = np.nan
+        pres_t.loc["2021-10-11 00:00:00":"2021-10-19 00:00:00"] = np.nan
+        pres_t.loc["2024-04-26 00:00:00":"2024-05-04 00:00:00"] = np.nan
 
-        # THAAO2
+        # --- THAAO2 ---
         rd_ft.read_thaao_aws_ecapac(inpt.var)
 
     return
@@ -344,77 +305,69 @@ def read_surf_pres():
 
 def read_sw_down():
     """
-    Reads and processes shortwave downward radiation data from multiple data sources,
-    including CARRA, ERA5, ERA5-LAND, and THAAO. Negative values of radiation data
-    are replaced with NaN, and the data is scaled according to respective radiation
-    conversion factors.
-
-    :return: None
+    Reads and processes shortwave downward radiation data from CARRA, ERA5, ERA5-LAND, and THAAO.
+    Negative values are set to NaN, and values are scaled using radiation conversion factors.
     """
-    # CARRA
+    # --- CARRA ---
     read_rean("sw_down", "c")
-    inpt.extr["sw_down"]["c"]["data"][inpt.var][inpt.extr["sw_down"]
-                                                ["c"]["data"][inpt.var] < 0.] = np.nan
-    inpt.extr["sw_down"]["c"]["data"][inpt.var] = inpt.extr["sw_down"]["c"]["data"][inpt.var] / \
-        inpt.var_dict["c"]["rad_conv_factor"]
+    sw_down_c = inpt.extr["sw_down"]["c"]["data"][inpt.var]
+    sw_down_c[sw_down_c < 0.] = np.nan
+    sw_down_c /= inpt.var_dict["c"]["rad_conv_factor"]
 
-    # ERA5
+    # --- ERA5 ---
     read_rean("sw_down", "e")
-    inpt.extr["sw_down"]["e"]["data"][inpt.var][inpt.extr["sw_down"]
-                                                ["e"]["data"][inpt.var] < 0.] = np.nan
-    inpt.extr["sw_down"]["e"]["data"][inpt.var] = inpt.extr["sw_down"]["e"]["data"][inpt.var] / \
-        inpt.var_dict["e"]["rad_conv_factor"]
+    sw_down_e = inpt.extr["sw_down"]["e"]["data"][inpt.var]
+    sw_down_e[sw_down_e < 0.] = np.nan
+    sw_down_e /= inpt.var_dict["e"]["rad_conv_factor"]
 
-    # THAAO
+    # --- THAAO ---
     if inpt.datasets['THAAO']['switch']:
         rd_ft.read_thaao_rad("sw_down")
-        inpt.extr["sw_down"]["t"]["data"][inpt.var][inpt.extr["sw_down"]
-                                                    ["t"]["data"][inpt.var] < 0.] = np.nan
+        sw_down_t = inpt.extr["sw_down"]["t"]["data"][inpt.var]
+        sw_down_t[sw_down_t < 0.] = np.nan
+
     return
 
 
 def read_sw_up():
     """
-    Reads and processes shortwave upward radiation data from various sources, including CARRA, ERA5,
-    ERA5-LAND, and THAAO. The function adjusts and prepares this data by performing necessary unit
-    conversions, calculations, and value filtering. Data from each source is extracted, recalculated
-    using conversion factors, filtered for valid values, and any processed intermediate data is
-    removed to optimize memory usage.
-
-    :raise KeyError: if the expected keys are not found in the data structures.
-    :raise ValueError: if the data contains invalid or unexpected values.
-
-    :return: None
+    Reads and processes shortwave upward radiation data from CARRA, ERA5, ERA5-LAND, and THAAO.
+    Applies unit conversions, calculates upwelling radiation, and filters invalid values.
+    Modifies `inpt` in-place.
     """
     read_sw_down()
 
-    # CARRA
+    # --- CARRA ---
     read_rean("sw_net", "c")
-    inpt.extr["sw_net"]["c"]["data"][inpt.var] = inpt.extr["sw_net"]["c"]["data"][inpt.var] / \
-        inpt.var_dict["c"]["rad_conv_factor"]
-    inpt.extr["sw_up"]["c"]["data"][inpt.var] = pd.DataFrame(
-        index=inpt.extr["sw_down"]["c"]["data"][inpt.var].index,
-        data=inpt.extr["sw_down"]["c"]["data"][inpt.var].values - inpt.extr["sw_net"]["c"]["data"][inpt.var].values, columns=["sw_up"])
-    inpt.extr["sw_up"]["c"]["data"][inpt.var][inpt.extr["sw_up"]
-                                              ["c"]["data"][inpt.var] < 0.] = np.nan
+
+    sw_net_c = inpt.extr["sw_net"]["c"]["data"][inpt.var]
+    sw_net_c /= inpt.var_dict["c"]["rad_conv_factor"]
+
+    sw_down_c = inpt.extr["sw_down"]["c"]["data"][inpt.var]
+    sw_up_c = sw_down_c - sw_net_c
+    sw_up_c[sw_up_c < 0.] = np.nan
+
+    inpt.extr["sw_up"]["c"]["data"][inpt.var] = sw_up_c
     del inpt.extr["sw_net"]["c"]["data"][inpt.var]
 
-    # ERA5
+    # --- ERA5 ---
     read_rean("sw_net", "e")
-    inpt.extr["sw_net"]["e"]["data"][inpt.var] = inpt.extr["sw_net"]["e"]["data"][inpt.var] / \
-        inpt.var_dict["e"]["rad_conv_factor"][inpt.var]
-    inpt.extr["sw_up"]["e"]["data"][inpt.var] = pd.DataFrame(
-        index=inpt.extr["sw_down"]["e"]["data"][inpt.var].index,
-        data=inpt.extr["sw_down"]["e"]["data"][inpt.var].values - inpt.extr["sw_net"]["e"]["data"][inpt.var].values, columns=["sw_up"])
-    inpt.extr["sw_up"]["e"]["data"][inpt.var][inpt.extr["sw_up"]
-                                              ["e"]["data"][inpt.var] < 0.] = np.nan
+
+    sw_net_e = inpt.extr["sw_net"]["e"]["data"][inpt.var]
+    sw_net_e /= inpt.var_dict["e"]["rad_conv_factor"][inpt.var]
+
+    sw_down_e = inpt.extr["sw_down"]["e"]["data"][inpt.var]
+    sw_up_e = sw_down_e - sw_net_e
+    sw_up_e[sw_up_e < 0.] = np.nan
+
+    inpt.extr["sw_up"]["e"]["data"][inpt.var] = sw_up_e
     del inpt.extr["sw_net"]["e"]["data"]
 
-    # THAAO
+    # --- THAAO ---
     if inpt.datasets['THAAO']['switch']:
         rd_ft.read_thaao_rad("sw_up")
-        inpt.extr["sw_up"]["t"]["data"][inpt.var][inpt.extr["sw_up"]
-                                                  ["t"]["data"][inpt.var] < 0.] = np.nan
+        sw_up_t = inpt.extr["sw_up"]["t"]["data"][inpt.var]
+        sw_up_t[sw_up_t < 0.] = np.nan
 
     return
 
@@ -436,7 +389,7 @@ def read_tcc():
 
     # ERA5
     read_rean(inpt.var, "e")
-    inpt.extr[inpt.var]["e"]["data"][inpt.var] = inpt.extr[inpt.var]["e"]["data"][inpt.var].values * 100.
+    inpt.extr[inpt.var]["e"]["data"][inpt.var] *= 100.0
 
     # THAAO
     if inpt.datasets['THAAO']['switch']:
@@ -456,23 +409,22 @@ def read_temp():
     """
     # CARRA
     read_rean(inpt.var, "c")
-    inpt.extr[inpt.var]["c"]["data"][inpt.var] = inpt.extr[inpt.var]["c"]["data"][inpt.var] - 273.15
+    inpt.extr[inpt.var]["c"]["data"][inpt.var] -= 273.15
 
     # ERA5
     read_rean(inpt.var, "e")
-    inpt.extr[inpt.var]["e"]["data"][inpt.var] = inpt.extr[inpt.var]["e"]["data"][inpt.var] - 273.15
+    inpt.extr[inpt.var]["e"]["data"][inpt.var] -= 273.15
 
     # THAAO
     if inpt.datasets['THAAO']['switch']:
         rd_ft.read_thaao_weather(inpt.var)
-        inpt.extr[inpt.var]["t"]["data"][inpt.var] = inpt.extr[inpt.var]["t"]["data"][inpt.var] - 273.15
+        inpt.extr[inpt.var]["t"]["data"][inpt.var] -= 273.15
 
         # THAAO2
         rd_ft.read_thaao_aws_ecapac(inpt.var)
 
     if inpt.datasets['Villum']['switch']:
         rd_fv.read_villum_weather(inpt.var)
-        inpt.extr[inpt.var]["t"]["data"][inpt.var] = inpt.extr[inpt.var]["t"]["data"][inpt.var]
 
     return
 

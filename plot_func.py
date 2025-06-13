@@ -58,7 +58,7 @@ def plot_ts(period_label):
     ax = np.atleast_1d(ax)
     str_name = f"{inpt.tres} {period_label} ts {inpt.var} {inpt.var_dict['t']['label']} {inpt.years[0]}-{inpt.years[-1]}"
     fig.suptitle(str_name, fontweight='bold')
-    fig.subplots_adjust(top=0.93) 
+    fig.subplots_adjust(top=0.93)
 
     # Plotting style kwargs
     kwargs_ori = {'alpha': 0.02, 'lw': 0, 'marker': '.', 'ms': 1}
@@ -70,7 +70,6 @@ def plot_ts(period_label):
     ref_x = var_data['ref_x']
     plot_vars_all = comps + [ref_x]
     plot_vars = tls.plot_vars_cleanup(plot_vars_all, var_data)
-
 
     for i, year in enumerate(inpt.years):
         print(f"plotting {year}")
@@ -129,7 +128,7 @@ def plot_residuals(period_label):
     ax = np.atleast_1d(ax)
     str_name = f"{inpt.tres} {period_label} residuals_{inpt.var} {inpt.var_dict['t']['label']} {inpt.years[0]}-{inpt.years[-1]}"
     fig.suptitle(str_name, fontweight='bold')
-    fig.subplots_adjust(top=0.93) 
+    fig.subplots_adjust(top=0.93)
 
     plot_kwargs = {'lw': 1, 'marker': '.', 'ms': 0}
 
@@ -137,7 +136,7 @@ def plot_residuals(period_label):
     comps_all = var_data['comps']
     ref_x = var_data['ref_x']
     ref_data_res = var_data[ref_x]['data_res'][inpt.var]
-    
+
     comps = tls.plot_vars_cleanup(comps_all, var_data)
 
     for i, year in enumerate(inpt.years):
@@ -199,7 +198,7 @@ def plot_scatter(period_label):
 
     str_name = f"{inpt.tres} {inpt.seass[period_label]['name']} scatter {inpt.var} {inpt.var_dict['t']['label']} {inpt.years[0]}-{inpt.years[-1]}"
     fig.suptitle(str_name, fontweight='bold')
-    fig.subplots_adjust(top=0.93) 
+    fig.subplots_adjust(top=0.93)
 
     var_data = inpt.extr[inpt.var]
     comps_all = var_data['comps']
@@ -281,7 +280,7 @@ def plot_scatter_cum():
     axs = ax.ravel()
     str_name = f"{inpt.tres} all CumSeas scatter {inpt.var} {inpt.var_dict['t']['label']} {inpt.years[0]}-{inpt.years[-1]}"
     fig.suptitle(str_name, fontweight='bold')
-    fig.subplots_adjust(top=0.93) 
+    fig.subplots_adjust(top=0.93)
 
     seass_new = {k: v for k, v in inpt.seass.items() if k != 'all'}
 
@@ -290,7 +289,7 @@ def plot_scatter_cum():
     ref_x = var_data['ref_x']
     x = var_data[ref_x]['data_res'][inpt.var]
     comps = tls.plot_vars_cleanup(comps_all, var_data)
-    
+
     # Prepare full time range for reindexing once
     time_range = pd.date_range(
         start=pd.Timestamp(inpt.years[0], 1, 1, 0, 0),
