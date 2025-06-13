@@ -69,7 +69,7 @@ def calc_rh_from_tdp():
 
     :return: None
     """
-    dewpoint = inpt.extr["dewpt"]["e"]["data"]["rh"]
+    dewpoint = inpt.extr["dewpt"]["e"]["data"]["dewpt"]
     temperature = inpt.extr["temp"]["e"]["data"]["temp"]
 
     relh = mpcalc.relative_humidity_from_dewpoint(

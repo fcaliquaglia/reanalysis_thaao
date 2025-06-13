@@ -59,13 +59,13 @@ basefol = {
 
 # flag type --> set to True only one at a time
 datasets = {
-    'THAAO': {'switch': False, 'fn': 'THAAO'},
+    'THAAO': {'switch': True, 'fn': 'THAAO'},
     'Alert': {'switch': False, 'fn': 'Alert'},
     'Villum': {'switch': False, 'fn': 'Villum'},
     'Sigma-A': {'switch': False, 'fn': 'Sigma-A'},
     'Sigma-B': {'switch': False, 'fn': 'Sigma-B'},
     'Summit': {'switch': False, 'fn': 'Summit'},
-    'buoys': {'switch': True, 'fn': '2024Nprocessed'},
+    'buoys': {'switch': False, 'fn': '2024Nprocessed'},
     'dropsondes': {'switch': False, 'fn': ''},
     'p3_tracks': {'switch': False, 'fn': ''},
     'g3_tracks': {'switch': False, 'fn': ''},
