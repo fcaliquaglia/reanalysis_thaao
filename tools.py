@@ -206,6 +206,7 @@ def process_rean(vr, data_typ, y, loc):
         elif data_typ == "e":
             lat_vals = ds["latitude"].isel(latitude=y_idx).values
             lon_vals = ds["longitude"].isel(longitude=x_idx).values
+            time_vals = np.array(ds[time_dim].values[t_idx])
             lat_dim, lon_dim = 'latitude', 'longitude'
         else:
             raise ValueError(f"Unknown dataset_type: {data_typ}")

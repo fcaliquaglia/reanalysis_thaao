@@ -59,13 +59,13 @@ basefol = {
 
 # flag type --> set to True only one at a time
 datasets = {
-    'THAAO': {'switch': False, 'fn': 'THAAO'},
+    'THAAO': {'switch': True, 'fn': 'THAAO'},
     'Alert': {'switch': False, 'fn': 'Alert'},
     'Villum': {'switch': False, 'fn': 'Villum'},
     'Sigma-A': {'switch': False, 'fn': 'Sigma-A'},
     'Sigma-B': {'switch': False, 'fn': 'Sigma-B'},
     'Summit': {'switch': False, 'fn': 'Summit'},
-    'buoys': {'switch': True, 'fn': '2024Nprocessed'},
+    'buoys': {'switch': False, 'fn': '2024Nprocessed'},
     'dropsondes': {'switch': False, 'fn': ''},
     'p3_tracks': {'switch': False, 'fn': ''},
     'g3_tracks': {'switch': False, 'fn': ''},
@@ -77,14 +77,14 @@ thaao_c = 'carra1'
 thaao_e = 'era5_NG'
 thaao_t = 'thaao'
 
-met = ['temp', 'surf_pres', 'rh', 'iwv']
+met = ['temp', 'surf_pres', 'rh']  #, 'iwv']
 rad = ['sw_down', 'lw_down', 'sw_up', 'lw_up', 'alb']
 clouds = ['lwp', 'cbh', 'tcc', 'precip']
 extra = ['winds', 'windd']
 
 ##
 tres_list = ['3h']
-list_var = met + rad
+list_var =  rad + met
 
 
 tres = ''
@@ -241,7 +241,7 @@ extr = {'alb': {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1,
         'sw_down': {'name': 'sw_down', 'ref_x': 't', 'min': 0, 'max': 700, 'res_min': -20, 'res_max': 20,
                     'uom': '[W/m2]', 'comps': ['c', 'e'], 'bin_nr': 200,
                     'c': {'fn': f'{thaao_c}_surface_solar_radiation_downwards_', 'column': 4,
-                            'data': '', 'data_res': '', 'var_name': ''},
+                            'data': '', 'data_res': '', 'var_name': 'ssrd'},
                     'e': {'fn': f'{thaao_e}_surface_solar_radiation_downwards_', 'column': 2,
                           'data': '', 'data_res': '', 'var_name': ''},
                     't': {'fn': 'MERGED_SW_LW_UP_DW_METEO_', 'column': 'SW_DOWN', 'data': '',

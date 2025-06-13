@@ -324,15 +324,14 @@ def read_surf_pres():
     read_rean(inpt.var, "c")
     var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"])
     pres_c = var_dict["c"]["data"][inpt.var]
-    pres_c /= 100.
-    pres_c[pres_c <= 900.] = np.nan
-
+    var_dict["c"]["data"][inpt.var] /= 100.
+    var_dict["c"]["data"].loc[var_dict["c"]["data"][inpt.var] <= 900., inpt.var] = np.nan
+    
     # --- ERA5 ---
     read_rean(inpt.var, "e")
     var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"])
-    pres_e = var_dict["e"]["data"][inpt.var]
-    pres_e /= 100.
-    pres_e[pres_e <= 900.] = np.nan
+    var_dict["e"]["data"][inpt.var] /= 100.
+    var_dict["e"]["data"].loc[var_dict["e"]["data"][inpt.var] <= 900., inpt.var] = np.nan
 
     # --- THAAO ---
     if inpt.datasets['THAAO']['switch']:
