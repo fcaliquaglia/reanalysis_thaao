@@ -103,7 +103,7 @@ def plot_ts(period_label):
     plt.xlabel('Time')
     plt.legend(ncol=2)
     save_path = os.path.join(inpt.basefol['out']['base'], inpt.tres,
-                             f"{inpt.tres}_{period_label}_ts_{inpt.var}_{inpt.var_dict['t']['label']}.png")
+                             f"{inpt.tres}_{period_label}_ts_{inpt.var}_{inpt.var_dict['t']['label']}_{inpt.years[0]}-{inpt.years[-1]}.png")
     plt.savefig(save_path, bbox_inches='tight')
     plt.close(fig)
 
@@ -168,7 +168,7 @@ def plot_residuals(period_label):
     plt.xlabel('Time')
     plt.legend()
     save_path = os.path.join(
-        inpt.basefol['out']['base'], inpt.tres, f"{inpt.tres}_{period_label}_residuals_{inpt.var}_{inpt.var_dict['t']['label']}.png")
+        inpt.basefol['out']['base'], inpt.tres, f"{inpt.tres}_{period_label}_residuals_{inpt.var}_{inpt.var_dict['t']['label']}_{inpt.years[0]}-{inpt.years[-1]}.png")
     plt.savefig(save_path, bbox_inches='tight')
     plt.close(fig)
 
@@ -253,7 +253,7 @@ def plot_scatter(period_label):
 
     save_path = os.path.join(
         inpt.basefol['out']['base'], inpt.tres,
-        f"{inpt.tres}_{inpt.seass[period_label]['name']}_scatter_{inpt.var}_{inpt.var_dict['t']['label']}.png")
+        f"{inpt.tres}_{inpt.seass[period_label]['name']}_scatter_{inpt.var}_{inpt.var_dict['t']['label']}_{inpt.years[0]}-{inpt.years[-1]}.png")
     plt.savefig(save_path, bbox_inches='tight')
     plt.close(fig)
 
@@ -320,7 +320,7 @@ def plot_scatter_cum():
             axs[i].legend()
 
     save_path = os.path.join(
-        inpt.basefol['out']['base'], inpt.tres, f"{inpt.tres}_scatter_cum_{inpt.var}_{inpt.var_dict['t']['label']}.png")
+        inpt.basefol['out']['base'], inpt.tres, f"{inpt.tres}_all_CumSeas_scatter_{inpt.var}_{inpt.var_dict['t']['label']}_{inpt.years[0]}-{inpt.years[-1]}.png")
     plt.savefig(save_path, bbox_inches='tight')
     plt.close(fig)
 
