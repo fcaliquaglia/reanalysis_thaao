@@ -72,11 +72,11 @@ def read_villum_weather(vr):
             print(f'NOT FOUND: {location}')
 
     try:
-        data_all = pd.read_parquet(inout_path, engine='pyarrow')
+        t_all = pd.read_parquet(inout_path, engine='pyarrow')
         print(f"Loaded {input_path}")
     except FileNotFoundError as e:
         print(e)
 
-    inpt.extr[vr]['t']["data"] = data_all
+    inpt.extr[vr]['t']["data"] = t_all
 
     return

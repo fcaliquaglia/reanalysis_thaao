@@ -46,17 +46,32 @@ def read_thaao_weather(vr):
 
     :return: None. The global input structure is updated directly.
     """
+    location = next(
+        (v['fn'] for k, v in inpt.datasets.items() if v.get('switch')), None)
+    inout_path = os.path.join(
+        inpt.basefol['out']['processed'], f"{location}_2024.parquet")
+    input_path = os.path.join(inpt.basefol['t']['arcsix'])
+
     try:
-        inpt.extr[vr]["t"]["data"] = xr.open_dataset(
+        t_all = xr.open_dataset(
             os.path.join(inpt.basefol["t"]['base'], "thaao_aws_vespa",
                          f'{inpt.extr[vr]["t"]["fn"]}.nc'),
             engine="netcdf4").to_dataframe()
         print(f'OK: {inpt.extr[vr]["t"]["fn"]}.nc')
     except FileNotFoundError:
         print(f'NOT FOUND: {inpt.extr[vr]["t"]["fn"]}.nc')
-    inpt.extr[vr]["t"]["data"] = inpt.extr[vr]["t"]["data"][[
-        inpt.extr[vr]["t"]["column"]]]
-    inpt.extr[vr]["t"]["data"].columns = [vr]
+    t_all = t_all[[inpt.extr[vr]["t"]["column"]]]
+    t_all.columns = [vr]
+    t_all.to_parquet(inout_path)
+
+    try:
+        t_all = pd.read_parquet(inout_path)
+        print(f"Loaded {input_path}")
+    except FileNotFoundError as e:
+        print(e)
+
+    inpt.extr[vr]["t"]["data"] = t_all
+
     return
 
 
@@ -73,7 +88,13 @@ def read_thaao_rad(vr):
     :type vr: str
     :return: None
     """
-    t_tmp_all = pd.DataFrame()
+    location = next(
+        (v['fn'] for k, v in inpt.datasets.items() if v.get('switch')), None)
+    inout_path = os.path.join(
+        inpt.basefol['out']['processed'], f"{location}_2024.parquet")
+    input_path = os.path.join(inpt.basefol['t']['arcsix'])
+
+    t_all = pd.DataFrame()
     for i in inpt.rad_daterange[inpt.rad_daterange.year.isin(inpt.years)]:
         i_fmt = int(i.strftime("%Y"))
         try:
@@ -90,12 +111,21 @@ def read_thaao_rad(vr):
                 tmp[ii] = tmp[ii].replace(microsecond=0)
             t_tmp.index = pd.DatetimeIndex(tmp)
             t_tmp = t_tmp[[inpt.extr[vr]["t"]["column"]]]
-            t_tmp_all = pd.concat([t_tmp_all, t_tmp], axis=0)
+            t_all = pd.concat([t_all, t_tmp], axis=0)
             print(f'OK: {inpt.extr[vr]["t"]["fn"]}{i_fmt}.txt')
         except FileNotFoundError:
             print(f'NOT FOUND: {inpt.extr[vr]["t"]["fn"]}{i_fmt}.txt')
-    inpt.extr[vr]["t"]["data"] = t_tmp_all
-    inpt.extr[vr]["t"]["data"].columns = [vr]
+    t_all.columns = [vr]
+    t_all.to_parquet(inout_path)
+
+    try:
+        t_all = pd.read_parquet(inout_path)
+        print(f"Loaded {input_path}")
+    except FileNotFoundError as e:
+        print(e)
+
+    inpt.extr[vr]["t"]["data"] = t_all
+
     return
 
 
@@ -111,6 +141,12 @@ def read_thaao_hatpro(vr):
     :type vr: str
     :return: None
     """
+    location = next(
+        (v['fn'] for k, v in inpt.datasets.items() if v.get('switch')), None)
+    inout_path = os.path.join(
+        inpt.basefol['out']['processed'], f"{location}_2024.parquet")
+    input_path = os.path.join(inpt.basefol['t']['arcsix'])
+
     # t1_tmp_all = pd.DataFrame()
     try:
         #    t1_tmp = pd.read_table(
@@ -130,13 +166,24 @@ def read_thaao_hatpro(vr):
                 f'{inpt.extr[vr]["t1"]["fn"]}.DAT'), sep=r"\s+", engine="python", header=0, skiprows=9,
             parse_dates={"datetime": [0, 1]}, date_format="%Y-%m-%d %H:%M:%S", index_col="datetime")
 
-        inpt.extr[vr]["t1"]["data"] = t1_tmp[[inpt.extr[vr]["t1"]["column"]]]
-
-        inpt.extr[vr]["t1"]["data"].columns = [vr]
-
         print(f'OK: {inpt.extr[vr]["t1"]["fn"]}.DAT')
     except FileNotFoundError:
         print(f'NOT FOUND: {inpt.extr[vr]["t1"]["fn"]}.DAT')
+
+    t1_tmp_all = t1_tmp[[inpt.extr[vr]["t1"]["column"]]]
+
+    t1_tmp_all.columns = [vr]
+    t1_tmp_all.to_parquet(inout_path)
+
+    try:
+        t1_tmp_all = pd.read_parquet(inout_path)
+        print(f"Loaded {input_path}")
+    except FileNotFoundError as e:
+        print(e)
+
+    inpt.extr[vr]["t1"]["data"] = t1_tmp_all
+
+    return
 
 
 def read_thaao_ceilometer(vr):
@@ -156,7 +203,13 @@ def read_thaao_ceilometer(vr):
 
     :return: None
     """
-    t_tmp_all = pd.DataFrame()
+    location = next(
+        (v['fn'] for k, v in inpt.datasets.items() if v.get('switch')), None)
+    inout_path = os.path.join(
+        inpt.basefol['out']['processed'], f"{location}_2024.parquet")
+    input_path = os.path.join(inpt.basefol['t']['arcsix'])
+
+    t_all = pd.DataFrame()
     for i in inpt.ceilometer_daterange[inpt.ceilometer_daterange.year.isin(inpt.years)]:
         i_fmt = i.strftime("%Y%m%d")
         try:
@@ -166,20 +219,26 @@ def read_thaao_ceilometer(vr):
                     f'{i_fmt}{inpt.extr[vr]["t"]["fn"]}.txt'), skipfooter=0, sep=r"\s+", header=0, skiprows=9,
                 engine="python")
             t_tmp[t_tmp == inpt.var_dict["t"]["nanval"]] = np.nan
-            t_tmp_all = pd.concat([t_tmp_all, t_tmp], axis=0)
+            t_all = pd.concat([t_all, t_tmp], axis=0)
             print(f'OK: {i_fmt}{inpt.extr[vr]["t"]["fn"]}.txt')
         except (FileNotFoundError, pd.errors.EmptyDataError):
             print(f'NOT FOUND: {i_fmt}{inpt.extr[vr]["t"]["fn"]}.txt')
-    inpt.extr[vr]["t"]["data"] = t_tmp_all
-    inpt.extr[vr]["t"]["data"].index = pd.to_datetime(
-        inpt.extr[vr]["t"]["data"]["#"] + " " +
-        inpt.extr[vr]["t"]["data"]["date[y-m-d]time[h:m:s]"],
-        format="%Y-%m-%d %H:%M:%S")
-    inpt.extr[vr]["t"]["data"].index.name = "datetime"
-    inpt.extr[vr]["t"]["data"] = inpt.extr[vr]["t"]["data"].iloc[:, :].filter(
-        [inpt.extr[vr]["t"]["column"]]).astype(float)
-    inpt.extr[vr]["t"]["data"].columns = [vr]
 
+    t_all.index = pd.to_datetime(
+        t_all["#"] + " " + t_all["date[y-m-d]time[h:m:s]"], format="%Y-%m-%d %H:%M:%S")
+    t_all.index.name = "datetime"
+    t_all = t_all.iloc[:, :].filter(
+        [inpt.extr[vr]["t"]["column"]]).astype(float)
+    t_all.columns = [vr]
+    t_all.to_parquet(inout_path)
+
+    try:
+        t_all = pd.read_parquet(inout_path)
+        print(f"Loaded {input_path}")
+    except FileNotFoundError as e:
+        print(e)
+
+    inpt.extr[vr]["t"]["data"] = t_all
     return
 
 
@@ -192,7 +251,13 @@ def read_thaao_aws_ecapac(vr):
     :param vr: Variable name (str) specifying the dataset key in the input extraction configuration.
     :return: None
     """
-    t2_tmp_all = pd.DataFrame()
+    location = next(
+        (v['fn'] for k, v in inpt.datasets.items() if v.get('switch')), None)
+    inout_path = os.path.join(
+        inpt.basefol['out']['processed'], f"{location}_2024.parquet")
+    input_path = os.path.join(inpt.basefol['t']['arcsix'])
+
+    t2_all = pd.DataFrame()
     for i in inpt.aws_ecapac_daterange[inpt.aws_ecapac_daterange.year.isin(inpt.years)]:
         i_fmt = i.strftime("%Y_%m_%d")
         try:
@@ -203,16 +268,25 @@ def read_thaao_aws_ecapac(vr):
             t2_tmp = pd.read_csv(
                 file, skiprows=[0, 3], header=0, decimal=".", delimiter=",", engine="python",
                 index_col="TIMESTAMP").iloc[1:, :]
-            t2_tmp_all = pd.concat([t2_tmp_all, t2_tmp], axis=0)
+            t2_all = pd.concat([t2_all, t2_tmp], axis=0)
 
             print(f'OK: {inpt.extr[vr]["t2"]["fn"]}{i_fmt}_00_00.dat')
         except (FileNotFoundError, pd.errors.EmptyDataError):
             print(f'NOT_FOUND: {inpt.extr[vr]["t2"]["fn"]}{i_fmt}_00_00.dat')
-    inpt.extr[vr]["t2"]["data"] = t2_tmp_all
-    inpt.extr[vr]["t2"]["data"].index = pd.DatetimeIndex(
-        inpt.extr[vr]["t2"]["data"].index)
-    inpt.extr[vr]["t2"]["data"].index.name = "datetime"
-    inpt.extr[vr]["t2"]["data"] = inpt.extr[vr]["t2"]["data"].iloc[:, :].filter(
+
+    t2_all.index = pd.DatetimeIndex(
+        t2_all.index)
+    t2_all.index.name = "datetime"
+    t2_all = t2_all.iloc[:, :].filter(
         [inpt.extr[vr]["t2"]["column"]]).astype(float)
-    inpt.extr[vr]["t2"]["data"].columns = [vr]
+    t2_all.columns = [vr]
+    t2_all.to_parquet(inout_path)
+
+    try:
+        t2_all = pd.read_parquet(inout_path)
+        print(f"Loaded {input_path}")
+    except FileNotFoundError as e:
+        print(e)
+
+    inpt.extr[vr]["t2"]["data"] = t2_all
     return
