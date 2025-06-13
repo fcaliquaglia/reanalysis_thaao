@@ -275,6 +275,7 @@ def plot_scatter_cum():
 
     :return: None
     """
+    print(f"SCATTERPLOTS cumulative")
     plt.ioff()
     fig, ax = plt.subplots(2, 2, figsize=(12, 12), dpi=inpt.dpi)
     axs = ax.ravel()
