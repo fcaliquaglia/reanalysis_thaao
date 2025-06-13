@@ -119,7 +119,7 @@ def find_index_in_grid(grid_selection, fol_file, out_file):
 
     Output CSV:
     - Columns: datetime, input_lat, input_lon, input_elev,
-               y_idx, x_idx, z_idx,
+               y_idx, x_idx, t_idx,
                matched_lat, matched_lon, matched_elev, matched_time
 
     Notes:
@@ -135,7 +135,7 @@ def find_index_in_grid(grid_selection, fol_file, out_file):
 
     # Output
     with open(os.path.join(fol_file, out_file), "w") as out_f:
-        header = "datetime,input_lat,input_lon,input_elev,y_idx,x_idx,z_idx,matched_lat,matched_lon,matched_elev,matched_time\n"
+        header = "datetime,input_lat,input_lon,input_elev,y_idx,x_idx,t_idx,matched_lat,matched_lon,matched_elev,matched_time\n"
         out_f.write(header)
 
         for row in coords.itertuples(index=False):
@@ -166,9 +166,8 @@ def find_index_in_grid(grid_selection, fol_file, out_file):
 
             matched_elev = np.nan
 
-            # z_idx, time)
             # Parse input datetime
-            z_idx, matched_time = np.nan, np.nan
+            t_idx, matched_time = np.nan, np.nan
             dt_str = row.datetime
             if pd.notnull(dt_str):
                 input_time = pd.to_datetime(dt_str)
@@ -184,23 +183,23 @@ def find_index_in_grid(grid_selection, fol_file, out_file):
                 filtered_diffs = time_diffs.where(time_diffs <= threshold)
                 if filtered_diffs.isnull().all():
                     matched_time = np.nan
-                    z_idx = np.nan
+                    t_idx = np.nan
                 else:
                     time_idx = time_diffs.argmin()
                     matched_original = ds_times[time_idx]
                     matched_time = matched_original.replace(
                         year=input_time.year)
-                    z_idx = ds_times.get_loc(matched_original)
+                    t_idx = ds_times.get_loc(matched_original)
 
                 days_in_year = 366 if calendar.isleap(input_time.year) else 365
                 index_check = (days_in_year * 24) // thresh
-                if z_idx > index_check:
+                if t_idx > index_check:
                     print("z index is on the edge. This may indicate that the time point lies outside the available reanalysis domain. Setting to np.nan as a precaution.")
-                    z_idx = np.nan
+                    t_idx = np.nan
                 else:
                     pass
 
-            str_fmt = f"{dt_str},{input_lat:.6f},{input_lon:.6f},{input_elev:.2f},{y_idx},{x_idx},{z_idx},{matched_lat:.6f},{matched_lon:.6f},{matched_elev:.2f},{matched_time}\n"
+            str_fmt = f"{dt_str},{input_lat:.6f},{input_lon:.6f},{input_elev:.2f},{y_idx},{x_idx},{t_idx},{matched_lat:.6f},{matched_lon:.6f},{matched_elev:.2f},{matched_time}\n"
             out_f.write(str_fmt)
 
     print(f"Index mapping written to {out_file}")
