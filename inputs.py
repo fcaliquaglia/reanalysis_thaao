@@ -59,12 +59,12 @@ basefol = {
 
 # flag type --> set to True only one at a time
 datasets = {
-    'THAAO': {'switch': False, 'fn': 'THAAO'},
+    'THAAO': {'switch': True, 'fn': 'THAAO'},
     'Alert': {'switch': False, 'fn': 'Alert'},
     'Villum': {'switch': False, 'fn': 'Villum'},
     'Sigma-A': {'switch': False, 'fn': 'Sigma-A'},
     'Sigma-B': {'switch': False, 'fn': 'Sigma-B'},
-    'buoys': {'switch': True, 'fn': '2024Nprocessed'},
+    'buoys': {'switch': False, 'fn': '2024Nprocessed'},
     'dropsondes': {'switch': False, 'fn': ''},
     'p3_tracks': {'switch': False, 'fn': ''},
     'g3_tracks': {'switch': False, 'fn': ''},
@@ -83,13 +83,13 @@ extra = ['winds', 'windd']
 
 ##
 tres_list = ['3h']
-list_var = met + rad
+list_var = ['rh'] # met + rad
 
 
 tres = ''
 var = ''
 
-years = np.arange(2024, 2025, 1)
+years = np.arange(2022, 2025, 1)
 
 aws_ecapac_daterange = pd.date_range(start=dt.datetime(
     2023, 4, 1), end=dt.datetime(2024, 12, 31), freq='1D')
@@ -220,7 +220,7 @@ extr = {'alb': {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1,
         'rh': {'name': 'rh', 'ref_x': 't', 'min': 0, 'max': 100, 'res_min': -10, 'res_max': 10, 'uom': '[%]',
                'comps': ['c', 'e', 't2'], 'bin_nr': 200,
                'c': {'fn': f'{thaao_c}_2m_relative_humidity_', 'column': np.nan, 'data': '', 'data_res': '', 'var_name': 'r2'},
-               'e': {'fn': f'{thaao_e}_dewpoint_temperature_', 'column': np.nan, 'data': '', 'data_res': '', 'var_name': ''},
+               'e': {'fn': f'{thaao_e}_2m_dewpoint_temperature_', 'column': np.nan, 'data': '', 'data_res': '', 'var_name': 'd2m'},
                't': {'fn': 'Meteo_weekly_all', 'column': 'RH_%', 'data': '',
                      'data_res': ''},
                't1': {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},

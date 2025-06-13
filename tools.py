@@ -97,15 +97,13 @@ def process_rean(vr, data_typ, y, loc):
     ds_path = os.path.join(raw_dir, filename)
 
     if os.path.exists(ds_path):
-        try:
-            wait_for_complete_download(ds_path)
-            ds = xr.open_dataset(
-                ds_path, decode_timedelta=True, engine="netcdf4")
-            print(f'OK: {os.path.basename(ds_path)}')
-        except FileNotFoundError:
-            print(f'NOT FOUND: {os.path.basename(ds_path)}')
-            return
+        wait_for_complete_download(ds_path)
+        ds = xr.open_dataset(
+            ds_path, decode_timedelta=True, engine="netcdf4")
+        print(f'OK: {ds_path}')
+
     else:
+        print(f'NOT FOUND: {ds_path}')
         return
 
     if data_typ == "c":
