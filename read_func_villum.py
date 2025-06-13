@@ -64,7 +64,6 @@ def read_villum_weather(vr):
             df = pd.read_csv(os.path.join(input_path, file_name), sep=';',
                              names=new_column_names, index_col='datetime', header=0, parse_dates=['datetime'], dayfirst=True)
             df.drop(columns=['null'], inplace=True)
-            df = df.to_frame()
             df.to_parquet(inout_path)
             print(f'OK: {location}')
         except FileNotFoundError:
