@@ -30,6 +30,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 import read_func_thaao as rd_ft
+import read_func_villum as rd_fv
 from metpy.calc import wind_direction, wind_speed
 from metpy.units import units
 import inputs as inpt
@@ -485,7 +486,8 @@ def read_temp():
         # THAAO2
         rd_ft.read_thaao_aws_ecapac(inpt.var)
 
-    # if inpt.datasets['buoys']['switch']:
+    if inpt.datasets['Villum']['switch']:
+        rd_fv.read_villum_weather(inpt.var)
 
     return
 
