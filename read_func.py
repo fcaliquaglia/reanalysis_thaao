@@ -160,48 +160,7 @@ def read_lwp():
     return
 
 
-def read_msl_pres():
-    """
-    Reads mean sea-level pressure (MSL) from the specified source.
 
-    This function is responsible for reading mean sea-level pressure
-    data using the method or procedure defined in the `read_carra`
-    function. It uses the `inpt.var` as an input parameter for the
-    read operation.
-
-    :return: None
-    """
-    # CARRA
-    read_rean(inpt.var, "c")
-
-    return
-
-
-def read_precip():
-    """
-    Reads and processes precipitation data from multiple sources.
-
-    This function integrates data from CARRA, ERA5, and THAAO2 datasets, applying
-    necessary transformations and storing resulting data within the provided input
-    structure. The function is responsible for coordinating the reading of data
-    via corresponding source-specific readers and ensuring compatibility of the
-    processed data across sources.
-
-    :return: None
-    """
-    # CARRA
-    read_rean(inpt.var, "c")
-
-    # ERA5
-    read_rean(inpt.var, "e")
-    inpt.extr[inpt.var]["e"]["data"][inpt.var] = inpt.extr[inpt.var]["e"]["data"][inpt.var].values * \
-        1000.
-
-    # THAAO2
-    if inpt.datasets['THAAO']['switch']:
-        rd_ft.read_thaao_aws_ecapac(inpt.var)
-
-    return
 
 
 def read_lw_down():
@@ -243,35 +202,6 @@ def read_lw_down():
     return
 
 
-def read_sw_down():
-    """
-    Reads and processes shortwave downward radiation data from multiple data sources,
-    including CARRA, ERA5, ERA5-LAND, and THAAO. Negative values of radiation data
-    are replaced with NaN, and the data is scaled according to respective radiation
-    conversion factors.
-
-    :return: None
-    """
-    # CARRA
-    read_rean("sw_down", "c")
-    inpt.extr["sw_down"]["c"]["data"][inpt.var][inpt.extr["sw_down"]
-                                                ["c"]["data"][inpt.var] < 0.] = np.nan
-    inpt.extr["sw_down"]["c"]["data"][inpt.var] = inpt.extr["sw_down"]["c"]["data"][inpt.var] / \
-        inpt.var_dict["c"]["rad_conv_factor"]
-
-    # ERA5
-    read_rean("sw_down", "e")
-    inpt.extr["sw_down"]["e"]["data"][inpt.var][inpt.extr["sw_down"]
-                                                ["e"]["data"][inpt.var] < 0.] = np.nan
-    inpt.extr["sw_down"]["e"]["data"][inpt.var] = inpt.extr["sw_down"]["e"]["data"][inpt.var] / \
-        inpt.var_dict["e"]["rad_conv_factor"]
-
-    # THAAO
-    if inpt.datasets['THAAO']['switch']:
-        rd_ft.read_thaao_rad("sw_down")
-        inpt.extr["sw_down"]["t"]["data"][inpt.var][inpt.extr["sw_down"]
-                                                    ["t"]["data"][inpt.var] < 0.] = np.nan
-    return
 
 
 def read_lw_up():
@@ -327,7 +257,120 @@ def read_lw_up():
                                         ["t"]["data"][inpt.var] < 0.] = np.nan
 
     return
+def read_precip():
+    """
+    Reads and processes precipitation data from multiple sources.
 
+    This function integrates data from CARRA, ERA5, and THAAO2 datasets, applying
+    necessary transformations and storing resulting data within the provided input
+    structure. The function is responsible for coordinating the reading of data
+    via corresponding source-specific readers and ensuring compatibility of the
+    processed data across sources.
+
+    :return: None
+    """
+    # CARRA
+    read_rean(inpt.var, "c")
+
+    # ERA5
+    read_rean(inpt.var, "e")
+    inpt.extr[inpt.var]["e"]["data"][inpt.var] = inpt.extr[inpt.var]["e"]["data"][inpt.var].values * \
+        1000.
+
+    # THAAO2
+    if inpt.datasets['THAAO']['switch']:
+        rd_ft.read_thaao_aws_ecapac(inpt.var)
+
+    return
+def read_rh():
+    """
+    Reads and processes relative humidity data from various sources including
+    CARRA, ERA5, and THAAO2-based weather datasets. This function
+    includes checks for missing data and calculates relative humidity from
+    temperature and dew point temperature if necessary.
+
+    :raises KeyError: Raised if there is a key-related issue during data access
+        within the input variables.
+    :raises ValueError: Raised if an unexpected data inconsistency is encountered.
+    """
+    # CARRA
+    read_rean(inpt.var, "c")
+
+    # ERA5
+    read_rean(inpt.var, "e")
+    if inpt.extr[inpt.var]["e"]["data"].empty:
+        read_rean("temp", "e")
+    tls.calc_rh_from_tdp()
+
+    # THAAO2
+    if inpt.datasets['THAAO']['switch']:
+        rd_ft.read_thaao_weather(inpt.var)
+        rd_ft.read_thaao_aws_ecapac(inpt.var)
+        rd_ft.read_thaao_weather(inpt.var)
+
+    return
+def read_surf_pres():
+    """
+    Reads surface pressure data from multiple sources, processes the data, and handles exceptional
+    values by setting them to NaN. The function operates on multiple datasets - CARRA, ERA5, THAAO,
+    and THAAO2, adjusting their scales or removing data in certain cases.
+
+    :raises: KeyError if `inpt.var` is not found in the input data structure or if any expected
+             fields are incomplete or missing.
+    """
+    # CARRA
+    read_rean(inpt.var, "c")
+    inpt.extr[inpt.var]["c"]["data"][inpt.var] = inpt.extr[inpt.var]["c"]["data"][inpt.var] / 100.
+    inpt.extr[inpt.var]["c"]["data"][inpt.var][inpt.extr[inpt.var]
+                                               ["c"]["data"][inpt.var] <= 900] = np.nan
+
+    # ERA5
+    read_rean(inpt.var, "e")
+    inpt.extr[inpt.var]["e"]["data"][inpt.var] = inpt.extr[inpt.var]["e"]["data"][inpt.var] / 100.
+    inpt.extr[inpt.var]["e"]["data"][inpt.var][inpt.extr[inpt.var]
+                                               ["e"]["data"][inpt.var] <= 900] = np.nan
+
+    # THAAO
+    if inpt.datasets['THAAO']['switch']:
+        rd_ft.read_thaao_weather(inpt.var)
+        inpt.extr[inpt.var]["t"]["data"][inpt.var][inpt.extr[inpt.var]
+                                                   ["t"]["data"][inpt.var] <= 900] = np.nan
+        inpt.extr[inpt.var]["t"]["data"][inpt.var].loc["2021-10-11 00:00:00":"2021-10-19 00:00:00"] = np.nan
+        inpt.extr[inpt.var]["t"]["data"][inpt.var].loc["2024-4-26 00:00:00":"2024-5-4 00:00:00"] = np.nan
+
+        # THAAO2
+        rd_ft.read_thaao_aws_ecapac(inpt.var)
+
+    return
+def read_sw_down():
+    """
+    Reads and processes shortwave downward radiation data from multiple data sources,
+    including CARRA, ERA5, ERA5-LAND, and THAAO. Negative values of radiation data
+    are replaced with NaN, and the data is scaled according to respective radiation
+    conversion factors.
+
+    :return: None
+    """
+    # CARRA
+    read_rean("sw_down", "c")
+    inpt.extr["sw_down"]["c"]["data"][inpt.var][inpt.extr["sw_down"]
+                                                ["c"]["data"][inpt.var] < 0.] = np.nan
+    inpt.extr["sw_down"]["c"]["data"][inpt.var] = inpt.extr["sw_down"]["c"]["data"][inpt.var] / \
+        inpt.var_dict["c"]["rad_conv_factor"]
+
+    # ERA5
+    read_rean("sw_down", "e")
+    inpt.extr["sw_down"]["e"]["data"][inpt.var][inpt.extr["sw_down"]
+                                                ["e"]["data"][inpt.var] < 0.] = np.nan
+    inpt.extr["sw_down"]["e"]["data"][inpt.var] = inpt.extr["sw_down"]["e"]["data"][inpt.var] / \
+        inpt.var_dict["e"]["rad_conv_factor"]
+
+    # THAAO
+    if inpt.datasets['THAAO']['switch']:
+        rd_ft.read_thaao_rad("sw_down")
+        inpt.extr["sw_down"]["t"]["data"][inpt.var][inpt.extr["sw_down"]
+                                                    ["t"]["data"][inpt.var] < 0.] = np.nan
+    return
 
 def read_sw_up():
     """
@@ -375,68 +418,10 @@ def read_sw_up():
     return
 
 
-def read_rh():
-    """
-    Reads and processes relative humidity data from various sources including
-    CARRA, ERA5, and THAAO2-based weather datasets. This function
-    includes checks for missing data and calculates relative humidity from
-    temperature and dew point temperature if necessary.
-
-    :raises KeyError: Raised if there is a key-related issue during data access
-        within the input variables.
-    :raises ValueError: Raised if an unexpected data inconsistency is encountered.
-    """
-    # CARRA
-    read_rean(inpt.var, "c")
-
-    # ERA5
-    read_rean(inpt.var, "e")
-    if inpt.extr[inpt.var]["e"]["data"].empty:
-        read_rean("temp", "e")
-    tls.calc_rh_from_tdp()
-
-    # THAAO2
-    if inpt.datasets['THAAO']['switch']:
-        rd_ft.read_thaao_weather(inpt.var)
-        rd_ft.read_thaao_aws_ecapac(inpt.var)
-        rd_ft.read_thaao_weather(inpt.var)
-
-    return
 
 
-def read_surf_pres():
-    """
-    Reads surface pressure data from multiple sources, processes the data, and handles exceptional
-    values by setting them to NaN. The function operates on multiple datasets - CARRA, ERA5, THAAO,
-    and THAAO2, adjusting their scales or removing data in certain cases.
 
-    :raises: KeyError if `inpt.var` is not found in the input data structure or if any expected
-             fields are incomplete or missing.
-    """
-    # CARRA
-    read_rean(inpt.var, "c")
-    inpt.extr[inpt.var]["c"]["data"][inpt.var] = inpt.extr[inpt.var]["c"]["data"][inpt.var] / 100.
-    inpt.extr[inpt.var]["c"]["data"][inpt.var][inpt.extr[inpt.var]
-                                               ["c"]["data"][inpt.var] <= 900] = np.nan
 
-    # ERA5
-    read_rean(inpt.var, "e")
-    inpt.extr[inpt.var]["e"]["data"][inpt.var] = inpt.extr[inpt.var]["e"]["data"][inpt.var] / 100.
-    inpt.extr[inpt.var]["e"]["data"][inpt.var][inpt.extr[inpt.var]
-                                               ["e"]["data"][inpt.var] <= 900] = np.nan
-
-    # THAAO
-    if inpt.datasets['THAAO']['switch']:
-        rd_ft.read_thaao_weather(inpt.var)
-        inpt.extr[inpt.var]["t"]["data"][inpt.var][inpt.extr[inpt.var]
-                                                   ["t"]["data"][inpt.var] <= 900] = np.nan
-        inpt.extr[inpt.var]["t"]["data"][inpt.var].loc["2021-10-11 00:00:00":"2021-10-19 00:00:00"] = np.nan
-        inpt.extr[inpt.var]["t"]["data"][inpt.var].loc["2024-4-26 00:00:00":"2024-5-4 00:00:00"] = np.nan
-
-        # THAAO2
-        rd_ft.read_thaao_aws_ecapac(inpt.var)
-
-    return
 
 
 def read_tcc():
@@ -581,7 +566,6 @@ def read():
     readers = {
         "alb": read_alb,
         "cbh": read_cbh,
-        "msl_pres": read_msl_pres,
         "lwp": read_lwp,
         "lw_down": read_lw_down,
         "lw_up": read_lw_up,
