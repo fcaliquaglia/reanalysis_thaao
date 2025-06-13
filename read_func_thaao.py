@@ -1,6 +1,7 @@
 from pathlib import Path
 import datetime as dt
 import julian
+import os
 import numpy as np
 import pandas as pd
 import xarray as xr
@@ -20,6 +21,11 @@ def read_thaao_weather(vr):
     path_out, _ = get_common_paths(vr, "VESPA")
     nc_file = Path(inpt.basefol["t"]['base']) / \
         "thaao_aws_vespa" / f"{inpt.extr[vr]['t']['fn']}.nc"
+    
+    if os.path.exists(path_out):
+        df = pd.read_parquet(path_out)
+        inpt.extr[vr]["t"]["data"] = df
+        return
 
     try:
         df = xr.open_dataset(nc_file, engine="netcdf4").to_dataframe()
@@ -36,6 +42,11 @@ def read_thaao_rad(vr):
     path_out, _ = get_common_paths(vr, "rad")
     t_all = []
 
+    if os.path.exists(path_out):
+        df = pd.read_parquet(path_out)
+        inpt.extr[vr]["t"]["data"] = df
+        return
+    
     for i in inpt.rad_daterange[inpt.rad_daterange.year.isin(inpt.years)]:
         year = i.year
         file = Path(inpt.basefol["t"]['base']) / "thaao_rad" / \
@@ -63,6 +74,11 @@ def read_thaao_hatpro(vr):
     file = Path(inpt.basefol["t"]['base']) / "thaao_hatpro" / \
         f"{inpt.extr[vr]['t1']['fn']}" / f"{inpt.extr[vr]['t1']['fn']}.DAT"
 
+    if os.path.exists(path_out):
+        df = pd.read_parquet(path_out)
+        inpt.extr[vr]["t1"]["data"] = df
+        return
+    
     try:
         df = pd.read_table(file, sep=r"\s+", engine="python", header=0, skiprows=9,
                            parse_dates={"datetime": [0, 1]}, index_col="datetime",
@@ -80,6 +96,11 @@ def read_thaao_ceilometer(vr):
     path_out, _ = get_common_paths(vr, "ceil")
     t_all = []
 
+    if os.path.exists(path_out):
+        df = pd.read_parquet(path_out)
+        inpt.extr[vr]["t"]["data"] = df
+        return
+    
     for i in inpt.ceilometer_daterange[inpt.ceilometer_daterange.year.isin(inpt.years)]:
         date_str = i.strftime("%Y%m%d")
         file = Path(inpt.basefol["t"]['base']) / "thaao_ceilometer" / \
@@ -107,6 +128,11 @@ def read_thaao_aws_ecapac(vr):
     path_out, _ = get_common_paths(vr, "ECAPAC")
     t_all = []
 
+    if os.path.exists(path_out):
+        df = pd.read_parquet(path_out)
+        inpt.extr[vr]["t2"]["data"] = df
+        return
+    
     for i in inpt.aws_ecapac_daterange[inpt.aws_ecapac_daterange.year.isin(inpt.years)]:
         date_str = i.strftime("%Y_%m_%d")
         file = Path(inpt.basefol["t"]['base']) / "thaao_ecapac_aws_snow" / "AWS_ECAPAC" / \
