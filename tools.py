@@ -7,6 +7,7 @@ Created on Thu Jun 12 08:50:17 2025
 
 
 import os
+import time
 import sys
 
 import numpy as np
@@ -36,6 +37,29 @@ def calc_rh_from_tdp():
 
     return
 
+def wait_for_complete_download(file_path, timeout=300, interval=5):
+    """Wait until the file is fully downloaded by monitoring file size."""
+    print(f"Waiting for file to be ready: {file_path}")
+    start_time = time.time()
+    prev_size = -1
+
+    while True:
+        try:
+            current_size = os.path.getsize(file_path)
+        except FileNotFoundError:
+            current_size = -1
+
+        # Check if file size has stabilized
+        if current_size == prev_size and current_size > 0:
+            print("File download appears complete.")
+            break
+
+        if time.time() - start_time > timeout:
+            raise TimeoutError(f"File did not complete downloading in {timeout} seconds: {file_path}")
+
+        prev_size = current_size
+        time.sleep(interval)
+
 
 def process_rean(vr, data_typ, y, loc):
     raw_dir = inpt.basefol[data_typ]['raw']
@@ -43,6 +67,7 @@ def process_rean(vr, data_typ, y, loc):
     ds_path = os.path.join(raw_dir, filename)
 
     try:
+        wait_for_complete_download(ds_path)
         ds = xr.open_dataset(ds_path, decode_timedelta=True, engine="netcdf4")
         print(f'OK: {os.path.basename(ds_path)}')
     except FileNotFoundError:
