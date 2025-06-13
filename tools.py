@@ -55,7 +55,7 @@ def wait_for_complete_download(file_path, timeout=600, interval=5):
             break
 
         if time.time() - start_time > timeout:
-            raise TimeoutError(f"File did not complete downloading in {timeout} seconds: {file_path}")
+            raise TimeoutError(f"File did not complete downloading in {timeout} seconds: {file_path}.\n Increase timeout or download it manually.")
 
         prev_size = current_size
         time.sleep(interval)
