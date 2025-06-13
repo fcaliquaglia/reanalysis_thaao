@@ -39,10 +39,10 @@ def read_villum_weather(vr):
     :param vr: Variable key to extract (e.g., 'temp', 'winds').
     :type vr: str
     """
-    
+
     path_out, _ = tls.get_common_paths(vr, "2024")
     csv_file = Path(inpt.basefol['t']['arcsix']) / f"Villum_2024.csv"
-        
+
     if os.path.exists(path_out):
         df = pd.read_parquet(path_out)
         inpt.extr[vr]["t2"]["data"] = df
@@ -57,7 +57,7 @@ def read_villum_weather(vr):
         'Temp(oC 9m)': 'temp',
         'RH(% 9m)': 'rh',
         'RAD(W/m2 3m)': 'rad',
-        'Pressure(hPa 0m)': 'surf_press',
+        'Pressure(hPa 0m)': 'surf_pres',
         'Snow depth(m)': 'snow_depth'
     }
 
