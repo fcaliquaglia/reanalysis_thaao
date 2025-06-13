@@ -64,6 +64,7 @@ datasets = {
     'Villum': {'switch': True, 'fn': 'Villum'},
     'Sigma-A': {'switch': False, 'fn': 'Sigma-A'},
     'Sigma-B': {'switch': False, 'fn': 'Sigma-B'},
+    'Summit':{'switch': False, 'fn': 'Summit'},
     'buoys': {'switch': False, 'fn': '2024Nprocessed'},
     'dropsondes': {'switch': False, 'fn': ''},
     'p3_tracks': {'switch': False, 'fn': ''},
@@ -83,7 +84,7 @@ extra = ['winds', 'windd']
 
 ##
 tres_list = ['3h']
-list_var = ['rh']  # met + rad
+list_var =  met + rad
 
 
 tres = ''

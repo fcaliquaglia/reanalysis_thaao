@@ -15,7 +15,7 @@ import calendar
 from math import radians, cos
 
 # ---------------------------- SETTINGS ---------------------------- #
-plot = False
+plot = True
 
 plot_flags = dict(
     ground_sites=True,
@@ -43,7 +43,8 @@ ground_sites = {
     "Villum":  {"lon": -16.6667, "lat": 81.6000, "elev":   30.0, "color": "cyan"},
     "Alert":   {"lon": -62.5072, "lat": 82.4508, "elev":  185.0, "color": "green"},
     "Sigma-A": {"lon": -67.6280, "lat": 78.0520, "elev": 1490.0, "color": "purple"},
-    "Sigma-B": {"lon": -69.0620, "lat": 77.5180, "elev":  944.0, "color": "orange"}
+    "Sigma-B": {"lon": -69.0620, "lat": 77.5180, "elev":  944.0, "color": "orange"},
+    "Summit": {"lon": -38.45867825, "lat": 72.58054944, "elev":  3210.0, "color": "blue"},
 }
 
 

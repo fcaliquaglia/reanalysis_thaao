@@ -126,7 +126,7 @@ def process_rean(vr, data_typ, y, loc):
 
     active_key = next(k for k, v in inpt.datasets.items() if v.get('switch'))
 
-    if active_key in ['THAAO', 'Villum', 'Alert', 'Sigma-A', 'Sigma-B']:
+    if active_key in ['THAAO', 'Villum', 'Summit', 'Alert', 'Sigma-A', 'Sigma-B']:
         y_idx = coords['y_idx'].to_numpy()
         x_idx = coords['x_idx'].to_numpy()
         time_dim = 'valid_time' if 'valid_time' in ds.dims else 'time'
