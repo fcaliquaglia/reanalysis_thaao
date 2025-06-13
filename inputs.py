@@ -89,7 +89,7 @@ list_var = ['rh'] # met + rad
 tres = ''
 var = ''
 
-years = np.arange(2022, 2025, 1)
+years = np.arange(2016, 2025, 1)
 
 aws_ecapac_daterange = pd.date_range(start=dt.datetime(
     2023, 4, 1), end=dt.datetime(2024, 12, 31), freq='1D')
