@@ -61,7 +61,8 @@ def read_rean(vr, dataset_type):
         input_path = os.path.join(
             inpt.basefol[dataset_type]['processed'], input_file)
         try:
-            data_tmp = pd.read_parquet(input_path)
+            data_tmp = pd.read_parquet(input_path, engine='pyarrow')
+            print(f"Loaded {input_path}")
         except FileNotFoundError as e:
             print(e)
             continue
@@ -472,6 +473,11 @@ def read_temp():
 
     if inpt.datasets['Villum']['switch']:
         rd_fv.read_villum_weather(inpt.var)
+        empty_df = inpt.extr[inpt.var]["t"]["data"][inpt.var].copy()
+        empty_df.loc[:, :] = np.nan
+        inpt.extr[inpt.var]["t"]["data"][inpt.var] = inpt.extr[inpt.var]["t"]["data"][inpt.var]
+        inpt.extr[inpt.var]["t1"]["data"][inpt.var] = empty_df
+        inpt.extr[inpt.var]["t2"]["data"][inpt.var] = empty_df
 
     return
 

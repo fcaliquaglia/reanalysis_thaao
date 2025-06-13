@@ -30,7 +30,7 @@ import pandas as pd
 import inputs as inpt
 
 
-def read_villum_weather(vr):
+def read_villum_weather(vr, loc):
     """
     Reads and processes weather data for the specified variable and updates the
     global input structure. The function attempts to load a NetCDF file associated
@@ -46,7 +46,7 @@ def read_villum_weather(vr):
     :return: None. The global input structure is updated directly.
     """
     try:
-        file_path = r"H:\Shared drives\Dati_THAAO\thaao_arcsix\Villum_2024.csv"
+        file_name = 'Villum_2024.csv'
 
         column_names = [
             'DateTime', 'VD(degrees 9m)', 'VS_Mean(m/s 9m)', 'VS_Max(m/s 9m)',
@@ -55,14 +55,18 @@ def read_villum_weather(vr):
         new_column_names = ['datetime', 'windd', 'winds', 'null',
                             'temp', 'rh', 'rad', 'surf_press', 'snow_depth']
 
-        df = pd.read_csv(file_path, sep=';', names=new_column_names,
-                         index_col='datetime', header=0, parse_dates=['datetime'], dayfirst=True)
+        df = pd.read_csv(os.path.join(inpt.basefol['out']['arcsix'], file_name), sep=';',
+                         names=new_column_names, index_col='datetime', header=0, parse_dates=['datetime'], dayfirst=True)
         df.drop(columns=['null'], inplace=True)
-        inpt.extr[vr]["t"]["data"] = df[vr].to_frame()
-        inpt.extr[vr]["t1"]["data"] = df[vr].to_frame()*np.nan
-        inpt.extr[vr]["t2"]["data"] = df[vr].to_frame()*np.nan
+        out_path = os.path.join(
+            inpt.basefol['out']['processed'],
+            f"Villum_2024.parquet"
+        )
+        df = df.to_frame()
+        df.to_parquet(out_path)
         print(f'OK: Villum')
     except FileNotFoundError:
-        print(f'NOT FOUND: {file_path}')
+
+        print(f'NOT FOUND: {file_name}')
 
     return

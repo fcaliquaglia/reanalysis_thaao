@@ -47,10 +47,12 @@ basefol = {
         'raw': f'{shared}\\Reanalysis\\era5\\raw'
     },
     't': {
-        'base': f'{shared}\\Dati_THAAO'
+        'base': f'{shared}\\Dati_THAAO',
+        'arcsix':f'{shared}\\Dati_THAAO\\thaao_arcsix'
     },
     'out': {
-        'base': f'{shared}\\Dati_elab_docs\\thaao_reanalysis'
+        'base': f'{shared}\\Dati_elab_docs\\thaao_reanalysis',
+        'processed': f'{shared}\\Dati_elab_docs\\thaao_reanalysis\\processed',
     }
 }
 
