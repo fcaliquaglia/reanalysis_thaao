@@ -74,6 +74,8 @@ def process_rean(vr, data_typ, y, loc):
         except FileNotFoundError:
             print(f'NOT FOUND: {os.path.basename(ds_path)}')
             return
+    else:
+        return
 
     if data_typ == "c":
         ds["longitude"] = ds["longitude"] % 360
