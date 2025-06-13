@@ -116,19 +116,19 @@ def process_rean(vr, data_typ, y, loc):
 
     if not os.path.exists(grid_path):
         print(
-            f"File with reference grid point for {data_typ} NOT found.\n"
-            f"You should cleanup folder txt_locations and then run sondes_buoys_flights.py\n"
-            f"Now exiting\n{filenam_grid}")
+            f"File with reference grid point for {data_typ} NOT found: {filenam_grid}.\n"
+            f"You should cleanup folder txt_locations and then run sondes_buoys_flights.py again \n"
+            f"Now exiting")
         sys.exit()
 
     coords = pd.read_csv(grid_path)
-    
+
     active_key = next(k for k, v in inpt.datasets.items() if v.get('switch'))
-    
-    if active_key in ['THAAO', 'Villum','Alert', 'Sigma-a', 'Sigma-B']:
+
+    if active_key in ['THAAO', 'Villum', 'Alert', 'Sigma-A', 'Sigma-B']:
         y_idx = coords['y_idx'].to_numpy()
         x_idx = coords['x_idx'].to_numpy()
-    
+        time_dim = 'valid_time' if 'valid_time' in ds.dims else 'time'
         if data_typ == "c":
             lat_vals = np.array([ds['latitude'].values[y, x]
                                 for y, x in zip(y_idx, x_idx)])
@@ -141,7 +141,7 @@ def process_rean(vr, data_typ, y, loc):
             lat_dim, lon_dim = 'latitude', 'longitude'
         else:
             raise ValueError(f"Unknown dataset_type: {data_typ}")
-    
+
         print(f"Selected grid point at indices (y={y_idx[0]}, x={x_idx[0]}):")
         print(f"(First) Latitude = {lat_vals[0]:.4f}")
         print(f"(First) Longitude = {lon_vals[0]:.4f}", end="")
@@ -149,19 +149,21 @@ def process_rean(vr, data_typ, y, loc):
             print(f" (also {lon_vals[0]-360:.4f})")
         else:
             print()
-    
+
         var_name = inpt.extr[vr][data_typ]["var_name"]
         data_list = []
-    
+
+        if not (len(x_idx) == len(y_idx)):
+            print("Something's worng with indexes dimension!")
         for i in range(len(y_idx)):
             da = ds[var_name].isel({lat_dim: y_idx[i], lon_dim: x_idx[i]})
             da_small = da.drop_vars(
                 ['step', 'surface', 'expver', 'number'], errors='ignore')
-            time_dim = 'valid_time' if 'valid_time' in da_small.dims else 'time'
+
             df = da_small.to_dataframe().reset_index().set_index(time_dim)
             df.rename(columns={var_name: vr}, inplace=True)
             data_list.append(df)
-    
+
         if not data_list:
             print(f"No data extracted for {filename}, skipping write.")
             return
@@ -170,12 +172,14 @@ def process_rean(vr, data_typ, y, loc):
         y_idx = coords['y_idx'].to_numpy()
         x_idx = coords['x_idx'].to_numpy()
         t_idx = coords['t_idx'].to_numpy()
-        
+
+        time_dim = 'valid_time' if 'valid_time' in ds.dims else 'time'
         if data_typ == "c":
             lat_vals = np.array([ds['latitude'].values[y, x]
                                 for y, x in zip(y_idx, x_idx)])
             lon_vals = np.array([ds['longitude'].values[y, x]
                                 for y, x in zip(y_idx, x_idx)])
+            time_vals = np.array(ds[time_dim].values[t_idx])
             lat_dim, lon_dim = 'y', 'x'
         elif data_typ == "e":
             lat_vals = ds["latitude"].isel(latitude=y_idx).values
@@ -183,32 +187,41 @@ def process_rean(vr, data_typ, y, loc):
             lat_dim, lon_dim = 'latitude', 'longitude'
         else:
             raise ValueError(f"Unknown dataset_type: {data_typ}")
-    
-        print(f"Selected grid point at indices (y={y_idx[0]}, x={x_idx[0]}):")
+
+        print(
+            f"Selected grid point at indices (t={t_idx[0]}, y={y_idx[0]}, x={x_idx[0]}):")
+        print(
+            f"(First) Date = {pd.Timestamp(time_vals[0]).strftime('%Y-%m-%dT%H:%M:%S')}")
         print(f"(First) Latitude = {lat_vals[0]:.4f}")
         print(f"(First) Longitude = {lon_vals[0]:.4f}", end="")
+
         if data_typ == "c":
             print(f" (also {lon_vals[0]-360:.4f})")
         else:
             print()
-    
+
         var_name = inpt.extr[vr][data_typ]["var_name"]
         data_list = []
-    
+
+        if not (len(t_idx) == len(x_idx) == len(y_idx)):
+            print("Something's worng with indexes dimension!")
         for i in range(len(y_idx)):
-            da = ds[var_name].isel({lat_dim: y_idx[i], lon_dim: x_idx[i]})
+            da = ds[var_name].isel({lat_dim: y_idx[i], lon_dim: x_idx[i], time_dim: t_idx[i]})
             da_small = da.drop_vars(
                 ['step', 'surface', 'expver', 'number'], errors='ignore')
-            time_dim = 'valid_time' if 'valid_time' in da_small.dims else 'time'
-            df = da_small.to_dataframe().reset_index().set_index(time_dim)
+            df = pd.DataFrame({
+                time_dim: [pd.Timestamp(da_small.valid_time.values)],
+                'latitude': [da_small.latitude.item()],
+                'longitude': [da_small.longitude.item()],
+                't2m': [da_small.item()]  # Extract scalar value
+            })
+            df.set_index(time_dim, inplace=True)
             df.rename(columns={var_name: vr}, inplace=True)
             data_list.append(df)
-    
+
         if not data_list:
             print(f"No data extracted for {filename}, skipping write.")
             return
-
-
 
     full_df = pd.concat(data_list)
     if full_df.empty:
@@ -218,5 +231,5 @@ def process_rean(vr, data_typ, y, loc):
         inpt.basefol[data_typ]['processed'],
         f"{inpt.extr[vr][data_typ]['fn']}{loc}_{y}.parquet"
     )
-    full_df.to_parquet(out_path, engine="pyarrow")
+    full_df.to_parquet(out_path)
     print(f"Saved processed data to {out_path}")

@@ -61,7 +61,7 @@ def read_rean(vr, dataset_type):
         input_path = os.path.join(
             inpt.basefol[dataset_type]['processed'], input_file)
         try:
-            data_tmp = pd.read_parquet(input_path, engine='pyarrow')
+            data_tmp = pd.read_parquet(input_path)
             print(f"Loaded {input_path}")
         except FileNotFoundError as e:
             print(e)

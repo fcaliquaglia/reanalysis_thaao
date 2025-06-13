@@ -91,12 +91,13 @@ def grid_loading(dataset_type, file_sample):
         print(f'NOT FOUND: {file_sample}')
 
     # Prepare grid
+    time_dim = 'valid_time' if 'valid_time' in ds.dims else 'time'
     if dataset_type == 'c':
         lat_arr_c = ds['latitude'].values
         lon_arr_c = ds['longitude'].values % 360
         flat_lat_c = lat_arr_c.ravel()
         flat_lon_c = lon_arr_c.ravel()
-        ds_times_c = pd.to_datetime(ds['time'].values)
+        ds_times_c = pd.to_datetime(ds[time_dim].values)
         return lat_arr_c, lon_arr_c, flat_lat_c, flat_lon_c, ds_times_c
     elif dataset_type == 'e':
         lat_1d_e = ds['latitude'].values
@@ -105,7 +106,7 @@ def grid_loading(dataset_type, file_sample):
             lat_1d_e, lon_1d_e, indexing='ij')
         flat_lat_e = lat_arr_e.ravel()
         flat_lon_e = lon_arr_e.ravel()
-        ds_times_e = pd.to_datetime(ds['valid_time'].values)
+        ds_times_e = pd.to_datetime(ds[time_dim].values)
         return lat_arr_e, lon_arr_e, flat_lat_e, flat_lon_e, ds_times_e
     else:
         raise ValueError(f"Unknown dataset type: {dataset_type}")
@@ -754,8 +755,8 @@ def plot_surf_date(seq, plot_flags=plot_flags):
 if __name__ == "__main__":
 
     print("Extracting CARRA and ERA5 grids for matching with observations")
-    grid_sel = {'e': grid_loading('e', 'era5_NG_2m_temperature_2023.nc'), 'c': grid_loading(
-        'c', 'carra1_2m_temperature_2023.nc')}
+    grid_sel = {'e': grid_loading('e', 'era5_NG_2m_temperature_2024.nc'), 'c': grid_loading(
+        'c', 'carra1_2m_temperature_2024.nc')}
 
     # Ground sites
     if plot_flags['ground_sites']:
