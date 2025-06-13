@@ -385,10 +385,10 @@ def read_rh():
     read_rean(inpt.var, "c")
 
     # ERA5
-    # read_rean(inpt.var, "e")
-    # if inpt.extr[inpt.var]["e"]["data"].empty:
-    #     read_rean("temp", "e")
-    # tls.calc_rh_from_tdp()
+    read_rean(inpt.var, "e")
+    if inpt.extr[inpt.var]["e"]["data"].empty:
+        read_rean("temp", "e")
+    tls.calc_rh_from_tdp()
 
     # THAAO2
     if inpt.datasets['THAAO']['switch']:
@@ -470,8 +470,8 @@ def read_temp():
     :return: None
     """
     # CARRA
-    # read_rean(inpt.var, "c")
-    # inpt.extr[inpt.var]["c"]["data"][inpt.var] = inpt.extr[inpt.var]["c"]["data"][inpt.var] - 273.15
+    read_rean(inpt.var, "c")
+    inpt.extr[inpt.var]["c"]["data"][inpt.var] = inpt.extr[inpt.var]["c"]["data"][inpt.var] - 273.15
 
     # ERA5
     read_rean(inpt.var, "e")

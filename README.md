@@ -25,7 +25,7 @@
 - pandas
 - xarray
 - metpy
-- pyarrow
+- fastparquet
 - geopy
 - (spyder-kernels=3.0)
 
