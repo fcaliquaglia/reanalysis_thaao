@@ -66,13 +66,14 @@ def process_rean(vr, data_typ, y, loc):
     filename = f"{inpt.extr[vr][data_typ]['fn']}{y}.nc"
     ds_path = os.path.join(raw_dir, filename)
 
-    try:
-        wait_for_complete_download(ds_path)
-        ds = xr.open_dataset(ds_path, decode_timedelta=True, engine="netcdf4")
-        print(f'OK: {os.path.basename(ds_path)}')
-    except FileNotFoundError:
-        print(f'NOT FOUND: {os.path.basename(ds_path)}')
-        return
+    if os.path.exists(ds_path):
+        try:
+            wait_for_complete_download(ds_path)
+            ds = xr.open_dataset(ds_path, decode_timedelta=True, engine="netcdf4")
+            print(f'OK: {os.path.basename(ds_path)}')
+        except FileNotFoundError:
+            print(f'NOT FOUND: {os.path.basename(ds_path)}')
+            return
 
     if data_typ == "c":
         ds["longitude"] = ds["longitude"] % 360
