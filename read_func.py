@@ -38,9 +38,6 @@ import inputs as inpt
 import tools as tls
 
 
-
-
-
 def read_rean(vr, dataset_type):
     """
     Generalized function to read and process data from CARRA or ERA5 datasets.
@@ -160,9 +157,6 @@ def read_lwp():
     return
 
 
-
-
-
 def read_lw_down():
     """
     Reads and processes longwave downward radiation ("lw_down") data from multiple sources such as
@@ -200,8 +194,6 @@ def read_lw_down():
         inpt.extr["lw_down"]["t"]["data"][inpt.extr["lw_down"]
                                           ["t"]["data"] < 0.] = np.nan
     return
-
-
 
 
 def read_lw_up():
@@ -257,6 +249,8 @@ def read_lw_up():
                                         ["t"]["data"][inpt.var] < 0.] = np.nan
 
     return
+
+
 def read_precip():
     """
     Reads and processes precipitation data from multiple sources.
@@ -282,6 +276,8 @@ def read_precip():
         rd_ft.read_thaao_aws_ecapac(inpt.var)
 
     return
+
+
 def read_rh():
     """
     Reads and processes relative humidity data from various sources including
@@ -309,6 +305,8 @@ def read_rh():
         rd_ft.read_thaao_weather(inpt.var)
 
     return
+
+
 def read_surf_pres():
     """
     Reads surface pressure data from multiple sources, processes the data, and handles exceptional
@@ -342,6 +340,8 @@ def read_surf_pres():
         rd_ft.read_thaao_aws_ecapac(inpt.var)
 
     return
+
+
 def read_sw_down():
     """
     Reads and processes shortwave downward radiation data from multiple data sources,
@@ -371,6 +371,7 @@ def read_sw_down():
         inpt.extr["sw_down"]["t"]["data"][inpt.var][inpt.extr["sw_down"]
                                                     ["t"]["data"][inpt.var] < 0.] = np.nan
     return
+
 
 def read_sw_up():
     """
@@ -416,12 +417,6 @@ def read_sw_up():
                                                   ["t"]["data"][inpt.var] < 0.] = np.nan
 
     return
-
-
-
-
-
-
 
 
 def read_tcc():
