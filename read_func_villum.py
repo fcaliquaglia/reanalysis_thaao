@@ -56,10 +56,12 @@ def read_villum_weather(vr):
         
         df = pd.read_csv(file_path, sep=';', names=new_column_names, index_col='datetime', header=0, parse_dates=['datetime'], dayfirst=True)
         df.drop(columns=['null'], inplace=True)
-        inpt.extr[vr]["t"]["data"] = df[vr]
-        print(f'OK: {inpt.extr[vr]["t"]["fn"]}.nc')
+        inpt.extr[vr]["t"]["data"] = df[vr].to_frame()
+        inpt.extr[vr]["t1"]["data"] = df[vr].to_frame()
+        inpt.extr[vr]["t2"]["data"] = df[vr].to_frame()
+        print(f'OK: Villum')
     except FileNotFoundError:
-        print(f'NOT FOUND: {inpt.extr[vr]["t"]["fn"]}.nc')
+        print(f'NOT FOUND: Villum csv')
 
     return
 

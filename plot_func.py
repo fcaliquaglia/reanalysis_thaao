@@ -103,7 +103,7 @@ def plot_ts(period_label):
     plt.xlabel('Time')
     plt.legend(ncol=2)
     save_path = os.path.join(inpt.basefol['out']['base'], inpt.tres,
-                             f"{inpt.tres}_{period_label}_{inpt.var}.png")
+                             f"{inpt.tres}_{period_label}_{inpt.var}_{inpt.var_dict['t']['label']}.png")
     plt.savefig(save_path, bbox_inches='tight')
     plt.close(fig)
 
@@ -168,7 +168,7 @@ def plot_residuals(period_label):
     plt.xlabel('Time')
     plt.legend()
     save_path = os.path.join(
-        inpt.basefol['out']['base'], inpt.tres, f"{inpt.tres}_{period_label}_residuals_{inpt.var}.png")
+        inpt.basefol['out']['base'], inpt.tres, f"{inpt.tres}_{period_label}_residuals_{inpt.var}_{inpt.var_dict['t']['label']}.png")
     plt.savefig(save_path, bbox_inches='tight')
     plt.close(fig)
 
@@ -321,7 +321,7 @@ def plot_scatter_cum():
             axs[i].legend()
 
     save_path = os.path.join(
-        inpt.basefol['out']['base'], inpt.tres, f"{inpt.tres}_scatter_cum_{inpt.var}.png")
+        inpt.basefol['out']['base'], inpt.tres, f"{inpt.tres}_scatter_cum_{inpt.var}_{inpt.var_dict['t']['label']}.png")
     plt.savefig(save_path, bbox_inches='tight')
     plt.close(fig)
 

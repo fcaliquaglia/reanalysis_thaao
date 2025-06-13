@@ -68,6 +68,8 @@ datasets = {
     'g3_tracks': {'switch': False, 'fn': ''},
     'radiosondes': {'switch': False, 'fn': ''}}
 
+lbl=next((info['fn'] for info in datasets.values() if info['switch']), None)
+
 thaao_c = 'carra1'
 thaao_e = 'era5_NG'
 thaao_t = 'thaao'
@@ -119,7 +121,7 @@ var_dict = {'c': {'name': 'c', 'nanval': np.nan, 'col': 'red',
                   'col_ori': 'cyan', 'label': 'ERA5',
                   'label_uom': '', 'rad_conv_factor': 3600},
             't': {'name': 't', 'nanval': -9999.9, 'col': 'black',
-                  'col_ori': 'grey', 'label': 'THAAO',
+                  'col_ori': 'grey', 'label': lbl,
                   'label_uom': ''},
             't1': {'name': 't1', 'nanval': np.nan, 'col': 'green',
                    'col_ori': 'lightgreen', 'label': 'HATPRO',
