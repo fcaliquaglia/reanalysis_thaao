@@ -30,7 +30,7 @@ import pandas as pd
 import inputs as inpt
 
 
-def read_villum_weather(vr):
+def read_villum_weather(vr, loc):
     """
     Reads and processes weather data for the specified variable and updates the
     global input structure. The function attempts to load a NetCDF file associated
@@ -46,7 +46,7 @@ def read_villum_weather(vr):
     :return: None. The global input structure is updated directly.
     """
     try:
-        file_path = r"H:\Shared drives\Dati_THAAO\thaao_arcsix\Villum_2024.csv"
+        file_name = 'Villum_2024.csv'
 
         column_names = [
             'DateTime', 'VD(degrees 9m)', 'VS_Mean(m/s 9m)', 'VS_Max(m/s 9m)',
@@ -75,6 +75,6 @@ def read_villum_weather(vr):
 >>>>>>> Stashed changes
         print(f'OK: Villum')
     except FileNotFoundError:
-        print(f'NOT FOUND: Villum csv')
+        print(f'NOT FOUND: {file_name}')
 
     return
