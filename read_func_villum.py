@@ -45,7 +45,7 @@ def read_villum_weather(vr):
 
     if os.path.exists(path_out):
         df = pd.read_parquet(path_out)
-        inpt.extr[vr]["t2"]["data"] = df
+        inpt.extr[vr]["t"]["data"] = df
         print(f"Loaded {path_out}")
         return
 
@@ -75,6 +75,7 @@ def read_villum_weather(vr):
 
         df = df[[vr]]
         df.to_parquet(path_out)
+        inpt.extr[vr]["t"]["data"] = df
         print(f'Processed and saved: {csv_file}')
     except FileNotFoundError:
         print(f'CSV file not found: {csv_file}')
