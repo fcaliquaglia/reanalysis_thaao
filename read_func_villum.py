@@ -30,7 +30,7 @@ import pandas as pd
 import inputs as inpt
 
 
-def read_villum_weather(vr, loc):
+def read_villum_weather(vr):
     """
     Reads and processes weather data for the specified variable and updates the
     global input structure. The function attempts to load a NetCDF file associated
@@ -45,28 +45,38 @@ def read_villum_weather(vr, loc):
 
     :return: None. The global input structure is updated directly.
     """
+    location = next(
+        (v['fn'] for k, v in inpt.datasets.items() if v.get('switch')), None)
+
+    inout_path = os.path.join(
+        inpt.basefol['out']['processed'], f"{location}_2024.parquet")
+    input_path = os.path.join(inpt.basefol['t']['arcsix'])
+    if not os.path.exists(inout_path):
+        try:
+            file_name = f'{location}_2024.csv'
+            column_names = [
+                'DateTime', 'VD(degrees 9m)', 'VS_Mean(m/s 9m)', 'VS_Max(m/s 9m)',
+                'Temp(oC 9m)', 'RH(% 9m)', 'RAD(W/m2 3m)', 'Pressure(hPa 0m)', 'Snow depth(m)'
+            ]
+            new_column_names = ['datetime', 'windd', 'winds', 'null',
+                                'temp', 'rh', 'rad', 'surf_press', 'snow_depth']
+
+            df = pd.read_csv(os.path.join(input_path, file_name), sep=';',
+                             names=new_column_names, index_col='datetime', header=0, parse_dates=['datetime'], dayfirst=True)
+            df.drop(columns=['null'], inplace=True)
+            df = df.to_frame()
+            df.to_parquet(inout_path)
+            print(f'OK: {location}')
+        except FileNotFoundError:
+
+            print(f'NOT FOUND: {location}')
+
     try:
-        file_name = 'Villum_2024.csv'
+        data_all = pd.read_parquet(inout_path, engine='pyarrow')
+        print(f"Loaded {input_path}")
+    except FileNotFoundError as e:
+        print(e)
 
-        column_names = [
-            'DateTime', 'VD(degrees 9m)', 'VS_Mean(m/s 9m)', 'VS_Max(m/s 9m)',
-            'Temp(oC 9m)', 'RH(% 9m)', 'RAD(W/m2 3m)', 'Pressure(hPa 0m)', 'Snow depth(m)'
-        ]
-        new_column_names = ['datetime', 'windd', 'winds', 'null',
-                            'temp', 'rh', 'rad', 'surf_press', 'snow_depth']
-
-        df = pd.read_csv(os.path.join(inpt.basefol['out']['arcsix'], file_name), sep=';',
-                         names=new_column_names, index_col='datetime', header=0, parse_dates=['datetime'], dayfirst=True)
-        df.drop(columns=['null'], inplace=True)
-        out_path = os.path.join(
-            inpt.basefol['out']['processed'],
-            f"Villum_2024.parquet"
-        )
-        df = df.to_frame()
-        df.to_parquet(out_path)
-        print(f'OK: Villum')
-    except FileNotFoundError:
-
-        print(f'NOT FOUND: {file_name}')
+    inpt.extr[vr]['t']["data"] = data_all
 
     return
