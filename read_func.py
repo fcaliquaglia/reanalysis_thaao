@@ -473,11 +473,9 @@ def read_temp():
 
     if inpt.datasets['Villum']['switch']:
         rd_fv.read_villum_weather(inpt.var)
-        empty_df = inpt.extr[inpt.var]["t"]["data"][inpt.var].copy()
-        empty_df.loc[:, :] = np.nan
+        empty_df = inpt.extr[inpt.var]["t"]["data"].copy()
+        empty_df *= np.nan
         inpt.extr[inpt.var]["t"]["data"][inpt.var] = inpt.extr[inpt.var]["t"]["data"][inpt.var]
-        inpt.extr[inpt.var]["t1"]["data"][inpt.var] = empty_df
-        inpt.extr[inpt.var]["t2"]["data"][inpt.var] = empty_df
 
     return
 

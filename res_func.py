@@ -22,7 +22,7 @@ __status__ = "Research"
 __lastupdate__ = ""
 
 import sys
-
+import pandas as pd
 import inputs as inpt
 
 
@@ -42,9 +42,16 @@ def data_resampling(vr):
         sys.exit()
 
     for vvrr in inpt.extr[vr]['comps'] + [inpt.extr[vr]['ref_x']]:
+        data=inpt.extr[vr][vvrr]['data']
+        # Skip if data is an empty string or not a DataFrame
+        if isinstance(data, str) and data == '':
+            continue
+        if not isinstance(data, pd.DataFrame):
+            continue
         try:
-            data_res = inpt.extr[vr][vvrr]['data'].resample(inpt.tres).mean()
+            data_res = data.resample(inpt.tres).mean()
             inpt.extr[vr][vvrr]['data_res'] = data_res
+            print(f'Resampled for {vvrr}, {vr} at {inpt.tres} resolution')
         except (TypeError, NameError):
             pass
 

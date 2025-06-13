@@ -31,6 +31,7 @@ import numpy.ma as ma
 import pandas as pd
 
 import inputs as inpt
+import tools as tls
 
 
 # import matplotlib
@@ -67,7 +68,9 @@ def plot_ts(period_label):
     var_data = inpt.extr[inpt.var]
     comps = var_data['comps']
     ref_x = var_data['ref_x']
-    plot_vars = comps + [ref_x]
+    plot_vars_all = comps + [ref_x]
+    plot_vars = tls.plot_vars_cleanup(plot_vars_all, var_data)
+
 
     for i, year in enumerate(inpt.years):
         print(f"plotting {year}")
@@ -131,9 +134,11 @@ def plot_residuals(period_label):
     plot_kwargs = {'lw': 1, 'marker': '.', 'ms': 0}
 
     var_data = inpt.extr[inpt.var]
-    comps = var_data['comps']
+    comps_all = var_data['comps']
     ref_x = var_data['ref_x']
     ref_data_res = var_data[ref_x]['data_res'][inpt.var]
+    
+    comps = tls.plot_vars_cleanup(comps_all, var_data)
 
     for i, year in enumerate(inpt.years):
         print(f"plotting {year}")
@@ -197,9 +202,10 @@ def plot_scatter(period_label):
     fig.subplots_adjust(top=0.93) 
 
     var_data = inpt.extr[inpt.var]
-    comps = var_data['comps']
+    comps_all = var_data['comps']
     ref_x = var_data['ref_x']
     x = var_data[ref_x]['data_res'][inpt.var]
+    comps = tls.plot_vars_cleanup(comps_all, var_data)
 
     # Remove unused frames based on number of components
     frame_and_axis_removal(axs, len(comps))
@@ -279,10 +285,11 @@ def plot_scatter_cum():
     seass_new = {k: v for k, v in inpt.seass.items() if k != 'all'}
 
     var_data = inpt.extr[inpt.var]
-    comps = var_data['comps']
+    comps_all = var_data['comps']
     ref_x = var_data['ref_x']
     x = var_data[ref_x]['data_res'][inpt.var]
-
+    comps = tls.plot_vars_cleanup(comps_all, var_data)
+    
     # Prepare full time range for reindexing once
     time_range = pd.date_range(
         start=pd.Timestamp(inpt.years[0], 1, 1, 0, 0),

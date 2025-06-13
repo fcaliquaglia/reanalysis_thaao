@@ -15,6 +15,23 @@ import pandas as pd
 import xarray as xr
 import inputs as inpt
 
+def plot_vars_cleanup(p_vars, v_data): 
+
+    for vvrr in p_vars:
+        data = v_data[vvrr]['data']
+    
+        # Remove if it's a string or not a DataFrame
+        if isinstance(data, str) and data == '':
+            p_vars.remove(vvrr)
+            continue
+        if not isinstance(data, pd.DataFrame):
+            p_vars.remove(vvrr)
+            continue
+        # Optionally also remove if it's empty or all NaNs
+        if data.empty or data.isna().all().all():
+            p_vars.remove(vvrr)
+            
+    return p_vars
 
 def calc_rh_from_tdp():
     """
