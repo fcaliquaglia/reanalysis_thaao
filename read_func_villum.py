@@ -52,16 +52,17 @@ def read_villum_weather(vr):
             'DateTime', 'VD(degrees 9m)', 'VS_Mean(m/s 9m)', 'VS_Max(m/s 9m)',
             'Temp(oC 9m)', 'RH(% 9m)', 'RAD(W/m2 3m)', 'Pressure(hPa 0m)', 'Snow depth(m)'
         ]
-        new_column_names= ['datetime', 'windd', 'winds', 'null', 'temp', 'rh', 'rad', 'surf_press', 'snow_depth']
-        
-        df = pd.read_csv(file_path, sep=';', names=new_column_names, index_col='datetime', header=0, parse_dates=['datetime'], dayfirst=True)
+        new_column_names = ['datetime', 'windd', 'winds', 'null',
+                            'temp', 'rh', 'rad', 'surf_press', 'snow_depth']
+
+        df = pd.read_csv(file_path, sep=';', names=new_column_names,
+                         index_col='datetime', header=0, parse_dates=['datetime'], dayfirst=True)
         df.drop(columns=['null'], inplace=True)
         inpt.extr[vr]["t"]["data"] = df[vr].to_frame()
-        inpt.extr[vr]["t1"]["data"] = df[vr].to_frame()
-        inpt.extr[vr]["t2"]["data"] = df[vr].to_frame()
+        inpt.extr[vr]["t1"]["data"] = df[vr].to_frame()*np.nan
+        inpt.extr[vr]["t2"]["data"] = df[vr].to_frame()*np.nan
         print(f'OK: Villum')
     except FileNotFoundError:
         print(f'NOT FOUND: Villum csv')
 
     return
-
