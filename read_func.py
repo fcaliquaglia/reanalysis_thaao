@@ -352,13 +352,13 @@ def read_sw_down():
     Reads and processes shortwave downward radiation data from CARRA, ERA5, ERA5-LAND, and THAAO.
     Negative values are set to NaN, and values are scaled using radiation conversion factors.
     """
+    # --- CARRA ---
     vr = "sw_down"
     var_dict = inpt.extr[vr]
-    # --- CARRA ---
     read_rean(vr, "c")
     var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"])
-    sw_down_c = var_dict["c"]["data"][inpt.var]
-    sw_down_c[sw_down_c < 0.] = np.nan
+    sw_down_c = var_dict["c"]["data"]
+    sw_down_c[inpt.var] = sw_down_c[inpt.var].mask(sw_down_c[inpt.var] < 0., np.nan)
     sw_down_c /= inpt.var_dict["c"]["rad_conv_factor"]
 
     # --- ERA5 ---
@@ -366,8 +366,8 @@ def read_sw_down():
     var_dict = inpt.extr[vr]
     read_rean(vr, "e")
     var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"])
-    sw_down_e = var_dict["e"]["data"][inpt.var]
-    sw_down_e[sw_down_e < 0.] = np.nan
+    sw_down_e = var_dict["e"]["data"]    
+    sw_down_e[inpt.var] = sw_down_e[inpt.var].mask(sw_down_e[inpt.var] < 0., np.nan)    
     sw_down_e /= inpt.var_dict["e"]["rad_conv_factor"]
 
     # --- THAAO ---
@@ -375,8 +375,9 @@ def read_sw_down():
     var_dict = inpt.extr[vr]
     if inpt.datasets['THAAO']['switch']:
         rd_ft.read_thaao_rad(vr)
-        sw_down_t = var_dict["t"]["data"][inpt.var]
-        sw_down_t[sw_down_t < 0.] = np.nan
+        sw_down_t = var_dict["t"]["data"]
+        sw_down_t[inpt.var] = sw_down_t[inpt.var].mask(sw_down_t[inpt.var] < 0., np.nan)    
+
 
     return
 
