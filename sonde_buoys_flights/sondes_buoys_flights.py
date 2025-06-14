@@ -870,7 +870,7 @@ if __name__ == "__main__":
             time = ds["time"].isel(trajectory=0).values[msk]
             elem = {"filename": os.path.basename(bf),
                     "lat": lat, "lon": lon, "temp": temp, "time": time,
-                    "usi": usi, "dsi": dsi,
+                    "sw_up": usi, "sw_down": dsi, "surf_pres": pres,
                     "elev": np.repeat(np.nan, len(time))
                     }
             buoy_data.append(elem)
