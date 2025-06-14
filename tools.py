@@ -169,8 +169,8 @@ def process_rean(vr, data_typ, y, loc):
             raise ValueError(f"Unknown dataset_type: {data_typ}")
 
         print(f"Selected grid point at indices (y={y_idx[0]}, x={x_idx[0]}):")
-        print(f"(First) Latitude = {lat_vals[0]:.4f}")
-        print(f"(First) Longitude = {lon_vals[0]:.4f}", end="")
+        print(f"(First out of {len(lat_vals)}) Latitude = {lat_vals[0]:.4f}")
+        print(f"(First out of {len(lon_vals)}) Longitude = {lon_vals[0]:.4f}", end="")
         if data_typ == "c":
             print(f" (also {lon_vals[0]-360:.4f})")
         else:
@@ -218,9 +218,9 @@ def process_rean(vr, data_typ, y, loc):
         print(
             f"Selected grid point at indices (t={t_idx[0]}, y={y_idx[0]}, x={x_idx[0]}):")
         print(
-            f"(First) Date = {pd.Timestamp(time_vals[0]).strftime('%Y-%m-%dT%H:%M:%S')}")
-        print(f"(First) Latitude = {lat_vals[0]:.4f}")
-        print(f"(First) Longitude = {lon_vals[0]:.4f}", end="")
+            f"(First out of {len(time_vals)}) Date = {pd.Timestamp(time_vals[0]).strftime('%Y-%m-%dT%H:%M:%S')}")
+        print(f"(First out of {len(lat_vals)}) Latitude = {lat_vals[0]:.4f}")
+        print(f"(First out of {len(lon_vals)}) Longitude = {lon_vals[0]:.4f}", end="")
 
         if data_typ == "c":
             print(f" (also {lon_vals[0]-360:.4f})")
