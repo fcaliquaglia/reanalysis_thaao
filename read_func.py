@@ -444,7 +444,6 @@ def read_surf_pres():
             data_all = pd.concat([data_all, data_tmp])
         data_all['time'] = pd.to_datetime(data_all['time'], errors='coerce')
         data_all = data_all.set_index('time')
-        var_dict["e"]["data"][vr] /= 100.
         var_dict["t"]["data"] = data_all
         var_dict["t"]["data"], _ = tls.check_empty_df(var_dict["t"]["data"], vr)
     return
