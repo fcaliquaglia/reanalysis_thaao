@@ -55,6 +55,7 @@ def data_resampling(vr):
             inpt.extr[vr][vvrr]['data_res'] = data_res
             print(f'Resampled for {vvrr}, {vr} at {inpt.tres} resolution')
         else:
+            inpt.extr[vr][vvrr]['data_res'] = data
             print(
                 f'NOT Resampled for {vvrr}, {vr} at {inpt.tres} resolution. Probably empty DataFrame.')
 

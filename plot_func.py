@@ -140,6 +140,10 @@ def plot_residuals(period_label):
     comps_all = var_data['comps']
     ref_x = var_data['ref_x']
     ref_data_res = var_data[ref_x]['data_res'][inpt.var]
+    null, chck = tls.check_empty_df(
+        var_data[ref_x]['data_res'][inpt.var], inpt.var)
+    if chck:
+        return
 
     comps = tls.plot_vars_cleanup(comps_all, var_data)
 
@@ -155,6 +159,10 @@ def plot_residuals(period_label):
         # Plot residuals (component - reference) for the year
         for comp_var in comps:
             comp_data_res = var_data[comp_var]['data_res'][inpt.var]
+            null, chck = tls.check_empty_df(
+                var_data[comp_var]['data_res'][inpt.var], inpt.var)
+            if chck:
+                continue
             mask_comp = comp_data_res.index.year == year
             mask_ref = ref_data_res.index.year == year
             if mask_comp.any() and mask_ref.any():
