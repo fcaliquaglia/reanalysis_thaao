@@ -92,21 +92,19 @@ def read_alb():
     :raises TypeError: If data type mismatches occur when processing datasets within sources.
     :raises ValueError: If data contains invalid values not conforming to the expected range.
     """
-    vr=inpt.var
+    vr = inpt.var
     var_dict = inpt.extr[vr]
 
     # --- CARRA ---
     read_rean(vr, "c")
-    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"], vr)
+    var_dict["c"]["data"] ,_ = tls.check_empty_df(var_dict["c"]["data"], vr)
     var_dict["c"]["data"][vr] /= 100.
     # var_dict["c"]["data"].loc[var_dict["c"]["data"][vr] <= 0., vr] = np.nan
 
-
     # --- ERA5 ---
     read_rean(vr, "e")
-    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"], vr)
+    var_dict["e"]["data"] ,_ = tls.check_empty_df(var_dict["e"]["data"], vr)
     # var_dict["e"]["data"].loc[var_dict["e"]["data"][vr] <= 0., vr] = np.nan
-
 
     # --- THAAO ---
     if inpt.datasets['THAAO']['switch']:
@@ -123,16 +121,16 @@ def read_cbh():
     :raises ValueError: If the specified input variable is invalid or unsupported.
     :return: None
     """
-    vr=inpt.var
+    vr = inpt.var
     var_dict = inpt.extr[vr]
-    
+
     # --- CARRA ---
     read_rean(vr, "c")
-    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"], vr)
+    var_dict["c"]["data"] ,_ = tls.check_empty_df(var_dict["c"]["data"], vr)
 
     # --- ERA5 ---
     read_rean(vr, "e")
-    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"], vr)
+    var_dict["e"]["data"] ,_ = tls.check_empty_df(var_dict["e"]["data"], vr)
 
     # --- THAAO ---
     if inpt.datasets['THAAO']['switch']:
@@ -146,12 +144,12 @@ def read_lwp():
     Reads cloud liquid water path (LWP) data from CARRA, ERA5, and THAAO1,
     applies cleaning conditions (setting values < 0.01 to NaN), and updates datasets.
     """
-    vr=inpt.var
+    vr = inpt.var
     var_dict = inpt.extr[vr]
 
     # --- CARRA ---
     read_rean(vr, "c")
-    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"], vr)
+    var_dict["c"]["data"] ,_ = tls.check_empty_df(var_dict["c"]["data"], vr)
     lwp_c = var_dict["c"]["data"][vr]
     # Uncomment below line if you want to filter small values
     # lwp_c[lwp_c < 0.01] = np.nan
@@ -159,7 +157,7 @@ def read_lwp():
 
     # --- ERA5 ---
     read_rean(vr, "e")
-    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"], vr)
+    var_dict["e"]["data"] ,_ = tls.check_empty_df(var_dict["e"]["data"], vr)
     lwp_e = var_dict["e"]["data"][vr]
     lwp_e[lwp_e < 0.01] = np.nan
     var_dict["e"]["data"][vr] = lwp_e
@@ -184,27 +182,26 @@ def read_lw_down():
     vr = "lw_down"
     var_dict = inpt.extr[vr]
     read_rean(vr, "c")
-    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"], vr)
-    lw_down_c = var_dict["c"]["data"][vr]
-    lw_down_c[lw_down_c < 0.] = np.nan
+    var_dict["c"]["data"] ,_ = tls.check_empty_df(var_dict["c"]["data"], vr)
+    lw_down_c = var_dict["c"]["data"][vr].mask(var_dict["c"]["data"][vr] < 0., np.nan)
     lw_down_c /= inpt.var_dict["c"]["rad_conv_factor"]
     var_dict["c"]["data"][vr] = lw_down_c
+    
 
     # --- ERA5 ---
     vr = "lw_down"
     var_dict = inpt.extr[vr]
     read_rean("lw_down", "e")
-    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"], vr)
-    lw_down_e = var_dict["e"]["data"][vr]
-    lw_down_e[lw_down_e < 0.] = np.nan
+    var_dict["e"]["data"] ,_ = tls.check_empty_df(var_dict["e"]["data"], vr)
+    lw_down_e = var_dict["e"]["data"][vr].mask(var_dict["e"]["data"][vr] < 0., np.nan)
     lw_down_e /= inpt.var_dict["e"]["rad_conv_factor"]
     var_dict["e"]["data"][vr] = lw_down_e
 
     # --- THAAO ---
     if inpt.datasets['THAAO']['switch']:
-        rd_ft.read_thaao_rad("lw_down")
-        lw_down_t = var_dict["t"]["data"]
-        lw_down_t[lw_down_t < 0.] = np.nan
+        rd_ft.read_thaao_rad("lw_down")     
+        lw_down_t = var_dict["t"]["data"][vr].mask(var_dict["t"]["data"][vr] < 0., np.nan)
+        var_dict["t"]["data"][vr] = lw_down_t
 
     return
 
@@ -215,48 +212,51 @@ def read_lw_up():
     Performs unit conversions, calculates upward LW radiation from net/downward components,
     and handles invalid values.
     """
-    read_lw_down()
 
     # --- CARRA ---
     vr = "lw_net"
     var_dict = inpt.extr[vr]
     read_rean(vr, "c")
-    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"], vr)
-    lw_net_c = inpt.extr[vr]["c"]["data"][vr]
+    var_dict["c"]["data"] ,_ = tls.check_empty_df(var_dict["c"]["data"], vr)
+    lw_net_c = var_dict["c"]["data"][vr]
     lw_net_c /= inpt.var_dict["c"]["rad_conv_factor"]
 
+    vr = 'lw_down'
+    var_dict = inpt.extr[vr]
     lw_down_c = var_dict["c"]["data"][vr]
-    lw_up_c = lw_down_c - lw_net_c
-    lw_up_c[lw_up_c < 0.] = np.nan
+    read_lw_down()
 
     vr = "lw_up"
     var_dict = inpt.extr[vr]
-    var_dict["data"][vr] = lw_up_c.to_frame(name=vr)
+    lw_up_c = lw_down_c - lw_net_c
+    var_dict["data"] = lw_up_c.mask(lw_up_c < 0., np.nan)
 
     # --- ERA5 ---
     vr = "lw_net"
     var_dict = inpt.extr[vr]
-
     read_rean(vr, "e")
-    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"], vr)
+    var_dict["e"]["data"] ,_ = tls.check_empty_df(var_dict["e"]["data"], vr)
     lw_net_e = var_dict["e"]["data"][vr]
     lw_net_e /= inpt.var_dict["e"]["rad_conv_factor"]
 
+    vr = 'lw_down'
+    var_dict = inpt.extr[vr]
     lw_down_e = var_dict["e"]["data"][vr]
-    lw_up_e = lw_down_e - lw_net_e
-    lw_up_e[lw_up_e < 0.] = np.nan
 
     vr = "lw_up"
     var_dict = inpt.extr[vr]
-    var_dict["e"]["data"][vr] = lw_up_e.to_frame(name=vr)
+    lw_up_e = lw_down_e - lw_net_e
+    var_dict["e"]["data"] = lw_up_e.mask(lw_up_e < 0., np.nan)
 
     # --- THAAO ---
     vr = "lw_up"
     var_dict = inpt.extr[vr]
     if inpt.datasets['THAAO']['switch']:
         rd_ft.read_thaao_rad(vr)
-        lw_up_t = var_dict["t"]["data"][vr]
-        lw_up_t[lw_up_t < 0.] = np.nan
+        lw_up_t = var_dict["t"]["data"]
+        lw_up_t[vr] = lw_up_t[vr].mask(lw_up_t[vr] < 0., np.nan)
+        var_dict["t"]["data"] = lw_up_t
+        
 
     return
 
@@ -266,16 +266,16 @@ def read_precip():
     Reads and processes precipitation data from CARRA, ERA5, and THAAO2 datasets.
     Scales ERA5 precipitation from meters to millimeters. Modifies `inpt` in place.
     """
-    vr=inpt.var
+    vr = inpt.var
     var_dict = inpt.extr[vr]
 
     # --- CARRA ---
     read_rean(vr, "c")
-    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"], vr)
+    var_dict["c"]["data"] ,_ = tls.check_empty_df(var_dict["c"]["data"], vr)
 
     # --- ERA5 ---
     read_rean(vr, "e")
-    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"], vr)
+    var_dict["e"]["data"] ,_ = tls.check_empty_df(var_dict["e"]["data"], vr)
     precip_e = var_dict["e"]["data"][vr]
     precip_e *= 1000.  # Convert from meters to mm
 
@@ -294,18 +294,18 @@ def read_rh():
     :raises KeyError: if data keys are missing.
     :raises ValueError: if unexpected data structure issues arise.
     """
-    vr=inpt.var
+    vr = inpt.var
     var_dict = inpt.extr[vr]
 
     # --- CARRA ---
     read_rean(vr, "c")
-    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"], vr)
+    var_dict["c"]["data"] ,_ = tls.check_empty_df(var_dict["c"]["data"], vr)
 
     # --- ERA5 ---
     read_rean("dewpt", "e")
-    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"], vr)
+    var_dict["e"]["data"] ,_ = tls.check_empty_df(var_dict["e"]["data"], vr)
     read_rean("temp", "e")
-    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"], vr)
+    var_dict["e"]["data"] ,_ = tls.check_empty_df(var_dict["e"]["data"], vr)
     tls.calc_rh_from_tdp()  # Compute RH from dew point and temp
 
     # --- THAAO ---
@@ -316,7 +316,7 @@ def read_rh():
     # --- Villum ---
     if inpt.datasets['Villum']['switch']:
         rd_fv.read_villum_weather(vr)
-        
+
     return
 
 
@@ -326,19 +326,19 @@ def read_surf_pres():
     Converts units, filters out invalid data, and handles known corrupted periods.
     Modifies `inpt` in-place.
     """
-    vr=inpt.var
+    vr = inpt.var
     var_dict = inpt.extr[vr]
 
     # --- CARRA ---
     read_rean(vr, "c")
-    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"], vr)
+    var_dict["c"]["data"] ,_ = tls.check_empty_df(var_dict["c"]["data"], vr)
     pres_c = var_dict["c"]["data"][vr]
     var_dict["c"]["data"][vr] /= 100.
     var_dict["c"]["data"].loc[var_dict["c"]["data"][vr] <= 900., vr] = np.nan
-    
+
     # --- ERA5 ---
     read_rean(vr, "e")
-    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"], vr)
+    var_dict["e"]["data"] ,_ = tls.check_empty_df(var_dict["e"]["data"], vr)
     var_dict["e"]["data"][vr] /= 100.
     var_dict["e"]["data"].loc[var_dict["e"]["data"][vr] <= 900., vr] = np.nan
 
@@ -355,7 +355,7 @@ def read_surf_pres():
     # --- Villum ---
     if inpt.datasets['Villum']['switch']:
         rd_fv.read_villum_weather(vr)
-        
+
     return
 
 
@@ -364,38 +364,39 @@ def read_sw_down():
     Reads and processes shortwave downward radiation data from CARRA, ERA5, ERA5-LAND, and THAAO.
     Negative values are set to NaN, and values are scaled using radiation conversion factors.
     """
-    
+
     # --- CARRA ---
     vr = "sw_down"
     var_dict = inpt.extr[vr]
     read_rean(vr, "c")
-    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"], vr)
-    sw_down_c = var_dict["c"]["data"]
-    sw_down_c[vr] = sw_down_c[vr].mask(sw_down_c[vr] < 0., np.nan)
+    var_dict["c"]["data"] ,_ = tls.check_empty_df(var_dict["c"]["data"], vr)
+    
+    sw_down_c = var_dict["c"]["data"][vr].mask(var_dict["c"]["data"][vr] < 0., np.nan)
     sw_down_c /= inpt.var_dict["c"]["rad_conv_factor"]
+    var_dict["c"]["data"][vr] = sw_down_c
 
     # --- ERA5 ---
     vr = "sw_down"
     var_dict = inpt.extr[vr]
     read_rean(vr, "e")
-    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"], vr)
-    sw_down_e = var_dict["e"]["data"]    
-    sw_down_e[vr] = sw_down_e[vr].mask(sw_down_e[vr] < 0., np.nan)    
+    var_dict["e"]["data"] ,_ = tls.check_empty_df(var_dict["e"]["data"], vr)
+    
+    sw_down_e = var_dict["e"]["data"][vr].mask(var_dict["e"]["data"][vr] < 0., np.nan)
     sw_down_e /= inpt.var_dict["e"]["rad_conv_factor"]
+    var_dict["e"]["data"][vr] = sw_down_e
 
     # --- THAAO ---
     vr = "sw_down"
     var_dict = inpt.extr[vr]
     if inpt.datasets['THAAO']['switch']:
         rd_ft.read_thaao_rad(vr)
-        sw_down_t = var_dict["t"]["data"]
-        sw_down_t[vr] = sw_down_t[vr].mask(sw_down_t[vr] < 0., np.nan)    
-
+        sw_down_t = var_dict["t"]["data"][vr].mask(var_dict["t"]["data"][vr] < 0., np.nan)
+        var_dict["c"]["data"][vr] = sw_down_c
 
     # --- Villum ---
     if inpt.datasets['Villum']['switch']:
         rd_fv.read_villum_weather(vr)
-        
+
     return
 
 
@@ -405,47 +406,46 @@ def read_sw_up():
     Applies unit conversions, calculates upwelling radiation, and filters invalid values.
     Modifies `inpt` in-place.
     """
-    read_sw_down()
 
     # --- CARRA ---
     vr = "sw_net"
     var_dict = inpt.extr[vr]
     read_rean("sw_net", "c")
-    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"], vr)
+    var_dict["c"]["data"],_ = tls.check_empty_df(var_dict["c"]["data"], vr)
 
     sw_net_c = var_dict["c"]["data"][vr]
     sw_net_c /= inpt.var_dict["c"]["rad_conv_factor"]
 
     vr = "sw_down"
     var_dict = inpt.extr[vr]
+    read_sw_down()
     sw_down_c = var_dict["c"]["data"][vr]
-    sw_up_c = sw_down_c - sw_net_c
-    sw_up_c[sw_up_c < 0.] = np.nan
 
     vr = "sw_up"
     var_dict = inpt.extr[vr]
-    var_dict["c"]["data"][vr] = sw_up_c
-    # del inpt.extr["sw_net"]["c"]["data"][vr]
+    sw_up_c = sw_down_c - sw_net_c
+    var_dict["c"]["data"] = sw_up_c.mask(sw_up_c < 0., np.nan)
+    var_dict["c"]["data"] ,_ = tls.check_empty_df(var_dict["c"]["data"], vr)
 
     # --- ERA5 ---
     vr = "sw_net"
     var_dict = inpt.extr[vr]
     read_rean(vr, "e")
-    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"])
+    var_dict["e"]["data"] ,_ = tls.check_empty_df(var_dict["e"]["data"], vr)
 
     sw_net_e = var_dict["e"]["data"][vr]
-    sw_net_e /= inpt.var_dict["e"]["rad_conv_factor"][vr]
+    sw_net_e /= inpt.var_dict["e"]["rad_conv_factor"]
 
     vr = "sw_down"
     var_dict = inpt.extr[vr]
     sw_down_e = var_dict["e"]["data"][vr]
-    sw_up_e = sw_down_e - sw_net_e
-    sw_up_e[sw_up_e < 0.] = np.nan
 
     vr = "sw_up"
     var_dict = inpt.extr[vr]
-    var_dict["e"]["data"][vr] = sw_up_e
-    # del inpt.extr["sw_net"]["e"]["data"]
+    sw_up_e = sw_down_e - sw_net_e
+    var_dict["e"]["data"] = sw_up_e.mask(sw_up_e < 0., np.nan)
+    var_dict["e"]["data"] ,_ = tls.check_empty_df(var_dict["e"]["data"], vr)
+
 
     # --- THAAO ---
     vr = "sw_up"
@@ -453,8 +453,9 @@ def read_sw_up():
     if inpt.datasets['THAAO']['switch']:
         rd_ft.read_thaao_rad(vr)
         sw_up_t = var_dict["t"]["data"][vr]
-        sw_up_t[sw_up_t < 0.] = np.nan
-
+        var_dict["t"]["data"][vr] = sw_up_t.mask(sw_up_t < 0., np.nan)
+        var_dict["t"]["data"] = sw_up_t
+        
     return
 
 
@@ -470,16 +471,16 @@ def read_tcc():
 
     :return: None
     """
-    vr=inpt.var
+    vr = inpt.var
     var_dict = inpt.extr[vr]
-    
+
     # --- CARRA ---
     read_rean(vr, "c")
-    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"])
+    var_dict["c"]["data"] ,_ = tls.check_empty_df(var_dict["c"]["data"])
 
     # --- ERA5 ---
     read_rean(vr, "e")
-    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"])
+    var_dict["e"]["data"] ,_ = tls.check_empty_df(var_dict["e"]["data"])
     var_dict["e"]["data"][vr] *= 100.0
 
     # --- THAAO ---
@@ -498,17 +499,17 @@ def read_temp():
 
     :return: None
     """
-    vr=inpt.var
+    vr = inpt.var
     var_dict = inpt.extr[vr]
 
     # --- CARRA ---
     read_rean(vr, "c")
-    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"])
+    var_dict["c"]["data"] ,_ = tls.check_empty_df(var_dict["c"]["data"], vr)
     var_dict["c"]["data"][vr] -= 273.15
 
     # --- ERA5 ---
     read_rean(vr, "e")
-    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"])
+    var_dict["e"]["data"] ,_ = tls.check_empty_df(var_dict["e"]["data"], vr)
     var_dict["e"]["data"][vr] -= 273.15
 
     # --- THAAO ---
@@ -553,22 +554,22 @@ def read_wind():
     vr = "winds"
     var_dict = inpt.extr[vr]
     read_rean(vr, "c")
-    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"])
+    var_dict["c"]["data"] ,_ = tls.check_empty_df(var_dict["c"]["data"], vr)
     vr = "windd"
     var_dict = inpt.extr[vr]
     read_rean(vr, "c")
-    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"])
+    var_dict["c"]["data"] ,_ = tls.check_empty_df(var_dict["c"]["data"], vr)
 
     # --- ERA5 ---
     vr = "windu"
     var_dict = inpt.extr[vr]
     read_rean(vr, "e")
-    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"])
+    var_dict["e"]["data"] ,_ = tls.check_empty_df(var_dict["e"]["data"], vr)
 
     vr = "windv"
     var_dict = inpt.extr[vr]
     read_rean("vr", "e")
-    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"])
+    var_dict["e"]["data"] ,_ = tls.check_empty_df(var_dict["e"]["data"], vr)
     e_ws = wind_speed(
         inpt.extr["windu"]["e"]["data"][vr].values * units("m/s"),
         inpt.extr["windv"]["e"]["data"][vr].values * units("m/s"))

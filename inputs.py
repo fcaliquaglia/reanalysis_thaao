@@ -78,13 +78,13 @@ thaao_e = 'era5_NG'
 thaao_t = 'thaao'
 
 met = ['temp', 'surf_pres', 'rh']  #, 'iwv']
-rad = ['sw_up', 'lw_up', 'sw_down', 'lw_down', 'alb']
+rad = ['sw_down', 'lw_down', 'alb','sw_up', 'lw_up',]
 clouds = ['lwp', 'cbh', 'tcc', 'precip']
 extra = ['winds', 'windd']
 
 ##
 tres_list = ['3h']
-list_var =  rad + met
+list_var =  met + rad
 
 
 tres = ''

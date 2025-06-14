@@ -77,6 +77,9 @@ def plot_ts(period_label):
         # Boolean mask for original and resampled data for this year
         for data_typ in plot_vars:
             # Original data for the year
+            null, chck = tls.check_empty_df(var_data[data_typ]['data'][inpt.var], inpt.var)
+            if chck:
+                continue
             data_ori = var_data[data_typ]['data'][inpt.var]
             mask_ori = data_ori.index.year == year
             if mask_ori.any():
