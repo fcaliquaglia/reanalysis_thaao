@@ -20,11 +20,11 @@ plot = True
 plot_flags = dict(
     ground_sites=True,
     buoys=True,
-    dropsondes=True,
+    dropsondes=False,
     p3_tracks=False,
     g3_tracks=False,
     radiosondes=False,
-    ships=False
+    ships=True
 )
 
 basefol = r"H:\Shared drives\Dati_THAAO"
@@ -970,7 +970,7 @@ if __name__ == "__main__":
             ds["lon"] = ds_gdp.geometry.x
             ds["lat"] = ds_gdp.geometry.y
             ds = ds[["time", "lat", "lon"]]
-            ds.set_index('time', inplace=True)
+            #ds.set_index('time', inplace=True)
             lat = ds["lat"].values
             lon = ds["lon"].values
             msk, lat, lon = filter_coords(lat, lon, bounds=bounds)
