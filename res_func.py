@@ -44,7 +44,7 @@ def data_resampling(vr):
 
     for vvrr in inpt.extr[vr]['comps'] + [inpt.extr[vr]['ref_x']]:
         data=inpt.extr[vr][vvrr]['data']
-        tls.check_empty_df(data)
+        tls.check_empty_df(data, vr)
         # # Skip if data is an empty string or not a DataFrame
         # if isinstance(data, str) and data == '':
         #     continue

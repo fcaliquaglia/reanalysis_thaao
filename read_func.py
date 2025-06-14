@@ -65,7 +65,7 @@ def read_rean(vr, dataset_type):
             tls.process_rean(vr, dataset_type, year, location)
 
     # Read all yearly parquet files and concatenate into a single DataFrame
-    data_all = pd.DataFrame()
+    data_all = pd.DataFrame(columns=[vr])
     for year in inpt.years:
         input_file = f"{inpt.extr[vr][dataset_type]['fn']}{location}_{year}.parquet"
         input_path = os.path.join(
@@ -96,14 +96,14 @@ def read_alb():
 
     # CARRA
     read_rean(inpt.var, "c")
-    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"])
+    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"], vr)
     var_dict["c"]["data"][inpt.var] /= 100.
     # var_dict["c"]["data"].loc[var_dict["c"]["data"][inpt.var] <= 0., inpt.var] = np.nan
 
 
     # ERA5
     read_rean(inpt.var, "e")
-    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"])
+    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"], vr)
     # var_dict["e"]["data"].loc[var_dict["e"]["data"][inpt.var] <= 0., inpt.var] = np.nan
 
 
@@ -125,11 +125,11 @@ def read_cbh():
     var_dict = inpt.extr[inpt.var]
     # CARRA
     read_rean(inpt.var, "c")
-    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"])
+    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"], vr)
 
     # ERA5
     read_rean(inpt.var, "e")
-    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"])
+    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"], vr)
 
     # THAAO ceilometer
     if inpt.datasets['THAAO']['switch']:
@@ -147,7 +147,7 @@ def read_lwp():
 
     # --- CARRA ---
     read_rean(inpt.var, "c")
-    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"])
+    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"], vr)
     lwp_c = var_dict["c"]["data"][inpt.var]
     # Uncomment below line if you want to filter small values
     # lwp_c[lwp_c < 0.01] = np.nan
@@ -155,7 +155,7 @@ def read_lwp():
 
     # --- ERA5 ---
     read_rean(inpt.var, "e")
-    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"])
+    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"], vr)
     lwp_e = var_dict["e"]["data"][inpt.var]
     lwp_e[lwp_e < 0.01] = np.nan
     var_dict["e"]["data"][inpt.var] = lwp_e
@@ -182,18 +182,18 @@ def read_lw_down():
     vr = "lw_down"
     var_dict = inpt.extr[vr]
     read_rean(vr, "c")
-    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"])
-    lw_down_c = var_dict["c"]["data"][inpt.var]
+    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"], vr)
+    lw_down_c = var_dict["c"]["data"][vr]
     lw_down_c[lw_down_c < 0.] = np.nan
     lw_down_c /= inpt.var_dict["c"]["rad_conv_factor"]
-    var_dict["c"]["data"][inpt.var] = lw_down_c
+    var_dict["c"]["data"][vr] = lw_down_c
 
     # --- ERA5 ---
     vr = "lw_down"
     var_dict = inpt.extr[vr]
     read_rean("lw_down", "e")
-    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"])
-    lw_down_e = var_dict["e"]["data"][inpt.var]
+    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"], vr)
+    lw_down_e = var_dict["e"]["data"][vr]
     lw_down_e[lw_down_e < 0.] = np.nan
     lw_down_e /= inpt.var_dict["e"]["rad_conv_factor"]
     var_dict["e"]["data"][inpt.var] = lw_down_e
@@ -219,7 +219,7 @@ def read_lw_up():
     vr = "lw_net"
     var_dict = inpt.extr[vr]
     read_rean(vr, "c")
-    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"])
+    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"], vr)
     lw_net_c = inpt.extr[vr]["c"]["data"][inpt.var]
     lw_net_c /= inpt.var_dict["c"]["rad_conv_factor"]
 
@@ -236,7 +236,7 @@ def read_lw_up():
     var_dict = inpt.extr[vr]
 
     read_rean(vr, "e")
-    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"])
+    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"], vr)
     lw_net_e = var_dict["e"]["data"][inpt.var]
     lw_net_e /= inpt.var_dict["e"]["rad_conv_factor"]
 
@@ -268,11 +268,11 @@ def read_precip():
 
     # --- CARRA ---
     read_rean(inpt.var, "c")
-    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"])
+    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"], vr)
 
     # --- ERA5 ---
     read_rean(inpt.var, "e")
-    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"])
+    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"], vr)
     precip_e = var_dict["e"]["data"][inpt.var]
     precip_e *= 1000.  # Convert from meters to mm
 
@@ -295,13 +295,13 @@ def read_rh():
 
     # --- CARRA ---
     read_rean(inpt.var, "c")
-    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"])
+    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"], vr)
 
     # --- ERA5 ---
     read_rean("dewpt", "e")
-    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"])
+    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"], vr)
     read_rean("temp", "e")
-    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"])
+    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"], vr)
     tls.calc_rh_from_tdp()  # Compute RH from dew point and temp
 
     # --- THAAO2 ---
@@ -322,14 +322,14 @@ def read_surf_pres():
 
     # --- CARRA ---
     read_rean(inpt.var, "c")
-    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"])
+    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"], vr)
     pres_c = var_dict["c"]["data"][inpt.var]
     var_dict["c"]["data"][inpt.var] /= 100.
     var_dict["c"]["data"].loc[var_dict["c"]["data"][inpt.var] <= 900., inpt.var] = np.nan
     
     # --- ERA5 ---
     read_rean(inpt.var, "e")
-    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"])
+    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"], vr)
     var_dict["e"]["data"][inpt.var] /= 100.
     var_dict["e"]["data"].loc[var_dict["e"]["data"][inpt.var] <= 900., inpt.var] = np.nan
 
@@ -356,7 +356,7 @@ def read_sw_down():
     vr = "sw_down"
     var_dict = inpt.extr[vr]
     read_rean(vr, "c")
-    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"])
+    var_dict["c"]["data"] = tls.check_empty_df(var_dict["c"]["data"], vr)
     sw_down_c = var_dict["c"]["data"]
     sw_down_c[vr] = sw_down_c[vr].mask(sw_down_c[vr] < 0., np.nan)
     sw_down_c /= inpt.var_dict["c"]["rad_conv_factor"]
@@ -365,7 +365,7 @@ def read_sw_down():
     vr = "sw_down"
     var_dict = inpt.extr[vr]
     read_rean(vr, "e")
-    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"])
+    var_dict["e"]["data"] = tls.check_empty_df(var_dict["e"]["data"], vr)
     sw_down_e = var_dict["e"]["data"]    
     sw_down_e[vr] = sw_down_e[vr].mask(sw_down_e[vr] < 0., np.nan)    
     sw_down_e /= inpt.var_dict["e"]["rad_conv_factor"]

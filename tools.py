@@ -18,22 +18,22 @@ import metpy.calc as mpcalc
 from metpy.units import units
 
 
-def check_empty_df(data_e):
+def check_empty_df(data_e, vr):
     import pandas as pd
 
     if data_e is None:
         print("Empty DataFrame")
-        return pd.DataFrame(columns=[inpt.var])
+        return pd.DataFrame(columns=[vr])
 
     # Check if it's an empty string (in case)
     if isinstance(data_e, str) and data_e.strip() == '':
         print("Empty DataFrame")
-        return pd.DataFrame(columns=[inpt.var])
+        return pd.DataFrame(columns=[vr])
 
     # Check if it's a DataFrame and empty
     if isinstance(data_e, pd.DataFrame) and data_e.empty:
         print("Empty DataFrame")
-        return pd.DataFrame(columns=[inpt.var])
+        return pd.DataFrame(columns=[vr])
 
     # If it's none of the above, return as is
     return data_e
