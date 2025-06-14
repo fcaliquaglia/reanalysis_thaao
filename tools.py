@@ -81,12 +81,12 @@ def calc_rh_from_tdp():
     return
 
 
-def get_common_paths(vr, prefix):
+def get_common_paths(vr, y, prefix):
     location = next((v['fn']
                     for v in inpt.datasets.values() if v.get('switch')), None)
     base_out = Path(inpt.basefol['out']['processed'])
     base_input = Path(inpt.basefol['t']['arcsix'])
-    filename = f"{location}_{prefix}_{vr}.parquet"
+    filename = f"{location}_{prefix}_{vr}_{y}.parquet"
     return base_out / filename, base_input
 
 
@@ -237,7 +237,7 @@ def process_rean(vr, data_typ, y, loc):
                 time_dim: [pd.Timestamp(da_small.valid_time.values)],
                 'latitude': [da_small.latitude.item()],
                 'longitude': [da_small.longitude.item()],
-                't2m': [da_small.item()]  # Extract scalar value
+                var_name: [da_small.item()]
             })
             df.set_index(time_dim, inplace=True)
             df.rename(columns={var_name: vr}, inplace=True)

@@ -84,7 +84,7 @@ extra = ['winds', 'windd']
 
 ##
 tres_list = ['3h']
-list_var =  rad + met
+list_var =  met + rad
 
 
 tres = ''
@@ -176,9 +176,9 @@ extr = {'alb': {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1,
         'lw_down': {'name': 'lw_down', 'ref_x': 't', 'min': 100, 'max': 400, 'res_min': -20, 'res_max': 20,
                     'uom': '[W/m2]', 'comps': ['c', 'e'], 'bin_nr': 200,
                     'c': {'fn': f'{thaao_c}_thermal_surface_radiation_downwards_', 'column': 4,
-                            'data': '', 'data_res': '', 'var_name': ''},
+                            'data': '', 'data_res': '', 'var_name': 'strd'},
                     'e': {'fn': f'{thaao_e}_surface_thermal_radiation_downwards_', 'column': 2,
-                          'data': '', 'data_res': '', 'var_name': ''},
+                          'data': '', 'data_res': '', 'var_name': 'strd'},
                     't': {'fn': 'MERGED_SW_LW_UP_DW_METEO_', 'column': 'LW_DOWN', 'data': '',
                           'data_res': ''},
                     't1': {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
