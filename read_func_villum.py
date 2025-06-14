@@ -50,7 +50,7 @@ def read_villum_weather(vr):
             'VS_Max(m/s 9m)': None,
             'Temp(oC 9m)': 'temp',
             'RH(% 9m)': 'rh',
-            'RAD(W/m2 3m)': 'rad',
+            'RAD(W/m2 3m)': 'sw_down',
             'Pressure(hPa 0m)': 'surf_pres',
             'Snow depth(m)': 'snow_depth'
         }

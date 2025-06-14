@@ -77,7 +77,8 @@ def plot_ts(period_label):
         # Boolean mask for original and resampled data for this year
         for data_typ in plot_vars:
             # Original data for the year
-            null, chck = tls.check_empty_df(var_data[data_typ]['data'][inpt.var], inpt.var)
+            null, chck = tls.check_empty_df(
+                var_data[data_typ]['data'][inpt.var], inpt.var)
             if chck:
                 continue
             data_ori = var_data[data_typ]['data'][inpt.var]
@@ -112,7 +113,7 @@ def plot_ts(period_label):
     save_path = os.path.join(
         inpt.basefol['out']['base'], inpt.tres, f"{str_name.replace(' ', '_')}.png")
     plt.savefig(save_path, bbox_inches='tight')
-    plt.close(fig)
+    plt.close('all')
 
 
 def plot_residuals(period_label):
@@ -180,92 +181,99 @@ def plot_residuals(period_label):
     save_path = os.path.join(
         inpt.basefol['out']['base'], inpt.tres, f"{str_name.replace(' ', '_')}.png")
     plt.savefig(save_path, bbox_inches='tight')
-    plt.close(fig)
+    plt.close('all')
 
 
 def plot_scatter(period_label):
     """
-    Generates a 2x2 grid of scatter plots or 2D histograms for the specified period label.
-
-    Each subplot corresponds to a component of the dataset, filtered by season or 'all'.
-    Polynomial fits are calculated and plots formatted before saving.
-
-    :param period_label: Identifier for the time period (e.g., season) used to filter and label plots.
-    :type period_label: str
-    :return: None
+    Plots a 2x2 grid of scatter plots or 2D histograms by season or full period.
+    Applies polynomial fitting, formatting, and saves the figure.
     """
     print(f"SCATTERPLOTS {period_label}")
     plt.ioff()
     fig, ax = plt.subplots(2, 2, figsize=(12, 12), dpi=inpt.dpi)
     axs = ax.ravel()
 
-    str_name = f"{inpt.tres} {inpt.seass[period_label]['name']} scatter {inpt.var} {inpt.var_dict['t']['label']} {inpt.years[0]}-{inpt.years[-1]}"
+    # Prepare metadata
+    season_name = inpt.seass[period_label]['name']
+    str_name = f"{inpt.tres} {season_name} scatter {inpt.var} {inpt.var_dict['t']['label']} {inpt.years[0]}-{inpt.years[-1]}"
     fig.suptitle(str_name, fontweight='bold')
     fig.subplots_adjust(top=0.93)
 
     var_data = inpt.extr[inpt.var]
-    comps_all = var_data['comps']
+    comps = tls.plot_vars_cleanup(var_data['comps'], var_data)
     ref_x = var_data['ref_x']
     x = var_data[ref_x]['data_res'][inpt.var]
-    comps = tls.plot_vars_cleanup(comps_all, var_data)
 
-    # Remove unused frames based on number of components
     frame_and_axis_removal(axs, len(comps))
 
-    # Create complete time index across all years
+    # Preprocess time and data
     time_range = pd.date_range(
-        start=pd.Timestamp(inpt.years[0], 1, 1, 0, 0),
+        start=pd.Timestamp(inpt.years[0], 1, 1),
         end=pd.Timestamp(inpt.years[-1], 12, 31, 23, 59),
         freq=inpt.tres
     )
-
-    # Reindex reference data once outside the loop
-    x_all = x.reindex(time_range).astype(float)  # ensures NaNs for missing
+    x_all = x.reindex(time_range).astype(float)
     season_months = inpt.seass[period_label]['months']
     x_season = x_all.loc[x_all.index.month.isin(season_months)]
 
     for i, comp in enumerate(comps):
-        y = var_data[comp]['data_res'][inpt.var]
-        y_all = y.reindex(time_range).astype(float)
-        y_season = y_all.loc[y_all.index.month.isin(season_months)]
+        y = var_data[comp]['data_res'][inpt.var].reindex(
+            time_range).astype(float)
+        y_season = y.loc[y.index.month.isin(season_months)]
 
-        # Boolean index where neither x nor y are NaN for the variable
         valid_idx = ~(x_season.isna() | y_season.isna())
+        x_valid, y_valid = x_season[valid_idx], y_season[valid_idx]
 
         print(
-            f"plotting scatter {inpt.var_dict['t']['label']}-{inpt.var_dict[comp]['label']}")
+            f"Plotting scatter {inpt.var_dict['t']['label']} - {inpt.var_dict[comp]['label']}")
 
-        if inpt.seass[period_label]['name'] != 'all':
+        if season_name != 'all':
             axs[i].scatter(
-                x_season[valid_idx], y_season[valid_idx],
+                x_valid, y_valid,
                 s=5, facecolors='none', edgecolors=inpt.seass[period_label]['col'],
                 alpha=0.5, label=period_label
             )
         else:
-            bin_edges = np.linspace(
-                var_data['min'], var_data['max'], var_data['bin_nr'])
-            bin_size = (var_data['max'] - var_data['min']) / var_data['bin_nr']
+            # Fix for invalid histogram bins when min == max
+            vmin, vmax = var_data['min'], var_data['max']
+            if vmin >= vmax:
+                print("WARNING: Histogram bin min >= max, skipping hist2d")
+                axs[i].text(0.1, 0.5, "Invalid bin range",
+                            transform=axs[i].transAxes)
+            else:
+                # Ensure valid bin range
+                vmin, vmax = var_data['min'], var_data['max']
+                if not np.isfinite(vmin) or not np.isfinite(vmax) or vmin >= vmax:
+                    print(
+                        f"WARNING: Invalid histogram bin range (vmin={vmin}, vmax={vmax}) — skipping hist2d.")
+                    axs[i].text(0.1, 0.5, "Invalid histogram range",
+                                transform=axs[i].transAxes)
+                else:
+                    bin_edges = np.linspace(vmin, vmax, var_data['bin_nr'])
+                    bin_size = (vmax - vmin) / var_data['bin_nr']
+                    axs[i].hist2d(
+                        x_valid, y_valid,
+                        bins=[bin_edges, bin_edges],
+                        cmap='jet',
+                        cmin=1,
+                        vmin=vmin,  # safe here
+                        vmax=vmax
+                    )
+                    axs[i].text(
+                        0.10, 0.90, f"bin_size={bin_size:.3f}", transform=axs[i].transAxes)
 
-            h = axs[i].hist2d(
-                x_season[valid_idx], y_season[valid_idx],
-                bins=[bin_edges, bin_edges], cmap=plt.cm.jet, cmin=1, vmin=1
-            )
-            axs[i].text(
-                0.10, 0.90, f"bin_size={bin_size:.3f}", transform=axs[i].transAxes)
-
-        # Check for enough data points to fit
-        if valid_idx.sum() < 2:
-            print('ERROR: Not enough data points for proper fit (need at least 2).')
+        if valid_idx.sum() >= 2:
+            calc_draw_fit(axs, i, x_valid, y_valid, period_label)
         else:
-            calc_draw_fit(
-                axs, i, x_season[valid_idx], y_season[valid_idx], period_label)
+            print("ERROR: Not enough data points for fit.")
 
         format_scatterplot(axs, comp, i)
 
     save_path = os.path.join(
         inpt.basefol['out']['base'], inpt.tres, f"{str_name.replace(' ', '_')}.png")
     plt.savefig(save_path, bbox_inches='tight')
-    plt.close(fig)
+    plt.close('all')
 
 
 def plot_scatter_cum():
@@ -336,7 +344,7 @@ def plot_scatter_cum():
     save_path = os.path.join(
         inpt.basefol['out']['base'], inpt.tres, f"{str_name.replace(' ', '_')}.png")
     plt.savefig(save_path, bbox_inches='tight')
-    plt.close(fig)
+    plt.close('all')
 
 
 def calc_draw_fit(axs, i, xxx, yyy, per_lab, print_stats=True):

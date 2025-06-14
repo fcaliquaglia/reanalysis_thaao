@@ -43,8 +43,8 @@ def data_resampling(vr):
         sys.exit()
 
     for vvrr in inpt.extr[vr]['comps'] + [inpt.extr[vr]['ref_x']]:
-        data=inpt.extr[vr][vvrr]['data']
-        data,chk = tls.check_empty_df(data, vr)
+        data = inpt.extr[vr][vvrr]['data']
+        data, chk = tls.check_empty_df(data, vr)
         # # Skip if data is an empty string or not a DataFrame
         # if isinstance(data, str) and data == '':
         #     continue
@@ -55,6 +55,7 @@ def data_resampling(vr):
             inpt.extr[vr][vvrr]['data_res'] = data_res
             print(f'Resampled for {vvrr}, {vr} at {inpt.tres} resolution')
         else:
-            print(f'NOT Resampled for {vvrr}, {vr} at {inpt.tres} resolution. Probably empty DataFrame.')
+            print(
+                f'NOT Resampled for {vvrr}, {vr} at {inpt.tres} resolution. Probably empty DataFrame.')
 
     return
