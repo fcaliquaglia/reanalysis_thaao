@@ -72,6 +72,7 @@ datasets = {
     'radiosondes': {'switch': False, 'fn': ''}}
 
 lbl = next((info['fn'] for info in datasets.values() if info['switch']), None)
+location = next((v['fn'] for k, v in datasets.items() if v.get('switch')), None)
 
 thaao_c = 'carra1'
 thaao_e = 'era5_NG'
@@ -90,7 +91,7 @@ list_var =  met + rad
 tres = ''
 var = ''
 
-years = np.arange(2023, 2025, 1)
+years = np.arange(2024, 2025, 1)
 
 aws_ecapac_daterange = pd.date_range(start=dt.datetime(
     2023, 4, 1), end=dt.datetime(2024, 12, 31), freq='1D')

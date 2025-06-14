@@ -577,41 +577,44 @@ def plot_surf_temp(seq, plot_flags=plot_flags):
     plt.close()
 
 
-def write_location_file(d, output_dir):
-    """
-    Writes location files for each buoy in the format:
-    datetime,lat,lon
-
-    Parameters:
-    - buoy_data: list of dicts, each containing keys:
-        "filename": base name for output
-        "time": list of datetime strings
-        "lat": list of latitudes (floats)
-        "lon": list of longitudes (floats)
-    - output_dir: directory to save the output files (default: current directory)
-    """
-
+def write_dict_to_file(d, output_dir):
+    # Prepare filename
     try:
-        filename = f"{d['filename'].split('.')[:-1][0]}_loc.txt"
+        base_filename = d['filename'].split('.')[:-1][0]
+        filename = f"{base_filename}_loc.txt"
     except (IndexError, TypeError):
         filename = f"{d['filename']}_loc.txt"
+
     filepath = os.path.join(output_dir, filename)
+
+    # Determine keys to write (skip 'filename' if it's metadata)
+    keys = [k for k in d.keys() if k != 'filename']
+
     if not os.path.exists(filepath):
         with open(filepath, "w") as f:
-            f.write("datetime,lat,lon,elev\n")
-            for (t, lat, lon, elev) in zip(d["time"], d["lat"], d["lon"], d["elev"]):
-                try:
-                    t_fmt = pd.to_datetime(t).strftime('%Y-%m-%dT%H:%M:%S')
-                except ValueError:
-                    t_fmt = np.nan
-                f.write(
-                    f"{t_fmt},{lat:.6f},{lon:.6f},{elev:.2f}\n")
+            header = [("datetime" if k == "time" else k) for k in keys]
+            f.write(",".join(keys) + "\n")
+
+            # Write rows
+            for row in zip(*(d[k] for k in keys)):
+                formatted_row = []
+                for k, val in zip(keys, row):
+                    if k == "time":
+                        try:
+                            val = pd.to_datetime(val).strftime('%Y-%m-%dT%H:%M:%S')
+                        except Exception:
+                            val = np.nan
+                    elif isinstance(val, float):
+                        val = f"{val:.6f}" if k in ["lat", "lon"] else f"{val:.2f}"
+                    formatted_row.append(str(val))
+                f.write(",".join(formatted_row) + "\n")
 
         print(f"Wrote {filepath}")
     else:
         print(f"{filepath} ALREADY calculated.")
-
+    
     return filename
+
 
 
 def plot_surf_date(seq, plot_flags=plot_flags):
@@ -770,7 +773,7 @@ if __name__ == "__main__":
                     "elev": [ground_sites[ground_site]["elev"]]
                     }
             ground_sites_data.append(elem)
-            fn = write_location_file(elem, folders["txt_location"])
+            fn = write_dict_to_file(elem, folders["txt_location"])
             for data_typ in grid_sel.keys():
                 filenam_grid = f"{data_typ}_grid_index_for_{fn}"
                 if not os.path.exists(os.path.join(folders["txt_location"], filenam_grid)):
@@ -801,7 +804,7 @@ if __name__ == "__main__":
                     "elev": elev,
                     }
             radio_data.append(elem)
-            fn = write_location_file(elem, folders["txt_location"])
+            fn = write_dict_to_file(elem, folders["txt_location"])
             # TODO:
             # THESE lat lon should be calculated from wind!
             for data_typ in grid_sel.keys():
@@ -837,7 +840,7 @@ if __name__ == "__main__":
                     "elev": np.repeat(np.nan, len(time))
                     }
             drop_data.append(elem)
-            fn = write_location_file(elem, folders["txt_location"])
+            fn = write_dict_to_file(elem, folders["txt_location"])
             for data_typ in grid_sel.keys():
                 filenam_grid = f"{data_typ}_grid_index_for_{fn}"
                 if not os.path.exists(os.path.join(folders["txt_location"], filenam_grid)):
@@ -871,7 +874,7 @@ if __name__ == "__main__":
                     "elev": np.repeat(np.nan, len(time))
                     }
             buoy_data.append(elem)
-            fn = write_location_file(elem, folders["txt_location"])
+            fn = write_dict_to_file(elem, folders["txt_location"])
             for data_typ in grid_sel.keys():
                 filenam_grid = f"{data_typ}_grid_index_for_{fn}"
                 if not os.path.exists(os.path.join(folders["txt_location"], filenam_grid)):
@@ -907,7 +910,7 @@ if __name__ == "__main__":
                             "elev": elev
                             }
                 g3_data.append(elem)
-                fn = write_location_file(elem, folders["txt_location"])
+                fn = write_dict_to_file(elem, folders["txt_location"])
                 for data_typ in grid_sel.keys():
                     filenam_grid = f"{data_typ}_grid_index_for_{fn}"
                     if not os.path.exists(os.path.join(folders["txt_location"], filenam_grid)):
@@ -939,11 +942,11 @@ if __name__ == "__main__":
                             "lat": lat,
                             "lon": lon,
                             "temp": temp,
-                            "time": time,
+                            "time": time,                               
                             "elev": elev
                             }
                 p3_data.append(elem)
-                fn = write_location_file(elem, folders["txt_location"])
+                fn = write_dict_to_file(elem, folders["txt_location"])
                 for data_typ in grid_sel.keys():
                     filenam_grid = f"{data_typ}_grid_index_for_{fn}"
                     if not os.path.exists(os.path.join(folders["txt_location"], filenam_grid)):
@@ -988,7 +991,7 @@ if __name__ == "__main__":
                     "elev": np.repeat(np.nan, len(time))
                     }
             ships_data.append(elem)
-            fn = write_location_file(elem, folders["txt_location"])
+            fn = write_dict_to_file(elem, folders["txt_location"])
             for data_typ in grid_sel.keys():
                 filenam_grid = f"{data_typ}_grid_index_for_{fn}"
                 if not os.path.exists(os.path.join(folders["txt_location"], filenam_grid)):

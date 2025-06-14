@@ -86,11 +86,10 @@ def calc_rh_from_tdp():
 
 
 def get_common_paths(vr, y, prefix):
-    location = next((v['fn']
-                    for v in inpt.datasets.values() if v.get('switch')), None)
+
     base_out = Path(inpt.basefol['out']['processed'])
     base_input = Path(inpt.basefol['t']['arcsix'])
-    filename = f"{location}_{prefix}_{vr}_{y}.parquet"
+    filename = f"{inpt.location}_{prefix}_{vr}_{y}.parquet"
     return base_out / filename, base_input
 
 
@@ -119,7 +118,7 @@ def wait_for_complete_download(file_path, timeout=600, interval=5):
         time.sleep(interval)
 
 
-def process_rean(vr, data_typ, y, loc):
+def process_rean(vr, data_typ, y):
     raw_dir = inpt.basefol[data_typ]['raw']
     filename = f"{inpt.extr[vr][data_typ]['fn']}{y}.nc"
     ds_path = os.path.join(raw_dir, filename)
@@ -137,7 +136,7 @@ def process_rean(vr, data_typ, y, loc):
     if data_typ == "c":
         ds["longitude"] = ds["longitude"] % 360
 
-    filenam_grid = f"{data_typ}_grid_index_for_{loc}_loc.txt"
+    filenam_grid = f"{data_typ}_grid_index_for_{inpt.location}_loc.txt"
     grid_path = os.path.join('txt_locations', filenam_grid)
 
     if not os.path.exists(grid_path):
@@ -257,7 +256,7 @@ def process_rean(vr, data_typ, y, loc):
         return
     out_path = os.path.join(
         inpt.basefol[data_typ]['processed'],
-        f"{inpt.extr[vr][data_typ]['fn']}{loc}_{y}.parquet"
+        f"{inpt.extr[vr][data_typ]['fn']}{inpt.location}_{y}.parquet"
     )
     full_df.to_parquet(out_path)
     print(f"Saved processed data to {out_path}")

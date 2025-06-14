@@ -32,7 +32,6 @@ import pandas as pd
 import xarray as xr
 import read_func_thaao as rd_ft
 import read_func_villum as rd_fv
-import read_func_buoys as rd_fb
 from metpy.calc import wind_direction, wind_speed
 from metpy.units import units
 import inputs as inpt
@@ -52,32 +51,37 @@ def read_rean(vr, dataset_type):
     :param dataset_type: Dataset type identifier ("c" for CARRA, "e" for ERA5).
     :return: None
     """
-    # Determine location filename prefix based on active dataset switches
-    location = next(
-        (v['fn'] for k, v in inpt.datasets.items() if v.get('switch')), None)
 
     # Process missing yearly files if needed
     for year in inpt.years:
-        output_file = f"{inpt.extr[vr][dataset_type]['fn']}{location}_{year}.parquet"
+        output_file = f"{inpt.extr[vr][dataset_type]['fn']}{inpt.location}_{year}.parquet"
         output_path = os.path.join(
             inpt.basefol[dataset_type]['processed'], output_file)
-
+    
         if not os.path.exists(output_path):
-            tls.process_rean(vr, dataset_type, year, location)
-
+            tls.process_rean(vr, dataset_type, year)
+    
     # Read all yearly parquet files and concatenate into a single DataFrame
-    data_all = pd.DataFrame(columns=[vr])
+    data_all = []
+    
     for year in inpt.years:
-        input_file = f"{inpt.extr[vr][dataset_type]['fn']}{location}_{year}.parquet"
+        input_file = f"{inpt.extr[vr][dataset_type]['fn']}{inpt.location}_{year}.parquet"
         input_path = os.path.join(
             inpt.basefol[dataset_type]['processed'], input_file)
         try:
             data_tmp = pd.read_parquet(input_path)
             print(f"Loaded {input_path}")
+            if not data_tmp.empty:
+                data_all.append(data_tmp)
         except FileNotFoundError as e:
             print(f"File not found: {input_path} ({e})")
             continue
-        data_all = pd.concat([data_all, data_tmp])
+    
+    # Combine all data if any was loaded
+    if data_all:
+        data_all = pd.concat(data_all)
+    else:
+        data_all = pd.DataFrame()
 
     # Store the concatenated data in the input extraction dictionary
     inpt.extr[vr][dataset_type]["data"] = data_all
@@ -407,6 +411,41 @@ def read_surf_pres():
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
 
+    # --- Sigma-A ---
+    if inpt.datasets['Sigma-A']['switch']:
+        print('No data available for Sigma-A')
+        var_dict["t"]["data"], _ = tls.check_empty_df(
+            var_dict["t"]["data"], vr)
+
+    # --- Sigma-B ---
+    if inpt.datasets['Sigma-B']['switch']:
+        print('No data available for Sigma-B')
+        var_dict["t"]["data"], _ = tls.check_empty_df(
+            var_dict["t"]["data"], vr)
+
+    # --- Alert ---
+    if inpt.datasets['Alert']['switch']:
+        print('No data available for Alert')
+        var_dict["t"]["data"], _ = tls.check_empty_df(
+            var_dict["t"]["data"], vr)
+
+    # --- Summit ---
+    if inpt.datasets['Summit']['switch']:
+        print('No data available for Summit')
+        var_dict["t"]["data"], _ = tls.check_empty_df(
+            var_dict["t"]["data"], vr)
+
+    # --- Buoys ---
+    if inpt.datasets['buoys']['switch']:
+        data_all=pd.DataFrame()
+        for y in inpt.years:
+            path = os.path.join('txt_locations', f"{inpt.location}_loc.txt")
+            data_tmp = pd.read_csv(path)
+            data_all = pd.concat([data_all, data_tmp])
+        data_all['time'] = pd.to_datetime(data_all['time'], errors='coerce')
+        data_all = data_all.set_index('time')
+        var_dict["t"]["data"] = data_all
+        var_dict["t"]["data"], _ = tls.check_empty_df(var_dict["t"]["data"], vr)
     return
 
 
@@ -479,6 +518,17 @@ def read_sw_down():
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
 
+    # --- Buoys ---
+    if inpt.datasets['buoys']['switch']:
+        data_all=pd.DataFrame()
+        for y in inpt.years:
+            path = os.path.join('txt_locations', f"{inpt.location}_loc.txt")
+            data_tmp = pd.read_csv(path)
+            data_all = pd.concat([data_all, data_tmp])
+        data_all['time'] = pd.to_datetime(data_all['time'], errors='coerce')
+        data_all = data_all.set_index('time')
+        var_dict["t"]["data"] = data_all
+        var_dict["t"]["data"], _ = tls.check_empty_df(var_dict["t"]["data"], vr)
     return
 
 
@@ -538,6 +588,18 @@ def read_sw_up():
         var_dict["t"]["data"] = sw_up_t
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
+        
+    # --- Buoys ---
+    if inpt.datasets['buoys']['switch']:
+        data_all=pd.DataFrame()
+        for y in inpt.years:
+            path = os.path.join('txt_locations', f"{inpt.location}_loc.txt")
+            data_tmp = pd.read_csv(path)
+            data_all = pd.concat([data_all, data_tmp])
+        data_all['time'] = pd.to_datetime(data_all['time'], errors='coerce')
+        data_all = data_all.set_index('time')
+        var_dict["t"]["data"] = data_all
+        var_dict["t"]["data"], _ = tls.check_empty_df(var_dict["t"]["data"], vr)
 
     return
 
@@ -639,8 +701,15 @@ def read_temp():
 
     # --- Buoys ---
     if inpt.datasets['buoys']['switch']:
-        var_dict["t"]["data"], _ = tls.check_empty_df(
-            var_dict["t"]["data"], vr)
+        data_all=pd.DataFrame()
+        for y in inpt.years:
+            path = os.path.join('txt_locations', f"{inpt.location}_loc.txt")
+            data_tmp = pd.read_csv(path)
+            data_all = pd.concat([data_all, data_tmp])
+        data_all['time'] = pd.to_datetime(data_all['time'], errors='coerce')
+        data_all = data_all.set_index('time')
+        var_dict["t"]["data"] = data_all
+        var_dict["t"]["data"], _ = tls.check_empty_df(var_dict["t"]["data"], vr)
     return
 
 
