@@ -118,10 +118,7 @@ def wait_for_complete_download(file_path, timeout=600, interval=5):
         time.sleep(interval)
 
 
-def process_rean(vr, data_typ, y):
-    raw_dir = inpt.basefol[data_typ]['raw']
-    filename = f"{inpt.extr[vr][data_typ]['fn']}{y}.nc"
-    ds_path = os.path.join(raw_dir, filename)
+def process_rean(vr, data_typ, ds_path):
 
     if os.path.exists(ds_path):
         wait_for_complete_download(ds_path)

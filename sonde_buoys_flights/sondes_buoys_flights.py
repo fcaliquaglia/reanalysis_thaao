@@ -19,8 +19,8 @@ plot = True
 
 plot_flags = dict(
     ground_sites=True,
-    buoys=True,
-    dropsondes=False,
+    buoys=False,
+    dropsondes=True,
     p3_tracks=False,
     g3_tracks=False,
     radiosondes=False,
@@ -847,6 +847,40 @@ if __name__ == "__main__":
                     find_index_in_grid(
                         grid_sel[data_typ], folders["txt_location"], filenam_grid)
 
+        # Step 1: List all TXT files previously saved
+        txt_files = sorted(glob.glob(os.path.join(folders["txt_location"], "ARCSIX-AVAPS-netCDF_G3*.txt")))
+        
+        # Step 2: Create list to hold the highest-pressure rows
+        highest_pres_rows = []
+        
+        # Step 3: Read each file individually
+        for txt_file in txt_files:
+            try:
+                df = pd.read_csv(txt_file)
+        
+                # Step 4: Replace -999 or similar no-data flags with NaN
+                df.replace(-999.0, np.nan, inplace=True)
+        
+                # Step 5: Find the index of highest pressure (non-NaN)
+                if df["pres"].notna().any():
+                    max_idx = df["pres"].idxmax()
+                    highest_row = df.loc[max_idx]
+                    highest_pres_rows.append(highest_row)
+                else:
+                    print(f"Skipped {txt_file} – all NaNs in pressure.")
+        
+            except Exception as e:
+                print(f"Error reading {txt_file}: {e}")
+        
+        # Step 6: Combine all selected rows into a DataFrame
+        final_df = pd.DataFrame(highest_pres_rows)
+    
+        # Step 7: Save to a final TXT file
+        final_df.to_parquet(os.path.join(folders["txt_location"], "dropsondes_surface_level_temp.parquet"),
+                        index="time")
+
+        print("Saved final TXT with highest pressure rows.")
+
     # Buoys
     if plot_flags["buoys"]:
         buoy_files = [f for f in process_nc_folder(
@@ -864,6 +898,7 @@ if __name__ == "__main__":
             else:
                 print("OK")
             temp = ds["air_temp"].isel(trajectory=0).values[msk]
+            temp = np.where(temp == 0.0, np.nan, temp)
             pres = ds["air_pressure"].isel(trajectory=0).values[msk]
             dsi = ds["incident"].isel(trajectory=0).values[msk]
             usi = ds["reflected"].isel(trajectory=0).values[msk]

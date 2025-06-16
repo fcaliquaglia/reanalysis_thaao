@@ -36,6 +36,7 @@ from metpy.calc import wind_direction, wind_speed
 from metpy.units import units
 import inputs as inpt
 import tools as tls
+import glob
 
 
 def read_rean(vr, dataset_type):
@@ -52,20 +53,32 @@ def read_rean(vr, dataset_type):
     :return: None
     """
 
-    # Process missing yearly files if needed
-    for year in inpt.years:
-        output_file = f"{inpt.extr[vr][dataset_type]['fn']}{inpt.location}_{year}.parquet"
-        output_path = os.path.join(
-            inpt.basefol[dataset_type]['processed'], output_file)
-    
-        if not os.path.exists(output_path):
-            tls.process_rean(vr, dataset_type, year)
+    if inpt.datasets['dropsondes']['switch']: 
+        drop_files = sorted(glob.glob(os.path.join('txt_locations', "ARCSIX-AVAPS-netCDF_G3*.txt")))
+        # Process missing files if needed
+        for file_path in drop_files:
+            file_name = os.path.basename(file_path)
+            output_file = f"{inpt.extr[vr][dataset_type]['fn']}{file_name.replace('.txt', '')}.parquet"
+            output_path = os.path.join(inpt.basefol[dataset_type]['processed'], output_file)
+        
+            if not os.path.exists(output_path):
+                tls.process_rean(vr, dataset_type, output_path)
+    else: 
+        # Process missing yearly files if needed
+        for year in inpt.years:
+            output_file = f"{inpt.extr[vr][dataset_type]['fn']}{inpt.location}_{year}.parquet"
+            output_path = os.path.join(
+                inpt.basefol[dataset_type]['processed'], output_file)
+        
+            if not os.path.exists(output_path):
+                filename = os.path.join(inpt.basefol[dataset_type]['raw'], f"{inpt.extr[vr][dataset_type]['fn']}{year}.nc")
+                tls.process_rean(vr, dataset_type, filename)
     
     # Read all yearly parquet files and concatenate into a single DataFrame
     data_all = []
     
-    for year in inpt.years:
-        input_file = f"{inpt.extr[vr][dataset_type]['fn']}{inpt.location}_{year}.parquet"
+    if inpt.datasets['dropsondes']['switch']: 
+        input_file = f"{inpt.extr[vr][dataset_type]['fn']}{inpt.location}.parquet"
         input_path = os.path.join(
             inpt.basefol[dataset_type]['processed'], input_file)
         try:
@@ -75,7 +88,18 @@ def read_rean(vr, dataset_type):
                 data_all.append(data_tmp)
         except FileNotFoundError as e:
             print(f"File not found: {input_path} ({e})")
-            continue
+    else: 
+        for year in inpt.years:
+            input_file = f"{inpt.extr[vr][dataset_type]['fn']}{inpt.location}_{year}.parquet"
+            input_path = os.path.join(
+                inpt.basefol[dataset_type]['processed'], input_file)
+        try:
+            data_tmp = pd.read_parquet(input_path)
+            print(f"Loaded {input_path}")
+            if not data_tmp.empty:
+                data_all.append(data_tmp)
+        except FileNotFoundError as e:
+            print(f"File not found: {input_path} ({e})")
     
     # Combine all data if any was loaded
     if data_all:
@@ -711,6 +735,33 @@ def read_temp():
         var_dict["t"]["data"] = data_all
         var_dict["t"]["data"]["temp"] = var_dict["t"]["data"]["temp"].mask(var_dict["t"]["data"]["temp"] == 0.0, np.nan)
         var_dict["t"]["data"], _ = tls.check_empty_df(var_dict["t"]["data"], vr)
+    
+    # --- Dropsondes ---
+    if inpt.datasets['dropsondes']['switch']:
+        data_all = pd.DataFrame()
+        drop_files = sorted(glob.glob(os.path.join('txt_locations', "ARCSIX-AVAPS-netCDF_G3*.txt")))
+        drop_data = []
+        
+        for file in drop_files:
+            d = pd.read_csv(file)
+            drop_data.append(d)
+        
+        selected_rows = []  # Store entire rows
+        
+        for d in drop_data:
+            if np.any(~np.isnan(d["pres"])):
+                valid_idx = np.nanargmax(d["pres"])  # index of max non-NaN pressure
+                selected_row = d.iloc[valid_idx]     # select the entire row
+                selected_rows.append(selected_row)
+            else:
+                selected_rows.append(pd.Series(dtype=float))  # or fill with NaNs if needed
+        
+        # Convert the list of Series into a DataFrame
+        data_all = pd.DataFrame(selected_rows)
+        var_dict["t"]["data"] = data_all
+        var_dict["t"]["data"], _ = tls.check_empty_df(
+            var_dict["t"]["data"], vr)
+
     return
 
 
