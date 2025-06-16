@@ -708,7 +708,7 @@ def read_temp():
             data_all = pd.concat([data_all, data_tmp])
         data_all['time'] = pd.to_datetime(data_all['time'], errors='coerce')
         data_all = data_all.set_index('time')
-        var_dict["t"]["data"][vr] = data_all.mask(data_all ==0.0, np.nan)
+        var_dict["t"]["data"] = data_all.temp.mask(data_all.temp == 0.0, np.nan)
         var_dict["t"]["data"] = data_all
         var_dict["t"]["data"], _ = tls.check_empty_df(var_dict["t"]["data"], vr)
     return
