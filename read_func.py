@@ -53,31 +53,33 @@ def read_rean(vr, dataset_type):
     :return: None
     """
 
-    if inpt.datasets['dropsondes']['switch']: 
-        drop_files = sorted(glob.glob(os.path.join('txt_locations', "ARCSIX-AVAPS-netCDF_G3*.txt")))
+    if inpt.datasets['dropsondes']['switch']:
+        drop_files = sorted(glob.glob(os.path.join(
+            'txt_locations', "ARCSIX-AVAPS-netCDF_G3*.txt")))
         # Process missing files if needed
         for file_path in drop_files:
             file_name = os.path.basename(file_path)
-            output_file = f"{inpt.extr[vr][dataset_type]['fn']}{file_name.replace('.txt', '')}.parquet"
-            output_path = os.path.join(inpt.basefol[dataset_type]['processed'], output_file)
+            year = 2024
+            output_file = f"{inpt.extr[vr][dataset_type]['fn']}{file_name.replace('_loc.txt', '')}_{year}.parquet"
+            output_path = os.path.join(
+                inpt.basefol[dataset_type]['processed'], output_file)
             inpt.location = file_name.replace('_loc.txt', '')
             if not os.path.exists(output_path):
-                tls.process_rean(vr, dataset_type, '2024')
-    else: 
+                tls.process_rean(vr, dataset_type, year)
+    else:
         # Process missing yearly files if needed
         for year in inpt.years:
             output_file = f"{inpt.extr[vr][dataset_type]['fn']}{inpt.location}_{year}.parquet"
             output_path = os.path.join(
                 inpt.basefol[dataset_type]['processed'], output_file)
-        
+
             if not os.path.exists(output_path):
-                filename = os.path.join(inpt.basefol[dataset_type]['raw'], f"{inpt.extr[vr][dataset_type]['fn']}{year}.nc")
                 tls.process_rean(vr, dataset_type, year)
-    
+
     # Read all yearly parquet files and concatenate into a single DataFrame
     data_all = []
-    
-    if inpt.datasets['dropsondes']['switch']: 
+
+    if inpt.datasets['dropsondes']['switch']:
         input_file = f"{inpt.extr[vr][dataset_type]['fn']}{inpt.location}.parquet"
         input_path = os.path.join(
             inpt.basefol[dataset_type]['processed'], input_file)
@@ -88,7 +90,7 @@ def read_rean(vr, dataset_type):
                 data_all.append(data_tmp)
         except FileNotFoundError as e:
             print(f"File not found: {input_path} ({e})")
-    else: 
+    else:
         for year in inpt.years:
             input_file = f"{inpt.extr[vr][dataset_type]['fn']}{inpt.location}_{year}.parquet"
             input_path = os.path.join(
@@ -100,7 +102,7 @@ def read_rean(vr, dataset_type):
                 data_all.append(data_tmp)
         except FileNotFoundError as e:
             print(f"File not found: {input_path} ({e})")
-    
+
     # Combine all data if any was loaded
     if data_all:
         data_all = pd.concat(data_all)
@@ -461,7 +463,7 @@ def read_surf_pres():
 
     # --- Buoys ---
     if inpt.datasets['buoys']['switch']:
-        data_all=pd.DataFrame()
+        data_all = pd.DataFrame()
         for y in inpt.years:
             path = os.path.join('txt_locations', f"{inpt.location}_loc.txt")
             data_tmp = pd.read_csv(path)
@@ -469,7 +471,8 @@ def read_surf_pres():
         data_all['time'] = pd.to_datetime(data_all['time'], errors='coerce')
         data_all = data_all.set_index('time')
         var_dict["t"]["data"] = data_all
-        var_dict["t"]["data"], _ = tls.check_empty_df(var_dict["t"]["data"], vr)
+        var_dict["t"]["data"], _ = tls.check_empty_df(
+            var_dict["t"]["data"], vr)
     return
 
 
@@ -544,7 +547,7 @@ def read_sw_down():
 
     # --- Buoys ---
     if inpt.datasets['buoys']['switch']:
-        data_all=pd.DataFrame()
+        data_all = pd.DataFrame()
         for y in inpt.years:
             path = os.path.join('txt_locations', f"{inpt.location}_loc.txt")
             data_tmp = pd.read_csv(path)
@@ -552,7 +555,8 @@ def read_sw_down():
         data_all['time'] = pd.to_datetime(data_all['time'], errors='coerce')
         data_all = data_all.set_index('time')
         var_dict["t"]["data"] = data_all
-        var_dict["t"]["data"], _ = tls.check_empty_df(var_dict["t"]["data"], vr)
+        var_dict["t"]["data"], _ = tls.check_empty_df(
+            var_dict["t"]["data"], vr)
     return
 
 
@@ -612,10 +616,10 @@ def read_sw_up():
         var_dict["t"]["data"] = sw_up_t
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
-        
+
     # --- Buoys ---
     if inpt.datasets['buoys']['switch']:
-        data_all=pd.DataFrame()
+        data_all = pd.DataFrame()
         for y in inpt.years:
             path = os.path.join('txt_locations', f"{inpt.location}_loc.txt")
             data_tmp = pd.read_csv(path)
@@ -623,7 +627,8 @@ def read_sw_up():
         data_all['time'] = pd.to_datetime(data_all['time'], errors='coerce')
         data_all = data_all.set_index('time')
         var_dict["t"]["data"] = data_all
-        var_dict["t"]["data"], _ = tls.check_empty_df(var_dict["t"]["data"], vr)
+        var_dict["t"]["data"], _ = tls.check_empty_df(
+            var_dict["t"]["data"], vr)
 
     return
 
@@ -725,7 +730,7 @@ def read_temp():
 
     # --- Buoys ---
     if inpt.datasets['buoys']['switch']:
-        data_all=pd.DataFrame()
+        data_all = pd.DataFrame()
         for y in inpt.years:
             path = os.path.join('txt_locations', f"{inpt.location}_loc.txt")
             data_tmp = pd.read_csv(path)
@@ -733,9 +738,11 @@ def read_temp():
         data_all['time'] = pd.to_datetime(data_all['time'], errors='coerce')
         data_all = data_all.set_index('time')
         var_dict["t"]["data"] = data_all
-        var_dict["t"]["data"]["temp"] = var_dict["t"]["data"]["temp"].mask(var_dict["t"]["data"]["temp"] == 0.0, np.nan)
-        var_dict["t"]["data"], _ = tls.check_empty_df(var_dict["t"]["data"], vr)
-    
+        var_dict["t"]["data"]["temp"] = var_dict["t"]["data"]["temp"].mask(
+            var_dict["t"]["data"]["temp"] == 0.0, np.nan)
+        var_dict["t"]["data"], _ = tls.check_empty_df(
+            var_dict["t"]["data"], vr)
+
     # --- Dropsondes ---
     if inpt.datasets['dropsondes']['switch']:
         data_all = pd.read_parquet('dropsondes_surface_level_temp.txt')

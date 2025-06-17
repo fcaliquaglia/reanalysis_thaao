@@ -169,7 +169,8 @@ def process_rean(vr, data_typ, y):
 
         print(f"Selected grid point at indices (y={y_idx[0]}, x={x_idx[0]}):")
         print(f"(First out of {len(lat_vals)}) Latitude = {lat_vals[0]:.4f}")
-        print(f"(First out of {len(lon_vals)}) Longitude = {lon_vals[0]:.4f}", end="")
+        print(
+            f"(First out of {len(lon_vals)}) Longitude = {lon_vals[0]:.4f}", end="")
         if data_typ == "c":
             print(f" (also {lon_vals[0]-360:.4f})")
         else:
@@ -215,7 +216,8 @@ def process_rean(vr, data_typ, y):
         print(
             f"(First out of {len(time_vals)}) Date = {pd.Timestamp(time_vals[0]).strftime('%Y-%m-%dT%H:%M:%S')}")
         print(f"(First out of {len(lat_vals)}) Latitude = {lat_vals[0]:.4f}")
-        print(f"(First out of {len(lon_vals)}) Longitude = {lon_vals[0]:.4f}", end="")
+        print(
+            f"(First out of {len(lon_vals)}) Longitude = {lon_vals[0]:.4f}", end="")
 
         if data_typ == "c":
             print(f" (also {lon_vals[0]-360:.4f})")
@@ -243,9 +245,13 @@ def process_rean(vr, data_typ, y):
             data_list.append(df)
 
     if active_key in ['dropsondes']:
-        y_idx = int(coords['y_idx'].to_numpy()[0])
-        x_idx = int(coords['x_idx'].to_numpy()[0])
-        t_idx = int(coords['t_idx'].to_numpy()[0])
+        if (np.isnan(coords['t_idx'].to_numpy()[0]) or np.isnan(coords['x_idx'].to_numpy()[0]) or np.isnan(coords['y_idx'].to_numpy()[0])):
+            print("Something's wrong with indexes dimension!")
+            return
+        else:
+            y_idx = int(coords['y_idx'].to_numpy()[0])
+            x_idx = int(coords['x_idx'].to_numpy()[0])
+            t_idx = int(coords['t_idx'].to_numpy()[0])
 
         time_dim = 'valid_time' if 'valid_time' in ds.dims else 'time'
         if data_typ == "c":
@@ -276,22 +282,20 @@ def process_rean(vr, data_typ, y):
         var_name = inpt.extr[vr][data_typ]["var_name"]
         data_list = []
 
-        if (np.isnan(t_idx) or np.isnan(x_idx) or np.isnan(y_idx)):
-            print("Something's wrong with indexes dimension!")
-        else:
-            da = ds[var_name].isel(
-                {lat_dim: y_idx, lon_dim: x_idx, time_dim: t_idx})
-            da_small = da.drop_vars(
-                ['step', 'surface', 'expver', 'number'], errors='ignore')
-            df = pd.DataFrame({
-                time_dim: [pd.Timestamp(da_small.valid_time.values)],
-                'latitude': [da_small.latitude.item()],
-                'longitude': [da_small.longitude.item()],
-                var_name: [da_small.item()]
-            })
-            df.set_index(time_dim, inplace=True)
-            df.rename(columns={var_name: vr}, inplace=True)
-            data_list.append(df)
+
+        da = ds[var_name].isel(
+            {lat_dim: y_idx, lon_dim: x_idx, time_dim: t_idx})
+        da_small = da.drop_vars(
+            ['step', 'surface', 'expver', 'number'], errors='ignore')
+        df = pd.DataFrame({
+            time_dim: [pd.Timestamp(da_small.valid_time.values)],
+            'latitude': [da_small.latitude.item()],
+            'longitude': [da_small.longitude.item()],
+            var_name: [da_small.item()]
+        })
+        df.set_index(time_dim, inplace=True)
+        df.rename(columns={var_name: vr}, inplace=True)
+        data_list.append(df)
 
     if not data_list:
         print(f"No data extracted for {filename}, skipping write.")
