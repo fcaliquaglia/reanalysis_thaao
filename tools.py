@@ -118,7 +118,10 @@ def wait_for_complete_download(file_path, timeout=600, interval=5):
         time.sleep(interval)
 
 
-def process_rean(vr, data_typ, ds_path):
+def process_rean(vr, data_typ, y):
+    raw_dir = inpt.basefol[data_typ]['raw']
+    filename = f"{inpt.extr[vr][data_typ]['fn']}{y}.nc"
+    ds_path = os.path.join(raw_dir, filename)
 
     if os.path.exists(ds_path):
         wait_for_complete_download(ds_path)
@@ -186,10 +189,6 @@ def process_rean(vr, data_typ, ds_path):
             df.rename(columns={var_name: vr}, inplace=True)
             data_list.append(df)
 
-        if not data_list:
-            print(f"No data extracted for {filename}, skipping write.")
-            return
-
     if active_key in ['buoys']:
         y_idx = coords['y_idx'].to_numpy()
         x_idx = coords['x_idx'].to_numpy()
@@ -243,9 +242,59 @@ def process_rean(vr, data_typ, ds_path):
             df.rename(columns={var_name: vr}, inplace=True)
             data_list.append(df)
 
-        if not data_list:
-            print(f"No data extracted for {filename}, skipping write.")
-            return
+    if active_key in ['dropsondes']:
+        y_idx = int(coords['y_idx'].to_numpy()[0])
+        x_idx = int(coords['x_idx'].to_numpy()[0])
+        t_idx = int(coords['t_idx'].to_numpy()[0])
+
+        time_dim = 'valid_time' if 'valid_time' in ds.dims else 'time'
+        if data_typ == "c":
+            lat_vals = ds['latitude'].values[y_idx, x_idx]
+            lon_vals = ds['longitude'].values[y_idx, x_idx]
+            time_vals = ds[time_dim].values[t_idx]
+            lat_dim, lon_dim = 'y', 'x'
+        elif data_typ == "e":
+            lat_vals = ds["latitude"].isel(latitude=y_idx).values
+            lon_vals = ds["longitude"].isel(longitude=x_idx).values
+            time_vals = np.array(ds[time_dim].values[t_idx])
+            lat_dim, lon_dim = 'latitude', 'longitude'
+        else:
+            raise ValueError(f"Unknown dataset_type: {data_typ}")
+
+        print(
+            f"Selected grid point at indices (t={t_idx}, y={y_idx}, x={x_idx}):")
+        print(
+            f"Date = {pd.Timestamp(time_vals).strftime('%Y-%m-%dT%H:%M:%S')}")
+        print(f"Latitude = {lat_vals:.4f}")
+        print(f"Longitude = {lon_vals:.4f}", end="")
+
+        if data_typ == "c":
+            print(f" (also {lon_vals-360:.4f})")
+        else:
+            print()
+
+        var_name = inpt.extr[vr][data_typ]["var_name"]
+        data_list = []
+
+        if not (np.isnan(t_idx) or np.isnan(x_idx) or np.isnan(y_idx)):
+            print("Something's worng with indexes dimension!")
+            da = ds[var_name].isel(
+                {lat_dim: y_idx, lon_dim: x_idx, time_dim: t_idx})
+            da_small = da.drop_vars(
+                ['step', 'surface', 'expver', 'number'], errors='ignore')
+            df = pd.DataFrame({
+                time_dim: [pd.Timestamp(da_small.valid_time.values)],
+                'latitude': [da_small.latitude.item()],
+                'longitude': [da_small.longitude.item()],
+                var_name: [da_small.item()]
+            })
+            df.set_index(time_dim, inplace=True)
+            df.rename(columns={var_name: vr}, inplace=True)
+            data_list.append(df)
+
+    if not data_list:
+        print(f"No data extracted for {filename}, skipping write.")
+        return
 
     full_df = pd.concat(data_list)
     if full_df.empty:

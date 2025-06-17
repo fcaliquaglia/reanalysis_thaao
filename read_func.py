@@ -60,9 +60,9 @@ def read_rean(vr, dataset_type):
             file_name = os.path.basename(file_path)
             output_file = f"{inpt.extr[vr][dataset_type]['fn']}{file_name.replace('.txt', '')}.parquet"
             output_path = os.path.join(inpt.basefol[dataset_type]['processed'], output_file)
-        
+            inpt.location = file_name.replace('_loc.txt', '')
             if not os.path.exists(output_path):
-                tls.process_rean(vr, dataset_type, output_path)
+                tls.process_rean(vr, dataset_type, '2024')
     else: 
         # Process missing yearly files if needed
         for year in inpt.years:
@@ -72,7 +72,7 @@ def read_rean(vr, dataset_type):
         
             if not os.path.exists(output_path):
                 filename = os.path.join(inpt.basefol[dataset_type]['raw'], f"{inpt.extr[vr][dataset_type]['fn']}{year}.nc")
-                tls.process_rean(vr, dataset_type, filename)
+                tls.process_rean(vr, dataset_type, year)
     
     # Read all yearly parquet files and concatenate into a single DataFrame
     data_all = []
@@ -738,26 +738,8 @@ def read_temp():
     
     # --- Dropsondes ---
     if inpt.datasets['dropsondes']['switch']:
-        data_all = pd.DataFrame()
-        drop_files = sorted(glob.glob(os.path.join('txt_locations', "ARCSIX-AVAPS-netCDF_G3*.txt")))
-        drop_data = []
-        
-        for file in drop_files:
-            d = pd.read_csv(file)
-            drop_data.append(d)
-        
-        selected_rows = []  # Store entire rows
-        
-        for d in drop_data:
-            if np.any(~np.isnan(d["pres"])):
-                valid_idx = np.nanargmax(d["pres"])  # index of max non-NaN pressure
-                selected_row = d.iloc[valid_idx]     # select the entire row
-                selected_rows.append(selected_row)
-            else:
-                selected_rows.append(pd.Series(dtype=float))  # or fill with NaNs if needed
-        
-        # Convert the list of Series into a DataFrame
-        data_all = pd.DataFrame(selected_rows)
+        data_all = pd.read_parquet('dropsondes_surface_level_temp.txt')
+
         var_dict["t"]["data"] = data_all
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
