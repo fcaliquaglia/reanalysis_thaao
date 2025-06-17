@@ -179,7 +179,7 @@ def process_rean(vr, data_typ, y):
         data_list = []
 
         if not (len(x_idx) == len(y_idx)):
-            print("Something's worng with indexes dimension!")
+            print("Something's wrong with indexes dimension!")
         for i in range(len(y_idx)):
             da = ds[var_name].isel({lat_dim: y_idx[i], lon_dim: x_idx[i]})
             da_small = da.drop_vars(
@@ -226,7 +226,7 @@ def process_rean(vr, data_typ, y):
         data_list = []
 
         if not (len(t_idx) == len(x_idx) == len(y_idx)):
-            print("Something's worng with indexes dimension!")
+            print("Something's wrong with indexes dimension!")
         for i in range(len(y_idx)):
             da = ds[var_name].isel(
                 {lat_dim: y_idx[i], lon_dim: x_idx[i], time_dim: t_idx[i]})
@@ -276,8 +276,9 @@ def process_rean(vr, data_typ, y):
         var_name = inpt.extr[vr][data_typ]["var_name"]
         data_list = []
 
-        if not (np.isnan(t_idx) or np.isnan(x_idx) or np.isnan(y_idx)):
-            print("Something's worng with indexes dimension!")
+        if (np.isnan(t_idx) or np.isnan(x_idx) or np.isnan(y_idx)):
+            print("Something's wrong with indexes dimension!")
+        else:
             da = ds[var_name].isel(
                 {lat_dim: y_idx, lon_dim: x_idx, time_dim: t_idx})
             da_small = da.drop_vars(
