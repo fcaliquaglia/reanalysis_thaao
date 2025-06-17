@@ -745,7 +745,7 @@ def read_temp():
 
     # --- Dropsondes ---
     if inpt.datasets['dropsondes']['switch']:
-        data_all = pd.read_parquet('dropsondes_surface_level_temp.txt')
+        data_all = pd.read_parquet(os.path.join('txt_locations', 'dropsondes_surface_level_temp.parquet'))
 
         var_dict["t"]["data"] = data_all
         var_dict["t"]["data"], _ = tls.check_empty_df(

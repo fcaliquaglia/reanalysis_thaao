@@ -246,7 +246,7 @@ def process_rean(vr, data_typ, y):
 
     if active_key in ['dropsondes']:
         if (np.isnan(coords['t_idx'].to_numpy()[0]) or np.isnan(coords['x_idx'].to_numpy()[0]) or np.isnan(coords['y_idx'].to_numpy()[0])):
-            print("Something's wrong with indexes dimension!`n For xample, the dropsonde lat lon could be outside the roi.")
+            print("Something's wrong with indexes dimension!.\n For example, the dropsonde lat lon could be outside the roi.")
             return
         else:
             y_idx = int(coords['y_idx'].to_numpy()[0])
