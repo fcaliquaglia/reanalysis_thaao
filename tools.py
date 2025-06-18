@@ -191,9 +191,13 @@ def process_rean(vr, data_typ, y):
             data_list.append(df)
 
     if active_key in ['buoys']:
-        y_idx = coords['y_idx'].to_numpy()
-        x_idx = coords['x_idx'].to_numpy()
-        t_idx = coords['t_idx'].to_numpy()
+        if (np.isnan(coords['t_idx'].to_numpy()[0]) or np.isnan(coords['x_idx'].to_numpy()[0]) or np.isnan(coords['y_idx'].to_numpy()[0])):
+            print("Something's wrong with indexes dimension!.\n For example, the dropsonde lat lon could be outside the roi.")
+            return
+        else:
+            y_idx = int(coords['y_idx'].to_numpy()[0])
+            x_idx = int(coords['x_idx'].to_numpy()[0])
+            t_idx = int(coords['t_idx'].to_numpy()[0])
 
         time_dim = 'valid_time' if 'valid_time' in ds.dims else 'time'
         if data_typ == "c":

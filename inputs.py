@@ -65,7 +65,7 @@ datasets = {
     'Sigma-A': {'switch': False, 'fn': 'Sigma-A'},
     'Sigma-B': {'switch': False, 'fn': 'Sigma-B'},
     'Summit': {'switch': False, 'fn': 'Summit'},
-    'buoys': {'switch': True, 'fn': '2024Mprocessed'}, # from M to R, skip O
+    'buoys': {'switch': True, 'fn': '2024Jprocessed'}, # from J to R, skip O and M
     'dropsondes': {'switch': False, 'fn': ''},
     'p3_tracks': {'switch': False, 'fn': ''},
     'g3_tracks': {'switch': False, 'fn': ''},
@@ -85,7 +85,7 @@ extra = ['winds', 'windd']
 
 ##
 tres_list = ['3h', '6h', '12h', '24h']
-list_var =  ['temp', 'surf_pres', 'rh']  # + rad + clouds + extra +  met
+list_var =  ['temp', 'surf_pres', 'sw_down', 'sw_up']  # + rad + clouds + extra +  met
 
 
 tres = ''
