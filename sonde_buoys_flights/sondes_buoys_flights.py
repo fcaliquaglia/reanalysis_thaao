@@ -19,8 +19,8 @@ plot = True
 
 plot_flags = dict(
     ground_sites=True,
-    buoys=False,
-    dropsondes=True,
+    buoys=True,
+    dropsondes=False,
     p3_tracks=False,
     g3_tracks=False,
     radiosondes=False,
@@ -179,7 +179,7 @@ def find_index_in_grid(grid_selection, fol_file, out_file):
 
             # Parse input datetime
             t_idx, matched_time = np.nan, np.nan
-            dt_str = row.datetime
+            dt_str = row.time
             if pd.notnull(dt_str):
                 input_time = pd.to_datetime(dt_str)
                 adjusted_ds_times = ds_times.map(

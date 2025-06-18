@@ -65,8 +65,8 @@ datasets = {
     'Sigma-A': {'switch': False, 'fn': 'Sigma-A'},
     'Sigma-B': {'switch': False, 'fn': 'Sigma-B'},
     'Summit': {'switch': False, 'fn': 'Summit'},
-    'buoys': {'switch': False, 'fn': '2024Pprocessed'},
-    'dropsondes': {'switch': True, 'fn': ''},
+    'buoys': {'switch': True, 'fn': '2024Mprocessed'}, # from M to R, skip O
+    'dropsondes': {'switch': False, 'fn': ''},
     'p3_tracks': {'switch': False, 'fn': ''},
     'g3_tracks': {'switch': False, 'fn': ''},
     'radiosondes': {'switch': False, 'fn': ''}}
@@ -78,20 +78,20 @@ thaao_c = 'carra1'
 thaao_e = 'era5_NG'
 thaao_t = 'thaao'
 
-met = ['temp', 'surf_pres'] #, 'rh']  #, 'iwv']
-rad = ['sw_down', 'sw_up'] #, 'lw_down', 'alb', 'lw_up',]
+met = ['temp', 'surf_pres', 'rh'] #, 'iwv']
+rad = ['sw_down', 'sw_up', 'alb', 'lw_down'] # , 'sw_up','lw_up', ]
 clouds = ['lwp', 'cbh', 'tcc', 'precip']
 extra = ['winds', 'windd']
 
 ##
-tres_list = ['3h']
-list_var =  met + rad
+tres_list = ['3h', '6h', '12h', '24h']
+list_var =  ['temp', 'surf_pres', 'rh']  # + rad + clouds + extra +  met
 
 
 tres = ''
 var = ''
 
-years = np.arange(2024, 2025, 1)
+years = np.arange(2022, 2025, 1)
 
 aws_ecapac_daterange = pd.date_range(start=dt.datetime(
     2023, 4, 1), end=dt.datetime(2024, 12, 31), freq='1D')
