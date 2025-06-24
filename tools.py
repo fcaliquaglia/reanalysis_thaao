@@ -191,13 +191,16 @@ def process_rean(vr, data_typ, y):
             data_list.append(df)
 
     if active_key in ['buoys']:
-        if (np.isnan(coords['t_idx'].to_numpy()[0]) or np.isnan(coords['x_idx'].to_numpy()[0]) or np.isnan(coords['y_idx'].to_numpy()[0])):
-            print("Something's wrong with indexes dimension!.\n For example, the dropsonde lat lon could be outside the roi.")
+        if (coords['t_idx'].size == 0 or np.all(np.isnan(coords['t_idx'].to_numpy())) or
+            coords['x_idx'].size == 0 or np.all(np.isnan(coords['x_idx'].to_numpy())) or
+            coords['y_idx'].size == 0 or np.all(np.isnan(coords['y_idx'].to_numpy()))):
+            print("Something's wrong with indexes dimension!\nFor example, the dropsonde lat/lon could be outside the ROI.")
             return
+
         else:
-            y_idx = int(coords['y_idx'].to_numpy()[0])
-            x_idx = int(coords['x_idx'].to_numpy()[0])
-            t_idx = int(coords['t_idx'].to_numpy()[0])
+            y_idx = coords['y_idx'].to_numpy().astype(int)
+            x_idx = coords['x_idx'].to_numpy().astype(int)
+            t_idx = coords['t_idx'].to_numpy().astype(int)
 
         time_dim = 'valid_time' if 'valid_time' in ds.dims else 'time'
         if data_typ == "c":
@@ -249,9 +252,12 @@ def process_rean(vr, data_typ, y):
             data_list.append(df)
 
     if active_key in ['dropsondes']:
-        if (np.isnan(coords['t_idx'].to_numpy()[0]) or np.isnan(coords['x_idx'].to_numpy()[0]) or np.isnan(coords['y_idx'].to_numpy()[0])):
-            print("Something's wrong with indexes dimension!.\n For example, the dropsonde lat lon could be outside the roi.")
+        if (coords['t_idx'].size == 0 or np.isnan(coords['t_idx'].to_numpy()[0]) or
+            coords['x_idx'].size == 0 or np.isnan(coords['x_idx'].to_numpy()[0]) or
+            coords['y_idx'].size == 0 or np.isnan(coords['y_idx'].to_numpy()[0])):
+            print("Something's wrong with indexes dimension!.\n For example, the dropsonde lat lon could be outside the ROI.")
             return
+
         else:
             y_idx = int(coords['y_idx'].to_numpy()[0])
             x_idx = int(coords['x_idx'].to_numpy()[0])

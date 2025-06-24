@@ -95,13 +95,13 @@ def read_rean(vr, dataset_type):
             input_file = f"{inpt.extr[vr][dataset_type]['fn']}{inpt.location}_{year}.parquet"
             input_path = os.path.join(
                 inpt.basefol[dataset_type]['processed'], input_file)
-        try:
-            data_tmp = pd.read_parquet(input_path)
-            print(f"Loaded {input_path}")
-            if not data_tmp.empty:
-                data_all.append(data_tmp)
-        except FileNotFoundError as e:
-            print(f"File not found: {input_path} ({e})")
+            try:
+                data_tmp = pd.read_parquet(input_path)
+                print(f"Loaded {input_path}")
+                if not data_tmp.empty:
+                    data_all.append(data_tmp)
+            except FileNotFoundError as e:
+                print(f"File not found: {input_path} ({e})")
 
     # Combine all data if any was loaded
     if data_all:
