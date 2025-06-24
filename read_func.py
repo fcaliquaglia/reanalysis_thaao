@@ -270,7 +270,10 @@ def read_lw_up():
     vr = "lw_up"
     var_dict = inpt.extr[vr]
     lw_up_c = lw_down_c - lw_net_c
-    var_dict["data"] = lw_up_c.mask(lw_up_c < 0., np.nan)
+    lw_up_c =lw_up_c.mask(lw_up_c < 0., np.nan)
+    var_dict['c']["data"][vr] = lw_up_c
+    var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
+
 
     # --- ERA5 ---
     vr = "lw_net"
@@ -287,7 +290,11 @@ def read_lw_up():
     vr = "lw_up"
     var_dict = inpt.extr[vr]
     lw_up_e = lw_down_e - lw_net_e
-    var_dict["e"]["data"] = lw_up_e.mask(lw_up_e < 0., np.nan)
+    lw_up_e = lw_up_e.mask(lw_up_e < 0., np.nan)
+    var_dict["e"]["data"][vr] = lw_up_e
+    var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
+
+
 
     # --- THAAO ---
     vr = "lw_up"
@@ -406,7 +413,6 @@ def read_surf_pres():
     # --- CARRA ---
     read_rean(vr, "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
-    pres_c = var_dict["c"]["data"][vr]
     var_dict["c"]["data"][vr] /= 100.
     var_dict["c"]["data"].loc[var_dict["c"]["data"][vr] <= 900., vr] = np.nan
 
@@ -487,7 +493,6 @@ def read_sw_down():
     var_dict = inpt.extr[vr]
     read_rean(vr, "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
-
     sw_down_c = var_dict["c"]["data"][vr].mask(
         var_dict["c"]["data"][vr] < 0., np.nan)
     sw_down_c /= inpt.var_dict["c"]["rad_conv_factor"]
@@ -498,7 +503,6 @@ def read_sw_down():
     var_dict = inpt.extr[vr]
     read_rean(vr, "e")
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
-
     sw_down_e = var_dict["e"]["data"][vr].mask(
         var_dict["e"]["data"][vr] < 0., np.nan)
     sw_down_e /= inpt.var_dict["e"]["rad_conv_factor"]
@@ -509,9 +513,9 @@ def read_sw_down():
     var_dict = inpt.extr[vr]
     if inpt.datasets['THAAO']['switch']:
         rd_ft.read_thaao_rad(vr)
-        sw_down_t = var_dict["t"]["data"][vr].mask(
+        var_dict["t"]["data"][vr] = var_dict["t"]["data"][vr].mask(
             var_dict["t"]["data"][vr] < 0., np.nan)
-        var_dict["t"]["data"][vr] = sw_down_c
+        var_dict["t"]["data"][vr] = var_dict["t"]["data"][vr]
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
 
@@ -584,7 +588,8 @@ def read_sw_up():
     vr = "sw_up"
     var_dict = inpt.extr[vr]
     sw_up_c = sw_down_c - sw_net_c
-    var_dict["c"]["data"] = sw_up_c.mask(sw_up_c < 0., np.nan)
+    sw_up_c = sw_up_c.mask(sw_up_c < 0., np.nan)
+    var_dict["c"]["data"][vr] = sw_up_c
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
 
     # --- ERA5 ---
@@ -603,7 +608,8 @@ def read_sw_up():
     vr = "sw_up"
     var_dict = inpt.extr[vr]
     sw_up_e = sw_down_e - sw_net_e
-    var_dict["e"]["data"] = sw_up_e.mask(sw_up_e < 0., np.nan)
+    sw_up_e = sw_up_e.mask(sw_up_e < 0., np.nan)
+    var_dict["c"]["data"][vr] = sw_up_e
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
 
     # --- THAAO ---
@@ -613,7 +619,6 @@ def read_sw_up():
         rd_ft.read_thaao_rad(vr)
         sw_up_t = var_dict["t"]["data"][vr]
         var_dict["t"]["data"][vr] = sw_up_t.mask(sw_up_t < 0., np.nan)
-        var_dict["t"]["data"] = sw_up_t
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
 
