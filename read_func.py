@@ -21,15 +21,10 @@ __email__ = "filippo.caliquaglia@ingv.it"
 __status__ = "Research"
 __lastupdate__ = ""
 
-import datetime as dt
 import os
 
-import sys
-
-import julian
 import numpy as np
 import pandas as pd
-import xarray as xr
 import read_func_thaao as rd_ft
 import read_func_villum as rd_fv
 from metpy.calc import wind_direction, wind_speed
@@ -271,7 +266,8 @@ def read_lw_up():
     var_dict = inpt.extr[vr]
     lw_up_c = lw_down_c - lw_net_c
     lw_up_c =lw_up_c.mask(lw_up_c < 0., np.nan)
-    var_dict['c']["data"][vr] = lw_up_c
+    lw_up_c.name = vr
+    var_dict["c"]["data"] = pd.DataFrame({vr: lw_up_c})
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
 
 
@@ -291,7 +287,8 @@ def read_lw_up():
     var_dict = inpt.extr[vr]
     lw_up_e = lw_down_e - lw_net_e
     lw_up_e = lw_up_e.mask(lw_up_e < 0., np.nan)
-    var_dict["e"]["data"][vr] = lw_up_e
+    lw_up_e.name = vr
+    var_dict["e"]["data"] = pd.DataFrame({vr: lw_up_e})
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
 
 
@@ -589,7 +586,8 @@ def read_sw_up():
     var_dict = inpt.extr[vr]
     sw_up_c = sw_down_c - sw_net_c
     sw_up_c = sw_up_c.mask(sw_up_c < 0., np.nan)
-    var_dict["c"]["data"][vr] = sw_up_c
+    sw_up_c.name = vr
+    var_dict["c"]["data"] = pd.DataFrame({vr: sw_up_c})
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
 
     # --- ERA5 ---
@@ -609,7 +607,8 @@ def read_sw_up():
     var_dict = inpt.extr[vr]
     sw_up_e = sw_down_e - sw_net_e
     sw_up_e = sw_up_e.mask(sw_up_e < 0., np.nan)
-    var_dict["c"]["data"][vr] = sw_up_e
+    sw_up_e.name = vr
+    var_dict["e"]["data"] = pd.DataFrame({vr: sw_up_e})
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
 
     # --- THAAO ---

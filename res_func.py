@@ -22,7 +22,6 @@ __status__ = "Research"
 __lastupdate__ = ""
 
 import sys
-import pandas as pd
 import inputs as inpt
 import tools as tls
 
