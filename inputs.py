@@ -59,13 +59,13 @@ basefol = {
 
 # flag type --> set to True only one at a time
 datasets = {
-    'THAAO': {'switch': True, 'fn': 'THAAO'},
+    'THAAO': {'switch': False, 'fn': 'THAAO'},
     'Alert': {'switch': False, 'fn': 'Alert'},
     'Villum': {'switch': False, 'fn': 'Villum'},
     'Sigma-A': {'switch': False, 'fn': 'Sigma-A'},
     'Sigma-B': {'switch': False, 'fn': 'Sigma-B'},
     'Summit': {'switch': False, 'fn': 'Summit'},
-    'buoys': {'switch': False, 'fn': '2024Rprocessed'}, # from J, to R, skip M (no file), O (almost no data)
+    'buoys': {'switch': True, 'fn': '2024Jprocessed'}, # from J, to R, skip M (no file), O (almost no data)
     'dropsondes': {'switch': False, 'fn': ''},
     'p3_tracks': {'switch': False, 'fn': ''},
     'g3_tracks': {'switch': False, 'fn': ''},
@@ -79,13 +79,13 @@ thaao_e = 'era5_NG'
 thaao_t = 'thaao'
 
 met = ['temp', 'surf_pres', 'rh'] #, 'iwv']
-rad = ['sw_down', 'alb', 'lw_down','sw_up', ] # , 'sw_up','lw_up', ]
+rad = ['sw_down', 'alb', 'lw_down','sw_up', 'lw_up']
 clouds = ['lwp', 'cbh', 'tcc', 'precip']
 extra = ['winds', 'windd']
 
 ##
 tres_list = ['3h', '6h', '12h', '24h']
-list_var = met + rad + extra # + clouds + extra
+list_var = met + rad + extra # + clouds
 
 
 tres = ''
