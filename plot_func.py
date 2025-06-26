@@ -382,10 +382,11 @@ def calc_draw_fit(axs, i, xxx, yyy, per_lab, print_stats=True):
 
     if print_stats:
         corcoef = np.corrcoef(xx, yy)[0, 1]
+        r2 = corcoef*corcoef
         N = len(yy)
         rmse = np.sqrt(np.nanmean((yy - xx) ** 2))
         mbe = np.nanmean(yy - xx)
-        stats_text = (f"R={corcoef:.2f} N={N}\n"
+        stats_text = (f"R^2={r2:.2f} N={N}\n"
                       f"y={b:+.2f}x{a:+.2f}\n"
                       f"MBE={mbe:.2f} RMSE={rmse:.2f}")
         axs[i].text(0.50, 0.30, stats_text,
