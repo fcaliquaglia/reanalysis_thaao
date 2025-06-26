@@ -62,10 +62,10 @@ datasets = {
     'THAAO': {'switch': False, 'fn': 'THAAO'},
     'Alert': {'switch': False, 'fn': 'Alert'},
     'Villum': {'switch': False, 'fn': 'Villum'},
-    'Sigma-A': {'switch': True, 'fn': 'Sigma-A'},
+    'Sigma-A': {'switch': False, 'fn': 'Sigma-A'},
     'Sigma-B': {'switch': False, 'fn': 'Sigma-B'},
     'Summit': {'switch': False, 'fn': 'Summit'},
-    'buoys': {'switch': False, 'fn': '2024Lprocessed'}, # from J, to R, skip M (no file), O (almost no data)
+    'buoys': {'switch': True, 'fn': '2024Lprocessed'}, # from J, to R, skip M (no file), O (almost no data)
     'dropsondes': {'switch': False, 'fn': ''},
     'p3_tracks': {'switch': False, 'fn': ''},
     'g3_tracks': {'switch': False, 'fn': ''},
@@ -84,7 +84,7 @@ clouds = ['lwp', 'cbh', 'tcc', 'precip']
 extra = ['winds', 'windd']
 
 ##
-tres_list = ['3h', '24h']
+tres_list = ['24h']
 list_var = met + rad + extra # + clouds
 
 
@@ -228,7 +228,7 @@ extr = {'alb': {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1,
                't1': {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
                't2': {'fn': 'AWS_THAAO_', 'column': 'RH', 'data': '',
                       'data_res': ''}},
-        'surf_pres': {'name': 'surf_pres', 'ref_x': 't', 'min': 935, 'max': 1020, 'res_min': -10, 'res_max': 10,
+        'surf_pres': {'name': 'surf_pres', 'ref_x': 't', 'min': 800, 'max': 1050, 'res_min': -10, 'res_max': 10,
                       'uom': '[hPa]', 'comps': ['c', 'e', 't2'], 'bin_nr': 200,
                       'c': {'fn': f'{thaao_c}_surface_pressure_', 'column': 2, 'data': '',
                             'data_res': '', 'var_name': 'sp'},

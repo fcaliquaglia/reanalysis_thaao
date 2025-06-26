@@ -143,16 +143,12 @@ def read_alb():
     # --- Sigma-A ---
     if inpt.datasets['Sigma-A']['switch']:
         rd_fsa.read_sigmaa_weather(vr)
-        temp_t = var_dict["t"]["data"][vr]
-        var_dict["t"]["data"][vr] = temp_t.mask(temp_t== -9999.0, np.nan)
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
 
     # --- Sigma-B ---
     if inpt.datasets['Sigma-B']['switch']:
         rd_fsb.read_sigmab_weather(vr)
-        temp_t = var_dict["t"]["data"][vr]
-        var_dict["t"]["data"][vr] = temp_t.mask(temp_t ==-9999.0, np.nan)
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
 
@@ -260,16 +256,12 @@ def read_lw_down():
     # --- Sigma-A ---
     if inpt.datasets['Sigma-A']['switch']:
         rd_fsa.read_sigmaa_weather(vr)
-        temp_t = var_dict["t"]["data"][vr]
-        var_dict["t"]["data"][vr] = temp_t.mask(temp_t== -9999.0, np.nan)
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
 
     # --- Sigma-B ---
     if inpt.datasets['Sigma-B']['switch']:
         rd_fsb.read_sigmab_weather(vr)
-        temp_t = var_dict["t"]["data"][vr]
-        var_dict["t"]["data"][vr] = temp_t.mask(temp_t ==-9999.0, np.nan)
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
 
@@ -338,16 +330,12 @@ def read_lw_up():
     # --- Sigma-A ---
     if inpt.datasets['Sigma-A']['switch']:
         rd_fsa.read_sigmaa_weather(vr)
-        temp_t = var_dict["t"]["data"][vr]
-        var_dict["t"]["data"][vr] = temp_t.mask(temp_t== -9999.0, np.nan)
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
 
     # --- Sigma-B ---
     if inpt.datasets['Sigma-B']['switch']:
         rd_fsb.read_sigmab_weather(vr)
-        temp_t = var_dict["t"]["data"][vr]
-        var_dict["t"]["data"][vr] = temp_t.mask(temp_t ==-9999.0, np.nan)
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
 

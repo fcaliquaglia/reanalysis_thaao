@@ -41,11 +41,7 @@ def read_sigmab_weather(vr):
             df = pd.read_csv(csv_file, parse_dates=['date'])
             df.rename(columns=column_map, inplace=True)
             df.set_index('datetime', inplace=True)
-            df = df.mask(df== -9999.0, np.nan)
-            df = df.mask(df== -9998.0, np.nan)
-            df = df.mask(df== -9997.0, np.nan)
-            df = df.mask(df== -8888.0, np.nan)
-            df.drop(columns=[col for col in [None] if col in df.columns], inplace=True)
+            df = df.mask(df.isin([-9999, -9998, -9997, -8888]))
 
             if vr not in df.columns:
                 print(f"Variable '{vr}' not found in the dataset.")

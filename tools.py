@@ -18,29 +18,36 @@ import metpy.calc as mpcalc
 from metpy.units import units
 
 
-def check_empty_df(data_e, vr):
+def check_empty_df(data, vr):
+    try:
+        if data is None:
+            print("Empty DataFrame or Series")
+            return pd.DataFrame(columns=[vr]), True
 
-    if data_e is None:
-        print("Empty DataFrame or Series")
-        return pd.DataFrame(columns=[vr]), True
+        # Check if it's an empty string (in case)
+        if isinstance(data, str) and data.strip() == '':
+            print("Empty DataFrame or Series")
+            return pd.DataFrame(columns=[vr]), True
 
-    # Check if it's an empty string (in case)
-    if isinstance(data_e, str) and data_e.strip() == '':
-        print("Empty DataFrame or Series")
-        return pd.DataFrame(columns=[vr]), True
+        # Check if it's a DataFrame and empty
+        if isinstance(data, pd.DataFrame) and data.empty:
+            print("Empty DataFrame")
+            return pd.DataFrame(columns=[vr]), True
 
-    # Check if it's a DataFrame and empty
-    if isinstance(data_e, pd.DataFrame) and data_e.empty:
-        print("Empty DataFrame")
-        return pd.DataFrame(columns=[vr]), True
+        # Check if it's a Series and empty
+        if isinstance(data, pd.Series) and data.empty:
+            print("Empty Series")
+            return pd.DataFrame(columns=[vr]), True
 
-    # Check if it's a Series and empty
-    if isinstance(data_e, pd.Series) and data_e.empty:
-        print("Empty Series")
-        return pd.DataFrame(columns=[vr]), True
+        # If it's none of the above, return as is
+        return data, False
 
-    # If it's none of the above, return as is
-    return data_e, False
+    except TypeError as e:
+        if "string indices must be integers" in str(e):
+            print("Caught TypeError - likely due to incorrect type (e.g. string used as dict/DataFrame)")
+            return pd.DataFrame(columns=[vr]), False
+        else:
+            raise  # re-raise unexpected TypeErrors
 
 
 def plot_vars_cleanup(p_vars, v_data):
