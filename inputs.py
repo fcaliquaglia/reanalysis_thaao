@@ -66,7 +66,7 @@ datasets = {
     'Sigma-B': {'switch': False, 'fn': 'Sigma-B'},
     'Summit': {'switch': False, 'fn': 'Summit'},
     # from J, to R, skip M (no file), O (almost no data)
-    'buoys': {'switch': True, 'fn': '2024Lprocessed'},
+    'buoys': {'switch': True, 'fn': '2024Qprocessed'},
     'dropsondes': {'switch': False, 'fn': ''},
     'p3_tracks': {'switch': False, 'fn': ''},
     'g3_tracks': {'switch': False, 'fn': ''},
@@ -81,13 +81,13 @@ thaao_e = 'era5_NG'
 thaao_t = 'thaao'
 
 met = ['temp', 'surf_pres', 'rh']  # , 'iwv']
-rad = ['sw_up', 'alb', 'lw_down', 'sw_down', 'lw_up']
+rad = ['sw_up', 'lw_down', 'sw_down', 'lw_up', 'alb']
 clouds = ['lwp', 'cbh', 'tcc', 'precip']
 extra = ['winds', 'windd']
 
 ##
 tres_list = ['3h']
-list_var = rad + rad + extra  # + clouds
+list_var = met + rad + extra  # + clouds
 
 
 tres = ''

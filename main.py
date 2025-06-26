@@ -38,7 +38,7 @@ def main():
 
         for var in inpt.list_var:
             inpt.var = var
-            print(f"Processing variable: {var}")
+            print(f"**************Processing variable: {var}**************\n")
 
             # Read data
             rd_f.read()

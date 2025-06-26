@@ -21,7 +21,6 @@ __email__ = "filippo.caliquaglia@ingv.it"
 __status__ = "Research"
 __lastupdate__ = ""
 
-import copy as cp
 import datetime as dt
 import os
 
@@ -31,10 +30,6 @@ import pandas as pd
 
 import inputs as inpt
 import tools as tls
-
-
-# import matplotlib
-# matplotlib.use('WebAgg')
 
 
 def plot_ts(period_label):
