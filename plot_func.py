@@ -27,7 +27,6 @@ import os
 
 import matplotlib.pyplot as plt
 import numpy as np
-import numpy.ma as ma
 import pandas as pd
 
 import inputs as inpt
@@ -79,7 +78,7 @@ def plot_ts(period_label):
             # Original data for the year
             if not isinstance(var_data[data_typ]['data'], str):
                 null, chck = tls.check_empty_df(
-                var_data[data_typ]['data'][inpt.var], inpt.var)
+                    var_data[data_typ]['data'][inpt.var], inpt.var)
             else:
                 continue
             if chck:

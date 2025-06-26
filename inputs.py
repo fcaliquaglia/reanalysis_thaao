@@ -65,27 +65,29 @@ datasets = {
     'Sigma-A': {'switch': False, 'fn': 'Sigma-A'},
     'Sigma-B': {'switch': False, 'fn': 'Sigma-B'},
     'Summit': {'switch': False, 'fn': 'Summit'},
-    'buoys': {'switch': True, 'fn': '2024Lprocessed'}, # from J, to R, skip M (no file), O (almost no data)
+    # from J, to R, skip M (no file), O (almost no data)
+    'buoys': {'switch': True, 'fn': '2024Lprocessed'},
     'dropsondes': {'switch': False, 'fn': ''},
     'p3_tracks': {'switch': False, 'fn': ''},
     'g3_tracks': {'switch': False, 'fn': ''},
     'radiosondes': {'switch': False, 'fn': ''}}
 
 lbl = next((info['fn'] for info in datasets.values() if info['switch']), None)
-location = next((v['fn'] for k, v in datasets.items() if v.get('switch')), None)
+location = next((v['fn']
+                for k, v in datasets.items() if v.get('switch')), None)
 
 thaao_c = 'carra1'
 thaao_e = 'era5_NG'
 thaao_t = 'thaao'
 
-met = ['temp', 'surf_pres', 'rh'] #, 'iwv']
-rad = ['sw_up', 'alb', 'lw_down','sw_down', 'lw_up']
+met = ['temp', 'surf_pres', 'rh']  # , 'iwv']
+rad = ['sw_up', 'alb', 'lw_down', 'sw_down', 'lw_up']
 clouds = ['lwp', 'cbh', 'tcc', 'precip']
 extra = ['winds', 'windd']
 
 ##
 tres_list = ['3h']
-list_var = rad + rad + extra # + clouds
+list_var = rad + rad + extra  # + clouds
 
 
 tres = ''

@@ -139,7 +139,7 @@ def read_alb():
         rd_ft.read_thaao_rad(vr)
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
-    
+
     # --- Sigma-A ---
     if inpt.datasets['Sigma-A']['switch']:
         rd_fsa.read_sigmaa_weather(vr)
@@ -252,7 +252,7 @@ def read_lw_down():
         lw_down_t = var_dict["t"]["data"][vr].mask(
             var_dict["t"]["data"][vr] < 0., np.nan)
         var_dict["t"]["data"][vr] = lw_down_t
-        
+
     # --- Sigma-A ---
     if inpt.datasets['Sigma-A']['switch']:
         rd_fsa.read_sigmaa_weather(vr)
@@ -291,7 +291,7 @@ def read_lw_up():
     vr = "lw_up"
     var_dict = inpt.extr[vr]
     lw_up_c = lw_down_c - lw_net_c
-    lw_up_c =lw_up_c.mask(lw_up_c < 0., np.nan)
+    lw_up_c = lw_up_c.mask(lw_up_c < 0., np.nan)
     lw_up_c.name = vr
     var_dict["c"]["data"] = pd.DataFrame({vr: lw_up_c})
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
@@ -314,7 +314,6 @@ def read_lw_up():
     lw_up_e.name = vr
     var_dict["e"]["data"] = pd.DataFrame({vr: lw_up_e})
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
-
 
     # --- THAAO ---
     vr = "lw_up"
@@ -597,7 +596,7 @@ def read_sw_down():
             var_dict["t"]["data"][inpt.var] == 0.0, np.nan)
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
-        
+
     return
 
 
@@ -803,7 +802,8 @@ def read_temp():
 
     # --- Dropsondes ---
     if inpt.datasets['dropsondes']['switch']:
-        data_all = pd.read_parquet(os.path.join('txt_locations', 'dropsondes_surface_level_temp.parquet'))
+        data_all = pd.read_parquet(os.path.join(
+            'txt_locations', 'dropsondes_surface_level_temp.parquet'))
 
         var_dict["t"]["data"] = data_all
         var_dict["t"]["data"], _ = tls.check_empty_df(

@@ -44,7 +44,8 @@ def check_empty_df(data, vr):
 
     except TypeError as e:
         if "string indices must be integers" in str(e):
-            print("Caught TypeError - likely due to incorrect type (e.g. string used as dict/DataFrame)")
+            print(
+                "Caught TypeError - likely due to incorrect type (e.g. string used as dict/DataFrame)")
             return pd.DataFrame(columns=[vr]), False
         else:
             raise  # re-raise unexpected TypeErrors
@@ -200,7 +201,7 @@ def process_rean(vr, data_typ, y):
     if active_key in ['buoys']:
         if (coords['t_idx'].size == 0 or np.all(np.isnan(coords['t_idx'].to_numpy())) or
             coords['x_idx'].size == 0 or np.all(np.isnan(coords['x_idx'].to_numpy())) or
-            coords['y_idx'].size == 0 or np.all(np.isnan(coords['y_idx'].to_numpy()))):
+                coords['y_idx'].size == 0 or np.all(np.isnan(coords['y_idx'].to_numpy()))):
             print("Something's wrong with indexes dimension!\nFor example, the dropsonde lat/lon could be outside the ROI.")
             return
 
@@ -261,7 +262,7 @@ def process_rean(vr, data_typ, y):
     if active_key in ['dropsondes']:
         if (coords['t_idx'].size == 0 or np.isnan(coords['t_idx'].to_numpy()[0]) or
             coords['x_idx'].size == 0 or np.isnan(coords['x_idx'].to_numpy()[0]) or
-            coords['y_idx'].size == 0 or np.isnan(coords['y_idx'].to_numpy()[0])):
+                coords['y_idx'].size == 0 or np.isnan(coords['y_idx'].to_numpy()[0])):
             print("Something's wrong with indexes dimension!.\n For example, the dropsonde lat lon could be outside the ROI.")
             return
 
@@ -298,7 +299,6 @@ def process_rean(vr, data_typ, y):
 
         var_name = inpt.extr[vr][data_typ]["var_name"]
         data_list = []
-
 
         da = ds[var_name].isel(
             {lat_dim: y_idx, lon_dim: x_idx, time_dim: t_idx})

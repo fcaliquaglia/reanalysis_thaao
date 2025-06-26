@@ -2,7 +2,6 @@ from pathlib import Path
 import os
 import pandas as pd
 import inputs as inpt
-import numpy as np
 import tools as tls
 
 
@@ -21,7 +20,8 @@ def read_sigmaa_weather(vr):
 
     # Read from raw CSV if any year is missing
     if cached_years < len(inpt.years):
-        csv_file = Path(inpt.basefol['t']['arcsix']) / "Sigma-A" / "SIGMA-A_2024summer_Lv1.3.csv"
+        csv_file = Path(inpt.basefol['t']['arcsix']) / \
+            "Sigma-A" / "SIGMA-A_2024summer_Lv1.3.csv"
         column_map = {
             'date': 'datetime',
             'WD1': 'windd',
@@ -42,7 +42,8 @@ def read_sigmaa_weather(vr):
             df.rename(columns=column_map, inplace=True)
             df.set_index('datetime', inplace=True)
             df = df.mask(df.isin([-9999, -9998, -9997, -8888]))
-            df.drop(columns=[col for col in [None] if col in df.columns], inplace=True)
+            df.drop(columns=[col for col in [None]
+                    if col in df.columns], inplace=True)
 
             if vr not in df.columns:
                 print(f"Variable '{vr}' not found in the dataset.")

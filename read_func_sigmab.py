@@ -21,7 +21,8 @@ def read_sigmab_weather(vr):
 
     # Read from raw CSV if any year is missing
     if cached_years < len(inpt.years):
-        csv_file = Path(inpt.basefol['t']['arcsix']) / "Sigma-B" / "SIGMA-B_2024summer_Lv1.3.csv"
+        csv_file = Path(inpt.basefol['t']['arcsix']) / \
+            "Sigma-B" / "SIGMA-B_2024summer_Lv1.3.csv"
         column_map = {
             'date': 'datetime',
             'WD1': 'windd',
