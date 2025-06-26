@@ -139,6 +139,22 @@ def read_alb():
         rd_ft.read_thaao_rad(vr)
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
+    
+    # --- Sigma-A ---
+    if inpt.datasets['Sigma-A']['switch']:
+        rd_fsa.read_sigmaa_weather(vr)
+        temp_t = var_dict["t"]["data"][vr]
+        var_dict["t"]["data"][vr] = temp_t.mask(temp_t== -9999.0, np.nan)
+        var_dict["t"]["data"], _ = tls.check_empty_df(
+            var_dict["t"]["data"], vr)
+
+    # --- Sigma-B ---
+    if inpt.datasets['Sigma-B']['switch']:
+        rd_fsb.read_sigmab_weather(vr)
+        temp_t = var_dict["t"]["data"][vr]
+        var_dict["t"]["data"][vr] = temp_t.mask(temp_t ==-9999.0, np.nan)
+        var_dict["t"]["data"], _ = tls.check_empty_df(
+            var_dict["t"]["data"], vr)
 
     return
 
@@ -240,6 +256,22 @@ def read_lw_down():
         lw_down_t = var_dict["t"]["data"][vr].mask(
             var_dict["t"]["data"][vr] < 0., np.nan)
         var_dict["t"]["data"][vr] = lw_down_t
+        
+    # --- Sigma-A ---
+    if inpt.datasets['Sigma-A']['switch']:
+        rd_fsa.read_sigmaa_weather(vr)
+        temp_t = var_dict["t"]["data"][vr]
+        var_dict["t"]["data"][vr] = temp_t.mask(temp_t== -9999.0, np.nan)
+        var_dict["t"]["data"], _ = tls.check_empty_df(
+            var_dict["t"]["data"], vr)
+
+    # --- Sigma-B ---
+    if inpt.datasets['Sigma-B']['switch']:
+        rd_fsb.read_sigmab_weather(vr)
+        temp_t = var_dict["t"]["data"][vr]
+        var_dict["t"]["data"][vr] = temp_t.mask(temp_t ==-9999.0, np.nan)
+        var_dict["t"]["data"], _ = tls.check_empty_df(
+            var_dict["t"]["data"], vr)
 
     return
 
@@ -272,7 +304,6 @@ def read_lw_up():
     var_dict["c"]["data"] = pd.DataFrame({vr: lw_up_c})
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
 
-
     # --- ERA5 ---
     vr = "lw_net"
     var_dict = inpt.extr[vr]
@@ -293,7 +324,6 @@ def read_lw_up():
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
 
 
-
     # --- THAAO ---
     vr = "lw_up"
     var_dict = inpt.extr[vr]
@@ -304,6 +334,22 @@ def read_lw_up():
         lw_up_t = var_dict["t"]["data"]
         lw_up_t[vr] = lw_up_t[vr].mask(lw_up_t[vr] < 0., np.nan)
         var_dict["t"]["data"] = lw_up_t
+
+    # --- Sigma-A ---
+    if inpt.datasets['Sigma-A']['switch']:
+        rd_fsa.read_sigmaa_weather(vr)
+        temp_t = var_dict["t"]["data"][vr]
+        var_dict["t"]["data"][vr] = temp_t.mask(temp_t== -9999.0, np.nan)
+        var_dict["t"]["data"], _ = tls.check_empty_df(
+            var_dict["t"]["data"], vr)
+
+    # --- Sigma-B ---
+    if inpt.datasets['Sigma-B']['switch']:
+        rd_fsb.read_sigmab_weather(vr)
+        temp_t = var_dict["t"]["data"][vr]
+        var_dict["t"]["data"][vr] = temp_t.mask(temp_t ==-9999.0, np.nan)
+        var_dict["t"]["data"], _ = tls.check_empty_df(
+            var_dict["t"]["data"], vr)
 
     return
 
@@ -374,13 +420,13 @@ def read_rh():
 
     # --- Sigma-A ---
     if inpt.datasets['Sigma-A']['switch']:
-        rd_fv.read_villum_weather(vr)
+        rd_fsa.read_sigmaa_weather(vr)
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
 
     # --- Sigma-B ---
     if inpt.datasets['Sigma-B']['switch']:
-        rd_fv.read_villum_weather(vr)
+        rd_fsb.read_sigmab_weather(vr)
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
 
@@ -443,16 +489,15 @@ def read_surf_pres():
 
     # --- Sigma-A ---
     if inpt.datasets['Sigma-A']['switch']:
-        print('No data available for Sigma-A')
+        rd_fsa.read_sigmaa_weather(vr)
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
 
     # --- Sigma-B ---
     if inpt.datasets['Sigma-B']['switch']:
-        print('No data available for Sigma-B')
+        rd_fsb.read_sigmab_weather(vr)
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
-
     # --- Alert ---
     if inpt.datasets['Alert']['switch']:
         print('No data available for Alert')
@@ -527,13 +572,13 @@ def read_sw_down():
 
     # --- Sigma-A ---
     if inpt.datasets['Sigma-A']['switch']:
-        print('No data available for Sigma-A')
+        rd_fsa.read_sigmaa_weather(vr)
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
 
     # --- Sigma-B ---
     if inpt.datasets['Sigma-B']['switch']:
-        print('No data available for Sigma-B')
+        rd_fsb.read_sigmab_weather(vr)
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
 
@@ -623,6 +668,18 @@ def read_sw_up():
         rd_ft.read_thaao_rad(vr)
         sw_up_t = var_dict["t"]["data"][vr]
         var_dict["t"]["data"][vr] = sw_up_t.mask(sw_up_t < 0., np.nan)
+        var_dict["t"]["data"], _ = tls.check_empty_df(
+            var_dict["t"]["data"], vr)
+
+    # --- Sigma-A ---
+    if inpt.datasets['Sigma-A']['switch']:
+        rd_fsa.read_sigmaa_weather(vr)
+        var_dict["t"]["data"], _ = tls.check_empty_df(
+            var_dict["t"]["data"], vr)
+
+    # --- Sigma-B ---
+    if inpt.datasets['Sigma-B']['switch']:
+        rd_fsb.read_sigmab_weather(vr)
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
 
@@ -718,16 +775,12 @@ def read_temp():
     # --- Sigma-A ---
     if inpt.datasets['Sigma-A']['switch']:
         rd_fsa.read_sigmaa_weather(vr)
-        temp_t = var_dict["t"]["data"][vr]
-        var_dict["t"]["data"][vr] = temp_t.mask(temp_t== -9999.0, np.nan)
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
 
     # --- Sigma-B ---
     if inpt.datasets['Sigma-B']['switch']:
         rd_fsb.read_sigmab_weather(vr)
-        temp_t = var_dict["t"]["data"][vr]
-        var_dict["t"]["data"][vr] = temp_t.mask(temp_t ==-9999.0, np.nan)
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
 

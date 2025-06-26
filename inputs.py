@@ -84,14 +84,14 @@ clouds = ['lwp', 'cbh', 'tcc', 'precip']
 extra = ['winds', 'windd']
 
 ##
-tres_list = ['24h']
+tres_list = ['3h', '24h']
 list_var = met + rad + extra # + clouds
 
 
 tres = ''
 var = ''
 
-years = np.arange(2016, 2025, 1)
+years = np.arange(2024, 2025, 1)
 
 aws_ecapac_daterange = pd.date_range(start=dt.datetime(
     2023, 4, 1), end=dt.datetime(2024, 12, 31), freq='1D')

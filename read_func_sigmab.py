@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+import numpy as np
 import pandas as pd
 import inputs as inpt
 import tools as tls
@@ -40,6 +41,10 @@ def read_sigmab_weather(vr):
             df = pd.read_csv(csv_file, parse_dates=['date'])
             df.rename(columns=column_map, inplace=True)
             df.set_index('datetime', inplace=True)
+            df = df.mask(df== -9999.0, np.nan)
+            df = df.mask(df== -9998.0, np.nan)
+            df = df.mask(df== -9997.0, np.nan)
+            df = df.mask(df== -8888.0, np.nan)
             df.drop(columns=[col for col in [None] if col in df.columns], inplace=True)
 
             if vr not in df.columns:
