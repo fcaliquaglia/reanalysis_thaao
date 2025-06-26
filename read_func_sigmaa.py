@@ -1,34 +1,12 @@
-#!/usr/local/bin/python3
-# -*- coding: utf-8 -*-
-# -------------------------------------------------------------------------------
-#
-"""
-Brief description
-"""
-
-# =============================================================
-# CREATED:
-# AFFILIATION: INGV
-# AUTHORS: Filippo Cali' Quaglia, Monica Tosco
-# =============================================================
-#
-# -------------------------------------------------------------------------------
-__author__ = "Filippo Cali' Quaglia"
-__credits__ = ["??????"]
-__license__ = "GPL"
-__version__ = "0.1"
-__email__ = "filippo.caliquaglia@ingv.it"
-__status__ = "Research"
-__lastupdate__ = ""
-
-import os
 from pathlib import Path
+import os
 import pandas as pd
 import inputs as inpt
 import tools as tls
 
 
-def read_villum_weather(vr):
+def read_sigmaa_weather(vr):
+
     df_all = pd.DataFrame()
     cached_years = 0
 
@@ -42,17 +20,20 @@ def read_villum_weather(vr):
 
     # Read from raw CSV if any year is missing
     if cached_years < len(inpt.years):
-        csv_file = Path(inpt.basefol['t']['arcsix']) / "Villum_2024.csv"
+        csv_file = Path(inpt.basefol['t']['arcsix']) / "Sigma-A" / "SIGMA-A_2024summer_Lv1.3.csv"
         column_map = {
-            'DateTime': 'datetime',
-            'VD(degrees 9m)': 'windd',
-            'VS_Mean(m/s 9m)': 'winds',
-            'VS_Max(m/s 9m)': None,
-            'Temp(oC 9m)': 'temp',
-            'RH(% 9m)': 'rh',
-            'RAD(W/m2 3m)': 'sw_down',
-            'Pressure(hPa 0m)': 'surf_pres',
-            'Snow depth(m)': 'snow_depth'
+            'date': 'datetime',
+            'WD1': 'windd',
+            'U1': 'winds',
+            'T1': 'temp',
+            'RH1': 'rh',
+            'SWd': 'sw_down',
+            'SWu': 'sw_up',
+            'LWd': 'lw_down',
+            'LWu': 'lw_up',
+            'sh': 'snow_height',
+            'Pa': 'surf_pres',
+            'albedo': 'alb'
         }
 
         try:

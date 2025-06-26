@@ -62,10 +62,10 @@ datasets = {
     'THAAO': {'switch': False, 'fn': 'THAAO'},
     'Alert': {'switch': False, 'fn': 'Alert'},
     'Villum': {'switch': False, 'fn': 'Villum'},
-    'Sigma-A': {'switch': False, 'fn': 'Sigma-A'},
+    'Sigma-A': {'switch': True, 'fn': 'Sigma-A'},
     'Sigma-B': {'switch': False, 'fn': 'Sigma-B'},
     'Summit': {'switch': False, 'fn': 'Summit'},
-    'buoys': {'switch': True, 'fn': '2024Jprocessed'}, # from J, to R, skip M (no file), O (almost no data)
+    'buoys': {'switch': False, 'fn': '2024Lprocessed'}, # from J, to R, skip M (no file), O (almost no data)
     'dropsondes': {'switch': False, 'fn': ''},
     'p3_tracks': {'switch': False, 'fn': ''},
     'g3_tracks': {'switch': False, 'fn': ''},
@@ -84,7 +84,7 @@ clouds = ['lwp', 'cbh', 'tcc', 'precip']
 extra = ['winds', 'windd']
 
 ##
-tres_list = ['3h', '6h', '12h', '24h']
+tres_list = ['24h']
 list_var = met + rad + extra # + clouds
 
 

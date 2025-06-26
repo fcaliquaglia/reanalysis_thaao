@@ -27,6 +27,8 @@ import numpy as np
 import pandas as pd
 import read_func_thaao as rd_ft
 import read_func_villum as rd_fv
+import read_func_sigmaa as rd_fsa
+import read_func_sigmab as rd_fsb
 from metpy.calc import wind_direction, wind_speed
 from metpy.units import units
 import inputs as inpt
@@ -283,7 +285,6 @@ def read_lw_up():
     var_dict = inpt.extr[vr]
     lw_down_e = var_dict["e"]["data"][vr]
 
-    vr = "lw_up"
     var_dict = inpt.extr[vr]
     lw_up_e = lw_down_e - lw_net_e
     lw_up_e = lw_up_e.mask(lw_up_e < 0., np.nan)
@@ -476,6 +477,8 @@ def read_surf_pres():
         var_dict["t"]["data"] = data_all
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
+        var_dict["t2"]["data"], _ = tls.check_empty_df(
+            var_dict["t2"]["data"], vr)
     return
 
 
@@ -558,6 +561,8 @@ def read_sw_down():
         var_dict["t"]["data"] = data_all
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
+        var_dict["t2"]["data"], _ = tls.check_empty_df(
+            var_dict["t2"]["data"], vr)
     return
 
 
@@ -633,6 +638,8 @@ def read_sw_up():
         var_dict["t"]["data"] = data_all
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
+        var_dict["t2"]["data"], _ = tls.check_empty_df(
+            var_dict["t2"]["data"], vr)
 
     return
 
@@ -710,13 +717,17 @@ def read_temp():
 
     # --- Sigma-A ---
     if inpt.datasets['Sigma-A']['switch']:
-        print('No data available for Sigma-A')
+        rd_fsa.read_sigmaa_weather(vr)
+        temp_t = var_dict["t"]["data"][vr]
+        var_dict["t"]["data"][vr] = temp_t.mask(temp_t== -9999.0, np.nan)
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
 
     # --- Sigma-B ---
     if inpt.datasets['Sigma-B']['switch']:
-        print('No data available for Sigma-B')
+        rd_fsb.read_sigmab_weather(vr)
+        temp_t = var_dict["t"]["data"][vr]
+        var_dict["t"]["data"][vr] = temp_t.mask(temp_t ==-9999.0, np.nan)
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
 
@@ -746,6 +757,8 @@ def read_temp():
             var_dict["t"]["data"]["temp"] == 0.0, np.nan)
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
+        var_dict["t2"]["data"], _ = tls.check_empty_df(
+            var_dict["t2"]["data"], vr)
 
     # --- Dropsondes ---
     if inpt.datasets['dropsondes']['switch']:
