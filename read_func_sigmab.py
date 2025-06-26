@@ -37,7 +37,7 @@ def read_sigmab_weather(vr):
         }
 
         try:
-            df = pd.read_csv(csv_file, sep=';', parse_dates=['DateTime'], dayfirst=True)
+            df = pd.read_csv(csv_file, parse_dates=['date'])
             df.rename(columns=column_map, inplace=True)
             df.set_index('datetime', inplace=True)
             df.drop(columns=[col for col in [None] if col in df.columns], inplace=True)
