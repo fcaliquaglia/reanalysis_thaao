@@ -508,10 +508,11 @@ def read_surf_pres():
         data_all['time'] = pd.to_datetime(data_all['time'], errors='coerce')
         data_all = data_all.set_index('time')
         var_dict["t"]["data"] = data_all
+        var_dict["t"]["data"][inpt.var] = var_dict["t"]["data"][inpt.var].mask(
+            var_dict["t"]["data"][inpt.var] == 0.0, np.nan)
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
-        var_dict["t2"]["data"], _ = tls.check_empty_df(
-            var_dict["t2"]["data"], vr)
+
     return
 
 
@@ -592,10 +593,11 @@ def read_sw_down():
         data_all['time'] = pd.to_datetime(data_all['time'], errors='coerce')
         data_all = data_all.set_index('time')
         var_dict["t"]["data"] = data_all
+        var_dict["t"]["data"][inpt.var] = var_dict["t"]["data"][inpt.var].mask(
+            var_dict["t"]["data"][inpt.var] == 0.0, np.nan)
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
-        var_dict["t2"]["data"], _ = tls.check_empty_df(
-            var_dict["t2"]["data"], vr)
+        
     return
 
 
@@ -681,10 +683,10 @@ def read_sw_up():
         data_all['time'] = pd.to_datetime(data_all['time'], errors='coerce')
         data_all = data_all.set_index('time')
         var_dict["t"]["data"] = data_all
+        var_dict["t"]["data"][inpt.var] = var_dict["t"]["data"][inpt.var].mask(
+            var_dict["t"]["data"][inpt.var] == 0.0, np.nan)
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
-        var_dict["t2"]["data"], _ = tls.check_empty_df(
-            var_dict["t2"]["data"], vr)
 
     return
 
@@ -794,12 +796,10 @@ def read_temp():
         data_all['time'] = pd.to_datetime(data_all['time'], errors='coerce')
         data_all = data_all.set_index('time')
         var_dict["t"]["data"] = data_all
-        var_dict["t"]["data"]["temp"] = var_dict["t"]["data"]["temp"].mask(
-            var_dict["t"]["data"]["temp"] == 0.0, np.nan)
+        var_dict["t"]["data"][inpt.var] = var_dict["t"]["data"][inpt.var].mask(
+            var_dict["t"]["data"][inpt.var] == 0.0, np.nan)
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
-        var_dict["t2"]["data"], _ = tls.check_empty_df(
-            var_dict["t2"]["data"], vr)
 
     # --- Dropsondes ---
     if inpt.datasets['dropsondes']['switch']:
