@@ -366,6 +366,14 @@ def calc_draw_fit(axs, i, xxx, yyy, per_lab, print_stats=True):
     """
     xx = xxx.values.flatten()
     yy = yyy.values.flatten()
+    # Make sure xx and yy are numpy arrays
+    xx_all = np.asarray(xx)
+    yy_all = np.asarray(yy)
+    
+    # Mask out non-finite values
+    mask = np.isfinite(xx_all) & np.isfinite(yy_all)
+    xx = xx_all[mask]
+    yy = yy_all[mask]
     b, a = np.polyfit(xx, yy, 1)  # slope, intercept
     var_min = inpt.extr[inpt.var]['min']
     var_max = inpt.extr[inpt.var]['max']

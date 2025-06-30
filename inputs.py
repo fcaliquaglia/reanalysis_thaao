@@ -86,7 +86,7 @@ clouds = ['lwp', 'cbh', 'tcc', 'precip']
 extra = ['winds', 'windd']
 
 ##
-tres_list = ['3h']
+tres_list = ['24h']
 list_var = ['alb'] #  met + rad + extra  # + clouds
 
 
@@ -142,11 +142,11 @@ extr = {'alb': {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1,
                 'c': {'fn': f'{thaao_c}_albedo_', 'column': 2, 'data': '',
                                'data_res': '', 'var_name': 'al'},
                 'e': {'fn': f'{thaao_e}_forecast_albedo_', 'column': 2,
-                      'data': '', 'data_res': '', 'var_name': ''},
+                      'data': '', 'data_res': '', 'var_name': 'fal'},
                 't': {'fn': 'MERGED_SW_LW_UP_DW_METEO_', 'column': 'ALBEDO_SW', 'data': '',
                             'data_res': ''},
                 't1': {'fn': '', 'column': 2, 'data': '', 'data_res': ''},
-                't2': {'fn': '', 'column': 2, 'data': '', 'data_res': ''}},
+                't2': {'fn': 'alb', 'column': 2, 'data': '', 'data_res': ''}},
         'cbh': {'name': 'cbh', 'ref_x': 't', 'min': 0, 'max': 10000,
                 'res_min': -1500, 'res_max': 1500,
                 'uom': '[m]', 'comps': ['c', 'e'], 'bin_nr': 200,
