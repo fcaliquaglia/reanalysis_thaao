@@ -139,6 +139,21 @@ def read_alb():
         rd_ft.read_thaao_rad(vr)
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
+        
+    # --- Buoys ---
+    if inpt.datasets['buoys']['switch']:
+        data_all = pd.DataFrame()
+        for y in inpt.years:
+            path = os.path.join('txt_locations', f"{inpt.location}_loc.txt")
+            data_tmp = pd.read_csv(path)
+            data_all = pd.concat([data_all, data_tmp])
+        data_all['time'] = pd.to_datetime(data_all['time'], errors='coerce')
+        data_all = data_all.set_index('time')
+        var_dict["t"]["data"] = data_all
+        var_dict["t"]["data"][inpt.var] = var_dict["t"]["data"][inpt.var].mask(
+            var_dict["t"]["data"][inpt.var] == 0.0, np.nan)
+        var_dict["t"]["data"], _ = tls.check_empty_df(
+            var_dict["t"]["data"], vr)
 
     # --- Sigma-A ---
     if inpt.datasets['Sigma-A']['switch']:

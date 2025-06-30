@@ -24,7 +24,7 @@ plot_flags = dict(
     p3_tracks=False,
     g3_tracks=False,
     radiosondes=False,
-    ships=True
+    ships=False
 )
 
 basefol = r"H:\Shared drives\Dati_THAAO"
@@ -902,11 +902,12 @@ if __name__ == "__main__":
             pres = ds["air_pressure"].isel(trajectory=0).values[msk]
             dsi = ds["incident"].isel(trajectory=0).values[msk]
             usi = ds["reflected"].isel(trajectory=0).values[msk]
+            alb = ds["reflected"].isel(trajectory=0).values[msk]/ds["incident"].isel(trajectory=0).values[msk]
             time = ds["time"].isel(trajectory=0).values[msk]
             elem = {"filename": os.path.basename(bf),
                     "lat": lat, "lon": lon, "temp": temp, "time": time,
                     "sw_up": usi, "sw_down": dsi, "surf_pres": pres,
-                    "elev": np.repeat(np.nan, len(time))
+                    "elev": np.repeat(np.nan, len(time)), "alb": alb
                     }
             buoy_data.append(elem)
             fn = write_dict_to_file(elem, folders["txt_location"])

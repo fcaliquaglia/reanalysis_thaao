@@ -60,7 +60,7 @@ def read_villum_weather(vr):
             df.rename(columns=column_map, inplace=True)
             df.set_index('datetime', inplace=True)
             df.drop(columns=[col for col in [None] if col in df.columns], inplace=True)
-
+            df['alb'] = df['sw_up'] / df['sw_down']
             if vr not in df.columns:
                 print(f"Variable '{vr}' not found in the dataset.")
                 return
