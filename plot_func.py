@@ -221,7 +221,8 @@ def plot_scatter(period_label):
     x_all = x.reindex(time_range).astype(float)
     season_months = inpt.seass[period_label]['months']
     x_season = x_all.loc[x_all.index.month.isin(season_months)]
-
+    
+    control=0
     for i, comp in enumerate(comps):
         y = var_data[comp]['data_res'][inpt.var].reindex(
             time_range).astype(float)
@@ -248,7 +249,7 @@ def plot_scatter(period_label):
                             transform=axs[i].transAxes)
             else:
                 # Ensure valid bin range
-                vmin, vmax = var_data['min'], var_data['max']
+                vmin, vmax = 0, len(x_valid)
                 if not np.isfinite(vmin) or not np.isfinite(vmax) or vmin >= vmax:
                     print(
                         f"WARNING: Invalid histogram bin range (vmin={vmin}, vmax={vmax}) — skipping hist2d.")
@@ -257,17 +258,30 @@ def plot_scatter(period_label):
                 else:
                     bin_edges = np.linspace(vmin, vmax, var_data['bin_nr'])
                     bin_size = (vmax - vmin) / var_data['bin_nr']
-                    axs[i].hist2d(
+                    h = axs[i].hist2d(
                         x_valid, y_valid,
                         bins=[bin_edges, bin_edges],
                         cmap='jet',
                         cmin=1,
-                        vmin=vmin,  # safe here
+                        vmin=vmin,
                         vmax=vmax
                     )
                     axs[i].text(
                         0.10, 0.90, f"bin_size={bin_size:.3f}", transform=axs[i].transAxes)
+                    from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
+                    while control==0:
+                        cax = inset_axes(axs[3],
+                                     width="60%",
+                                     height="20%",
+                                     bbox_to_anchor=(0.2, 0.85, 0.6, 0.1),
+                                     bbox_transform=axs[3].transAxes,
+                                     borderpad=0)
+                
+                        cbar = fig.colorbar(h[3], cax=cax, orientation='horizontal')
+                        cbar.set_label('Counts')
+                        control=1
+                    
         if valid_idx.sum() >= 2:
             calc_draw_fit(axs, i, x_valid, y_valid, period_label)
         else:
@@ -290,7 +304,7 @@ def plot_scatter_cum():
 
     :return: None
     """
-    print(f"SCATTERPLOTS cumulative")
+    print("SCATTERPLOTS cumulative")
     plt.ioff()
     fig, ax = plt.subplots(2, 2, figsize=(12, 12), dpi=inpt.dpi)
     axs = ax.ravel()
@@ -316,29 +330,27 @@ def plot_scatter_cum():
 
     frame_and_axis_removal(axs, len(comps))
 
-    if inpt.datasets['dropsondes']['switch']: 
-        period_label='all'
+    if inpt.datasets['dropsondes']['switch']:
+        period_label = 'all'
         print(f"SCATTERPLOTS CUMULATIVE {period_label}")
 
         for i, comp in enumerate(comps):
             y = var_data[comp]['data_res'][inpt.var]
             tolerance = pd.Timedelta(hours=2 if comp == 'e' else 4)
-        
-            # Drop NaNs
+
             x_clean = x.dropna()
             y_clean = y.dropna()
-            
-            # 🔧 Convert index explicitly to datetime
+
             x_clean.index = pd.to_datetime(x_clean.index, errors='coerce')
             y_clean.index = pd.to_datetime(y_clean.index, errors='coerce')
-            
-            # 🧼 Drop rows where datetime parsing failed
+
             x_clean = x_clean[~x_clean.index.isna()]
             y_clean = y_clean[~y_clean.index.isna()]
-            # Step 3: Sort both series by index (required for merge_asof)
+
             x_df = x_clean.sort_index().to_frame(name='x')
-            y_df = y_clean.groupby(y_clean.index).mean().sort_index().to_frame(name='y')
-        
+            y_df = y_clean.groupby(y_clean.index).mean(
+            ).sort_index().to_frame(name='y')
+
             merged = pd.merge_asof(
                 x_df, y_df,
                 left_index=True,
@@ -352,8 +364,8 @@ def plot_scatter_cum():
                 s=5, color='blue', edgecolors='none', alpha=0.5, label=period_label
             )
 
-            # calc_draw_fit(axs, i,  merged['x'],  merged['y'],
-            #                   period_label, print_stats=False)
+            calc_draw_fit(axs, i,  merged['x'],  merged['y'],
+                          period_label, print_stats=True)
 
             format_scatterplot(axs, comp, i)
             axs[i].legend()
@@ -361,31 +373,32 @@ def plot_scatter_cum():
     else:
         for period_label, season in seass_new.items():
             print(f"SCATTERPLOTS CUMULATIVE {period_label}")
-    
+
             season_months = season['months']
             x_season = x_all.loc[x_all.index.month.isin(season_months)]
-    
+
             for i, comp in enumerate(comps):
                 y = var_data[comp]['data_res'][inpt.var]
                 y_all = y.reindex(time_range).astype(float)
                 y_season = y_all.loc[y_all.index.month.isin(season_months)]
-    
+
                 valid_idx = ~(x_season.isna() |
                               y_season.isna())
-    
+
                 axs[i].scatter(
                     x_season[valid_idx], y_season[valid_idx],
                     s=5, color=season['col'], edgecolors='none', alpha=0.5, label=period_label
                 )
-    
+
                 if valid_idx.sum() < 2:
-                    print('ERROR: Not enough data points for proper fit (need at least 2).')
+                    print(
+                        'ERROR: Not enough data points for proper fit (need at least 2).')
                     # Optionally raise ValueError here if needed
                     # raise ValueError("Insufficient data for fitting.")
                 else:
                     calc_draw_fit(axs, i, x_season[valid_idx], y_season[valid_idx],
                                   period_label, print_stats=False)
-    
+
                 format_scatterplot(axs, comp, i)
                 axs[i].legend()
 
@@ -412,7 +425,7 @@ def calc_draw_fit(axs, i, xxx, yyy, per_lab, print_stats=True):
     # Make sure xx and yy are numpy arrays
     xx_all = np.asarray(xx)
     yy_all = np.asarray(yy)
-    
+
     # Mask out non-finite values
     mask = np.isfinite(xx_all) & np.isfinite(yy_all)
     xx = xx_all[mask]

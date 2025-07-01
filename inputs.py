@@ -59,7 +59,7 @@ basefol = {
 
 # flag type --> set to True only one at a time
 datasets = {
-    'THAAO': {'switch': False, 'fn': 'THAAO'},
+    'THAAO': {'switch': True, 'fn': 'THAAO'},
     'Alert': {'switch': False, 'fn': 'Alert'},
     'Villum': {'switch': False, 'fn': 'Villum'},
     'Sigma-A': {'switch': False, 'fn': 'Sigma-A'},
@@ -67,7 +67,7 @@ datasets = {
     'Summit': {'switch': False, 'fn': 'Summit'},
     # from J, to R, skip M (no file), O (almost no data)
     'buoys': {'switch': False, 'fn': '2024Rprocessed'},
-    'dropsondes': {'switch': True, 'fn': ''},
+    'dropsondes': {'switch': False, 'fn': ''},
     'p3_tracks': {'switch': False, 'fn': ''},
     'g3_tracks': {'switch': False, 'fn': ''},
     'radiosondes': {'switch': False, 'fn': ''}}
@@ -87,13 +87,13 @@ extra = ['winds', 'windd']
 
 ##
 tres_list = ['3h']
-list_var = ['temp'] #  met + rad + extra  # + clouds
+list_var = ['alb'] + met + rad + extra  # + clouds
 
 
 tres = ''
 var = ''
 
-years = np.arange(2024, 2025, 1)
+years = np.arange(2016, 2025, 1)
 
 aws_ecapac_daterange = pd.date_range(start=dt.datetime(
     2023, 4, 1), end=dt.datetime(2024, 12, 31), freq='1D')
