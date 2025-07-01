@@ -66,8 +66,8 @@ datasets = {
     'Sigma-B': {'switch': False, 'fn': 'Sigma-B'},
     'Summit': {'switch': False, 'fn': 'Summit'},
     # from J, to R, skip M (no file), O (almost no data)
-    'buoys': {'switch': True, 'fn': '2024Rprocessed'},
-    'dropsondes': {'switch': False, 'fn': ''},
+    'buoys': {'switch': False, 'fn': '2024Rprocessed'},
+    'dropsondes': {'switch': True, 'fn': ''},
     'p3_tracks': {'switch': False, 'fn': ''},
     'g3_tracks': {'switch': False, 'fn': ''},
     'radiosondes': {'switch': False, 'fn': ''}}
@@ -86,8 +86,8 @@ clouds = ['lwp', 'cbh', 'tcc', 'precip']
 extra = ['winds', 'windd']
 
 ##
-tres_list = ['24h']
-list_var = ['alb'] #  met + rad + extra  # + clouds
+tres_list = ['3h']
+list_var = ['temp'] #  met + rad + extra  # + clouds
 
 
 tres = ''

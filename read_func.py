@@ -58,6 +58,7 @@ def read_rean(vr, dataset_type):
             file_name = os.path.basename(file_path)
             year = 2024
             output_file = f"{inpt.extr[vr][dataset_type]['fn']}{file_name.replace('_loc.txt', '')}_{year}.parquet"
+            print(output_file)
             output_path = os.path.join(
                 inpt.basefol[dataset_type]['processed'], output_file)
             inpt.location = file_name.replace('_loc.txt', '')
@@ -77,16 +78,19 @@ def read_rean(vr, dataset_type):
     data_all = []
 
     if inpt.datasets['dropsondes']['switch']:
-        input_file = f"{inpt.extr[vr][dataset_type]['fn']}{inpt.location}.parquet"
-        input_path = os.path.join(
-            inpt.basefol[dataset_type]['processed'], input_file)
-        try:
-            data_tmp = pd.read_parquet(input_path)
-            print(f"Loaded {input_path}")
-            if not data_tmp.empty:
-                data_all.append(data_tmp)
-        except FileNotFoundError as e:
-            print(f"File not found: {input_path} ({e})")
+        for file_path in drop_files:
+            file_name = os.path.basename(file_path)
+            year = 2024
+            input_file = f"{inpt.extr[vr][dataset_type]['fn']}{file_name.replace('_loc.txt', '')}_{year}.parquet"
+            input_path = os.path.join(
+                inpt.basefol[dataset_type]['processed'], input_file)
+            try:
+                data_tmp = pd.read_parquet(input_path)
+                print(f"Loaded {input_path}")
+                if not data_tmp.empty:
+                    data_all.append(data_tmp)
+            except FileNotFoundError as e:
+                print(f"File not found: {input_path} ({e})")
     else:
         for year in inpt.years:
             input_file = f"{inpt.extr[vr][dataset_type]['fn']}{inpt.location}_{year}.parquet"
