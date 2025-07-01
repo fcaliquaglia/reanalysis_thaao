@@ -81,13 +81,13 @@ thaao_e = 'era5_NG'
 thaao_t = 'thaao'
 
 met = ['temp', 'surf_pres', 'rh']  # , 'iwv']
-rad = ['sw_up', 'lw_down', 'sw_down', 'lw_up', 'alb']
+rad = ['lw_up', 'sw_up', 'lw_down', 'sw_down',  'alb']
 clouds = ['lwp', 'cbh', 'tcc', 'precip']
 extra = ['winds', 'windd']
 
 ##
 tres_list = ['3h']
-list_var = ['alb'] + met + rad + extra  # + clouds
+list_var = rad + met + rad + extra  # + clouds
 
 
 tres = ''
@@ -176,7 +176,7 @@ extr = {'alb': {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1,
                 't1': {'fn': 'LWP_15_min_all', 'column': 'LWP_g/m2', 'data': '',
                              'data_res': ''},
                 't2': {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''}},
-        'lw_down': {'name': 'lw_down', 'ref_x': 't', 'min': 100, 'max': 400, 'res_min': -20, 'res_max': 20,
+        'lw_down': {'name': 'lw_down', 'ref_x': 't', 'min': 100, 'max': 500, 'res_min': -20, 'res_max': 20,
                     'uom': '[W/m2]', 'comps': ['c', 'e'], 'bin_nr': 200,
                     'c': {'fn': f'{thaao_c}_thermal_surface_radiation_downwards_', 'column': 4,
                             'data': '', 'data_res': '', 'var_name': 'strd'},
@@ -186,7 +186,7 @@ extr = {'alb': {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1,
                           'data_res': ''},
                     't1': {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
                     't2': {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''}},
-        'lw_net': {'name': 'lw_down', 'ref_x': 't', 'min': 0, 'max': 600, 'res_min': -20, 'res_max': 20,
+        'lw_net': {'name': 'lw_net', 'ref_x': 't', 'min': 100, 'max': 500, 'res_min': -20, 'res_max': 20,
                    'uom': '[W/m2]', 'comps': ['c', 'e'], 'bin_nr': 200,
                    'c': {'fn': f'{thaao_c}_surface_net_thermal_radiation_', 'column': 4,
                          'data': '', 'data_res': '', 'var_name': 'str'},
@@ -224,7 +224,7 @@ extr = {'alb': {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1,
         'rh': {'name': 'rh', 'ref_x': 't', 'min': 0, 'max': 100, 'res_min': -10, 'res_max': 10, 'uom': '[%]',
                'comps': ['c', 'e', 't2'], 'bin_nr': 200,
                'c': {'fn': f'{thaao_c}_2m_relative_humidity_', 'column': np.nan, 'data': '', 'data_res': '', 'var_name': 'r2'},
-               'e': {'fn': f'', 'column': np.nan, 'data': '', 'data_res': '', 'var_name': ''},
+               'e': {'fn': '', 'column': np.nan, 'data': '', 'data_res': '', 'var_name': ''},
                't': {'fn': 'Meteo_weekly_all', 'column': 'RH_%', 'data': '',
                      'data_res': ''},
                't1': {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
@@ -242,7 +242,7 @@ extr = {'alb': {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1,
                       't2': {'fn': 'AWS_THAAO_', 'column': 'BP_mbar', 'data': '',
                              'data_res': ''}},
         'sw_down': {'name': 'sw_down', 'ref_x': 't', 'min': 0, 'max': 700, 'res_min': -20, 'res_max': 20,
-                    'uom': '[W/m2]', 'comps': ['c', 'e'], 'bin_nr': 200,
+                    'uom': '[W/m2]', 'comps': ['c', 'e'], 'bin_nr': 350,
                     'c': {'fn': f'{thaao_c}_surface_solar_radiation_downwards_', 'column': 4,
                             'data': '', 'data_res': '', 'var_name': 'ssrd'},
                     'e': {'fn': f'{thaao_e}_surface_solar_radiation_downwards_', 'column': 2,
@@ -251,8 +251,8 @@ extr = {'alb': {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1,
                           'data_res': ''},
                     't1': {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
                     't2': {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''}},
-        'sw_net': {'name': 'sw_down', 'ref_x': 't', 'min': 0, 'max': 600, 'res_min': -20, 'res_max': 20,
-                   'uom': '[W/m2]', 'comps': ['c', 'e'], 'bin_nr': 200,
+        'sw_net': {'name': 'sw_net', 'ref_x': 't', 'min': 0, 'max': 700, 'res_min': -20, 'res_max': 20,
+                   'uom': '[W/m2]', 'comps': ['c', 'e'], 'bin_nr': 350,
                    'c': {'fn': f'{thaao_c}_surface_net_solar_radiation_', 'column': 4,
                          'data': '', 'data_res': '', 'var_name': 'ssr'},
                    'e': {'fn': f'{thaao_e}_surface_net_solar_radiation_', 'column': 2,
@@ -260,8 +260,8 @@ extr = {'alb': {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1,
                    't': {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
                    't1': {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
                    't2': {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''}},
-        'sw_up': {'name': 'sw_up', 'ref_x': 't', 'min': 0, 'max': 600, 'res_min': -20, 'res_max': 20,
-                  'uom': '[W/m2]', 'comps': ['c', 'e'], 'bin_nr': 200,
+        'sw_up': {'name': 'sw_up', 'ref_x': 't', 'min': 0, 'max': 700, 'res_min': -20, 'res_max': 20,
+                  'uom': '[W/m2]', 'comps': ['c', 'e'], 'bin_nr': 350,
                   'c': {'fn': '', 'column': np.nan, 'data': '', 'data_res': '', 'var_name': ''},
                   'e': {'fn': '', 'column': np.nan, 'data': '', 'data_res': '', 'var_name': ''},
                   't': {'fn': 'MERGED_SW_LW_UP_DW_METEO_', 'column': 'SW_UP', 'data': '',

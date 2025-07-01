@@ -34,8 +34,6 @@ from metpy.calc import wind_direction, wind_speed
 from metpy.units import units
 import inputs as inpt
 import tools as tls
-import glob
-
 
 
 def read_alb():
@@ -67,7 +65,7 @@ def read_alb():
         rd_ft.read_thaao_rad(vr)
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
-        
+
     # --- Buoys ---
     if inpt.datasets['buoys']['switch']:
         data_all = pd.DataFrame()
@@ -218,6 +216,13 @@ def read_lw_up():
     and handles invalid values.
     """
 
+    # both CARRA AND ERA5
+    vr = 'lw_down'
+    var_dict = inpt.extr[vr]
+    read_lw_down()
+    lw_down_c = var_dict["c"]["data"][vr]
+    lw_down_e = var_dict["e"]["data"][vr]
+
     # --- CARRA ---
     vr = "lw_net"
     var_dict = inpt.extr[vr]
@@ -225,11 +230,6 @@ def read_lw_up():
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
     lw_net_c = var_dict["c"]["data"][vr]
     lw_net_c /= inpt.var_dict["c"]["rad_conv_factor"]
-
-    vr = 'lw_down'
-    var_dict = inpt.extr[vr]
-    lw_down_c = var_dict["c"]["data"][vr]
-    read_lw_down()
 
     vr = "lw_up"
     var_dict = inpt.extr[vr]
@@ -247,10 +247,7 @@ def read_lw_up():
     lw_net_e = var_dict["e"]["data"][vr]
     lw_net_e /= inpt.var_dict["e"]["rad_conv_factor"]
 
-    vr = 'lw_down'
-    var_dict = inpt.extr[vr]
-    lw_down_e = var_dict["e"]["data"][vr]
-
+    vr = "lw_up"
     var_dict = inpt.extr[vr]
     lw_up_e = lw_down_e - lw_net_e
     lw_up_e = lw_up_e.mask(lw_up_e < 0., np.nan)
@@ -550,19 +547,20 @@ def read_sw_up():
     Modifies `inpt` in-place.
     """
 
+    # both CARRA AND ERA5
+    vr = 'sw_down'
+    var_dict = inpt.extr[vr]
+    read_sw_down()
+    sw_down_c = var_dict["c"]["data"][vr]
+    sw_down_e = var_dict["e"]["data"][vr]
+    
     # --- CARRA ---
     vr = "sw_net"
     var_dict = inpt.extr[vr]
     rd_frea.read_rean("sw_net", "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
-
     sw_net_c = var_dict["c"]["data"][vr]
     sw_net_c /= inpt.var_dict["c"]["rad_conv_factor"]
-
-    vr = "sw_down"
-    var_dict = inpt.extr[vr]
-    read_sw_down()
-    sw_down_c = var_dict["c"]["data"][vr]
 
     vr = "sw_up"
     var_dict = inpt.extr[vr]
@@ -577,13 +575,8 @@ def read_sw_up():
     var_dict = inpt.extr[vr]
     rd_frea.read_rean(vr, "e")
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
-
     sw_net_e = var_dict["e"]["data"][vr]
     sw_net_e /= inpt.var_dict["e"]["rad_conv_factor"]
-
-    vr = "sw_down"
-    var_dict = inpt.extr[vr]
-    sw_down_e = var_dict["e"]["data"][vr]
 
     vr = "sw_up"
     var_dict = inpt.extr[vr]
@@ -758,7 +751,6 @@ def read_temp():
         # needed for THAAO AWS ECAPAC. It creates an empty dataframe
         var_dict["t2"]["data"], _ = tls.check_empty_df(
             var_dict["t2"]["data"], vr)
-
 
     return
 

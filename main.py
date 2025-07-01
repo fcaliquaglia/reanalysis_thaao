@@ -26,7 +26,7 @@ __lastupdate__ = ""
 
 import inputs as inpt
 import plot_func as plt_f
-import read_func as rd_f
+import read_funcs as rd_funcs
 import res_func as rs_f
 
 
@@ -41,7 +41,7 @@ def main():
             print(f"**************Processing variable: {var}**************\n")
 
             # Read data
-            rd_f.read()
+            rd_funcs.read()
 
             # Resample data (special handling for wind and precipitation)
             rs_f.data_resampling(inpt.var)
