@@ -25,6 +25,7 @@ import os
 
 import numpy as np
 import pandas as pd
+import read_func_rean as rd_frea
 import read_func_thaao as rd_ft
 import read_func_villum as rd_fv
 import read_func_sigmaa as rd_fsa
@@ -35,83 +36,6 @@ import inputs as inpt
 import tools as tls
 import glob
 
-
-def read_rean(vr, dataset_type):
-    """
-    Generalized function to read and process data from CARRA or ERA5 datasets.
-
-    This function checks for processed yearly parquet files for the given variable and dataset type.
-    If any yearly file is missing, it triggers the processing function `tls.process_rean` to generate it.
-    Finally, it reads all the yearly parquet files and concatenates them into a single DataFrame,
-    which is stored in the global `inpt.extr` structure.
-
-    :param vr: Variable name to read (e.g., "temp", "sw_down").
-    :param dataset_type: Dataset type identifier ("c" for CARRA, "e" for ERA5).
-    :return: None
-    """
-
-    if inpt.datasets['dropsondes']['switch']:
-        drop_files = sorted(glob.glob(os.path.join(
-            'txt_locations', "ARCSIX-AVAPS-netCDF_G3*.txt")))
-        # Process missing files if needed
-        for file_path in drop_files:
-            file_name = os.path.basename(file_path)
-            year = 2024
-            output_file = f"{inpt.extr[vr][dataset_type]['fn']}{file_name.replace('_loc.txt', '')}_{year}.parquet"
-            print(output_file)
-            output_path = os.path.join(
-                inpt.basefol[dataset_type]['processed'], output_file)
-            inpt.location = file_name.replace('_loc.txt', '')
-            if not os.path.exists(output_path):
-                tls.process_rean(vr, dataset_type, year)
-    else:
-        # Process missing yearly files if needed
-        for year in inpt.years:
-            output_file = f"{inpt.extr[vr][dataset_type]['fn']}{inpt.location}_{year}.parquet"
-            output_path = os.path.join(
-                inpt.basefol[dataset_type]['processed'], output_file)
-
-            if not os.path.exists(output_path):
-                tls.process_rean(vr, dataset_type, year)
-
-    # Read all yearly parquet files and concatenate into a single DataFrame
-    data_all = []
-
-    if inpt.datasets['dropsondes']['switch']:
-        for file_path in drop_files:
-            file_name = os.path.basename(file_path)
-            year = 2024
-            input_file = f"{inpt.extr[vr][dataset_type]['fn']}{file_name.replace('_loc.txt', '')}_{year}.parquet"
-            input_path = os.path.join(
-                inpt.basefol[dataset_type]['processed'], input_file)
-            try:
-                data_tmp = pd.read_parquet(input_path)
-                print(f"Loaded {input_path}")
-                if not data_tmp.empty:
-                    data_all.append(data_tmp)
-            except FileNotFoundError as e:
-                print(f"File not found: {input_path} ({e})")
-    else:
-        for year in inpt.years:
-            input_file = f"{inpt.extr[vr][dataset_type]['fn']}{inpt.location}_{year}.parquet"
-            input_path = os.path.join(
-                inpt.basefol[dataset_type]['processed'], input_file)
-            try:
-                data_tmp = pd.read_parquet(input_path)
-                print(f"Loaded {input_path}")
-                if not data_tmp.empty:
-                    data_all.append(data_tmp)
-            except FileNotFoundError as e:
-                print(f"File not found: {input_path} ({e})")
-
-    # Combine all data if any was loaded
-    if data_all:
-        data_all = pd.concat(data_all)
-    else:
-        data_all = pd.DataFrame()
-
-    # Store the concatenated data in the input extraction dictionary
-    inpt.extr[vr][dataset_type]["data"] = data_all
 
 
 def read_alb():
@@ -128,13 +52,13 @@ def read_alb():
     var_dict = inpt.extr[vr]
 
     # --- CARRA ---
-    read_rean(vr, "c")
+    rd_frea.read_rean(vr, "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
     var_dict["c"]["data"][vr] /= 100.
     # var_dict["c"]["data"].loc[var_dict["c"]["data"][vr] <= 0., vr] = np.nan
 
     # --- ERA5 ---
-    read_rean(vr, "e")
+    rd_frea.read_rean(vr, "e")
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
     # var_dict["e"]["data"].loc[var_dict["e"]["data"][vr] <= 0., vr] = np.nan
 
@@ -186,11 +110,11 @@ def read_cbh():
     var_dict = inpt.extr[vr]
 
     # --- CARRA ---
-    read_rean(vr, "c")
+    rd_frea.read_rean(vr, "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
 
     # --- ERA5 ---
-    read_rean(vr, "e")
+    rd_frea.read_rean(vr, "e")
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
 
     # --- THAAO ---
@@ -211,7 +135,7 @@ def read_lwp():
     var_dict = inpt.extr[vr]
 
     # --- CARRA ---
-    read_rean(vr, "c")
+    rd_frea.read_rean(vr, "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
     lwp_c = var_dict["c"]["data"][vr]
     # Uncomment below line if you want to filter small values
@@ -219,7 +143,7 @@ def read_lwp():
     var_dict["c"]["data"][vr] = lwp_c
 
     # --- ERA5 ---
-    read_rean(vr, "e")
+    rd_frea.read_rean(vr, "e")
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
     lwp_e = var_dict["e"]["data"][vr]
     lwp_e[lwp_e < 0.01] = np.nan
@@ -246,7 +170,7 @@ def read_lw_down():
     # --- CARRA ---
     vr = "lw_down"
     var_dict = inpt.extr[vr]
-    read_rean(vr, "c")
+    rd_frea.read_rean(vr, "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
     lw_down_c = var_dict["c"]["data"][vr].mask(
         var_dict["c"]["data"][vr] < 0., np.nan)
@@ -256,7 +180,7 @@ def read_lw_down():
     # --- ERA5 ---
     vr = "lw_down"
     var_dict = inpt.extr[vr]
-    read_rean("lw_down", "e")
+    rd_frea.read_rean("lw_down", "e")
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
     lw_down_e = var_dict["e"]["data"][vr].mask(
         var_dict["e"]["data"][vr] < 0., np.nan)
@@ -297,7 +221,7 @@ def read_lw_up():
     # --- CARRA ---
     vr = "lw_net"
     var_dict = inpt.extr[vr]
-    read_rean(vr, "c")
+    rd_frea.read_rean(vr, "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
     lw_net_c = var_dict["c"]["data"][vr]
     lw_net_c /= inpt.var_dict["c"]["rad_conv_factor"]
@@ -318,7 +242,7 @@ def read_lw_up():
     # --- ERA5 ---
     vr = "lw_net"
     var_dict = inpt.extr[vr]
-    read_rean(vr, "e")
+    rd_frea.read_rean(vr, "e")
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
     lw_net_e = var_dict["e"]["data"][vr]
     lw_net_e /= inpt.var_dict["e"]["rad_conv_factor"]
@@ -369,11 +293,11 @@ def read_precip():
     var_dict = inpt.extr[vr]
 
     # --- CARRA ---
-    read_rean(vr, "c")
+    rd_frea.read_rean(vr, "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
 
     # --- ERA5 ---
-    read_rean(vr, "e")
+    rd_frea.read_rean(vr, "e")
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
     precip_e = var_dict["e"]["data"][vr]
     precip_e *= 1000.  # Convert from meters to mm
@@ -399,13 +323,13 @@ def read_rh():
     var_dict = inpt.extr[vr]
 
     # --- CARRA ---
-    read_rean(vr, "c")
+    rd_frea.read_rean(vr, "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
 
     # --- ERA5 ---
-    read_rean("dewpt", "e")
+    rd_frea.read_rean("dewpt", "e")
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
-    read_rean("temp", "e")
+    rd_frea.read_rean("temp", "e")
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
     tls.calc_rh_from_tdp()  # Compute RH from dew point and temp
 
@@ -461,13 +385,13 @@ def read_surf_pres():
     var_dict = inpt.extr[vr]
 
     # --- CARRA ---
-    read_rean(vr, "c")
+    rd_frea.read_rean(vr, "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
     var_dict["c"]["data"][vr] /= 100.
     var_dict["c"]["data"].loc[var_dict["c"]["data"][vr] <= 900., vr] = np.nan
 
     # --- ERA5 ---
-    read_rean(vr, "e")
+    rd_frea.read_rean(vr, "e")
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
     var_dict["e"]["data"][vr] /= 100.
     var_dict["e"]["data"].loc[var_dict["e"]["data"][vr] <= 900., vr] = np.nan
@@ -543,7 +467,7 @@ def read_sw_down():
     # --- CARRA ---
     vr = "sw_down"
     var_dict = inpt.extr[vr]
-    read_rean(vr, "c")
+    rd_frea.read_rean(vr, "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
     sw_down_c = var_dict["c"]["data"][vr].mask(
         var_dict["c"]["data"][vr] < 0., np.nan)
@@ -553,7 +477,7 @@ def read_sw_down():
     # --- ERA5 ---
     vr = "sw_down"
     var_dict = inpt.extr[vr]
-    read_rean(vr, "e")
+    rd_frea.read_rean(vr, "e")
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
     sw_down_e = var_dict["e"]["data"][vr].mask(
         var_dict["e"]["data"][vr] < 0., np.nan)
@@ -629,7 +553,7 @@ def read_sw_up():
     # --- CARRA ---
     vr = "sw_net"
     var_dict = inpt.extr[vr]
-    read_rean("sw_net", "c")
+    rd_frea.read_rean("sw_net", "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
 
     sw_net_c = var_dict["c"]["data"][vr]
@@ -651,7 +575,7 @@ def read_sw_up():
     # --- ERA5 ---
     vr = "sw_net"
     var_dict = inpt.extr[vr]
-    read_rean(vr, "e")
+    rd_frea.read_rean(vr, "e")
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
 
     sw_net_e = var_dict["e"]["data"][vr]
@@ -725,11 +649,11 @@ def read_tcc():
     var_dict = inpt.extr[vr]
 
     # --- CARRA ---
-    read_rean(vr, "c")
+    rd_frea.read_rean(vr, "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"])
 
     # --- ERA5 ---
-    read_rean(vr, "e")
+    rd_frea.read_rean(vr, "e")
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"])
     var_dict["e"]["data"][vr] *= 100.0
 
@@ -755,12 +679,12 @@ def read_temp():
     var_dict = inpt.extr[vr]
 
     # --- CARRA ---
-    read_rean(vr, "c")
+    rd_frea.read_rean(vr, "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
     var_dict["c"]["data"][vr] -= 273.15
 
     # --- ERA5 ---
-    read_rean(vr, "e")
+    rd_frea.read_rean(vr, "e")
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
     var_dict["e"]["data"][vr] -= 273.15
 
@@ -867,22 +791,22 @@ def read_wind():
     # --- CARRA ---
     vr = "winds"
     var_dict = inpt.extr[vr]
-    read_rean(vr, "c")
+    rd_frea.read_rean(vr, "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
     vr = "windd"
     var_dict = inpt.extr[vr]
-    read_rean(vr, "c")
+    rd_frea.read_rean(vr, "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
 
     # --- ERA5 ---
     vr = "windu"
     var_dict = inpt.extr[vr]
-    read_rean(vr, "e")
+    rd_frea.read_rean(vr, "e")
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
 
     vr = "windv"
     var_dict = inpt.extr[vr]
-    read_rean("vr", "e")
+    rd_frea.read_rean("vr", "e")
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
     e_ws = wind_speed(
         inpt.extr["windu"]["e"]["data"][vr].values * units("m/s"),
