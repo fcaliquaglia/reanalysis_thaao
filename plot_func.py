@@ -249,22 +249,30 @@ def plot_scatter(period_label):
                             transform=axs[i].transAxes)
             else:
                 # Ensure valid bin range
-                vmin, vmax = 0, len(x_valid)
-                if not np.isfinite(vmin) or not np.isfinite(vmax) or vmin >= vmax:
+                vmin = 0
+                if not np.isfinite(var_data['min']) or not np.isfinite(var_data['max']) or var_data['min'] >= var_data['max']:
                     print(
                         f"WARNING: Invalid histogram bin range (vmin={vmin}, vmax={vmax}) — skipping hist2d.")
                     axs[i].text(0.1, 0.5, "Invalid histogram range",
                                 transform=axs[i].transAxes)
                 else:
-                    bin_edges = np.linspace(vmin, vmax, var_data['bin_nr'])
-                    bin_size = (vmax - vmin) / var_data['bin_nr']
+                    cmap = plt.cm.jet.copy()
+
+                    import matplotlib.colors as mcolors
+                    # Modify the colormap so that the lowest color is white
+                    # Create a new colormap with white at the bottom, then jet for the rest
+                    colors = cmap(np.linspace(0, 1, cmap.N))
+                    colors[0] = [1, 1, 1, 1]  # RGBA for white
+                    new_cmap = mcolors.ListedColormap(colors)
+                    
+                    bin_edges = np.linspace(var_data['min'], var_data['max'], var_data['bin_nr'])
+                    bin_size = (var_data['max'] - var_data['min']) / var_data['bin_nr']
                     h = axs[i].hist2d(
                         x_valid, y_valid,
                         bins=[bin_edges, bin_edges],
-                        cmap='jet',
+                        cmap=new_cmap,
                         cmin=1,
-                        vmin=vmin,
-                        vmax=vmax
+                        vmin=vmin
                     )
                     axs[i].text(
                         0.10, 0.90, f"bin_size={bin_size:.3f}", transform=axs[i].transAxes)
@@ -272,8 +280,8 @@ def plot_scatter(period_label):
 
                     while control==0:
                         cax = inset_axes(axs[3],
-                                     width="60%",
-                                     height="20%",
+                                     width="100%",
+                                     height="40%",
                                      bbox_to_anchor=(0.2, 0.85, 0.6, 0.1),
                                      bbox_transform=axs[3].transAxes,
                                      borderpad=0)
