@@ -818,15 +818,23 @@ def read_temp():
             var_dict["t"]["data"][inpt.var] == 0.0, np.nan)
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
+        # needed for THAAO AWS ECAPAC. It creates an empty dataframe
+        var_dict["t2"]["data"], _ = tls.check_empty_df(
+            var_dict["t2"]["data"], vr)
 
     # --- Dropsondes ---
     if inpt.datasets['dropsondes']['switch']:
         data_all = pd.read_parquet(os.path.join(
             'txt_locations', 'dropsondes_surface_level_temp.parquet'))
-
+        data_all.set_index('time', inplace=True)
+        data_all.index.name = 'valid_time'
         var_dict["t"]["data"] = data_all
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
+        # needed for THAAO AWS ECAPAC. It creates an empty dataframe
+        var_dict["t2"]["data"], _ = tls.check_empty_df(
+            var_dict["t2"]["data"], vr)
+
 
     return
 
