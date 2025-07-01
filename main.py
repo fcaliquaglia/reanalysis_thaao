@@ -47,8 +47,10 @@ def main():
             rs_f.data_resampling(inpt.var)
 
             # Plotting
-            plt_f.plot_ts('all')
-            plt_f.plot_residuals('all')
+            if not inpt.datasets['dropsondes']['switch']:
+                plt_f.plot_ts('all')
+                plt_f.plot_residuals('all')
+            
             plt_f.plot_scatter_cum()
             for seas in inpt.seass:
                 plt_f.plot_scatter(seas)

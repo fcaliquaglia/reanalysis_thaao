@@ -40,10 +40,7 @@ def data_resampling(vr):
     if inpt.var in ['winds', 'windd', 'precip']:
         print('NO WIND/PRECIP RESAMPLING!')
         sys.exit()
-        
-    if inpt.datasets['dropsondes']['switch']:
-        print('NO RESAMPLING FOR DROPSONDES')
-        return
+    
 
     for vvrr in inpt.extr[vr]['comps'] + [inpt.extr[vr]['ref_x']]:
         data = inpt.extr[vr][vvrr]['data']
@@ -54,8 +51,12 @@ def data_resampling(vr):
         # if not isinstance(data, pd.DataFrame):
         #     continue
         if not chk:
-            data_res = data.resample(inpt.tres).mean()
-            inpt.extr[vr][vvrr]['data_res'] = data_res
+            if inpt.datasets['dropsondes']['switch']:
+                print('NO TIME RESAMPLING FOR DROPSONDES')
+                inpt.extr[vr][vvrr]['data_res'] = data
+            else:
+                data_res = data.resample(inpt.tres).mean()
+                inpt.extr[vr][vvrr]['data_res'] = data_res
             print(f'Resampled for {vvrr}, {vr} at {inpt.tres} resolution')
         else:
             inpt.extr[vr][vvrr]['data_res'] = data
