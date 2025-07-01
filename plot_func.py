@@ -316,35 +316,70 @@ def plot_scatter_cum():
 
     frame_and_axis_removal(axs, len(comps))
 
-    for period_label, season in seass_new.items():
-        print(f"SCATTERPLOTS CUMULATIVE {period_label}")
-
-        season_months = season['months']
-        x_season = x_all.loc[x_all.index.month.isin(season_months)]
+    if inpt.datasets['dropsondes']['switch']: 
+        period_label='all'
+        print(f"SCATTERPLOTS CUMULATIVE {all}")
 
         for i, comp in enumerate(comps):
-            y = var_data[comp]['data_res'][inpt.var]
-            y_all = y.reindex(time_range).astype(float)
-            y_season = y_all.loc[y_all.index.month.isin(season_months)]
-
-            valid_idx = ~(x_season.isna() |
-                          y_season.isna())
+            y_all = var_data[comp]['data_res'][inpt.var]
+            tolerance = pd.Timedelta(hours=1 if comp == 'e' else 3)
+        
+            x_clean = x_all.dropna()
+            y_clean = y_all.dropna()
+        
+            # Step 3: Sort both series by index (required for merge_asof)
+            x_df = x_clean.sort_index().to_frame(name='x')
+            y_df = y_clean.groupby(y_clean.index).mean().sort_index().to_frame(name='y')
+        
+            merged = pd.merge_asof(
+                x_df, y_df,
+                left_index=True,
+                right_index=True,
+                tolerance=tolerance,
+                direction='nearest'
+            ).dropna()
 
             axs[i].scatter(
-                x_season[valid_idx], y_season[valid_idx],
-                s=5, color=season['col'], edgecolors='none', alpha=0.5, label=period_label
+                merged['x'], merged['y'],
+                s=5, color='blue', edgecolors='none', alpha=0.5, label=period_label
             )
 
-            if valid_idx.sum() < 2:
-                print('ERROR: Not enough data points for proper fit (need at least 2).')
-                # Optionally raise ValueError here if needed
-                # raise ValueError("Insufficient data for fitting.")
-            else:
-                calc_draw_fit(axs, i, x_season[valid_idx], y_season[valid_idx],
+            calc_draw_fit(axs, i,  merged['x'],  merged['y'],
                               period_label, print_stats=False)
 
             format_scatterplot(axs, comp, i)
             axs[i].legend()
+
+    else:
+        for period_label, season in seass_new.items():
+            print(f"SCATTERPLOTS CUMULATIVE {period_label}")
+    
+            season_months = season['months']
+            x_season = x_all.loc[x_all.index.month.isin(season_months)]
+    
+            for i, comp in enumerate(comps):
+                y = var_data[comp]['data_res'][inpt.var]
+                y_all = y.reindex(time_range).astype(float)
+                y_season = y_all.loc[y_all.index.month.isin(season_months)]
+    
+                valid_idx = ~(x_season.isna() |
+                              y_season.isna())
+    
+                axs[i].scatter(
+                    x_season[valid_idx], y_season[valid_idx],
+                    s=5, color=season['col'], edgecolors='none', alpha=0.5, label=period_label
+                )
+    
+                if valid_idx.sum() < 2:
+                    print('ERROR: Not enough data points for proper fit (need at least 2).')
+                    # Optionally raise ValueError here if needed
+                    # raise ValueError("Insufficient data for fitting.")
+                else:
+                    calc_draw_fit(axs, i, x_season[valid_idx], y_season[valid_idx],
+                                  period_label, print_stats=False)
+    
+                format_scatterplot(axs, comp, i)
+                axs[i].legend()
 
     save_path = os.path.join(
         inpt.basefol['out']['base'], inpt.tres, f"{str_name.replace(' ', '_')}.png")

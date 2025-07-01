@@ -50,10 +50,11 @@ def main():
             if not inpt.datasets['dropsondes']['switch']:
                 plt_f.plot_ts('all')
                 plt_f.plot_residuals('all')
+                for seas in inpt.seass:
+                    plt_f.plot_scatter(seas)
             
             plt_f.plot_scatter_cum()
-            for seas in inpt.seass:
-                plt_f.plot_scatter(seas)
+
 
 
 if __name__ == "__main__":
