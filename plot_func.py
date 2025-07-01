@@ -318,15 +318,23 @@ def plot_scatter_cum():
 
     if inpt.datasets['dropsondes']['switch']: 
         period_label='all'
-        print(f"SCATTERPLOTS CUMULATIVE {all}")
+        print(f"SCATTERPLOTS CUMULATIVE {period_label}")
 
         for i, comp in enumerate(comps):
-            y_all = var_data[comp]['data_res'][inpt.var]
-            tolerance = pd.Timedelta(hours=1 if comp == 'e' else 3)
+            y = var_data[comp]['data_res'][inpt.var]
+            tolerance = pd.Timedelta(hours=2 if comp == 'e' else 4)
         
-            x_clean = x_all.dropna()
-            y_clean = y_all.dropna()
-        
+            # Drop NaNs
+            x_clean = x.dropna()
+            y_clean = y.dropna()
+            
+            # 🔧 Convert index explicitly to datetime
+            x_clean.index = pd.to_datetime(x_clean.index, errors='coerce')
+            y_clean.index = pd.to_datetime(y_clean.index, errors='coerce')
+            
+            # 🧼 Drop rows where datetime parsing failed
+            x_clean = x_clean[~x_clean.index.isna()]
+            y_clean = y_clean[~y_clean.index.isna()]
             # Step 3: Sort both series by index (required for merge_asof)
             x_df = x_clean.sort_index().to_frame(name='x')
             y_df = y_clean.groupby(y_clean.index).mean().sort_index().to_frame(name='y')
@@ -344,8 +352,8 @@ def plot_scatter_cum():
                 s=5, color='blue', edgecolors='none', alpha=0.5, label=period_label
             )
 
-            calc_draw_fit(axs, i,  merged['x'],  merged['y'],
-                              period_label, print_stats=False)
+            # calc_draw_fit(axs, i,  merged['x'],  merged['y'],
+            #                   period_label, print_stats=False)
 
             format_scatterplot(axs, comp, i)
             axs[i].legend()
