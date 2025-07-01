@@ -52,9 +52,8 @@ def main():
                 plt_f.plot_residuals('all')
                 for seas in inpt.seass:
                     plt_f.plot_scatter(seas)
-            
-            plt_f.plot_scatter_cum()
 
+            plt_f.plot_scatter_cum()
 
 
 if __name__ == "__main__":
