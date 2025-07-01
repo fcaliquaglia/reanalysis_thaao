@@ -81,7 +81,7 @@ thaao_e = 'era5_NG'
 thaao_t = 'thaao'
 
 met = ['temp', 'surf_pres', 'rh']  # , 'iwv']
-rad = ['lw_up', 'sw_up', 'lw_down', 'sw_down',  'alb']
+rad = ['sw_up', 'lw_up', 'lw_down', 'sw_down',  'alb']
 clouds = ['lwp', 'cbh', 'tcc', 'precip']
 extra = ['winds', 'windd']
 
@@ -93,7 +93,7 @@ list_var = rad + met + rad + extra  # + clouds
 tres = ''
 var = ''
 
-years = np.arange(2016, 2025, 1)
+years = np.arange(2020, 2021, 1)
 
 aws_ecapac_daterange = pd.date_range(start=dt.datetime(
     2023, 4, 1), end=dt.datetime(2024, 12, 31), freq='1D')
