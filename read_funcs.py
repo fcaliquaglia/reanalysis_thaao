@@ -147,7 +147,7 @@ def read_iwv():
 
     # --- THAAO (VESPA) ---
     if inpt.datasets['THAAO']['switch']:
-        rd_ft.read_iwv_vespao(vr)
+        rd_ft.read_iwv_vespa(vr)
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
 

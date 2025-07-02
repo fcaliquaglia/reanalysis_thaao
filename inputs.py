@@ -93,7 +93,7 @@ list_var =  met # + rad + clouds + extra  # + clouds
 tres = ''
 var = ''
 
-years = np.arange(2016, 2025, 1)
+years = np.arange(2016, 2017, 1)
 
 aws_ecapac_daterange = pd.date_range(start=dt.datetime(
     2023, 4, 1), end=dt.datetime(2024, 12, 31), freq='1D')
@@ -171,7 +171,7 @@ extr = {'alb': {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1,
                 'c': {'fn': f'{thaao_c}_total_column_integrated_water_vapour_', 'column': 2,
                                'data': '', 'data_res': '', 'var_name': 'tciwv'},
                 'e': {'fn': f'{thaao_e}_total_column_water_vapour_', 'column': 2,
-                            'data': '', 'data_res': '', 'var_name': 'tciwv'},
+                            'data': '', 'data_res': '', 'var_name': 'tcwv'},
                 't': {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
                 't1': {'fn': 'LWP_15_min_all', 'column': 'IWV_g/m2', 'data': '',
                              'data_res': ''},
