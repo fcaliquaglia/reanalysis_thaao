@@ -87,13 +87,13 @@ extra = ['winds', 'windd']
 
 ##
 tres_list = ['3h']
-list_var = rad + met + rad + extra  # + clouds
+list_var = clouds + met + rad + extra  # + clouds
 
 
 tres = ''
 var = ''
 
-years = np.arange(2020, 2021, 1)
+years = np.arange(2016, 2025, 1)
 
 aws_ecapac_daterange = pd.date_range(start=dt.datetime(
     2023, 4, 1), end=dt.datetime(2024, 12, 31), freq='1D')
@@ -169,9 +169,9 @@ extr = {'alb': {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1,
         'lwp': {'name': 'lwp', 'ref_x': 't1', 'min': 0, 'max': 50, 'res_min': -20, 'res_max': 20,
                 'uom': '[kg/m2]', 'comps': ['c', 'e'], 'bin_nr': 200,
                 'c': {'fn': f'{thaao_c}_total_column_cloud_liquid_water_', 'column': 2,
-                               'data': '', 'data_res': '', 'var_name': ''},
+                               'data': '', 'data_res': '', 'var_name': 'tclw'},
                 'e': {'fn': f'{thaao_e}_total_column_cloud_liquid_water_', 'column': 2,
-                            'data': '', 'data_res': '', 'var_name': ''},
+                            'data': '', 'data_res': '', 'var_name': 'tclw'},
                 't': {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
                 't1': {'fn': 'LWP_15_min_all', 'column': 'LWP_g/m2', 'data': '',
                              'data_res': ''},
