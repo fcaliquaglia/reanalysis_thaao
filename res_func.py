@@ -136,45 +136,44 @@ def data_resampling(vr):
     for vvrr in inpt.extr[vr]['comps'] + [inpt.extr[vr]['ref_x']]:
         data = inpt.extr[vr][vvrr]['data']
         data, chk = tls.check_empty_df(data, vr)
-
+                    
         if not chk:
-            if inpt.tres == 'native':
-                if vvrr in ['c', 'e']:
-                    # Direct copy for these components at native resolution
-                    resampled_data = {}
-                    resampled_data[inpt.tres] = data
-                    inpt.extr[vr][vvrr]['data_res'] = resampled_data
-                    print(
-                        f'Copied data for {vvrr}, {vr} at native resolution (no resampling)')
-                elif vvrr in ['t', 't1', 't2']:
-                    # Extract closest timestamps within tolerance windows for specific time intervals
-                    resampled_data = {}
-                    resampled_data['3h'] = get_closest_subset_with_tolerance(
-                        data, '3h', tol_minutes=30)
-                    resampled_data['1h'] = get_closest_subset_with_tolerance(
-                        data, '1h', tol_minutes=10)
-                    resampled_data['native'] = data
-
-                    inpt.extr[vr][vvrr]['data_res'] = resampled_data
-                    print(
-                        f'Extracted closest timestamps within tolerance for {vvrr}, {vr} at 3h, 1h, and native resolution')
-                # else:
-                #     # For other components, just copy data as-is at native resolution
-                #     inpt.extr[vr][vvrr]['data_res'] = data
-                #     print(
-                #         f'Copied data for {vvrr}, {vr} at native resolution (no resampling)')
-            else:
-                # Non-native time resolutions
-                if inpt.datasets['dropsondes']['switch']:
-                    print('NO TIME RESAMPLING FOR DROPSONDES')
-                    resampled_data = {}
-                    resampled_data[inpt.tres] = data
-                    inpt.extr[vr][vvrr]['data_res'] = resampled_data
-                else:
-                    resampled_data = {}
-                    resampled_data[inpt.tres] = data.resample(inpt.tres).mean()
-                    inpt.extr[vr][vvrr]['data_res'] = resampled_data
-                print(f'Resampled for {vvrr}, {vr} at {inpt.tres} resolution')
+            if inpt.datasets['dropsondes']['switch']:
+                print('NO TIME RESAMPLING FOR DROPSONDES')
+                resampled_data = {}
+                resampled_data[inpt.tres] = data
+                inpt.extr[vr][vvrr]['data_res'] = resampled_data
+                return
+            if vvrr in ['c']:
+                # Direct copy for these components at native resolution
+                resampled_data = {}
+                resampled_data['native'] = data
+                resampled_data['3h'] =  data
+                resampled_data['24h'] = data.resample('24h').mean()
+                inpt.extr[vr][vvrr]['data_res'] = resampled_data
+                print(
+                    f'Copied data for {vvrr}, {vr} at different time resolutions')
+            if vvrr in ['e']:
+                # Direct copy for these components at native resolution
+                resampled_data = {}
+                resampled_data['native'] = data
+                resampled_data['3h'] =  data.resample('3h').mean()
+                resampled_data['24h'] = data.resample('24h').mean()
+                inpt.extr[vr][vvrr]['data_res'] = resampled_data
+                print(
+                    f'Copied data for {vvrr}, {vr} at different time resolutions')
+            elif vvrr in ['t', 't1', 't2']:
+                # Extract closest timestamps within tolerance windows for specific time intervals
+                resampled_data = {}
+                resampled_data['native'] = data
+                resampled_data['1h'] = get_closest_subset_with_tolerance(
+                    data, '1h', tol_minutes=10)
+                resampled_data['3h'] = get_closest_subset_with_tolerance(
+                    data, '3h', tol_minutes=30)
+                resampled_data['24h'] = data.resample('24h').mean()
+                inpt.extr[vr][vvrr]['data_res'] = resampled_data
+                print(
+                    f'Extracted closest timestamps within tolerance for {vvrr}, {vr} at 3h, 1h, and native resolution + 24h averages.')
         else:
             # Empty DataFrame case: copy as-is and print message
             resampled_data = {}

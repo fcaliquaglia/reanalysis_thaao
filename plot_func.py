@@ -56,7 +56,7 @@ def plot_ts(period_label):
 
     # Plotting style kwargs
     kwargs_ori = {'alpha': 0.02, 'lw': 0, 'marker': '.', 'ms': 1}
-    kwargs_res = {'lw': 0, 'marker': '.', 'ms': 2}
+    kwargs_res = {'lw': 0, 'marker': 'o', 'ms': 2, 'markerfacecolor':'none'}
 
     # Cache frequently used variables
     var_data = inpt.extr[inpt.var]
@@ -78,7 +78,7 @@ def plot_ts(period_label):
                 continue
             if chck:
                 continue
-            data_ori = var_data[data_typ]['data'][inpt.var]
+            data_ori = var_data[data_typ]['data_res']['native'][inpt.var]
             mask_ori = data_ori.index.year == year
             if mask_ori.any():
                 ax[i].plot(data_ori.loc[mask_ori],
@@ -136,11 +136,6 @@ def plot_residuals(period_label):
     var_data = inpt.extr[inpt.var]
     comps_all = var_data['comps']
     ref_x = var_data['ref_x']
-    ref_data_res = var_data[ref_x]['data_res'][inpt.tres][inpt.var]
-    null, chck = tls.check_empty_df(
-        var_data[ref_x]['data_res'][inpt.tres][inpt.var], inpt.var)
-    if chck:
-        return
 
     comps = tls.plot_vars_cleanup(comps_all, var_data)
 
@@ -160,6 +155,15 @@ def plot_residuals(period_label):
                 var_data[comp_var]['data_res'][inpt.tres][inpt.var], inpt.var)
             if chck:
                 continue
+            if comp_var=='c':
+                tres='3h'
+            if comp_var=='e':
+                tres='1h'
+            ref_data_res = var_data[ref_x]['data_res'][tres][inpt.var]
+            null, chck = tls.check_empty_df(
+                var_data[ref_x]['data_res'][inpt.tres][inpt.var], inpt.var)
+            if chck:
+                return
             mask_comp = comp_data_res.index.year == year
             mask_ref = ref_data_res.index.year == year
             if mask_comp.any() and mask_ref.any():
@@ -168,15 +172,15 @@ def plot_residuals(period_label):
                 ax[i].plot(residuals, color=inpt.var_dict[comp_var]['col'],
                            label=inpt.var_dict[comp_var]['label'], **plot_kwargs)
 
-        # Add seasonal vertical lines for 'alb' variable
-        if inpt.var == 'alb':
-            freq = inpt.tres
-            range1 = pd.date_range(start=pd.Timestamp(
-                year, 1, 1), end=pd.Timestamp(year, 2, 15), freq=freq)
-            range2 = pd.date_range(start=pd.Timestamp(
-                year, 11, 1), end=pd.Timestamp(year, 12, 31), freq=freq)
-            ax[i].vlines(range1.values, -0.5, 0.5, color='grey', alpha=0.3)
-            ax[i].vlines(range2.values, -0.5, 0.5, color='grey', alpha=0.3)
+        # # Add seasonal vertical lines for 'alb' variable
+        # if inpt.var == 'alb':
+        #     freq = inpt.tres
+        #     range1 = pd.date_range(start=pd.Timestamp(
+        #         year, 1, 1), end=pd.Timestamp(year, 2, 15), freq=freq)
+        #     range2 = pd.date_range(start=pd.Timestamp(
+        #         year, 11, 1), end=pd.Timestamp(year, 12, 31), freq=freq)
+        #     ax[i].vlines(range1.values, -0.5, 0.5, color='grey', alpha=0.3)
+        #     ax[i].vlines(range2.values, -0.5, 0.5, color='grey', alpha=0.3)
 
         # Format axis (assuming format_ts accepts residuals flag)
         format_ts(ax, year, i, residuals=True)

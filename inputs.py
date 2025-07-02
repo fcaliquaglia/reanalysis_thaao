@@ -86,7 +86,7 @@ clouds = ['lwp', 'cbh', 'tcc', 'precip']
 extra = ['winds', 'windd']
 
 ##
-tres_list = ['native', '24h'] # 'native'
+tres_list = ['native'] # 'native'
 list_var =  met + rad + extra  # + clouds
 
 
