@@ -150,6 +150,7 @@ def data_resampling(vr):
                 # Direct copy for these components at original resolution
                 resampled_data = {}
                 resampled_data['original'] = data
+                resampled_data['1h'] =  data
                 resampled_data['3h'] =  data.resample('3h').mean()
                 resampled_data['24h'] = data.resample('24h').mean()
                 inpt.extr[vr][vvrr]['data_res'] = resampled_data

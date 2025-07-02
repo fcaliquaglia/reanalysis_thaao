@@ -56,7 +56,7 @@ def plot_ts(period_label):
 
     # Plotting style kwargs
     kwargs_ori = {'alpha': 0.02, 'lw': 0, 'marker': '.', 'ms': 1}
-    kwargs_res = {'lw': 0, 'marker': 'o', 'ms': 2, 'markerfacecolor':'none'}
+    kwargs_res = {'lw': 0, 'marker': 'o', 'ms': 2, 'markerfacecolor': 'none'}
 
     # Cache frequently used variables
     var_data = inpt.extr[inpt.var]
@@ -150,13 +150,13 @@ def plot_residuals(period_label):
 
         # Plot residuals (component - reference) for the year
         for comp_var in comps:
-            if not inpt.tres=='original':
-                tres=inpt.tres
+            if not inpt.tres == 'original':
+                tres = inpt.tres
             else:
-                if comp_var=='c':
-                    tres='3h'
-                if comp_var=='e':
-                    tres='1h'
+                if comp_var == 'c':
+                    tres = '3h'
+                if comp_var == 'e':
+                    tres = '1h'
             ref_data_res = var_data[ref_x]['data_res'][tres][inpt.var]
             null, chck = tls.check_empty_df(
                 var_data[ref_x]['data_res'][tres][inpt.var], inpt.var)
@@ -174,16 +174,6 @@ def plot_residuals(period_label):
                     ref_data_res.loc[mask_ref]
                 ax[i].plot(residuals, color=inpt.var_dict[comp_var]['col'],
                            label=inpt.var_dict[comp_var]['label'], **plot_kwargs)
-
-        # # Add seasonal vertical lines for 'alb' variable
-        # if inpt.var == 'alb':
-        #     freq = inpt.tres
-        #     range1 = pd.date_range(start=pd.Timestamp(
-        #         year, 1, 1), end=pd.Timestamp(year, 2, 15), freq=freq)
-        #     range2 = pd.date_range(start=pd.Timestamp(
-        #         year, 11, 1), end=pd.Timestamp(year, 12, 31), freq=freq)
-        #     ax[i].vlines(range1.values, -0.5, 0.5, color='grey', alpha=0.3)
-        #     ax[i].vlines(range2.values, -0.5, 0.5, color='grey', alpha=0.3)
 
         # Format axis (assuming format_ts accepts residuals flag)
         format_ts(ax, year, i, residuals=True)
@@ -215,23 +205,29 @@ def plot_scatter(period_label):
     var_data = inpt.extr[inpt.var]
     comps = tls.plot_vars_cleanup(var_data['comps'], var_data)
     ref_x = var_data['ref_x']
-    x = var_data[ref_x]['data_res'][inpt.tres][inpt.var]
 
     frame_and_axis_removal(axs, len(comps))
 
-    # Preprocess time and data
-    time_range = pd.date_range(
-        start=pd.Timestamp(inpt.years[0], 1, 1),
-        end=pd.Timestamp(inpt.years[-1], 12, 31, 23, 59),
-        freq=inpt.tres
-    )
-    x_all = x.reindex(time_range).astype(float)
-    season_months = inpt.seass[period_label]['months']
-    x_season = x_all.loc[x_all.index.month.isin(season_months)]
-
     control = 0
     for i, comp in enumerate(comps):
-        y = var_data[comp]['data_res'][inpt.tres][inpt.var].reindex(
+        if not inpt.tres == 'original':
+            tres = inpt.tres
+        else:
+            if comp == 'c':
+                tres = '3h'
+            if comp == 'e':
+                tres = '1h'
+        # Preprocess time and data
+        x = var_data[ref_x]['data_res'][tres][inpt.var]
+        time_range = pd.date_range(
+            start=pd.Timestamp(inpt.years[0], 1, 1),
+            end=pd.Timestamp(inpt.years[-1], 12, 31, 23, 59),
+            freq=tres
+        )
+        x_all = x.reindex(time_range).astype(float)
+        season_months = inpt.seass[period_label]['months']
+        x_season = x_all.loc[x_all.index.month.isin(season_months)]
+        y = var_data[comp]['data_res'][tres][inpt.var].reindex(
             time_range).astype(float)
         y_season = y.loc[y.index.month.isin(season_months)]
 
@@ -333,19 +329,10 @@ def plot_scatter_cum():
     seass_new = {k: v for k, v in inpt.seass.items() if k != 'all'}
 
     var_data = inpt.extr[inpt.var]
+
     comps_all = var_data['comps']
-    ref_x = var_data['ref_x']
-    x = var_data[ref_x]['data_res'][inpt.tres][inpt.var]
     comps = tls.plot_vars_cleanup(comps_all, var_data)
-
-    # Prepare full time range for reindexing once
-    time_range = pd.date_range(
-        start=pd.Timestamp(inpt.years[0], 1, 1, 0, 0),
-        end=pd.Timestamp(inpt.years[-1], 12, 31, 23, 59),
-        freq=inpt.tres
-    )
-    x_all = x.reindex(time_range).astype(float)
-
+    
     frame_and_axis_removal(axs, len(comps))
 
     if inpt.datasets['dropsondes']['switch']:
@@ -353,6 +340,18 @@ def plot_scatter_cum():
         print(f"SCATTERPLOTS CUMULATIVE {period_label}")
 
         for i, comp in enumerate(comps):
+
+            ref_x = var_data['ref_x']
+            x = var_data[ref_x]['data_res'][inpt.tres][inpt.var]
+
+
+            # Prepare full time range for reindexing once
+            time_range = pd.date_range(
+                start=pd.Timestamp(inpt.years[0], 1, 1, 0, 0),
+                end=pd.Timestamp(inpt.years[-1], 12, 31, 23, 59),
+                freq=inpt.tres
+            )
+            x_all = x.reindex(time_range).astype(float)
             y = var_data[comp]['data_res'][inpt.tres][inpt.var]
             tolerance = pd.Timedelta(hours=2 if comp == 'e' else 4)
 
@@ -392,19 +391,34 @@ def plot_scatter_cum():
         for period_label, season in seass_new.items():
             print(f"SCATTERPLOTS CUMULATIVE {period_label}")
 
-            season_months = season['months']
-            x_season = x_all.loc[x_all.index.month.isin(season_months)]
-
             for i, comp in enumerate(comps):
-                y = var_data[comp]['data_res'][inpt.tres][inpt.var]
-                y_all = y.reindex(time_range).astype(float)
-                y_season = y_all.loc[y_all.index.month.isin(season_months)]
-
-                valid_idx = ~(x_season.isna() |
-                              y_season.isna())
+                
+                if not inpt.tres == 'original':
+                    tres = inpt.tres
+                else:
+                    if comp == 'c':
+                        tres = '3h'
+                    if comp == 'e':
+                        tres = '1h'
+                # Preprocess time and data
+                x = var_data[ref_x]['data_res'][tres][inpt.var]
+                time_range = pd.date_range(
+                    start=pd.Timestamp(inpt.years[0], 1, 1),
+                    end=pd.Timestamp(inpt.years[-1], 12, 31, 23, 59),
+                    freq=tres
+                )
+                x_all = x.reindex(time_range).astype(float)
+                season_months = inpt.seass[period_label]['months']
+                x_season = x_all.loc[x_all.index.month.isin(season_months)]
+                y = var_data[comp]['data_res'][tres][inpt.var].reindex(
+                    time_range).astype(float)
+                y_season = y.loc[y.index.month.isin(season_months)]
+        
+                valid_idx = ~(x_season.isna() | y_season.isna())
+                x_valid, y_valid = x_season[valid_idx], y_season[valid_idx]
 
                 axs[i].scatter(
-                    x_season[valid_idx], y_season[valid_idx],
+                    x_valid, y_valid,
                     s=5, color=season['col'], edgecolors='none', alpha=0.5, label=period_label
                 )
 
@@ -414,7 +428,7 @@ def plot_scatter_cum():
                     # Optionally raise ValueError here if needed
                     # raise ValueError("Insufficient data for fitting.")
                 else:
-                    calc_draw_fit(axs, i, x_season[valid_idx], y_season[valid_idx],
+                    calc_draw_fit(axs, i, x_valid, y_valid,
                                   period_label, print_stats=False)
 
                 format_scatterplot(axs, comp, i)
