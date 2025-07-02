@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 # Load ERA5 data
 buoy_era5 = pd.read_parquet(
-    r"H:\Shared drives\Reanalysis\era5\processed\era5_NG_2m_temperature_2024Kprocessed_2024.parquet"
+    r"H:\Shared drives\Reanalysis\era5\parquets\era5_NG_2m_temperature_2024Kprocessed_2024.parquet"
 )
 
 # Load buoy data

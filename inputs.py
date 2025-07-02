@@ -38,12 +38,12 @@ shared = 'H:\\Shared drives'
 basefol = {
     'c': {
         'base': f'{shared}\\Reanalysis\\carra1',
-        'processed': f'{shared}\\Reanalysis\\carra1\\processed',
+        'parquets': f'{shared}\\Reanalysis\\carra1\\parquets',
         'raw': f'{shared}\\Reanalysis\\carra1\\raw'
     },
     'e': {
         'base': f'{shared}\\Reanalysis\\era5',
-        'processed': f'{shared}\\Reanalysis\\era5\\processed',
+        'parquets': f'{shared}\\Reanalysis\\era5\\parquets',
         'raw': f'{shared}\\Reanalysis\\era5\\raw'
     },
     't': {
@@ -52,7 +52,7 @@ basefol = {
     },
     'out': {
         'base': f'{shared}\\Dati_elab_docs\\thaao_reanalysis',
-        'processed': f'{shared}\\Dati_elab_docs\\thaao_reanalysis\\processed',
+        'parquets': f'{shared}\\Dati_elab_docs\\thaao_reanalysis\\parquets',
     }
 }
 
@@ -87,7 +87,7 @@ extra = ['winds', 'windd']
 
 ##
 tres_list = ['original', '24h'] # 'original'
-list_var =  met + rad + extra  # + clouds
+list_var =  met + rad + clouds + extra  # + clouds
 
 
 tres = ''

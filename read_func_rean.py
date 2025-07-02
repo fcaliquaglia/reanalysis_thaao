@@ -55,7 +55,7 @@ def read_rean(vr, dataset_type):
             output_file = f"{inpt.extr[vr][dataset_type]['fn']}{file_name.replace('_loc.txt', '')}_{year}.parquet"
             print(output_file)
             output_path = os.path.join(
-                inpt.basefol[dataset_type]['processed'], output_file)
+                inpt.basefol[dataset_type]['parquets'], output_file)
             inpt.location = file_name.replace('_loc.txt', '')
             if not os.path.exists(output_path):
                 tls.process_rean(vr, dataset_type, year)
@@ -64,7 +64,7 @@ def read_rean(vr, dataset_type):
         for year in inpt.years:
             output_file = f"{inpt.extr[vr][dataset_type]['fn']}{inpt.location}_{year}.parquet"
             output_path = os.path.join(
-                inpt.basefol[dataset_type]['processed'], output_file)
+                inpt.basefol[dataset_type]['parquets'], output_file)
 
             if not os.path.exists(output_path):
                 tls.process_rean(vr, dataset_type, year)
@@ -78,7 +78,7 @@ def read_rean(vr, dataset_type):
             year = 2024
             input_file = f"{inpt.extr[vr][dataset_type]['fn']}{file_name.replace('_loc.txt', '')}_{year}.parquet"
             input_path = os.path.join(
-                inpt.basefol[dataset_type]['processed'], input_file)
+                inpt.basefol[dataset_type]['parquets'], input_file)
             try:
                 data_tmp = pd.read_parquet(input_path)
                 print(f"Loaded {input_path}")
@@ -90,7 +90,7 @@ def read_rean(vr, dataset_type):
         for year in inpt.years:
             input_file = f"{inpt.extr[vr][dataset_type]['fn']}{inpt.location}_{year}.parquet"
             input_path = os.path.join(
-                inpt.basefol[dataset_type]['processed'], input_file)
+                inpt.basefol[dataset_type]['parquets'], input_file)
             try:
                 data_tmp = pd.read_parquet(input_path)
                 print(f"Loaded {input_path}")

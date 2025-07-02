@@ -95,7 +95,7 @@ def calc_rh_from_tdp():
 
 def get_common_paths(vr, y, prefix):
 
-    base_out = Path(inpt.basefol['out']['processed'])
+    base_out = Path(inpt.basefol['out']['parquets'])
     base_input = Path(inpt.basefol['t']['arcsix'])
     filename = f"{inpt.location}_{prefix}_{vr}_{y}.parquet"
     return base_out / filename, base_input
