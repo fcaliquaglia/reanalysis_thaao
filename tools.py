@@ -92,6 +92,20 @@ def calc_rh_from_tdp():
 
     return
 
+def convert_rs_to_iwv(df, tp):
+    """
+    Convertito concettualmente in python da codice di Giovanni: PWV_Gio.m
+    :param tp: % of the max pressure value up to which calculate the iwv. it is necessary because interpolation fails.
+    :param df:
+    :return:
+    """
+
+    td = mpcalc.dewpoint_from_relative_humidity(
+            df['temp'].to_xarray() * units("degC"), df['rh'].to_xarray() / 100)
+    iwv = mpcalc.precipitable_water(
+            df['pres'].to_xarray() * units("hPa"), td, bottom=None, top=np.nanmin(df['pres']) * tp * units('hPa'))
+
+    return iwv
 
 def get_common_paths(vr, y, prefix):
 

@@ -231,7 +231,7 @@ def read_aws_ecapac(vr):
                 df = df[[inpt.extr[vr]["t2"]["column"]]].astype(float).rename(
                     columns={inpt.extr[vr]["t2"]["column"]: vr}
                 )
-                df.index.name='datetime'
+                df.index.name = 'datetime'
                 t_all.append(df)
                 print(f"OK: {file.name}")
             except (FileNotFoundError, pd.errors.EmptyDataError):
@@ -250,3 +250,47 @@ def read_aws_ecapac(vr):
 
     # Store final result
     inpt.extr[vr]["t2"]["data"] = df_all
+
+
+def read_iwv_vespa(vr):
+    df_all = pd.DataFrame()
+    count = 0
+
+    # Try loading from per-year parquet files
+    for year in inpt.years:
+        path_out, _ = tls.get_common_paths(vr, year, "ECAPAC")
+        if os.path.exists(path_out):
+            df_tmp = pd.read_parquet(path_out)
+            df_all = pd.concat([df_all, df_tmp])
+            print(f"Loaded {path_out}")
+            count += 1
+
+    # If not all years found, read raw .dat files
+    if count < len(inpt.years):
+        file = (
+            Path(inpt.basefol["t"]['base']) / "thaao_vespa" /
+            "vespaPWVClearSky.dat"
+        )
+        try:
+            df = pd.read_table(file, sep='\s+', skipfooter=1,
+                               skiprows=1, header=None, engine='python'
+                               )
+            print(f'OK: {file}.txt')
+            df.index = pd.to_datetime(
+                df[0] + ' ' + df[1], format='%Y-%m-%d %H:%M:%S')
+            df.drop(columns=[0, 1, 3, 4, 5], inplace=True)
+            df.index.name = 'datetime'
+            df.columns = [vr]
+        except FileNotFoundError:
+            print(f'NOT FOUND: {file}.txt')
+
+    # Save per-year data
+    for year in inpt.years:
+        df_year = df_all[df_all.index.year == year]
+        if not df_year.empty:
+            path_out, _ = tls.get_common_paths(vr, year, "IWV_VESPA")
+            df_year.to_parquet(path_out)
+            print(f"Saved {path_out}")
+
+    # Store final result
+    inpt.extr[vr]["t"]["data"] = df_all

@@ -123,6 +123,85 @@ def read_cbh():
 
     return
 
+def read_iwv():
+    """
+    Reads integrated water vapor (IWV) data from multiple sources including:
+    CARRA, ERA5, THAAO (VESPA and HATPRO), and radiosonde measurements.
+    
+    Each dataset is loaded, cleaned, and converted into a standardized
+    pandas DataFrame. Returns data from each source as a list.
+
+    :return: [CARRA, ERA5, VESPA, HATPRO, Radiosondes]
+    """
+    vr = inpt.var
+    var_dict = inpt.extr[vr]
+
+    # --- CARRA ---
+    rd_frea.read_rean(vr, "c")
+    var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
+
+    # --- ERA5 ---
+    rd_frea.read_rean(vr, "e")
+    var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
+
+    # --- THAAO (VESPA) ---
+    if inpt.datasets['THAAO']['switch']:
+        rd_ft.read_iwv_vespao(vr)
+        var_dict["t"]["data"], _ = tls.check_empty_df(
+            var_dict["t"]["data"], vr)
+        
+    # --- THAAO (HATPRO) ---
+    if inpt.datasets['THAAO']['switch']:
+        rd_ft.read_hatpro(vr)
+        var_dict["t1"]["data"], _ = tls.check_empty_df(
+            var_dict["t1"]["data"], vr)
+        lwp_t1 = var_dict["t1"]["data"][vr]
+        lwp_t1[lwp_t1 < 0.001] = np.nan
+        lwp_t1[lwp_t1 > 1000] = np.nan
+        var_dict["t1"]["data"][vr] = lwp_t1
+
+    # --- Radiosondes ---
+    for year in years:
+        try:
+            folder = os.path.join(basefol_t, 'thaao_rs_sondes', 'txt', f'{year}')
+            files = sorted(os.listdir(folder))
+            for f in files:
+                try:
+                    file_date = dt.datetime.strptime(f[9:22], '%Y%m%d_%H%M')
+                    df = pd.read_table(
+                        os.path.join(folder, f),
+                        skiprows=17, skipfooter=1, header=None, delimiter=" ", engine='python',
+                        names=['height', 'pres', 'temp', 'rh'], usecols=[0, 1, 2, 3],
+                        na_values="nan"
+                    )
+                    df.loc[(df['pres'] > 1013) | (df['pres'] < 0), 'pres'] = np.nan
+                    df.loc[(df['height'] < 0), 'height'] = np.nan
+                    df.loc[(df['temp'] < -100) | (df['temp'] > 30), 'temp'] = np.nan
+                    df.loc[(df['rh'] < 1.) | (df['rh'] > 120), 'rh'] = np.nan
+                    df.dropna(subset=['temp', 'pres', 'rh'], inplace=True)
+                    df.drop_duplicates(subset=['height'], inplace=True)
+
+                    min_pres = df['pres'].min()
+                    min_index = df[df['pres'] == min_pres].index.min()
+                    df = df.iloc[:min_index]
+                    df = df.set_index('height')
+
+                    iwv = convert_rs_to_iwv(df, 1.01)
+                    t2 = pd.concat([t2, pd.DataFrame(index=[file_date], data=[iwv.magnitude])])
+                except ValueError:
+                    print(f'Issue with {f}')
+            print(f'OK: year {year}')
+        except FileNotFoundError:
+            print(f'NOT FOUND: year {year}')
+    t2.columns = [var_name]
+    t2.to_csv(os.path.join(basefol_t, 'rs_pwv.txt'))
+
+    return [c, e, l, t, t1, t2]
+
+
+
+
+
 
 def read_lwp():
     """
@@ -153,8 +232,8 @@ def read_lwp():
     # --- THAAO ---
     if inpt.datasets['THAAO']['switch']:
         rd_ft.read_hatpro(vr)
-        var_dict["t"]["data"], _ = tls.check_empty_df(
-            var_dict["t"]["data"], vr)
+        var_dict["t1"]["data"], _ = tls.check_empty_df(
+            var_dict["t1"]["data"], vr)
         lwp_t1 = var_dict["t1"]["data"][vr]
         lwp_t1[lwp_t1 < 0.001] = np.nan
         lwp_t1[lwp_t1 > 1000] = np.nan
@@ -889,6 +968,7 @@ def read():
     readers = {
         "alb": read_alb,
         "cbh": read_cbh,
+        "iwv": read_iwv,
         "lwp": read_lwp,
         "lw_down": read_lw_down,
         "lw_up": read_lw_up,
