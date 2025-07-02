@@ -135,26 +135,27 @@ def read_lwp():
     # --- CARRA ---
     rd_frea.read_rean(vr, "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
-    lwp_c = var_dict["c"]["data"][vr]
-    # Uncomment below line if you want to filter small values
-    # lwp_c[lwp_c < 0.01] = np.nan
-    var_dict["c"]["data"][vr] = lwp_c
+    var_dict["c"]["data"][vr] *= 100.
+    # lwp_c = var_dict["c"]["data"][vr]
+    # lwp_c[lwp_c < 0.001] = np.nan
+    # var_dict["c"]["data"][vr] = lwp_c
 
     # --- ERA5 ---
     rd_frea.read_rean(vr, "e")
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
-    lwp_e = var_dict["e"]["data"][vr]
-    lwp_e[lwp_e < 0.01] = np.nan
-    var_dict["e"]["data"][vr] = lwp_e
+    var_dict["e"]["data"][vr] *= 100.
+    # lwp_e = var_dict["e"]["data"][vr]
+    # lwp_e[lwp_e < 0.001] = np.nan
+    # var_dict["e"]["data"][vr] = lwp_e
 
     # --- THAAO ---
     if inpt.datasets['THAAO']['switch']:
         rd_ft.read_hatpro(vr)
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
-        lwp_t1 = var_dict["t1"]["data"][vr]
-        lwp_t1[lwp_t1 < 0.01] = np.nan
-        var_dict["t1"]["data"][vr] = lwp_t1
+        # lwp_t1 = var_dict["t1"]["data"][vr]
+        # lwp_t1[lwp_t1 < 0.001] = np.nan
+        # var_dict["t1"]["data"][vr] = lwp_t1
 
     return
 
