@@ -123,15 +123,16 @@ def read_cbh():
 
     return
 
+
 def read_iwv():
     """
     Reads integrated water vapor (IWV) data from multiple sources including:
     CARRA, ERA5, THAAO (VESPA and HATPRO), and radiosonde measurements.
-    
+
     Each dataset is loaded, cleaned, and converted into a standardized
     pandas DataFrame. Returns data from each source as a list.
 
-    :return: [CARRA, ERA5, VESPA, HATPRO, Radiosondes]
+    :return: [CARRA, ERA5, VESPA (t), HATPRO (t1), Radiosondes (t2)]
     """
     vr = inpt.var
     var_dict = inpt.extr[vr]
@@ -149,58 +150,22 @@ def read_iwv():
         rd_ft.read_iwv_vespao(vr)
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
-        
+
     # --- THAAO (HATPRO) ---
     if inpt.datasets['THAAO']['switch']:
-        rd_ft.read_hatpro(vr)
+        rd_ft.read_iwv_vespa(vr)
         var_dict["t1"]["data"], _ = tls.check_empty_df(
             var_dict["t1"]["data"], vr)
-        lwp_t1 = var_dict["t1"]["data"][vr]
-        lwp_t1[lwp_t1 < 0.001] = np.nan
-        lwp_t1[lwp_t1 > 1000] = np.nan
-        var_dict["t1"]["data"][vr] = lwp_t1
+        iwv_t1 = var_dict["t1"]["data"][vr]
+        iwv_t1[iwv_t1 < 0.001] = np.nan
+        iwv_t1[iwv_t1 > 1000] = np.nan
+        var_dict["t1"]["data"][vr] = iwv_t1
 
     # --- Radiosondes ---
-    for year in years:
-        try:
-            folder = os.path.join(basefol_t, 'thaao_rs_sondes', 'txt', f'{year}')
-            files = sorted(os.listdir(folder))
-            for f in files:
-                try:
-                    file_date = dt.datetime.strptime(f[9:22], '%Y%m%d_%H%M')
-                    df = pd.read_table(
-                        os.path.join(folder, f),
-                        skiprows=17, skipfooter=1, header=None, delimiter=" ", engine='python',
-                        names=['height', 'pres', 'temp', 'rh'], usecols=[0, 1, 2, 3],
-                        na_values="nan"
-                    )
-                    df.loc[(df['pres'] > 1013) | (df['pres'] < 0), 'pres'] = np.nan
-                    df.loc[(df['height'] < 0), 'height'] = np.nan
-                    df.loc[(df['temp'] < -100) | (df['temp'] > 30), 'temp'] = np.nan
-                    df.loc[(df['rh'] < 1.) | (df['rh'] > 120), 'rh'] = np.nan
-                    df.dropna(subset=['temp', 'pres', 'rh'], inplace=True)
-                    df.drop_duplicates(subset=['height'], inplace=True)
-
-                    min_pres = df['pres'].min()
-                    min_index = df[df['pres'] == min_pres].index.min()
-                    df = df.iloc[:min_index]
-                    df = df.set_index('height')
-
-                    iwv = convert_rs_to_iwv(df, 1.01)
-                    t2 = pd.concat([t2, pd.DataFrame(index=[file_date], data=[iwv.magnitude])])
-                except ValueError:
-                    print(f'Issue with {f}')
-            print(f'OK: year {year}')
-        except FileNotFoundError:
-            print(f'NOT FOUND: year {year}')
-    t2.columns = [var_name]
-    t2.to_csv(os.path.join(basefol_t, 'rs_pwv.txt'))
-
-    return [c, e, l, t, t1, t2]
-
-
-
-
+    if inpt.datasets['THAAO']['switch']:
+        rd_ft.read_iwv_rs(vr)
+        var_dict["t2"]["data"], _ = tls.check_empty_df(
+            var_dict["t2"]["data"], vr)
 
 
 def read_lwp():
@@ -255,7 +220,7 @@ def read_lw_down():
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
     var_dict["c"]["data"][vr] /= inpt.var_dict["c"]["rad_conv_factor"]
     var_dict["c"]["data"][vr] = var_dict["c"]["data"][vr].mask(
-        var_dict["c"]["data"][vr] <  1e-5, np.nan)
+        var_dict["c"]["data"][vr] < 1e-5, np.nan)
 
     # --- ERA5 ---
     vr = "lw_down"
@@ -265,7 +230,7 @@ def read_lw_down():
 
     var_dict["e"]["data"][vr] /= inpt.var_dict["e"]["rad_conv_factor"]
     var_dict["e"]["data"][vr] = var_dict["e"]["data"][vr].mask(
-        var_dict["e"]["data"][vr] <  1e-5, np.nan)
+        var_dict["e"]["data"][vr] < 1e-5, np.nan)
 
     # --- THAAO ---
     if inpt.datasets['THAAO']['switch']:
@@ -273,7 +238,7 @@ def read_lw_down():
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
         lw_down_t = var_dict["t"]["data"][vr].mask(
-            var_dict["t"]["data"][vr] <  1e-5, np.nan)
+            var_dict["t"]["data"][vr] < 1e-5, np.nan)
         var_dict["t"]["data"][vr] = lw_down_t
 
     # --- Sigma-A ---
@@ -316,7 +281,7 @@ def read_lw_up():
     vr = "lw_up"
     var_dict = inpt.extr[vr]
     lw_up_c = lw_down_c - lw_net_c
-    lw_up_c = lw_up_c.mask(lw_up_c <  1e-5, np.nan)
+    lw_up_c = lw_up_c.mask(lw_up_c < 1e-5, np.nan)
     lw_up_c.name = vr
     var_dict["c"]["data"] = pd.DataFrame({vr: lw_up_c})
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
@@ -332,7 +297,7 @@ def read_lw_up():
     vr = "lw_up"
     var_dict = inpt.extr[vr]
     lw_up_e = lw_down_e - lw_net_e
-    lw_up_e = lw_up_e.mask(lw_up_e <  1e-5, np.nan)
+    lw_up_e = lw_up_e.mask(lw_up_e < 1e-5, np.nan)
     lw_up_e.name = vr
     var_dict["e"]["data"] = pd.DataFrame({vr: lw_up_e})
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
@@ -345,7 +310,7 @@ def read_lw_up():
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
         lw_up_t = var_dict["t"]["data"][vr].mask(
-            var_dict["t"]["data"][vr] <  1e-5, np.nan)
+            var_dict["t"]["data"][vr] < 1e-5, np.nan)
         var_dict["t"]["data"][vr] = lw_up_t
 
     # --- Sigma-A ---
@@ -550,7 +515,7 @@ def read_sw_down():
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
     var_dict["c"]["data"][vr] /= inpt.var_dict["c"]["rad_conv_factor"]
     var_dict["c"]["data"][vr] = var_dict["c"]["data"][vr].mask(
-        var_dict["c"]["data"][vr] <  1e-5, np.nan)
+        var_dict["c"]["data"][vr] < 1e-5, np.nan)
 
     # --- ERA5 ---
     vr = "sw_down"
@@ -559,7 +524,7 @@ def read_sw_down():
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
     var_dict["e"]["data"][vr] /= inpt.var_dict["e"]["rad_conv_factor"]
     var_dict["e"]["data"][vr] = var_dict["e"]["data"][vr].mask(
-        var_dict["e"]["data"][vr] <  1e-5, np.nan)
+        var_dict["e"]["data"][vr] < 1e-5, np.nan)
 
     # --- THAAO ---
     vr = "sw_down"
@@ -567,7 +532,7 @@ def read_sw_down():
     if inpt.datasets['THAAO']['switch']:
         rd_ft.read_rad(vr)
         var_dict["t"]["data"][vr] = var_dict["t"]["data"][vr].mask(
-            var_dict["t"]["data"][vr] <  1e-5, np.nan)
+            var_dict["t"]["data"][vr] < 1e-5, np.nan)
         var_dict["t"]["data"][vr] = var_dict["t"]["data"][vr]
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
@@ -633,7 +598,7 @@ def read_sw_up():
     read_sw_down()
     sw_down_c = var_dict["c"]["data"][vr]
     sw_down_e = var_dict["e"]["data"][vr]
-    
+
     # --- CARRA ---
     vr = "sw_net"
     var_dict = inpt.extr[vr]
@@ -645,7 +610,7 @@ def read_sw_up():
     vr = "sw_up"
     var_dict = inpt.extr[vr]
     sw_up_c = sw_down_c - sw_net_c
-    sw_up_c = sw_up_c.mask(sw_up_c <  1e-5, np.nan)
+    sw_up_c = sw_up_c.mask(sw_up_c < 1e-5, np.nan)
     sw_up_c.name = vr
     var_dict["c"]["data"] = pd.DataFrame({vr: sw_up_c})
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
@@ -661,7 +626,7 @@ def read_sw_up():
     vr = "sw_up"
     var_dict = inpt.extr[vr]
     sw_up_e = sw_down_e - sw_net_e
-    sw_up_e = sw_up_e.mask(sw_up_e <  1e-5, np.nan)
+    sw_up_e = sw_up_e.mask(sw_up_e < 1e-5, np.nan)
     sw_up_e.name = vr
     var_dict["e"]["data"] = pd.DataFrame({vr: sw_up_e})
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)

@@ -252,6 +252,72 @@ def read_aws_ecapac(vr):
     inpt.extr[vr]["t2"]["data"] = df_all
 
 
+def read_iwv_rs(vr):
+    t2 = pd.DataFrame()
+    df_all = pd.DataFrame()
+    count = 0
+
+    # Try loading from per-year parquet files
+    for year in inpt.years:
+        path_out, _ = tls.get_common_paths(vr, year, "RS")
+        if os.path.exists(path_out):
+            df_tmp = pd.read_parquet(path_out)
+            df_all = pd.concat([df_all, df_tmp])
+            print(f"Loaded {path_out}")
+            count += 1
+
+    # If not all years found, read raw .dat files
+    if count < len(inpt.years):
+        for year in inpt.years:
+            files = os.listdir(
+                Path(inpt.basefol["t"]['base']) / "thaao_rs_sondes" / "txt" / f'{year}' /
+                "*.txt")
+            for f in files:
+                try:
+                    file_date = dt.datetime.strptime(
+                        f[9:22], '%Y%m%d_%H%M')
+                    df = pd.read_table(
+                        f,
+                        skiprows=17, skipfooter=1, header=None, delimiter=" ", engine='python',
+                        names=['height', 'pres', 'temp', 'rh'], usecols=[0, 1, 2, 3],
+                        na_values="nan"
+                    )
+                    df.loc[(df['pres'] > 1013) | (
+                        df['pres'] < 0), 'pres'] = np.nan
+                    df.loc[(df['height'] < 0), 'height'] = np.nan
+                    df.loc[(df['temp'] < -100) |
+                           (df['temp'] > 30), 'temp'] = np.nan
+                    df.loc[(df['rh'] < 1.) | (
+                        df['rh'] > 120), 'rh'] = np.nan
+                    df.dropna(subset=['temp', 'pres', 'rh'], inplace=True)
+                    df.drop_duplicates(subset=['height'], inplace=True)
+
+                    min_pres = df['pres'].min()
+                    min_index = df[df['pres'] == min_pres].index.min()
+                    df = df.iloc[:min_index]
+                    df = df.set_index('height')
+
+                    iwv = tls.convert_rs_to_iwv(df, 1.01)
+                    t2 = pd.concat(
+                        [t2, pd.DataFrame(index=[file_date], data=[iwv.magnitude])])
+
+                except FileNotFoundError:
+                    print(f'NOT FOUND: year {year}')
+            print(f'OK: year {year}')
+        t2.columns = [vr]
+
+    # Save per-year data
+    for year in inpt.years:
+        df_year = df_all[df_all.index.year == year]
+        if not df_year.empty:
+            path_out, _ = tls.get_common_paths(vr, year, "IWV_VESPA")
+            df_year.to_parquet(path_out)
+            print(f"Saved {path_out}")
+
+    # Store final result
+    inpt.extr[vr]["t2"]["data"] = df_all
+
+
 def read_iwv_vespa(vr):
     df_all = pd.DataFrame()
     count = 0
