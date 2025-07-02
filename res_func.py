@@ -36,7 +36,7 @@ def get_closest_subset_with_tolerance(df, freq, tol_minutes):
     Parameters:
     -----------
     df : pandas.DataFrame
-        Time-indexed DataFrame to subset.
+        Time-indexed DataFrame to subset. Assumes df.index is sorted DatetimeIndex.
     freq : str
         Frequency string compatible with pandas date_range (e.g. '3H', '1H').
     tol_minutes : float
@@ -47,22 +47,41 @@ def get_closest_subset_with_tolerance(df, freq, tol_minutes):
     pandas.DataFrame
         Subset of df containing rows closest to target times within tolerance.
     """
+    if df.empty:
+        return df.copy()
+
+    # Generate target timestamps
     target_times = pd.date_range(
         start=df.index.min(), end=df.index.max(), freq=freq)
-    selected_indices = []
+    if len(target_times) == 0:
+        return df.iloc[0:0]  # empty df with same columns
 
-    for tt in target_times:
-        pos = df.index.get_indexer(
-            [tt], method='nearest')[0]
-        closest_time = df.index[pos]
-        diff_minutes = abs(
-            (closest_time - tt).total_seconds()) / 60
+    # Use get_indexer with 'nearest' method in vectorized way
+    pos_array = df.index.get_indexer(target_times, method='nearest')
 
-        if diff_minutes <= tol_minutes:
-            selected_indices.append(pos)
+    # Filter positions that are valid (get_indexer returns -1 if no match)
+    valid_mask = pos_array != -1
+    pos_array = pos_array[valid_mask]
+    target_times = target_times[valid_mask]
 
-    unique_indices = sorted(set(selected_indices))
-    return df.iloc[unique_indices]
+    # Calculate time differences in minutes (absolute)
+    closest_times = df.index[pos_array]
+    diffs = np.abs((closest_times - target_times).total_seconds()) / 60
+
+    # Select indices where difference is within tolerance
+    within_tol_mask = diffs <= tol_minutes
+    final_positions = pos_array[within_tol_mask]
+
+    # Remove duplicates while preserving order
+    unique_positions = []
+    seen = set()
+    for p in final_positions:
+        if p not in seen:
+            unique_positions.append(p)
+            seen.add(p)
+
+    # Return subset of df
+    return df.iloc[unique_positions]
 
 
 def data_resampling(vr):
