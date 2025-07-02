@@ -62,14 +62,21 @@ def get_closest_subset_with_tolerance(df, freq, tol_minutes):
     # Filter positions that are valid (get_indexer returns -1 if no match)
     valid_mask = pos_array != -1
     pos_array = pos_array[valid_mask]
-    target_times = target_times[valid_mask]
+    target_times = pd.date_range(
+    start=df.index.min().normalize(),  # midnight
+    end=df.index.max(),
+    freq=freq)
 
-    # Calculate time differences in minutes (absolute)
     closest_times = df.index[pos_array]
-    diffs = np.abs((closest_times - target_times).total_seconds()) / 60
-
-    # Select indices where difference is within tolerance
+    target_times_trimmed = target_times  # already masked above
+    
+    # Make sure arrays match in length
+    if len(closest_times) != len(target_times_trimmed):
+        raise ValueError("Length mismatch: closest_times and target_times")
+    
+    diffs = np.abs((closest_times - target_times_trimmed).total_seconds()) / 60
     within_tol_mask = diffs <= tol_minutes
+    
     final_positions = pos_array[within_tol_mask]
 
     # Remove duplicates while preserving order

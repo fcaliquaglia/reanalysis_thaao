@@ -83,7 +83,7 @@ def read_alb():
 
     # --- Sigma-A ---
     if inpt.datasets['Sigma-A']['switch']:
-        rd_fsa.read_sigmaa_weather(vr)
+        rd_fsa.read_weather(vr)
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
 
@@ -504,7 +504,7 @@ def read_sw_down():
 
     # --- Sigma-A ---
     if inpt.datasets['Sigma-A']['switch']:
-        rd_fsa.read_sigmaa_weather(vr)
+        rd_fsa.read_weather(vr)
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
 
