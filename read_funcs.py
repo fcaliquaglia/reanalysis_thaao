@@ -174,20 +174,19 @@ def read_lw_down():
     var_dict = inpt.extr[vr]
     rd_frea.read_rean(vr, "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
-    lw_down_c = var_dict["c"]["data"][vr].mask(
+    var_dict["c"]["data"][vr] /= inpt.var_dict["c"]["rad_conv_factor"]
+    var_dict["c"]["data"][vr] = var_dict["c"]["data"][vr].mask(
         var_dict["c"]["data"][vr] <  1e-5, np.nan)
-    lw_down_c /= inpt.var_dict["c"]["rad_conv_factor"]
-    var_dict["c"]["data"][vr] = lw_down_c
 
     # --- ERA5 ---
     vr = "lw_down"
     var_dict = inpt.extr[vr]
     rd_frea.read_rean("lw_down", "e")
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
-    lw_down_e = var_dict["e"]["data"][vr].mask(
+
+    var_dict["e"]["data"][vr] /= inpt.var_dict["e"]["rad_conv_factor"]
+    var_dict["e"]["data"][vr] = var_dict["e"]["data"][vr].mask(
         var_dict["e"]["data"][vr] <  1e-5, np.nan)
-    lw_down_e /= inpt.var_dict["e"]["rad_conv_factor"]
-    var_dict["e"]["data"][vr] = lw_down_e
 
     # --- THAAO ---
     if inpt.datasets['THAAO']['switch']:
@@ -266,9 +265,9 @@ def read_lw_up():
         rd_ft.read_rad(vr)
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
-        lw_up_t = var_dict["t"]["data"]
-        lw_up_t[vr] = lw_up_t[vr].mask(lw_up_t[vr] < 0., np.nan)
-        var_dict["t"]["data"] = lw_up_t
+        lw_up_t = var_dict["t"]["data"][vr].mask(
+            var_dict["t"]["data"][vr] <  1e-5, np.nan)
+        var_dict["t"]["data"][vr] = lw_up_t
 
     # --- Sigma-A ---
     if inpt.datasets['Sigma-A']['switch']:
@@ -470,20 +469,18 @@ def read_sw_down():
     var_dict = inpt.extr[vr]
     rd_frea.read_rean(vr, "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
-    sw_down_c = var_dict["c"]["data"][vr].mask(
+    var_dict["c"]["data"][vr] /= inpt.var_dict["c"]["rad_conv_factor"]
+    var_dict["c"]["data"][vr] = var_dict["c"]["data"][vr].mask(
         var_dict["c"]["data"][vr] <  1e-5, np.nan)
-    sw_down_c /= inpt.var_dict["c"]["rad_conv_factor"]
-    var_dict["c"]["data"][vr] = sw_down_c
 
     # --- ERA5 ---
     vr = "sw_down"
     var_dict = inpt.extr[vr]
     rd_frea.read_rean(vr, "e")
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
-    sw_down_e = var_dict["e"]["data"][vr].mask(
+    var_dict["e"]["data"][vr] /= inpt.var_dict["e"]["rad_conv_factor"]
+    var_dict["e"]["data"][vr] = var_dict["e"]["data"][vr].mask(
         var_dict["e"]["data"][vr] <  1e-5, np.nan)
-    sw_down_e /= inpt.var_dict["e"]["rad_conv_factor"]
-    var_dict["e"]["data"][vr] = sw_down_e
 
     # --- THAAO ---
     vr = "sw_down"

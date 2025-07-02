@@ -323,7 +323,7 @@ def process_rean(vr, data_typ, y):
         print(f"Warning: Empty DataFrame for {filename}, skipping write.")
         return
     out_path = os.path.join(
-        inpt.basefol[data_typ]['processed'],
+        inpt.basefol[data_typ]['parquets'],
         f"{inpt.extr[vr][data_typ]['fn']}{inpt.location}_{y}.parquet"
     )
     full_df.to_parquet(out_path)

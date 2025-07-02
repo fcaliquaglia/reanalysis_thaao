@@ -80,14 +80,14 @@ thaao_c = 'carra1'
 thaao_e = 'era5_NG'
 thaao_t = 'thaao'
 
-met = ['temp', 'surf_pres', 'rh']  # , 'iwv']
+met = ['iwv', 'temp', 'surf_pres', 'rh']  # , 'iwv']
 rad = ['sw_up', 'lw_up', 'lw_down', 'sw_down',  'alb']
 clouds = ['lwp', 'cbh', 'tcc', 'precip']
 extra = ['winds', 'windd']
 
 ##
 tres_list = ['original', '24h'] # ['original', '3h', '24h']
-list_var =  met + rad + clouds + extra  # + clouds
+list_var =  met # + rad + clouds + extra  # + clouds
 
 
 tres = ''

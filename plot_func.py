@@ -149,22 +149,16 @@ def plot_residuals(period_label):
                    color='black', lw=2, ls='--')
 
         # Plot residuals (component - reference) for the year
-        for comp_var in comps:
-            if not inpt.tres == 'original':
-                tres = inpt.tres
-            else:
-                if comp_var == 'c':
-                    tres = '3h'
-                if comp_var == 'e':
-                    tres = '1h'
+        for comp in comps:
+            tres=get_tres(comp)
             ref_data_res = var_data[ref_x]['data_res'][tres][inpt.var]
             null, chck = tls.check_empty_df(
                 var_data[ref_x]['data_res'][tres][inpt.var], inpt.var)
             if chck:
                 return
-            comp_data_res = var_data[comp_var]['data_res'][tres][inpt.var]
+            comp_data_res = var_data[comp]['data_res'][tres][inpt.var]
             null, chck = tls.check_empty_df(
-                var_data[comp_var]['data_res'][tres][inpt.var], inpt.var)
+                var_data[comp]['data_res'][tres][inpt.var], inpt.var)
             if chck:
                 continue
             mask_comp = comp_data_res.index.year == year
@@ -172,8 +166,8 @@ def plot_residuals(period_label):
             if mask_comp.any() and mask_ref.any():
                 residuals = comp_data_res.loc[mask_comp] - \
                     ref_data_res.loc[mask_ref]
-                ax[i].plot(residuals, color=inpt.var_dict[comp_var]['col'],
-                           label=inpt.var_dict[comp_var]['label'], **plot_kwargs)
+                ax[i].plot(residuals, color=inpt.var_dict[comp]['col'],
+                           label=inpt.var_dict[comp]['label'], **plot_kwargs)
 
         # Format axis (assuming format_ts accepts residuals flag)
         format_ts(ax, year, i, residuals=True)
@@ -210,13 +204,7 @@ def plot_scatter(period_label):
 
     control = 0
     for i, comp in enumerate(comps):
-        if not inpt.tres == 'original':
-            tres = inpt.tres
-        else:
-            if comp == 'c':
-                tres = '3h'
-            if comp == 'e':
-                tres = '1h'
+        tres=get_tres(comp)
         # Preprocess time and data
         x = var_data[ref_x]['data_res'][tres][inpt.var]
         time_range = pd.date_range(
@@ -389,14 +377,7 @@ def plot_scatter_cum():
             print(f"SCATTERPLOTS CUMULATIVE {period_label}")
 
             for i, comp in enumerate(comps):
-
-                if not inpt.tres == 'original':
-                    tres = inpt.tres
-                else:
-                    if comp == 'c':
-                        tres = '3h'
-                    if comp == 'e':
-                        tres = '1h'
+                tres=get_tres(comp)
                 # Preprocess time and data
                 x = var_data[ref_x]['data_res'][tres][inpt.var]
                 time_range = pd.date_range(
@@ -559,7 +540,11 @@ def frame_and_axis_removal(ax, len_comps):
         ax[idx].get_xaxis().set_visible(False)
         ax[idx].get_yaxis().set_visible(False)
 
-
+def get_tres(comp):
+    if inpt.tres != 'original':
+        return inpt.tres
+    return '3h' if comp == 'c' else '1h'
+    
 # def plot_ba(period_label):
 #     """
 #
