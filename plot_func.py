@@ -221,8 +221,8 @@ def plot_scatter(period_label):
     x_all = x.reindex(time_range).astype(float)
     season_months = inpt.seass[period_label]['months']
     x_season = x_all.loc[x_all.index.month.isin(season_months)]
-    
-    control=0
+
+    control = 0
     for i, comp in enumerate(comps):
         y = var_data[comp]['data_res'][inpt.var].reindex(
             time_range).astype(float)
@@ -264,9 +264,11 @@ def plot_scatter(period_label):
                     colors = cmap(np.linspace(0, 1, cmap.N))
                     colors[0] = [1, 1, 1, 1]  # RGBA for white
                     new_cmap = mcolors.ListedColormap(colors)
-                    
-                    bin_edges = np.linspace(var_data['min'], var_data['max'], var_data['bin_nr'])
-                    bin_size = (var_data['max'] - var_data['min']) / var_data['bin_nr']
+
+                    bin_edges = np.linspace(
+                        var_data['min'], var_data['max'], var_data['bin_nr'])
+                    bin_size = (var_data['max'] -
+                                var_data['min']) / var_data['bin_nr']
                     h = axs[i].hist2d(
                         x_valid, y_valid,
                         bins=[bin_edges, bin_edges],
@@ -278,18 +280,19 @@ def plot_scatter(period_label):
                         0.10, 0.90, f"bin_size={bin_size:.3f}", transform=axs[i].transAxes)
                     from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
-                    while control==0:
+                    while control == 0:
                         cax = inset_axes(axs[3],
-                                     width="100%",
-                                     height="40%",
-                                     bbox_to_anchor=(0.2, 0.85, 0.6, 0.1),
-                                     bbox_transform=axs[3].transAxes,
-                                     borderpad=0)
-                
-                        cbar = fig.colorbar(h[3], cax=cax, orientation='horizontal')
+                                         width="100%",
+                                         height="40%",
+                                         bbox_to_anchor=(0.2, 0.85, 0.6, 0.1),
+                                         bbox_transform=axs[3].transAxes,
+                                         borderpad=0)
+
+                        cbar = fig.colorbar(
+                            h[3], cax=cax, orientation='horizontal')
                         cbar.set_label('Counts')
-                        control=1
-                    
+                        control = 1
+
         if valid_idx.sum() >= 2:
             calc_draw_fit(axs, i, x_valid, y_valid, period_label)
         else:

@@ -9,7 +9,7 @@ import inputs as inpt
 import tools as tls
 
 
-def read_thaao_weather(vr):
+def read_weather(vr):
 
     df_all = pd.DataFrame()
     count = 0
@@ -45,7 +45,7 @@ def read_thaao_weather(vr):
     inpt.extr[vr]["t"]["data"] = df_all
 
 
-def read_thaao_rad(vr):
+def read_rad(vr):
     df_all = pd.DataFrame()
     count = 0
 
@@ -94,7 +94,7 @@ def read_thaao_rad(vr):
     inpt.extr[vr]["t"]["data"] = df_all
 
 
-def read_thaao_hatpro(vr):
+def read_hatpro(vr):
     df_all = pd.DataFrame()
     count = 0
 
@@ -142,7 +142,7 @@ def read_thaao_hatpro(vr):
     inpt.extr[vr]["t1"]["data"] = df_all
 
 
-def read_thaao_ceilometer(vr):
+def read_ceilometer(vr):
     df_all = pd.DataFrame()
     count = 0
 
@@ -194,7 +194,7 @@ def read_thaao_ceilometer(vr):
     inpt.extr[vr]["t"]["data"] = df_all
 
 
-def read_thaao_aws_ecapac(vr):
+def read_aws_ecapac(vr):
     df_all = pd.DataFrame()
     count = 0
 

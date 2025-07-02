@@ -56,10 +56,12 @@ def read_villum_weather(vr):
         }
 
         try:
-            df = pd.read_csv(csv_file, sep=';', parse_dates=['DateTime'], dayfirst=True)
+            df = pd.read_csv(csv_file, sep=';', parse_dates=[
+                             'DateTime'], dayfirst=True)
             df.rename(columns=column_map, inplace=True)
             df.set_index('datetime', inplace=True)
-            df.drop(columns=[col for col in [None] if col in df.columns], inplace=True)
+            df.drop(columns=[col for col in [None]
+                    if col in df.columns], inplace=True)
             if vr not in df.columns:
                 print(f"Variable '{vr}' not found in the dataset.")
                 return

@@ -5,7 +5,7 @@ import inputs as inpt
 import tools as tls
 
 
-def read_sigmaa_weather(vr):
+def read_weather(vr):
 
     df_all = pd.DataFrame()
     cached_years = 0

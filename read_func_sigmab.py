@@ -1,12 +1,11 @@
 from pathlib import Path
 import os
-import numpy as np
 import pandas as pd
 import inputs as inpt
 import tools as tls
 
 
-def read_sigmab_weather(vr):
+def read_weather(vr):
 
     df_all = pd.DataFrame()
     cached_years = 0
