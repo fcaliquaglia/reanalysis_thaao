@@ -332,7 +332,7 @@ def plot_scatter_cum():
 
     comps_all = var_data['comps']
     comps = tls.plot_vars_cleanup(comps_all, var_data)
-    
+    ref_x = var_data['ref_x']
     frame_and_axis_removal(axs, len(comps))
 
     if inpt.datasets['dropsondes']['switch']:
@@ -340,10 +340,7 @@ def plot_scatter_cum():
         print(f"SCATTERPLOTS CUMULATIVE {period_label}")
 
         for i, comp in enumerate(comps):
-
-            ref_x = var_data['ref_x']
             x = var_data[ref_x]['data_res'][inpt.tres][inpt.var]
-
 
             # Prepare full time range for reindexing once
             time_range = pd.date_range(
@@ -392,7 +389,7 @@ def plot_scatter_cum():
             print(f"SCATTERPLOTS CUMULATIVE {period_label}")
 
             for i, comp in enumerate(comps):
-                
+
                 if not inpt.tres == 'original':
                     tres = inpt.tres
                 else:
@@ -413,7 +410,7 @@ def plot_scatter_cum():
                 y = var_data[comp]['data_res'][tres][inpt.var].reindex(
                     time_range).astype(float)
                 y_season = y.loc[y.index.month.isin(season_months)]
-        
+
                 valid_idx = ~(x_season.isna() | y_season.isna())
                 x_valid, y_valid = x_season[valid_idx], y_season[valid_idx]
 
