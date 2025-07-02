@@ -78,7 +78,7 @@ def plot_ts(period_label):
                 continue
             if chck:
                 continue
-            data_ori = var_data[data_typ]['data_res']['native'][inpt.var]
+            data_ori = var_data[data_typ]['data_res']['original'][inpt.var]
             mask_ori = data_ori.index.year == year
             if mask_ori.any():
                 ax[i].plot(data_ori.loc[mask_ori],

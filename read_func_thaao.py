@@ -228,10 +228,10 @@ def read_aws_ecapac(vr):
                     index_col="TIMESTAMP"
                 ).iloc[1:]
                 df.index = pd.to_datetime(df.index)
-                df.index.name='datetime'
                 df = df[[inpt.extr[vr]["t2"]["column"]]].astype(float).rename(
                     columns={inpt.extr[vr]["t2"]["column"]: vr}
                 )
+                df.index.name='datetime'
                 t_all.append(df)
                 print(f"OK: {file.name}")
             except (FileNotFoundError, pd.errors.EmptyDataError):

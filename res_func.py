@@ -50,45 +50,37 @@ def get_closest_subset_with_tolerance(df, freq, tol_minutes):
     if df.empty:
         return df.copy()
 
-    # Generate target timestamps
-    target_times = pd.date_range(
-        start=df.index.min(), end=df.index.max(), freq=freq)
+    # Generate target timestamps ONCE
+    target_times = pd.date_range(start=df.index.min(), end=df.index.max(), freq=freq)
     if len(target_times) == 0:
-        return df.iloc[0:0]  # empty df with same columns
+        return df.iloc[0:0]  # return empty df with same columns
 
-    # Use get_indexer with 'nearest' method in vectorized way
+    # Get closest index positions
     pos_array = df.index.get_indexer(target_times, method='nearest')
 
-    # Filter positions that are valid (get_indexer returns -1 if no match)
+    # Remove invalid positions
     valid_mask = pos_array != -1
     pos_array = pos_array[valid_mask]
-    target_times = pd.date_range(
-    start=df.index.min().normalize(),  # midnight
-    end=df.index.max(),
-    freq=freq)
+    target_times = target_times[valid_mask]
 
     closest_times = df.index[pos_array]
-    target_times_trimmed = target_times  # already masked above
-    
-    # Make sure arrays match in length
-    if len(closest_times) != len(target_times_trimmed):
-        raise ValueError("Length mismatch: closest_times and target_times")
-    
-    diffs = np.abs((closest_times - target_times_trimmed).total_seconds()) / 60
+
+    # Ensure arrays match in length
+    if len(closest_times) != len(target_times):
+        raise ValueError("Length mismatch after masking")
+
+    # Compute time differences
+    diffs = np.abs((closest_times - target_times).total_seconds()) / 60
     within_tol_mask = diffs <= tol_minutes
-    
+
     final_positions = pos_array[within_tol_mask]
 
     # Remove duplicates while preserving order
-    unique_positions = []
     seen = set()
-    for p in final_positions:
-        if p not in seen:
-            unique_positions.append(p)
-            seen.add(p)
+    unique_positions = [p for p in final_positions if not (p in seen or seen.add(p))]
 
-    # Return subset of df
     return df.iloc[unique_positions]
+
 
 
 def data_resampling(vr):
@@ -109,13 +101,13 @@ def data_resampling(vr):
     - For each component (`vvrr`):
         - Checks if the data DataFrame is empty via `tls.check_empty_df`.
         - If data is not empty:
-            - If `inpt.tres` (time resolution) is 'native':
+            - If `inpt.tres` (time resolution) is 'original':
                 - For components 'c' or 'e', copies the data as is without resampling.
                 - For components 't', 't1', 't2', extracts data closest to every 3-hour and 1-hour timestamps,
                   within tolerances of ±30 minutes for 3-hour intervals and ±10 minutes for 1-hour intervals.
                   Also stores the native data without modification.
                 - For any other components, copies data without resampling.
-            - If `inpt.tres` is not 'native':
+            - If `inpt.tres` is not 'original':
                 - If dropsondes resampling switch is ON, copies data without resampling.
                 - Otherwise, resamples data using `.resample(inpt.tres).mean()`.
         - If data is empty, copies data without resampling and logs a message.
@@ -152,18 +144,18 @@ def data_resampling(vr):
                 inpt.extr[vr][vvrr]['data_res'] = resampled_data
                 return
             if vvrr in ['c']:
-                # Direct copy for these components at native resolution
+                # Direct copy for these components at original resolution
                 resampled_data = {}
-                resampled_data['native'] = data
+                resampled_data['original'] = data
                 resampled_data['3h'] =  data
                 resampled_data['24h'] = data.resample('24h').mean()
                 inpt.extr[vr][vvrr]['data_res'] = resampled_data
                 print(
                     f'Copied data for {vvrr}, {vr} at different time resolutions')
             if vvrr in ['e']:
-                # Direct copy for these components at native resolution
+                # Direct copy for these components at original resolution
                 resampled_data = {}
-                resampled_data['native'] = data
+                resampled_data['original'] = data
                 resampled_data['3h'] =  data.resample('3h').mean()
                 resampled_data['24h'] = data.resample('24h').mean()
                 inpt.extr[vr][vvrr]['data_res'] = resampled_data
@@ -172,7 +164,7 @@ def data_resampling(vr):
             elif vvrr in ['t', 't1', 't2']:
                 # Extract closest timestamps within tolerance windows for specific time intervals
                 resampled_data = {}
-                resampled_data['native'] = data
+                resampled_data['original'] = data
                 resampled_data['1h'] = get_closest_subset_with_tolerance(
                     data, '1h', tol_minutes=10)
                 resampled_data['3h'] = get_closest_subset_with_tolerance(
