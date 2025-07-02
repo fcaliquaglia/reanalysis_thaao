@@ -150,20 +150,23 @@ def plot_residuals(period_label):
 
         # Plot residuals (component - reference) for the year
         for comp_var in comps:
-            comp_data_res = var_data[comp_var]['data_res'][inpt.tres][inpt.var]
-            null, chck = tls.check_empty_df(
-                var_data[comp_var]['data_res'][inpt.tres][inpt.var], inpt.var)
-            if chck:
-                continue
-            if comp_var=='c':
-                tres='3h'
-            if comp_var=='e':
-                tres='1h'
+            if not inpt.tres=='original':
+                tres=inpt.tres
+            else:
+                if comp_var=='c':
+                    tres='3h'
+                if comp_var=='e':
+                    tres='1h'
             ref_data_res = var_data[ref_x]['data_res'][tres][inpt.var]
             null, chck = tls.check_empty_df(
                 var_data[ref_x]['data_res'][tres][inpt.var], inpt.var)
             if chck:
                 return
+            comp_data_res = var_data[comp_var]['data_res'][tres][inpt.var]
+            null, chck = tls.check_empty_df(
+                var_data[comp_var]['data_res'][tres][inpt.var], inpt.var)
+            if chck:
+                continue
             mask_comp = comp_data_res.index.year == year
             mask_ref = ref_data_res.index.year == year
             if mask_comp.any() and mask_ref.any():

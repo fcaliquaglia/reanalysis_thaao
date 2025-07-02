@@ -30,52 +30,46 @@ import numpy as np
 
 def get_closest_subset_with_tolerance(df, freq, tol_minutes):
     """
-    Select rows from df whose timestamps are closest to regular intervals
-    at frequency 'freq', but only include if the closest is within tol_minutes.
+    Selects rows closest to regular timestamps (e.g., every 3 hours from 00:00), 
+    only if within a time tolerance.
 
     Parameters:
     -----------
-    df : pandas.DataFrame
-        Time-indexed DataFrame to subset. Assumes df.index is sorted DatetimeIndex.
+    df : pd.DataFrame
+        DataFrame with a DatetimeIndex.
     freq : str
-        Frequency string compatible with pandas date_range (e.g. '3H', '1H').
+        Target frequency like '1H', '3H'.
     tol_minutes : float
-        Maximum allowed difference in minutes between target timestamp and closest timestamp.
+        Maximum allowed time difference in minutes from the ideal target times.
 
     Returns:
     --------
-    pandas.DataFrame
-        Subset of df containing rows closest to target times within tolerance.
+    pd.DataFrame
+        Subset of df with rows closest to ideal timestamps, within tolerance.
     """
     if df.empty:
         return df.copy()
 
-    # Generate target timestamps ONCE
-    target_times = pd.date_range(start=df.index.min(), end=df.index.max(), freq=freq)
-    if len(target_times) == 0:
-        return df.iloc[0:0]  # return empty df with same columns
+    # Generate aligned time grid (e.g., 00:00, 03:00...) across data span
+    start_time = df.index.min().normalize()  # midnight of first day
+    end_time = df.index.max()
+    target_times = pd.date_range(start=start_time, end=end_time, freq=freq)
 
-    # Get closest index positions
+    # Get closest real data points to each target
     pos_array = df.index.get_indexer(target_times, method='nearest')
-
-    # Remove invalid positions
     valid_mask = pos_array != -1
+
     pos_array = pos_array[valid_mask]
     target_times = target_times[valid_mask]
-
     closest_times = df.index[pos_array]
 
-    # Ensure arrays match in length
-    if len(closest_times) != len(target_times):
-        raise ValueError("Length mismatch after masking")
-
-    # Compute time differences
-    diffs = np.abs((closest_times - target_times).total_seconds()) / 60
-    within_tol_mask = diffs <= tol_minutes
+    # Check distances and apply tolerance
+    time_diffs = np.abs((closest_times - target_times).total_seconds()) / 60
+    within_tol_mask = time_diffs <= tol_minutes
 
     final_positions = pos_array[within_tol_mask]
 
-    # Remove duplicates while preserving order
+    # Deduplicate (preserve order)
     seen = set()
     unique_positions = [p for p in final_positions if not (p in seen or seen.add(p))]
 
