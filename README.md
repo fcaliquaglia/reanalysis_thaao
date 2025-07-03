@@ -204,7 +204,6 @@ Excluding nan values. x(t): reference value; y(t): reanalysis or other
 - CARRA:``10m_wind_direction``
 - ERA-5: ``10m_u_component_of_wind`` + ``10m_v_component_of_wind`` (descrivere processo per ottenere velocità e
   direzione)
-- THAAO (vespa):
 - THAAO (aws_ECAPAC):
 
 ### Wind Speed (``winds``)
@@ -262,39 +261,32 @@ from https://confluence.ecmwf.int/display/CKB/ERA5-Land%3A+data+documentation#ER
 - ERA-5: ``surface_net_thermal_radiation`` + ``surface_thermal_radiation_downwards``
 - THAAO (pyranometers): ``ULI``
 
-### Surface albedo (``alb``)
+## CLOUDS & ATMOSPHERE
 
-- CARRA: ``albedo`` (forecast).
-- ERA-5: ``forecast_albedo`` (also ``snow_albedo``)
-- THAAO (pyrgeometers): ``DSI``+``USI``
-
-## CLOUD & ATMOSPHERE
-
-## Precipitation (``precip``)
+### Precipitation (``precip``)
 
 - CARRA: ``total_precipitation``
 - ERA-5: ``total_precipitation``
 - THAAO (rain gauge): It is calculated as cumulative value over the resampling time.
 
-## Cloud Base Height (``cbh``)
+### Cloud Base Height (``cbh``)
 
 - CARRA: ``cloud_base``
 - ERA-5: ``cloud_base_height``
 - THAAO (ceilometer): ``tcc`` CBH is calculated as the median value over 1 h form the original 15 s time resolution,
   then averaged for the comparison.
 
-## Total Cloud Cover (``tcc``)
+### Total Cloud Cover (``tcc``)
 
 - CARRA: ``total_cloud_cover``
 - ERA-5: ``total_cloud_cover``
 - THAAO (ceilometer): ``cbh`` (lowermost level)
 
-## Liquid Water Path - LWP (``lwp``)
+### Liquid Water Path - LWP (``lwp``)
 
 > [!CAUTION]
-> LWP values have issues, at least for CARRA which has been divided by 10E-06 instead of 10e-03 as expected from the
-> declared uom. All LWP values have been masked to nan for LWP<0.0. Perhaps HATPRO
+> CARRA LWP values have issues.
 
 - CARRA: ``total_column_cloud_liquid_water``
 - ERA-5: ``total_column_cloud_liquid_water``
-- THAAO (hatpro): ???
+- THAAO (hatpro): LWP
