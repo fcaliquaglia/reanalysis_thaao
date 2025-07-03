@@ -84,14 +84,16 @@ def plot_ts(period_label):
             data_ori = var_data[data_typ]['data_res']['original'][inpt.var]
             mask_ori = data_ori.index.year == year
             if mask_ori.any():
-                ax[i].plot(data_ori.loc[mask_ori],
+                data_ori_ = data_ori.loc[mask_ori].dropna()
+                ax[i].plot(data_ori_,
                            color=inpt.var_dict[data_typ]['col_ori'], **kwargs_ori)
 
             # Resampled data for the year
             data_res = var_data[data_typ]['data_res'][inpt.tres][inpt.var]
             mask_res = data_res.index.year == year
             if mask_res.any():
-                ax[i].plot(data_res.loc[mask_res], color=inpt.var_dict[data_typ]['col'],
+                data_res_ = data_res.loc[mask_res].dropna()
+                ax[i].plot(data_res_, color=inpt.var_dict[data_typ]['col'],
                            label=inpt.var_dict[data_typ]['label'], **kwargs_res)
 
         # Format the subplot axes (assuming this function is defined elsewhere)
@@ -123,7 +125,7 @@ def plot_residuals(period_label):
     fig.suptitle(str_name, fontweight='bold')
     fig.subplots_adjust(top=0.93)
 
-    plot_kwargs = {'lw': 1, 'marker': '.', 'ms': 0}
+    plot_kwargs = {'marker': '.'}
 
     var_data = inpt.extr[inpt.var]
     comps_all = var_data['comps']
@@ -158,8 +160,10 @@ def plot_residuals(period_label):
             if mask_comp.any() and mask_ref.any():
                 residuals = comp_data_res.loc[mask_comp] - \
                     ref_data_res.loc[mask_ref]
-                ax[i].plot(residuals, color=inpt.var_dict[comp]['col'],
-                           label=inpt.var_dict[comp]['label'], **plot_kwargs)
+                residuals = residuals.dropna()
+                ax[i].scatter(residuals.index,
+                              residuals.values, color=inpt.var_dict[comp]['col'],
+                              label=inpt.var_dict[comp]['label'], **plot_kwargs)
 
         # Format axis
         format_ts(ax, year, i, residuals=True)
@@ -207,11 +211,11 @@ def plot_scatter(period_label):
                 freq=tres
             )
         else:
-            target_times =          time_range = pd.date_range(
-                        start=pd.Timestamp(inpt.years[0], 1, 1),
-                        end=pd.Timestamp(inpt.years[-1], 12, 31, 23, 59),
-                        freq=tres
-                    ) + pd.Timedelta(hours=1)
+            target_times = time_range = pd.date_range(
+                start=pd.Timestamp(inpt.years[0], 1, 1),
+                end=pd.Timestamp(inpt.years[-1], 12, 31, 23, 59),
+                freq=tres
+            ) + pd.Timedelta(hours=1)
 
         x_all = x.reindex(time_range).astype(float)
         season_months = inpt.seass[period_label]['months']
@@ -320,6 +324,7 @@ def plot_scatter_cum():
     comps_all = var_data['comps']
     comps = tls.plot_vars_cleanup(comps_all, var_data)
     ref_x = var_data['ref_x']
+    x = var_data[ref_x]['data_res'][inpt.tres][inpt.var]
     frame_and_axis_removal(axs, len(comps))
 
     if inpt.datasets['dropsondes']['switch']:
@@ -327,8 +332,6 @@ def plot_scatter_cum():
         print(f"SCATTERPLOTS CUMULATIVE {period_label}")
 
         for i, comp in enumerate(comps):
-            x = var_data[ref_x]['data_res'][inpt.tres][inpt.var]
-
             # Prepare full time range for reindexing once
             if inpt.var not in ['sw_down', 'sw_up', 'lw_down', 'lw_up']:
                 time_range = pd.date_range(
@@ -337,11 +340,11 @@ def plot_scatter_cum():
                     freq=inpt.tres
                 )
             else:
-                target_times =          time_range = pd.date_range(
-                            start=pd.Timestamp(inpt.years[0], 1, 1),
-                            end=pd.Timestamp(inpt.years[-1], 12, 31, 23, 59),
-                            freq=inpt.tres
-                        ) + pd.Timedelta(hours=1)
+                time_range = pd.date_range(
+                    start=pd.Timestamp(inpt.years[0], 1, 1),
+                    end=pd.Timestamp(inpt.years[-1], 12, 31, 23, 59),
+                    freq=inpt.tres
+                ) + pd.Timedelta(hours=1)
             x_all = x.reindex(time_range).astype(float)
             y = var_data[comp]['data_res'][inpt.tres][inpt.var]
             tolerance = pd.Timedelta(hours=2 if comp == 'e' else 4)
@@ -392,10 +395,10 @@ def plot_scatter_cum():
                     )
                 else:
                     time_range = pd.date_range(
-                                start=pd.Timestamp(inpt.years[0], 1, 1),
-                                end=pd.Timestamp(inpt.years[-1], 12, 31, 23, 59),
-                                freq=tres
-                            ) + pd.Timedelta(hours=1)
+                        start=pd.Timestamp(inpt.years[0], 1, 1),
+                        end=pd.Timestamp(inpt.years[-1], 12, 31, 23, 59),
+                        freq=tres
+                    ) + pd.Timedelta(hours=1)
                 x_all = x.reindex(time_range).astype(float)
                 season_months = inpt.seass[period_label]['months']
                 x_season = x_all.loc[x_all.index.month.isin(season_months)]
