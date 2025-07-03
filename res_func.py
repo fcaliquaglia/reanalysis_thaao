@@ -30,8 +30,9 @@ import numpy as np
 
 def get_closest_subset_with_tolerance(df, freq, tol_minutes):
     """
-    Selects rows closest to regular timestamps (e.g., every 3 hours from 00:00), 
-    only if within a time tolerance.
+    Returns a DataFrame indexed by regular timestamps (e.g., every 3 hours from 00:00),
+    where each row is filled with the closest actual data within a given tolerance.
+    If no data is found within tolerance, the row is NaN.
 
     Parameters:
     -----------
@@ -45,36 +46,38 @@ def get_closest_subset_with_tolerance(df, freq, tol_minutes):
     Returns:
     --------
     pd.DataFrame
-        Subset of df with rows closest to ideal timestamps, within tolerance.
+        New DataFrame with target timestamps as index and data from nearest match (or NaN).
     """
     if df.empty:
-        return df.copy()
+        return pd.DataFrame(columns=df.columns)
 
-    # Generate aligned time grid (e.g., 00:00, 03:00...) across data span
-    start_time = df.index.min().normalize()  # midnight of first day
+    # Create the target time grid
+    start_time = df.index.min().normalize()
     end_time = df.index.max()
     target_times = pd.date_range(start=start_time, end=end_time, freq=freq)
 
-    # Get closest real data points to each target
-    pos_array = df.index.get_indexer(target_times, method='nearest')
-    valid_mask = pos_array != -1
+    # Prepare list of matched rows
+    matched_rows = []
 
-    pos_array = pos_array[valid_mask]
-    target_times = target_times[valid_mask]
-    closest_times = df.index[pos_array]
+    for target_time in target_times:
+        try:
+            pos = df.index.get_indexer([target_time], method='nearest')[0]
+            closest_time = df.index[pos]
+            diff_minutes = abs(
+                (closest_time - target_time).total_seconds()) / 60
 
-    # Check distances and apply tolerance
-    time_diffs = np.abs((closest_times - target_times).total_seconds()) / 60
-    within_tol_mask = time_diffs <= tol_minutes
+            if diff_minutes <= tol_minutes:
+                matched_rows.append(df.iloc[pos].values)
+            else:
+                matched_rows.append([np.nan] * df.shape[1])
 
-    final_positions = pos_array[within_tol_mask]
+        except IndexError:
+            matched_rows.append([np.nan] * df.shape[1])
 
-    # Deduplicate (preserve order)
-    seen = set()
-    unique_positions = [
-        p for p in final_positions if not (p in seen or seen.add(p))]
-
-    return df.iloc[unique_positions]
+    # Build the result DataFrame
+    result_df = pd.DataFrame(
+        matched_rows, index=target_times, columns=df.columns)
+    return result_df
 
 
 def data_resampling(vr):

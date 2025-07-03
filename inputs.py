@@ -80,14 +80,14 @@ thaao_c = 'carra1'
 thaao_e = 'era5_NG'
 thaao_t = 'thaao'
 
-met = ['iwv', 'temp', 'surf_pres', 'rh']  # , 'iwv']
-rad = ['sw_up', 'lw_up', 'lw_down', 'sw_down',  'alb']
+met = ['lwp', 'temp', 'surf_pres', 'rh']  # , 'iwv']
+rad = ['sw_up', 'lw_up', 'lw_down', 'sw_down']
 clouds = ['cbh', 'lwp', 'tcc', 'precip']
 extra = ['winds', 'windd']
 
 ##
 tres_list = ['original', '24h'] # ['original', '3h', '24h']
-list_var =   met # + rad + clouds + extra  # + clouds
+list_var =   ['precip']  # + rad + clouds + extra  # + clouds
 
 
 tres = ''
@@ -166,7 +166,7 @@ extr = {'alb': {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1,
                   't': {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
                   't1': {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
                   't2': {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''}},
-        'iwv': {'name': 'iwv', 'ref_x': 't', 'min': 0, 'max': 50, 'res_min': -20, 'res_max': 20,
+        'iwv': {'name': 'iwv', 'ref_x': 't', 'min': 0, 'max': 50, 'res_min': -5, 'res_max': 5,
                 'uom': '[mm]', 'comps': ['c', 'e', 't1', 't2'], 'bin_nr': 200,
                 'c': {'fn': f'{thaao_c}_total_column_integrated_water_vapour_', 'column': 2,
                                'data': '', 'data_res': '', 'var_name': 'tciwv'},
@@ -224,9 +224,9 @@ extr = {'alb': {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1,
         'precip': {'name': 'precip', 'ref_x': 't2', 'min': 0, 'max': 5, 'res_min': -10, 'res_max': 10,
                    'uom': '[mm?]', 'comps': ['c', 'e'], 'bin_nr': 200,
                    'c': {'fn': f'{thaao_c}_total_precipitation_', 'column': 2, 'data': '',
-                         'data_res': '', 'var_name': ''},
+                         'data_res': '', 'var_name': 'tp'},
                    'e': {'fn': f'{thaao_e}_total_precipitation_', 'column': 2, 'data': '',
-                         'data_res': '', 'var_name': ''},
+                         'data_res': '', 'var_name': 'tp'},
                    't': {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
                    't1': {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
                    't2': {'fn': 'AWS_THAAO_', 'column': 'RH', 'data': '',
