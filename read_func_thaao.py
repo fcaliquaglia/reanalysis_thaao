@@ -119,8 +119,7 @@ def read_hatpro(vr):
                 header=0,
                 skiprows=9,
                 parse_dates={"datetime": [0, 1]},
-                index_col="datetime",
-                date_format="%Y-%m-%d %H:%M:%S"
+                index_col="datetime"
             )
             print(f"OK: {file.name}")
             df = df[[inpt.extr[vr]["t1"]["column"]]].rename(
@@ -158,29 +157,52 @@ def read_ceilometer(vr):
     # If not all years were loaded, parse original .txt files
     if count < len(inpt.years):
         t_all = []
+
         for i in inpt.ceilometer_daterange[inpt.ceilometer_daterange.year.isin(inpt.years)]:
             date_str = i.strftime("%Y%m%d")
-            file = Path(inpt.basefol["t"]['base']) / "thaao_ceilometer" / \
+            file = Path(inpt.basefol["t"]["base"]) / "thaao_ceilometer" / \
                 "medie_tat_rianalisi" / \
                 f"{date_str}{inpt.extr[vr]['t']['fn']}.txt"
             try:
                 df = pd.read_table(
                     file, sep=r"\s+", engine="python", header=0, skiprows=9)
-                df[df == inpt.var_dict["t"]["nanval"]] = np.nan
+
+                # Replace NaN values coded as specific "nanval"
+                df.replace(inpt.var_dict["t"]["nanval"], np.nan, inplace=True)
+
+                # Combine the two datetime columns into a single datetime index
+                # The file may use column names like '#', or 'date[y-m-d]time[h:m:s]' or 'date[Y-M-D] time[h:m:s]'
+                # So we try a flexible approach:
+
+                if "#" in df.columns and "date[y-m-d]time[h:m:s]" in df.columns:
+                    datetime_str = df["#"] + " " + df["date[y-m-d]time[h:m:s]"]
+                elif "date[y-m-d]time[h:m:s]" in df.columns:
+                    datetime_str = df["date[y-m-d]time[h:m:s]"]
+                elif "date[Y-M-D]" in df.columns and "time[h:m:s]" in df.columns:
+                    datetime_str = df["date[Y-M-D]"].astype(
+                        str) + " " + df["time[h:m:s]"].astype(str)
+                else:
+                    raise ValueError(
+                        f"Unexpected datetime columns in {file.name}")
+
                 df.index = pd.to_datetime(
-                    df["#"] + " " + df["date[y-m-d]time[h:m:s]"],
-                    format="%Y-%m-%d %H:%M:%S"
-                )
-                df = df[[inpt.extr[vr]["t"]["column"]]].astype(float).rename(
-                    columns={inpt.extr[vr]["t"]["column"]: vr}
-                )
+                    datetime_str, errors='raise', format='mixed')
+
+                # Select relevant variable column and rename to vr
+                df = df[[inpt.extr[vr]["t"]["column"]]].astype(
+                    float).rename(columns={inpt.extr[vr]["t"]["column"]: vr})
+
                 t_all.append(df)
                 print(f"OK: {file.name}")
-            except (FileNotFoundError, pd.errors.EmptyDataError):
-                print(f"NOT FOUND or EMPTY: {file.name}")
 
-        if t_all:
-            df_all = pd.concat(t_all)
+            except (FileNotFoundError, pd.errors.EmptyDataError, ValueError) as e:
+                print(f"NOT FOUND or EMPTY or FORMAT ERROR: {file.name} - {e}")
+
+    # concatenate all loaded dataframes
+    if t_all:
+        df_all = pd.concat(t_all)
+    else:
+        df_all = pd.DataFrame()
 
     # Save per-year filtered data
     for year in inpt.years:
@@ -335,18 +357,19 @@ def read_iwv_vespa(vr):
     if count < len(inpt.years):
         file = (
             Path(inpt.basefol["t"]['base']) / "thaao_vespa" /
-            "vespaPWVClearSky.dat"
+            "vespaPWVClearSky.txt"
         )
         try:
             df = pd.read_table(file, sep='\s+', skipfooter=1,
                                skiprows=1, header=None, engine='python'
                                )
-            print(f'OK: {file}.txt')
+            print(f'OK: {file}')
             df.index = pd.to_datetime(
                 df[0] + ' ' + df[1], format='%Y-%m-%d %H:%M:%S')
             df.drop(columns=[0, 1, 3, 4, 5], inplace=True)
             df.index.name = 'datetime'
             df.columns = [vr]
+            df_all = df
         except FileNotFoundError:
             print(f'NOT FOUND: {file}.txt')
 

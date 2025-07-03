@@ -71,10 +71,10 @@ def get_closest_subset_with_tolerance(df, freq, tol_minutes):
 
     # Deduplicate (preserve order)
     seen = set()
-    unique_positions = [p for p in final_positions if not (p in seen or seen.add(p))]
+    unique_positions = [
+        p for p in final_positions if not (p in seen or seen.add(p))]
 
     return df.iloc[unique_positions]
-
 
 
 def data_resampling(vr):
@@ -121,58 +121,92 @@ def data_resampling(vr):
     None
     """
 
+    res_strategy = {
+        'alb': 'mean',
+        'temp': 'closest',
+        'alb': 'mean',
+        'cbh': 'closest',
+        'iwv': 'closest',
+        'lwp': 'mean',
+        'lw_down': 'mean',
+        'lw_up': 'mean',
+        'precip': 'cumul',
+        'rh': 'closest',
+        'surf_pres': 'closest',
+        'sw_down': 'mean',
+        'sw_up': 'mean',
+        'tcc': 'closest',
+        'temp': 'closest',
+        'windd': 'closest',
+        'winds': 'closest'
+    }
+
     # Early exit if variable is wind or precipitation-related, no resampling allowed
-    if inpt.var in ['winds', 'windd', 'precip']:
-        print('NO WIND/PRECIP RESAMPLING!')
+    if (inpt.var in ['winds', 'windd']) and (inpt.tres != 'original'):
+        print('NO TIME RESAMPLING FOR WIND!')
         sys.exit()
 
     for vvrr in inpt.extr[vr]['comps'] + [inpt.extr[vr]['ref_x']]:
         data = inpt.extr[vr][vvrr]['data']
         data, chk = tls.check_empty_df(data, vr)
-                    
+        if inpt.datasets['dropsondes']['switch']:
+            print('NO TIME RESAMPLING FOR DROPSONDES')
+            inpt.extr[vr][vvrr]['data_res'] = {inpt.tres: data}
+            return
+
         if not chk:
-            if inpt.datasets['dropsondes']['switch']:
-                print('NO TIME RESAMPLING FOR DROPSONDES')
-                resampled_data = {}
-                resampled_data[inpt.tres] = data
-                inpt.extr[vr][vvrr]['data_res'] = resampled_data
-                return
-            if vvrr in ['c']:
-                # Direct copy for these components at original resolution
-                resampled_data = {}
-                resampled_data['original'] = data
-                resampled_data['3h'] =  data
-                resampled_data['24h'] = data.resample('24h').mean()
-                inpt.extr[vr][vvrr]['data_res'] = resampled_data
+            resampled_data = {'original': data}
+
+            if vvrr == 'c':
+                if res_strategy[vr] in ['closest', 'mean']:
+                    resampled_data.update({
+                        '3h': data,
+                        '24h': data.resample('24h').mean(),
+                    })
+                if res_strategy[vr] == 'cumul':
+                    print('CUM RESAMPLING STRATEGY not implemented yet.')
                 print(
                     f'Copied data for {vvrr}, {vr} at different time resolutions')
-            if vvrr in ['e']:
-                # Direct copy for these components at original resolution
-                resampled_data = {}
-                resampled_data['original'] = data
-                resampled_data['1h'] =  data
-                resampled_data['3h'] =  data.resample('3h').mean()
-                resampled_data['24h'] = data.resample('24h').mean()
-                inpt.extr[vr][vvrr]['data_res'] = resampled_data
+
+            elif vvrr == 'e':
+                if res_strategy[vr] in ['closest', 'mean']:
+                    resampled_data.update({
+                        '1h': data,
+                        '3h': data.resample('3h').mean(),
+                        '24h': data.resample('24h').mean(),
+                    })
+                if res_strategy[vr] == 'cumul':
+                    print('CUM RESAMPLING STRATEGY not implemented yet.')
                 print(
                     f'Copied data for {vvrr}, {vr} at different time resolutions')
+
             elif vvrr in ['t', 't1', 't2']:
-                # Extract closest timestamps within tolerance windows for specific time intervals
-                resampled_data = {}
-                resampled_data['original'] = data
-                resampled_data['1h'] = get_closest_subset_with_tolerance(
-                    data, '1h', tol_minutes=10)
-                resampled_data['3h'] = get_closest_subset_with_tolerance(
-                    data, '3h', tol_minutes=30)
-                resampled_data['24h'] = data.resample('24h').mean()
-                inpt.extr[vr][vvrr]['data_res'] = resampled_data
+                if res_strategy[vr] == 'closest':
+                    resampled_data.update({
+                        '1h': get_closest_subset_with_tolerance(data, '1h', tol_minutes=10),
+                        '3h': get_closest_subset_with_tolerance(data, '3h', tol_minutes=30),
+                        '24h': data.resample('24h').mean(),
+                    })
+                if res_strategy[vr] == 'mean':
+                    resampled_data.update({
+                        '1h': data.resample('1h').mean(),
+                        '3h': data.resample('3h').mean(),
+                        '24h': data.resample('24h').mean(),
+                    })
+                if res_strategy[vr] == 'cumul':
+                    resampled_data.update({
+                        '1h': data.resample('1h').sum(),
+                        '3h': data.resample('3h').sum(),
+                        '24h': data.resample('24h').sum(),
+                    })
                 print(
                     f'Extracted closest timestamps within tolerance for {vvrr}, {vr} at 3h, 1h, and native resolution + 24h averages.')
-        else:
-            # Empty DataFrame case: copy as-is and print message
-            resampled_data = {}
-            resampled_data[inpt.tres] = data
+
             inpt.extr[vr][vvrr]['data_res'] = resampled_data
+
+        else:
+            # Empty DataFrame case
+            inpt.extr[vr][vvrr]['data_res'] = {inpt.tres: data}
             print(
                 f'NOT Resampled for {vvrr}, {vr} at {inpt.tres} resolution. Probably empty DataFrame.')
 

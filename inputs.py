@@ -82,18 +82,18 @@ thaao_t = 'thaao'
 
 met = ['iwv', 'temp', 'surf_pres', 'rh']  # , 'iwv']
 rad = ['sw_up', 'lw_up', 'lw_down', 'sw_down',  'alb']
-clouds = ['lwp', 'cbh', 'tcc', 'precip']
+clouds = ['cbh', 'lwp', 'tcc', 'precip']
 extra = ['winds', 'windd']
 
 ##
 tres_list = ['original', '24h'] # ['original', '3h', '24h']
-list_var =  met # + rad + clouds + extra  # + clouds
+list_var =   met # + rad + clouds + extra  # + clouds
 
 
 tres = ''
 var = ''
 
-years = np.arange(2016, 2017, 1)
+years = np.arange(2016, 2025, 1)
 
 aws_ecapac_daterange = pd.date_range(start=dt.datetime(
     2023, 4, 1), end=dt.datetime(2024, 12, 31), freq='1D')
@@ -167,13 +167,13 @@ extr = {'alb': {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1,
                   't1': {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
                   't2': {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''}},
         'iwv': {'name': 'iwv', 'ref_x': 't', 'min': 0, 'max': 50, 'res_min': -20, 'res_max': 20,
-                'uom': '[mm]', 'comps': ['c', 'e'], 'bin_nr': 200,
+                'uom': '[mm]', 'comps': ['c', 'e', 't1', 't2'], 'bin_nr': 200,
                 'c': {'fn': f'{thaao_c}_total_column_integrated_water_vapour_', 'column': 2,
                                'data': '', 'data_res': '', 'var_name': 'tciwv'},
                 'e': {'fn': f'{thaao_e}_total_column_water_vapour_', 'column': 2,
                             'data': '', 'data_res': '', 'var_name': 'tcwv'},
                 't': {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
-                't1': {'fn': 'LWP_15_min_all', 'column': 'IWV_g/m2', 'data': '',
+                't1': {'fn': 'IWV_15_min_all', 'column': 'IWV[kg/m2]', 'data': '',
                              'data_res': ''},
                 't2': {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''}}, # radiosondes
         'lwp': {'name': 'lwp', 'ref_x': 't1', 'min': 0, 'max': 50, 'res_min': -20, 'res_max': 20,
@@ -183,7 +183,7 @@ extr = {'alb': {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1,
                 'e': {'fn': f'{thaao_e}_total_column_cloud_liquid_water_', 'column': 2,
                             'data': '', 'data_res': '', 'var_name': 'tclw'},
                 't': {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
-                't1': {'fn': 'LWP_15_min_all', 'column': 'LWP_g/m2', 'data': '',
+                't1': {'fn': 'LWP_15_min_all', 'column': 'LWP[g/m2]', 'data': '',
                              'data_res': ''},
                 't2': {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''}},
         'lw_down': {'name': 'lw_down', 'ref_x': 't', 'min': 100, 'max': 500, 'res_min': -20, 'res_max': 20,

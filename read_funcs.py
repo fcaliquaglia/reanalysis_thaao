@@ -153,19 +153,17 @@ def read_iwv():
 
     # --- THAAO (HATPRO) ---
     if inpt.datasets['THAAO']['switch']:
-        rd_ft.read_iwv_vespa(vr)
+        rd_ft.read_hatpro(vr)
         var_dict["t1"]["data"], _ = tls.check_empty_df(
             var_dict["t1"]["data"], vr)
-        iwv_t1 = var_dict["t1"]["data"][vr]
-        iwv_t1[iwv_t1 < 0.001] = np.nan
-        iwv_t1[iwv_t1 > 1000] = np.nan
-        var_dict["t1"]["data"][vr] = iwv_t1
+        var_dict["t1"]["data"][vr] *= 100.
 
     # --- Radiosondes ---
-    if inpt.datasets['THAAO']['switch']:
-        rd_ft.read_iwv_rs(vr)
-        var_dict["t2"]["data"], _ = tls.check_empty_df(
-            var_dict["t2"]["data"], vr)
+    # TODO
+    # if inpt.datasets['THAAO']['switch']:
+    #     rd_ft.read_iwv_rs(vr)
+    #     var_dict["t2"]["data"], _ = tls.check_empty_df(
+    #         var_dict["t2"]["data"], vr)
 
 
 def read_lwp():
@@ -194,7 +192,7 @@ def read_lwp():
     lwp_e[lwp_e > 1000] = np.nan
     var_dict["e"]["data"][vr] = lwp_e
 
-    # --- THAAO ---
+    # --- THAAO (HATPRO) ---
     if inpt.datasets['THAAO']['switch']:
         rd_ft.read_hatpro(vr)
         var_dict["t1"]["data"], _ = tls.check_empty_df(

@@ -91,17 +91,6 @@ def plot_ts(period_label):
                 ax[i].plot(data_res.loc[mask_res], color=inpt.var_dict[data_typ]['col'],
                            label=inpt.var_dict[data_typ]['label'], **kwargs_res)
 
-        # # Plot vertical lines for 'alb' variable during specific date ranges
-        # if inpt.var == 'alb':
-        #     freq = inpt.tres
-        #     # Define date ranges
-        #     range1 = pd.date_range(start=pd.Timestamp(
-        #         year, 1, 1), end=pd.Timestamp(year, 2, 15), freq=freq)
-        #     range2 = pd.date_range(start=pd.Timestamp(
-        #         year, 11, 1), end=pd.Timestamp(year, 12, 31), freq=freq)
-        #     ax[i].vlines(range1.values, 0, 1, color='grey', alpha=0.3)
-        #     ax[i].vlines(range2.values, 0, 1, color='grey', alpha=0.3)
-
         # Format the subplot axes (assuming this function is defined elsewhere)
         format_ts(ax, year, i)
 
