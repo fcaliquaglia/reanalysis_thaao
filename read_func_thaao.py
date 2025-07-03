@@ -10,16 +10,8 @@ import tools as tls
 
 
 def read_weather(vr):
-
-    df_all = pd.DataFrame()
-    count = 0
-    for year in inpt.years:
-        path_out, _ = tls.get_common_paths(vr, year, "VESPA")
-        if os.path.exists(path_out):
-            df_tmp = pd.read_parquet(path_out)
-            df_all = pd.concat([df_all, df_tmp])
-            print(f"Loaded {path_out}")
-            count += 1
+    # Try loading from per-year parquet files
+    df_all, count = load_per_year_parquets(vr, "VESPA")
 
     if count < len(inpt.years):
         nc_file = Path(inpt.basefol["t"]['base']) / \
@@ -34,29 +26,16 @@ def read_weather(vr):
             print(f"NOT FOUND: {nc_file.name}")
             df_all = pd.DataFrame(columns=[vr])
 
-    # Save filtered data per year if not empty
-    for year in inpt.years:
-        df_year = df_all[df_all.index.year == year]
-        path_out, _ = tls.get_common_paths(vr, year, "VESPA")
-        df_year.to_parquet(path_out)
-        print(f"Saved {path_out}")
+    # Save per-year data
+    save_per_year_parquets(vr, df_all, 'VESPA')
 
     # Store in global container
     inpt.extr[vr]["t"]["data"] = df_all
 
 
 def read_rad(vr):
-    df_all = pd.DataFrame()
-    count = 0
-
-    # Step 1: Load all existing yearly parquet files
-    for year in inpt.years:
-        path_out, _ = tls.get_common_paths(vr, year, "RAD")
-        if os.path.exists(path_out):
-            df_tmp = pd.read_parquet(path_out)
-            df_all = pd.concat([df_all, df_tmp])
-            print(f"Loaded {path_out}")
-            count += 1
+    # Try loading from per-year parquet files
+    df_all, count = load_per_year_parquets(vr, "RAD")
 
     # Step 2: If some files are missing, process .dat files
     if count < len(inpt.years):
@@ -80,32 +59,21 @@ def read_rad(vr):
             except FileNotFoundError:
                 print(f"NOT FOUND: {file.name}")
 
-        # Step 3: Combine and save each year's data to .parquet
         if t_all:
             df_all = pd.concat(t_all)
-            for year in inpt.years:
-                df_year = df_all[df_all.index.year == year]
-                if not df_year.empty:
-                    path_out, _ = tls.get_common_paths(vr, year, "RAD")
-                    df_year.to_parquet(path_out)
-                    print(f"Saved {path_out}")
+        else:
+            df_all = pd.DataFrame()
+
+    # Save per-year data
+    save_per_year_parquets(vr, df_all, 'RAD')
 
     # Step 4: Store final result
     inpt.extr[vr]["t"]["data"] = df_all
 
 
 def read_hatpro(vr):
-    df_all = pd.DataFrame()
-    count = 0
-
-    # Attempt to load available parquet files per year
-    for year in inpt.years:
-        path_out, _ = tls.get_common_paths(vr, year, "HATPRO")
-        if os.path.exists(path_out):
-            df_tmp = pd.read_parquet(path_out)
-            df_all = pd.concat([df_all, df_tmp])
-            print(f"Loaded {path_out}")
-            count += 1
+    # Try loading from per-year parquet files
+    df_all, count = load_per_year_parquets(vr, "HATPRO")
 
     # If not all years loaded, parse .DAT file
     if count < len(inpt.years):
@@ -129,30 +97,16 @@ def read_hatpro(vr):
             print(f"NOT FOUND: {file.name}")
             df_all = pd.DataFrame(columns=[vr])
 
-    # Save per-year parquet files
-    for year in inpt.years:
-        df_year = df_all[df_all.index.year == year]
-        if not df_year.empty:
-            path_out, _ = tls.get_common_paths(vr, year, "HATPRO")
-            df_year.to_parquet(path_out)
-            print(f"Saved {path_out}")
+    # Save per-year data
+    save_per_year_parquets(vr, df_all, 'HATPRO')
 
     # Store in container
     inpt.extr[vr]["t1"]["data"] = df_all
 
 
 def read_ceilometer(vr):
-    df_all = pd.DataFrame()
-    count = 0
-
-    # Load existing per-year parquet files
-    for year in inpt.years:
-        path_out, _ = tls.get_common_paths(vr, year, "CEIL")
-        if os.path.exists(path_out):
-            df_tmp = pd.read_parquet(path_out)
-            df_all = pd.concat([df_all, df_tmp])
-            print(f"Loaded {path_out}")
-            count += 1
+    # Try loading from per-year parquet files
+    df_all, count = load_per_year_parquets(vr, "CEIL")
 
     # If not all years were loaded, parse original .txt files
     if count < len(inpt.years):
@@ -204,30 +158,16 @@ def read_ceilometer(vr):
     else:
         df_all = pd.DataFrame()
 
-    # Save per-year filtered data
-    for year in inpt.years:
-        df_year = df_all[df_all.index.year == year]
-        if not df_year.empty:
-            path_out, _ = tls.get_common_paths(vr, year, "CEIL")
-            df_year.to_parquet(path_out)
-            print(f"Saved {path_out}")
+    # Save per-year data
+    save_per_year_parquets(vr, df_all, 'CEIL')
 
     # Final assignment
     inpt.extr[vr]["t"]["data"] = df_all
 
 
 def read_aws_ecapac(vr):
-    df_all = pd.DataFrame()
-    count = 0
-
     # Try loading from per-year parquet files
-    for year in inpt.years:
-        path_out, _ = tls.get_common_paths(vr, year, "ECAPAC")
-        if os.path.exists(path_out):
-            df_tmp = pd.read_parquet(path_out)
-            df_all = pd.concat([df_all, df_tmp])
-            print(f"Loaded {path_out}")
-            count += 1
+    df_all, count = load_per_year_parquets(vr, "ECAPAC")
 
     # If not all years found, read raw .dat files
     if count < len(inpt.years):
@@ -261,34 +201,23 @@ def read_aws_ecapac(vr):
 
         if t_all:
             df_all = pd.concat(t_all)
+        else:
+            df_all = pd.DataFrame()
 
     # Save per-year data
-    for year in inpt.years:
-        df_year = df_all[df_all.index.year == year]
-        if not df_year.empty:
-            path_out, _ = tls.get_common_paths(vr, year, "ECAPAC")
-            df_year.to_parquet(path_out)
-            print(f"Saved {path_out}")
+    save_per_year_parquets(vr, df_all, 'ECAPAC')
 
     # Store final result
     inpt.extr[vr]["t2"]["data"] = df_all
 
 
 def read_iwv_rs(vr):
-    t2 = pd.DataFrame()
-    df_all = pd.DataFrame()
-    count = 0
 
     # Try loading from per-year parquet files
-    for year in inpt.years:
-        path_out, _ = tls.get_common_paths(vr, year, "RS")
-        if os.path.exists(path_out):
-            df_tmp = pd.read_parquet(path_out)
-            df_all = pd.concat([df_all, df_tmp])
-            print(f"Loaded {path_out}")
-            count += 1
+    df_all, count = load_per_year_parquets(vr, "RS")
 
     # If not all years found, read raw .dat files
+    t2 = pd.DataFrame()
     if count < len(inpt.years):
         for year in inpt.years:
             files = os.listdir(
@@ -329,29 +258,16 @@ def read_iwv_rs(vr):
         t2.columns = [vr]
 
     # Save per-year data
-    for year in inpt.years:
-        df_year = df_all[df_all.index.year == year]
-        if not df_year.empty:
-            path_out, _ = tls.get_common_paths(vr, year, "IWV_VESPA")
-            df_year.to_parquet(path_out)
-            print(f"Saved {path_out}")
+    save_per_year_parquets(vr, df_all, 'IWV_RS')
 
     # Store final result
     inpt.extr[vr]["t2"]["data"] = df_all
 
 
 def read_iwv_vespa(vr):
-    df_all = pd.DataFrame()
-    count = 0
 
     # Try loading from per-year parquet files
-    for year in inpt.years:
-        path_out, _ = tls.get_common_paths(vr, year, "ECAPAC")
-        if os.path.exists(path_out):
-            df_tmp = pd.read_parquet(path_out)
-            df_all = pd.concat([df_all, df_tmp])
-            print(f"Loaded {path_out}")
-            count += 1
+    df_all, count = load_per_year_parquets(vr, "ECAPAC")
 
     # If not all years found, read raw .dat files
     if count < len(inpt.years):
@@ -374,12 +290,72 @@ def read_iwv_vespa(vr):
             print(f'NOT FOUND: {file}.txt')
 
     # Save per-year data
-    for year in inpt.years:
-        df_year = df_all[df_all.index.year == year]
-        if not df_year.empty:
-            path_out, _ = tls.get_common_paths(vr, year, "IWV_VESPA")
-            df_year.to_parquet(path_out)
-            print(f"Saved {path_out}")
+    save_per_year_parquets(vr, df_all, 'IWV_VESPA')
 
     # Store final result
     inpt.extr[vr]["t"]["data"] = df_all
+
+
+def load_per_year_parquets(vr, source):
+    """
+    Loads and concatenates yearly Parquet files using global vr, inpt, and tls,
+    with the given source string.
+
+    Parameters:
+    -----------
+    source : str
+        Source identifier passed to get_common_paths, e.g. "RS".
+
+    Returns:
+    --------
+    pd.DataFrame
+        Combined DataFrame from all available years.
+    list
+        List of years successfully loaded.
+    """
+    df_all = pd.DataFrame()
+    loaded_year = []
+
+    for year in inpt.years:
+        path_out, _ = tls.get_common_paths(vr, year, source)
+        if os.path.exists(path_out):
+            try:
+                df_tmp = pd.read_parquet(path_out)
+                loaded_year.append(year)
+                if df_tmp.empty:
+                    print(f"⚠️ Loaded EMPTY {path_out}!")
+                else:
+                    df_all = pd.concat([df_all, df_tmp])
+                    print(f"✅ Loaded {path_out}")
+            except Exception as e:
+                print(f"⚠️ Failed to load {path_out}: {e}")
+        else:
+            print(f"⚠️ File not found: {path_out}")
+
+    return df_all, len(loaded_year)
+
+
+def save_per_year_parquets(vr, df_all, source):
+    """
+    Save data for each year from df_all into separate Parquet files.
+
+    Parameters:
+    -----------
+    df_all : pd.DataFrame
+        DataFrame with DatetimeIndex including multiple years.
+    source : str, optional
+        Source identifier passed to get_common_paths (default: "RS").
+
+    Returns:
+    --------
+    None
+    """
+    for year in inpt.years:
+        df_year = df_all[df_all.index.year == year]
+        path_out, _ = tls.get_common_paths(vr, year, source)
+        df_year.to_parquet(path_out)
+        if df_year.empty:
+            print(
+                f"⚠️ Saved EMPTY data for year {year} to {path_out}!")
+        else:
+            print(f"✅ Saved data for year {year} to {path_out}")

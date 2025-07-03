@@ -167,7 +167,11 @@ def data_resampling(vr):
                         '24h': data.resample('24h').mean(),
                     })
                 if res_strategy[vr] == 'cumul':
-                    print('CUM RESAMPLING STRATEGY not implemented yet.')
+                    resampled_data.update({
+                        '1h': data,
+                        '3h': data.resample('3h').sum(),
+                        '24h': data.resample('24h').sum(),
+                    })
                 print(
                     f'Copied data for {vvrr}, {vr} at different time resolutions')
 
@@ -179,7 +183,11 @@ def data_resampling(vr):
                         '24h': data.resample('24h').mean(),
                     })
                 if res_strategy[vr] == 'cumul':
-                    print('CUM RESAMPLING STRATEGY not implemented yet.')
+                    resampled_data.update({
+                        '1h': data,
+                        '3h': data.resample('3h').sum(),
+                        '24h': data.resample('24h').sum(),
+                    })
                 print(
                     f'Copied data for {vvrr}, {vr} at different time resolutions')
 

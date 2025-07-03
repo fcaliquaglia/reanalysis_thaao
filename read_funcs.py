@@ -336,12 +336,12 @@ def read_precip():
     # --- CARRA ---
     rd_frea.read_rean(vr, "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
+    var_dict["e"]["data"][vr] *= 1000
 
     # --- ERA5 ---
     rd_frea.read_rean(vr, "e")
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
-    precip_e = var_dict["e"]["data"][vr]
-    precip_e *= 1000.  # Convert from meters to mm
+    var_dict["e"]["data"][vr] *= 1000
 
     # --- THAAO ---
     if inpt.datasets['THAAO']['switch']:
