@@ -166,14 +166,14 @@ def data_resampling(vr):
         'alb': 'mean',
         'cbh': 'closest',
         'iwv': 'closest',
-        'lwp': 'mean',
-        'lw_down': 'mean',
+        'lwp': 'closest',
+        'lw_down': 'closest',
         'lw_up': 'mean',
         'precip': 'cumul',
         'rh': 'closest',
         'surf_pres': 'closest',
-        'sw_down': 'mean',
-        'sw_up': 'mean',
+        'sw_down': 'closest',
+        'sw_up': 'closest',
         'tcc': 'closest',
         'temp': 'closest',
         'windd': 'closest',
@@ -185,18 +185,18 @@ def data_resampling(vr):
         print('NO TIME RESAMPLING FOR WIND!')
         sys.exit()
 
-    for vvrr in inpt.extr[vr]['comps'] + [inpt.extr[vr]['ref_x']]:
-        data = inpt.extr[vr][vvrr]['data']
+    for data_typ in inpt.extr[vr]['comps'] + [inpt.extr[vr]['ref_x']]:
+        data = inpt.extr[vr][data_typ]['data']
         data, chk = tls.check_empty_df(data, vr)
         if inpt.datasets['dropsondes']['switch']:
             print('NO TIME RESAMPLING FOR DROPSONDES')
-            inpt.extr[vr][vvrr]['data_res'] = {inpt.tres: data}
+            inpt.extr[vr][data_typ]['data_res'] = {inpt.tres: data}
             return
 
         if not chk:
             resampled_data = {'original': data}
 
-            if vvrr == 'c':
+            if data_typ == 'c':
                 if res_strategy[vr] in ['closest', 'mean']:
                     resampled_data.update({
                         '3h': data,
@@ -209,9 +209,9 @@ def data_resampling(vr):
                         '24h': data.resample('24h').sum(),
                     })
                 print(
-                    f'Resampled (mean or cmul) at 1h, 3h, 24h for {vvrr}, {vr}.')
+                    f'Resampled (mean or cumul) at 1h, 3h, 24h for {data_typ}, {vr}.')
                 
-            elif vvrr == 'e':
+            elif data_typ == 'e':
                 if res_strategy[vr] in ['closest', 'mean']:
                     resampled_data.update({
                         '1h': data,
@@ -225,9 +225,9 @@ def data_resampling(vr):
                         '24h': data.resample('24h').sum(),
                     })
                 print(
-                    f'Resampled (mean or cmul) at 1h, 3h, 24h for {vvrr}, {vr}.')
+                    f'Resampled (mean or cumul) at 1h, 3h, 24h for {data_typ}, {vr}.')
 
-            elif vvrr in ['t', 't1', 't2']:
+            elif data_typ in ['t', 't1', 't2']:
                 if res_strategy[vr] == 'closest':
                     resampled_data.update({
                         '1h': get_closest_subset_with_tolerance(data, '1h', tol_minutes=10),
@@ -247,14 +247,14 @@ def data_resampling(vr):
                         '24h': data.resample('24h').sum(),
                     })
                 print(
-                    f'Extracted closest timestamps within tolerance for {vvrr}, {vr}.')
-            inpt.extr[vr][vvrr]['data_res'] = resampled_data
+                    f'Extracted closest timestamps within tolerance for {data_typ}, {vr}.')
+            inpt.extr[vr][data_typ]['data_res'] = resampled_data
 
         else:
             # Empty DataFrame case
-            inpt.extr[vr][vvrr]['data_res'] = {inpt.tres: data}
+            inpt.extr[vr][data_typ]['data_res'] = {inpt.tres: data}
             print(
-                f'NOT Resampled for {vvrr}, {vr} at {inpt.tres} resolution. Probably empty DataFrame.')
+                f'NOT Resampled for {data_typ}, {vr} at {inpt.tres} resolution. Probably empty DataFrame.')
 
     return
 

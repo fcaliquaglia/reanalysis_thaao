@@ -218,24 +218,9 @@ Excluding nan values. x(t): reference value; y(t): reanalysis or other
 > [!WARNING]
 > For CARRA radiation values. These forecast variables are released t different leadtimes, with 1-hour frequency.
 > Therefore, we consider only leadtime 1, obtaining every three hours, hourly forecast valued for the following hour
-> w.r.t the chose timeframe. For example, we choose April 1, 2023 at 6:00 UTC, we analyze forecast values on April 1,
+> w.r.t the chosen timeframe. For example, we choose April 1, 2023 at 6:00 UTC, we analyze forecast values on April 1,
 > 2023 at 7:00 UTC. All the radiation dataset have been cleaned for values <0.
-
-> [!WARNING]
-> Accumulations rates for ERA5-Land >>
->
-from https://confluence.ecmwf.int/display/CKB/ERA5-Land%3A+data+documentation#ERA5Land:datadocumentation-Temporalfrequency
-> Please, note that the convention for accumulations used in ERA5-Land differs with that for ERA5. The accumulations in
-> the short forecasts of ERA5-Land (with hourly steps from 01 to 24) are treated the same as those in ERA-Interim or
-> ERA-Interim/Land, i.e., they are accumulated from the beginning of the forecast to the end of the forecast step. For
-> example, runoff at day=D, step=12 will provide runoff accumulated from day=D, time=0 to day=D, time=12. The maximum
-> accumulation is over 24 hours, i.e., from day=D, time=0 to day=D+1,time=0 (step=24).
-> - HRES: accumulations are from 00 UTC to the hour ending at the forecast step
-> - For the CDS time, or validity time, of 00 UTC, the accumulations are over the 24 hours ending at 00 UTC i.e. the
-    > accumulation is during the previous day
-> - Synoptic monthly means (stream=mnth): accumulations have units of "variable_units per forecast_step hours"
-    Monthly means of daily means (stream=moda): accumulations have units that include "per day", see section Monthly
-    means
+> Therefore, radiation values are provided at 1hour resolution BUT every 3-hour interval!
 
 ### Downward shortwave irradiance - DSI (``sw_down``)
 
