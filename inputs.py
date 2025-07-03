@@ -80,14 +80,14 @@ thaao_c = 'carra1'
 thaao_e = 'era5_NG'
 thaao_t = 'thaao'
 
-met = ['lwp', 'temp', 'surf_pres', 'rh']  # , 'iwv']
+met = ['temp', 'surf_pres', 'rh', 'iwv']
 rad = ['sw_up', 'lw_up', 'lw_down', 'sw_down']
-clouds = ['cbh', 'lwp', 'tcc', 'precip']
+clouds = ['cbh', 'lwp', 'tcc'] # , 'precip'
 extra = ['winds', 'windd']
 
 ##
 tres_list = ['original', '24h'] # ['original', '3h', '24h']
-list_var =   ['precip']  # + rad + clouds + extra  # + clouds
+list_var =   rad + clouds + extra  # + clouds
 
 
 tres = ''
@@ -122,10 +122,10 @@ seass = {'all': {'name': 'all', 'months': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
 
 var_dict = {'c': {'name': 'c', 'nanval': np.nan, 'col': 'red',
                   'col_ori': 'orange', 'label': 'CARRA',
-                  'label_uom': '', 'rad_conv_factor': 3600},
+                  'label_uom': ''},
             'e': {'name': 'e', 'nanval': -32767.0, 'col': 'blue',
                   'col_ori': 'cyan', 'label': 'ERA5',
-                  'label_uom': '', 'rad_conv_factor': 3600},
+                  'label_uom': ''},
             't': {'name': 't', 'nanval': -9999.9, 'col': 'black',
                   'col_ori': 'grey', 'label': lbl,
                   'label_uom': ''},

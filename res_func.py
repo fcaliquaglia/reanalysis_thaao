@@ -28,56 +28,92 @@ import pandas as pd
 import numpy as np
 
 
+# def get_closest_subset_with_tolerance(df, freq, tol_minutes):
+#     """
+#     Returns a DataFrame indexed by regular timestamps (e.g., every 3 hours from 00:00),
+#     where each row is filled with the closest actual data within a given tolerance.
+#     If no data is found within tolerance, the row is NaN.
+
+#     Parameters:
+#     -----------
+#     df : pd.DataFrame
+#         DataFrame with a DatetimeIndex.
+#     freq : str
+#         Target frequency like '1H', '3H'.
+#     tol_minutes : float
+#         Maximum allowed time difference in minutes from the ideal target times.
+
+#     Returns:
+#     --------
+#     pd.DataFrame
+#         New DataFrame with target timestamps as index and data from nearest match (or NaN).
+#     """
+#     if df.empty:
+#         return pd.DataFrame(columns=df.columns)
+
+#     # Create the target time grid
+#     start_time = df.index.min().normalize()
+#     end_time = df.index.max()
+#     target_times = pd.date_range(start=start_time, end=end_time, freq=freq)
+
+#     # Prepare list of matched rows
+#     matched_rows = []
+
+#     for target_time in target_times:
+#         try:
+#             pos = df.index.get_indexer([target_time], method='nearest')[0]
+#             closest_time = df.index[pos]
+#             diff_minutes = abs(
+#                 (closest_time - target_time).total_seconds()) / 60
+
+#             if diff_minutes <= tol_minutes:
+#                 matched_rows.append(df.iloc[pos].values)
+#             else:
+#                 matched_rows.append([np.nan] * df.shape[1])
+
+#         except IndexError:
+#             matched_rows.append([np.nan] * df.shape[1])
+
+#     # Build the result DataFrame
+#     result_df = pd.DataFrame(
+#         matched_rows, index=target_times, columns=df.columns)
+#     return result_df
+
+
 def get_closest_subset_with_tolerance(df, freq, tol_minutes):
     """
     Returns a DataFrame indexed by regular timestamps (e.g., every 3 hours from 00:00),
     where each row is filled with the closest actual data within a given tolerance.
     If no data is found within tolerance, the row is NaN.
-
-    Parameters:
-    -----------
-    df : pd.DataFrame
-        DataFrame with a DatetimeIndex.
-    freq : str
-        Target frequency like '1H', '3H'.
-    tol_minutes : float
-        Maximum allowed time difference in minutes from the ideal target times.
-
-    Returns:
-    --------
-    pd.DataFrame
-        New DataFrame with target timestamps as index and data from nearest match (or NaN).
     """
     if df.empty:
         return pd.DataFrame(columns=df.columns)
 
-    # Create the target time grid
-    start_time = df.index.min().normalize()
-    end_time = df.index.max()
-    target_times = pd.date_range(start=start_time, end=end_time, freq=freq)
+    # Generate regular time grid (target)
+    target_times = pd.date_range(df.index.min().normalize(), df.index.max(), freq=freq)
 
-    # Prepare list of matched rows
-    matched_rows = []
+    # Get closest real indices for each target time
+    indexer = df.index.get_indexer(target_times, method='nearest')
 
-    for target_time in target_times:
-        try:
-            pos = df.index.get_indexer([target_time], method='nearest')[0]
-            closest_time = df.index[pos]
-            diff_minutes = abs(
-                (closest_time - target_time).total_seconds()) / 60
+    # Identify invalid indices and calculate time differences
+    valid = indexer != -1
+    valid_targets = target_times[valid]
+    matched_times = df.index[indexer[valid]]
+    diffs = np.abs((matched_times - valid_targets).total_seconds()) / 60
 
-            if diff_minutes <= tol_minutes:
-                matched_rows.append(df.iloc[pos].values)
-            else:
-                matched_rows.append([np.nan] * df.shape[1])
+    # Apply tolerance mask
+    within_tol = diffs <= tol_minutes
+    final_indexer = np.where(valid, np.where(within_tol, indexer, -1), -1)
 
-        except IndexError:
-            matched_rows.append([np.nan] * df.shape[1])
+    # Build output using masked assignment
+    result = pd.DataFrame(np.nan, index=target_times, columns=df.columns)
 
-    # Build the result DataFrame
-    result_df = pd.DataFrame(
-        matched_rows, index=target_times, columns=df.columns)
-    return result_df
+    valid_rows = final_indexer != -1
+    if valid_rows.any():
+        selected_rows = df.iloc[final_indexer[valid_rows]]
+        result.iloc[valid_rows] = selected_rows.values
+
+    return result
 
 
 def data_resampling(vr):
@@ -173,8 +209,8 @@ def data_resampling(vr):
                         '24h': data.resample('24h').sum(),
                     })
                 print(
-                    f'Copied data for {vvrr}, {vr} at different time resolutions')
-
+                    f'Resampled (mean or cmul) at 1h, 3h, 24h for {vvrr}, {vr}.')
+                
             elif vvrr == 'e':
                 if res_strategy[vr] in ['closest', 'mean']:
                     resampled_data.update({
@@ -189,7 +225,7 @@ def data_resampling(vr):
                         '24h': data.resample('24h').sum(),
                     })
                 print(
-                    f'Copied data for {vvrr}, {vr} at different time resolutions')
+                    f'Resampled (mean or cmul) at 1h, 3h, 24h for {vvrr}, {vr}.')
 
             elif vvrr in ['t', 't1', 't2']:
                 if res_strategy[vr] == 'closest':
@@ -211,8 +247,7 @@ def data_resampling(vr):
                         '24h': data.resample('24h').sum(),
                     })
                 print(
-                    f'Extracted closest timestamps within tolerance for {vvrr}, {vr} at 3h, 1h, and native resolution + 24h averages.')
-
+                    f'Extracted closest timestamps within tolerance for {vvrr}, {vr}.')
             inpt.extr[vr][vvrr]['data_res'] = resampled_data
 
         else:

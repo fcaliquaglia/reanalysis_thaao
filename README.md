@@ -262,7 +262,31 @@ from https://confluence.ecmwf.int/display/CKB/ERA5-Land%3A+data+documentation#ER
 - THAAO (pyranometers): ``ULI``
 
 ## CLOUDS & ATMOSPHERE
+CARRA:
+All cloud and water vapour variables are instantaneous, 
+i.e. they are given for the time step at which they are output. 
+Vertically integrated water vapour is given in units of kg/m2. 
+It is vertically integrated from the surface to the top of the atmosphere. 
+In practice it is computed from the specific water vapour on the 65 model levels 
+(see section 4.4). Likewise, integrated cloud liquid water, integrated cloud ice water, 
+and integrated graupel are computed from the specific cloud liquid water, 
+cloud ice and graupel on the 65 model levels.
 
+Total cloud cover, as given in the output, is computed from model level cloud cover 
+with the nearly maximum-random cloud overlap assumption with a scaling 
+coefficient of 0.8. If this had been 0.0 random cloud overlap would be assumed, 
+which means that the cloud covers at the model levels are assumed to be independent. 
+If the scaling coefficient had been 1.0 maximum-random cloud overlap is assumed, 
+which means that all vertically connected cloud layers are assumed to overlap 
+perfectly. Note that this definition of cloud cover is not consistent 
+with maximum-random cloud cover used within the model for computing radiative 
+fluxes! The same nearly maximum-random cloud overlap assumption is used to 
+compute high, medium and low cloud covers. Following the WMO definitions 
+high cloud cover is above 5 km height, while low cloud cover is below or at 
+2 km height. Medium cloud cover is in between. Note that height here is 
+considered relative to the surface! Fog is the cloud cover at the lowest 
+model level that has a thickness of approximately 20 m. The unit for all cloud 
+cover and fog output is % in the range from 0% to 100%.
 ### Precipitation (``precip``)
 
 - CARRA: ``total_precipitation``

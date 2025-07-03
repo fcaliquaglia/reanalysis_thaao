@@ -31,6 +31,9 @@ import pandas as pd
 import inputs as inpt
 import tools as tls
 
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+import matplotlib.colors as mcolors
+
 
 def plot_ts(period_label):
     """
@@ -139,7 +142,7 @@ def plot_residuals(period_label):
 
         # Plot residuals (component - reference) for the year
         for comp in comps:
-            tres=get_tres(comp)
+            tres = get_tres(comp)
             ref_data_res = var_data[ref_x]['data_res'][tres][inpt.var]
             null, chck = tls.check_empty_df(
                 var_data[ref_x]['data_res'][tres][inpt.var], inpt.var)
@@ -158,7 +161,7 @@ def plot_residuals(period_label):
                 ax[i].plot(residuals, color=inpt.var_dict[comp]['col'],
                            label=inpt.var_dict[comp]['label'], **plot_kwargs)
 
-        # Format axis (assuming format_ts accepts residuals flag)
+        # Format axis
         format_ts(ax, year, i, residuals=True)
 
     plt.xlabel('Time')
@@ -193,7 +196,7 @@ def plot_scatter(period_label):
 
     control = 0
     for i, comp in enumerate(comps):
-        tres=get_tres(comp)
+        tres = get_tres(comp)
         # Preprocess time and data
         x = var_data[ref_x]['data_res'][tres][inpt.var]
         time_range = pd.date_range(
@@ -238,7 +241,6 @@ def plot_scatter(period_label):
                 else:
                     cmap = plt.cm.jet.copy()
 
-                    import matplotlib.colors as mcolors
                     # Modify the colormap so that the lowest color is white
                     # Create a new colormap with white at the bottom, then jet for the rest
                     colors = cmap(np.linspace(0, 1, cmap.N))
@@ -258,7 +260,6 @@ def plot_scatter(period_label):
                     )
                     axs[i].text(
                         0.10, 0.90, f"bin_size={bin_size:.3f}", transform=axs[i].transAxes)
-                    from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
                     while control == 0:
                         cax = inset_axes(axs[3],
@@ -366,7 +367,7 @@ def plot_scatter_cum():
             print(f"SCATTERPLOTS CUMULATIVE {period_label}")
 
             for i, comp in enumerate(comps):
-                tres=get_tres(comp)
+                tres = get_tres(comp)
                 # Preprocess time and data
                 x = var_data[ref_x]['data_res'][tres][inpt.var]
                 time_range = pd.date_range(
@@ -529,11 +530,12 @@ def frame_and_axis_removal(ax, len_comps):
         ax[idx].get_xaxis().set_visible(False)
         ax[idx].get_yaxis().set_visible(False)
 
+
 def get_tres(comp):
     if inpt.tres != 'original':
         return inpt.tres
     return '3h' if comp == 'c' else '1h'
-    
+
 # def plot_ba(period_label):
 #     """
 #

@@ -215,7 +215,7 @@ def read_lw_down():
     var_dict = inpt.extr[vr]
     rd_frea.read_rean(vr, "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
-    var_dict["c"]["data"][vr] /= inpt.var_dict["c"]["rad_conv_factor"]
+    var_dict["c"]["data"][vr] /= pd.Timedelta('3h').total_seconds()
     var_dict["c"]["data"][vr] = var_dict["c"]["data"][vr].mask(
         var_dict["c"]["data"][vr] < 1e-5, np.nan)
 
@@ -224,8 +224,7 @@ def read_lw_down():
     var_dict = inpt.extr[vr]
     rd_frea.read_rean("lw_down", "e")
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
-
-    var_dict["e"]["data"][vr] /= inpt.var_dict["e"]["rad_conv_factor"]
+    var_dict["e"]["data"][vr] /= pd.Timedelta('3h').total_seconds()
     var_dict["e"]["data"][vr] = var_dict["e"]["data"][vr].mask(
         var_dict["e"]["data"][vr] < 1e-5, np.nan)
 
@@ -273,7 +272,7 @@ def read_lw_up():
     rd_frea.read_rean(vr, "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
     lw_net_c = var_dict["c"]["data"][vr]
-    lw_net_c /= inpt.var_dict["c"]["rad_conv_factor"]
+    lw_net_c /= pd.Timedelta('3h').total_seconds()
 
     vr = "lw_up"
     var_dict = inpt.extr[vr]
@@ -289,7 +288,7 @@ def read_lw_up():
     rd_frea.read_rean(vr, "e")
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
     lw_net_e = var_dict["e"]["data"][vr]
-    lw_net_e /= inpt.var_dict["e"]["rad_conv_factor"]
+    lw_net_e /= pd.Timedelta('1h').total_seconds()
 
     vr = "lw_up"
     var_dict = inpt.extr[vr]
@@ -336,7 +335,7 @@ def read_precip():
     # --- CARRA ---
     rd_frea.read_rean(vr, "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
-    var_dict["c"]["data"][vr] *= 1000
+
 
     # --- ERA5 ---
     rd_frea.read_rean(vr, "e")
@@ -348,6 +347,7 @@ def read_precip():
         rd_ft.read_aws_ecapac(vr)
         var_dict["t2"]["data"], _ = tls.check_empty_df(
             var_dict["t2"]["data"], vr)
+    var_dict["c"]["data"][vr] /= 1000
 
     return
 
@@ -510,7 +510,8 @@ def read_sw_down():
     var_dict = inpt.extr[vr]
     rd_frea.read_rean(vr, "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
-    var_dict["c"]["data"][vr] /= inpt.var_dict["c"]["rad_conv_factor"]
+    ssrd_flux = (var_dict["c"]["data"].diff(dim='time')) / (var_dict["c"]["data"].time.diff(dim='time').dt.total_seconds())
+    var_dict["c"]["data"][vr] /= pd.Timedelta('3h').total_seconds()
     var_dict["c"]["data"][vr] = var_dict["c"]["data"][vr].mask(
         var_dict["c"]["data"][vr] < 1e-5, np.nan)
 
@@ -519,7 +520,7 @@ def read_sw_down():
     var_dict = inpt.extr[vr]
     rd_frea.read_rean(vr, "e")
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
-    var_dict["e"]["data"][vr] /= inpt.var_dict["e"]["rad_conv_factor"]
+    var_dict["e"]["data"][vr] /= pd.Timedelta('1h').total_seconds()
     var_dict["e"]["data"][vr] = var_dict["e"]["data"][vr].mask(
         var_dict["e"]["data"][vr] < 1e-5, np.nan)
 
@@ -602,7 +603,7 @@ def read_sw_up():
     rd_frea.read_rean("sw_net", "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
     sw_net_c = var_dict["c"]["data"][vr]
-    sw_net_c /= inpt.var_dict["c"]["rad_conv_factor"]
+    sw_net_c /= pd.Timedelta('3h').total_seconds()
 
     vr = "sw_up"
     var_dict = inpt.extr[vr]
@@ -618,7 +619,7 @@ def read_sw_up():
     rd_frea.read_rean(vr, "e")
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
     sw_net_e = var_dict["e"]["data"][vr]
-    sw_net_e /= inpt.var_dict["e"]["rad_conv_factor"]
+    sw_net_e /= pd.Timedelta('1h').total_seconds()
 
     vr = "sw_up"
     var_dict = inpt.extr[vr]
