@@ -199,11 +199,20 @@ def plot_scatter(period_label):
         tres = get_tres(comp)
         # Preprocess time and data
         x = var_data[ref_x]['data_res'][tres][inpt.var]
-        time_range = pd.date_range(
-            start=pd.Timestamp(inpt.years[0], 1, 1),
-            end=pd.Timestamp(inpt.years[-1], 12, 31, 23, 59),
-            freq=tres
-        )
+        # Generate regular time grid (target)
+        if inpt.var not in ['sw_down', 'sw_up', 'lw_down', 'lw_up']:
+            time_range = pd.date_range(
+                start=pd.Timestamp(inpt.years[0], 1, 1),
+                end=pd.Timestamp(inpt.years[-1], 12, 31, 23, 59),
+                freq=tres
+            )
+        else:
+            target_times =          time_range = pd.date_range(
+                        start=pd.Timestamp(inpt.years[0], 1, 1),
+                        end=pd.Timestamp(inpt.years[-1], 12, 31, 23, 59),
+                        freq=tres
+                    ) + pd.Timedelta(hours=1)
+
         x_all = x.reindex(time_range).astype(float)
         season_months = inpt.seass[period_label]['months']
         x_season = x_all.loc[x_all.index.month.isin(season_months)]
@@ -321,11 +330,18 @@ def plot_scatter_cum():
             x = var_data[ref_x]['data_res'][inpt.tres][inpt.var]
 
             # Prepare full time range for reindexing once
-            time_range = pd.date_range(
-                start=pd.Timestamp(inpt.years[0], 1, 1, 0, 0),
-                end=pd.Timestamp(inpt.years[-1], 12, 31, 23, 59),
-                freq=inpt.tres
-            )
+            if inpt.var not in ['sw_down', 'sw_up', 'lw_down', 'lw_up']:
+                time_range = pd.date_range(
+                    start=pd.Timestamp(inpt.years[0], 1, 1),
+                    end=pd.Timestamp(inpt.years[-1], 12, 31, 23, 59),
+                    freq=inpt.tres
+                )
+            else:
+                target_times =          time_range = pd.date_range(
+                            start=pd.Timestamp(inpt.years[0], 1, 1),
+                            end=pd.Timestamp(inpt.years[-1], 12, 31, 23, 59),
+                            freq=inpt.tres
+                        ) + pd.Timedelta(hours=1)
             x_all = x.reindex(time_range).astype(float)
             y = var_data[comp]['data_res'][inpt.tres][inpt.var]
             tolerance = pd.Timedelta(hours=2 if comp == 'e' else 4)
@@ -368,13 +384,18 @@ def plot_scatter_cum():
 
             for i, comp in enumerate(comps):
                 tres = get_tres(comp)
-                # Preprocess time and data
-                x = var_data[ref_x]['data_res'][tres][inpt.var]
-                time_range = pd.date_range(
-                    start=pd.Timestamp(inpt.years[0], 1, 1),
-                    end=pd.Timestamp(inpt.years[-1], 12, 31, 23, 59),
-                    freq=tres
-                )
+                if inpt.var not in ['sw_down', 'sw_up', 'lw_down', 'lw_up']:
+                    time_range = pd.date_range(
+                        start=pd.Timestamp(inpt.years[0], 1, 1),
+                        end=pd.Timestamp(inpt.years[-1], 12, 31, 23, 59),
+                        freq=tres
+                    )
+                else:
+                    time_range = pd.date_range(
+                                start=pd.Timestamp(inpt.years[0], 1, 1),
+                                end=pd.Timestamp(inpt.years[-1], 12, 31, 23, 59),
+                                freq=tres
+                            ) + pd.Timedelta(hours=1)
                 x_all = x.reindex(time_range).astype(float)
                 season_months = inpt.seass[period_label]['months']
                 x_season = x_all.loc[x_all.index.month.isin(season_months)]
@@ -534,6 +555,8 @@ def frame_and_axis_removal(ax, len_comps):
 def get_tres(comp):
     if inpt.tres != 'original':
         return inpt.tres
+    if inpt.var in ['sw_up', 'sw_down', 'lw_up', 'lw_down']:
+        return '1h'
     return '3h' if comp == 'c' else '1h'
 
 # def plot_ba(period_label):

@@ -90,7 +90,10 @@ def get_closest_subset_with_tolerance(df, freq, tol_minutes):
         return pd.DataFrame(columns=df.columns)
 
     # Generate regular time grid (target)
-    target_times = pd.date_range(df.index.min().normalize(), df.index.max(), freq=freq)
+    if inpt.var not in ['sw_down', 'sw_up', 'lw_down', 'lw_up']:
+        target_times = pd.date_range(df.index.min().normalize(), df.index.max(), freq=freq)
+    else:
+        target_times =  pd.date_range(df.index.min().normalize(), df.index.max(), freq=freq)+ pd.Timedelta(hours=1)
 
     # Get closest real indices for each target time
     indexer = df.index.get_indexer(target_times, method='nearest')
@@ -161,14 +164,12 @@ def data_resampling(vr):
     """
 
     res_strategy = {
-        'alb': 'mean',
         'temp': 'closest',
-        'alb': 'mean',
         'cbh': 'closest',
         'iwv': 'closest',
         'lwp': 'closest',
         'lw_down': 'closest',
-        'lw_up': 'mean',
+        'lw_up': 'closest',
         'precip': 'cumul',
         'rh': 'closest',
         'surf_pres': 'closest',
@@ -197,31 +198,37 @@ def data_resampling(vr):
             resampled_data = {'original': data}
 
             if data_typ == 'c':
-                if res_strategy[vr] in ['closest', 'mean']:
+                if res_strategy[vr] == 'closest':
                     resampled_data.update({
-                        '3h': data,
+                        '1h': get_closest_subset_with_tolerance(data, '1h', tol_minutes=10),
+                        '24h': data.resample('24h').mean(),
+                    })
+                if res_strategy[vr] =='mean':
+                    resampled_data.update({
                         '24h': data.resample('24h').mean(),
                     })
                 if res_strategy[vr] == 'cumul':
                     resampled_data.update({
                         '1h': data,
-                        '3h': data.resample('3h').sum(),
                         '24h': data.resample('24h').sum(),
                     })
                 print(
                     f'Resampled (mean or cumul) at 1h, 3h, 24h for {data_typ}, {vr}.')
                 
             elif data_typ == 'e':
-                if res_strategy[vr] in ['closest', 'mean']:
+                if res_strategy[vr] == 'closest':
+                    resampled_data.update({
+                        '1h': get_closest_subset_with_tolerance(data, '1h', tol_minutes=10),
+                        '24h': data.resample('24h').mean(),
+                    })
+                if res_strategy[vr] == 'mean':
                     resampled_data.update({
                         '1h': data,
-                        '3h': data.resample('3h').mean(),
                         '24h': data.resample('24h').mean(),
                     })
                 if res_strategy[vr] == 'cumul':
                     resampled_data.update({
                         '1h': data,
-                        '3h': data.resample('3h').sum(),
                         '24h': data.resample('24h').sum(),
                     })
                 print(
@@ -231,19 +238,16 @@ def data_resampling(vr):
                 if res_strategy[vr] == 'closest':
                     resampled_data.update({
                         '1h': get_closest_subset_with_tolerance(data, '1h', tol_minutes=10),
-                        '3h': get_closest_subset_with_tolerance(data, '3h', tol_minutes=30),
                         '24h': data.resample('24h').mean(),
                     })
                 if res_strategy[vr] == 'mean':
                     resampled_data.update({
                         '1h': data.resample('1h').mean(),
-                        '3h': data.resample('3h').mean(),
                         '24h': data.resample('24h').mean(),
                     })
                 if res_strategy[vr] == 'cumul':
                     resampled_data.update({
                         '1h': data.resample('1h').sum(),
-                        '3h': data.resample('3h').sum(),
                         '24h': data.resample('24h').sum(),
                     })
                 print(
