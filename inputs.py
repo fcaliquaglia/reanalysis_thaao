@@ -94,10 +94,7 @@ datasets = {
     'radiosondes': {'switch': False, 'fn': ''}
 }
 
-# Get first active dataset's 'fn' value or None if none active
-active_dataset = next((info['fn'] for info in datasets.values() if info.get('switch')), None)
-
-location = active_dataset  # same as above, can be merged if needed
+location = next((info['fn'] for info in datasets.values() if info.get('switch')), None)
 
 # ========== VARIABLES ==========
 thaao_c, thaao_e, thaao_t = 'carra1', 'era5_NG', 'thaao'
@@ -106,11 +103,11 @@ met_vars = ['windd', 'winds', 'temp', 'surf_pres', 'rh', 'iwv']
 rad_vars = ['lw_up', 'sw_up', 'lw_down', 'sw_down']
 cloud_vars = ['cbh', 'lwp', 'tcc']
 extra_vars = ['winds', 'windd']
-technical_vars = ['windu', 'windv', 'dewpt', 'sw_net', '']
+technical_vars = ['windu', 'windv', 'dewpt', 'sw_net']
 
 list_var = met_vars + rad_vars  # you can add + cloud_vars + extra_vars if needed
 tres_list = ['original', '24h']
-tres = var = ''  # Defaults
+tres = var = ''
 
 years = np.arange(2016, 2025)
 
@@ -135,7 +132,7 @@ seasons = {
 var_dict = {
     'c': {'nanval': np.nan, 'col': 'red', 'col_ori': 'orange', 'label': 'CARRA', 'label_uom': ''},
     'e': {'nanval': -32767.0, 'col': 'blue', 'col_ori': 'cyan', 'label': 'ERA5', 'label_uom': ''},
-    't': {'nanval': -9999.9, 'col': 'black', 'col_ori': 'grey', 'label': active_dataset, 'label_uom': ''},
+    't': {'nanval': -9999.9, 'col': 'black', 'col_ori': 'grey', 'label': location, 'label_uom': ''},
     't1': {'nanval': np.nan, 'col': 'green', 'col_ori': 'lightgreen', 'label': 'HATPRO', 'label_uom': ''},
     't2': {'nanval': np.nan, 'col': 'purple', 'col_ori': 'violet', 'label': 'AWS_ECAPAC', 'label_uom': ''}
 }

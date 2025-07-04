@@ -31,7 +31,7 @@ import res_func as rs_f
 
 
 def main():
-    print(inpt.lbl, end="\n\n")
+    print(inpt.location, end="\n\n")
     for tres in inpt.tres_list:
         inpt.tres = tres
         print(f"Processing time resolution: {tres}")

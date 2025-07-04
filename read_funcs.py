@@ -842,7 +842,7 @@ def read_wind():
 
     vr = "windv"
     var_dict = inpt.extr[vr]
-    rd_frea.read_rean("vr", "e")
+    rd_frea.read_rean(vr, "e")
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
     e_ws = wind_speed(
         inpt.extr["windu"]["e"]["data"][vr].values * units("m/s"),
