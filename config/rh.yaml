@@ -1,0 +1,40 @@
+rh:
+  name: rh
+  ref_x: t
+  min: 0
+  max: 100
+  res_min: -10
+  res_max: 10
+  uom: "[%]"
+  comps:
+    - c
+    - e
+    - t2
+  bin_nr: 200
+  c:
+    fn: "{thaao_c}_2m_relative_humidity_"
+    column: .nan
+    data: ""
+    data_res: ""
+    var_name: r2
+  e:
+    fn: ""
+    column: .nan
+    data: ""
+    data_res: ""
+    var_name: ""
+  t:
+    fn: "Meteo_weekly_all"
+    column: "RH_%"
+    data: ""
+    data_res: ""
+  t1:
+    fn: ""
+    column: .nan
+    data: ""
+    data_res: ""
+  t2:
+    fn: "AWS_THAAO_"
+    column: RH
+    data: ""
+    data_res: ""

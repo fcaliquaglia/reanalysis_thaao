@@ -90,11 +90,7 @@ def get_closest_subset_with_tolerance(df, freq, tol_minutes):
         return pd.DataFrame(columns=df.columns)
 
     # Generate regular time grid (target)
-    if inpt.var not in ['sw_down', 'sw_up', 'lw_down', 'lw_up']:
-        target_times = pd.date_range(df.index.min().normalize(), df.index.max(), freq=freq)
-    else:
-        target_times =  pd.date_range(df.index.min().normalize(), df.index.max(), freq=freq)+ pd.Timedelta(hours=1)
-
+    target_times = pd.date_range(df.index.min().normalize(), df.index.max(), freq=freq)
     # Get closest real indices for each target time
     indexer = df.index.get_indexer(target_times, method='nearest')
 
@@ -109,12 +105,13 @@ def get_closest_subset_with_tolerance(df, freq, tol_minutes):
     final_indexer = np.where(valid, np.where(within_tol, indexer, -1), -1)
 
     # Build output using masked assignment
-    result = pd.DataFrame(np.nan, index=target_times, columns=df.columns)
+    result = pd.DataFrame(index=target_times, columns=df.columns)
+    result = result.astype(df.dtypes.to_dict())
 
     valid_rows = final_indexer != -1
     if valid_rows.any():
         selected_rows = df.iloc[final_indexer[valid_rows]]
-        result.iloc[valid_rows] = selected_rows.values
+        result.iloc[valid_rows] = selected_rows
 
     return result
 

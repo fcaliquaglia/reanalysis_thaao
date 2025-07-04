@@ -1,0 +1,37 @@
+windu:
+  name: windd
+  ref_x: ""
+  min: null
+  max: null
+  res_min: null
+  res_max: null
+  uom: "[m/s]"
+  comps: []
+  bin_nr: null
+  c:
+    fn: ""
+    column: null
+    data: ""
+    data_res: ""
+    var_name: ""
+  e:
+    fn: "{thaao_e}_10m_u_component_of_wind_"
+    column: 4
+    data: ""
+    data_res: ""
+    var_name: "u10"
+  t:
+    fn: ""
+    column: null
+    data: ""
+    data_res: ""
+  t1:
+    fn: ""
+    column: null
+    data: ""
+    data_res: ""
+  t2:
+    fn: "AWS_THAAO_"
+    column: null
+    data: ""
+    data_res: ""

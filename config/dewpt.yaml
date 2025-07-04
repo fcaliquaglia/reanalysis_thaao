@@ -1,0 +1,37 @@
+dewpt:
+  name: dewpt
+  ref_x: ""
+  min: ""
+  max: ""
+  res_min: ""
+  res_max: ""
+  uom: "[deg]"
+  comps: []
+  bin_nr: .nan
+  c:
+    fn: ""
+    column: .nan
+    data: ""
+    data_res: ""
+    var_name: ""
+  e:
+    fn: "era5_NG_2m_dewpoint_temperature_"
+    column: .nan
+    data: ""
+    data_res: ""
+    var_name: d2m
+  t:
+    fn: ""
+    column: .nan
+    data: ""
+    data_res: ""
+  t1:
+    fn: ""
+    column: .nan
+    data: ""
+    data_res: ""
+  t2:
+    fn: ""
+    column: .nan
+    data: ""
+    data_res: ""

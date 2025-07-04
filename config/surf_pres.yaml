@@ -1,0 +1,40 @@
+surf_pres:
+  name: surf_pres
+  ref_x: t
+  min: 800
+  max: 1050
+  res_min: -10
+  res_max: 10
+  uom: "[hPa]"
+  comps:
+    - c
+    - e
+    - t2
+  bin_nr: 400
+  c:
+    fn: "{thaao_c}_surface_pressure_"
+    column: 2
+    data: ""
+    data_res: ""
+    var_name: sp
+  e:
+    fn: "{thaao_e}_surface_pressure_"
+    column: 2
+    data: ""
+    data_res: ""
+    var_name: sp
+  t:
+    fn: "Meteo_weekly_all"
+    column: "BP_hPa"
+    data: ""
+    data_res: ""
+  t1:
+    fn: ""
+    column: .nan
+    data: ""
+    data_res: ""
+  t2:
+    fn: "AWS_THAAO_"
+    column: "BP_mbar"
+    data: ""
+    data_res: ""

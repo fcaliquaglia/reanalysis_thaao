@@ -1,0 +1,37 @@
+lw_down:
+  name: lw_down
+  ref_x: t
+  min: 100
+  max: 500
+  res_min: -20
+  res_max: 20
+  uom: "[W/m2]"
+  comps: ["c", "e"]
+  bin_nr: 200
+  c:
+    fn: "carra1_thermal_surface_radiation_downwards_"
+    column: 4
+    data: ""
+    data_res: ""
+    var_name: strd
+  e:
+    fn: "era5_NG_surface_thermal_radiation_downwards_"
+    column: 2
+    data: ""
+    data_res: ""
+    var_name: strd
+  t:
+    fn: "MERGED_SW_LW_UP_DW_METEO_"
+    column: LW_DOWN
+    data: ""
+    data_res: ""
+  t1:
+    fn: ""
+    column: .nan
+    data: ""
+    data_res: ""
+  t2:
+    fn: ""
+    column: .nan
+    data: ""
+    data_res: ""
