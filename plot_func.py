@@ -187,8 +187,7 @@ def plot_scatter(period_label):
     axs = ax.ravel()
 
     # Prepare metadata
-    season_name = inpt.seasons[period_label]['name']
-    str_name = f"{inpt.tres} {season_name} scatter {inpt.var} {inpt.var_dict['t']['label']} {inpt.years[0]}-{inpt.years[-1]}"
+    str_name = f"{inpt.tres} {period_label} scatter {inpt.var} {inpt.var_dict['t']['label']} {inpt.years[0]}-{inpt.years[-1]}"
     fig.suptitle(str_name, fontweight='bold')
     fig.subplots_adjust(top=0.93)
 
@@ -222,7 +221,7 @@ def plot_scatter(period_label):
         print(
             f"Plotting scatter {inpt.var_dict['t']['label']} - {inpt.var_dict[comp]['label']}")
 
-        if season_name != 'all':
+        if period_label != 'all':
             axs[i].scatter(
                 x_valid, y_valid,
                 s=5, facecolors='none', edgecolors=inpt.seasons[period_label]['col'],
