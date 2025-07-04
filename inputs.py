@@ -70,7 +70,8 @@ datasets = {
 }
 
 # Get active dataset label
-lbl = next((info['fn'] for info in datasets.values() if info.get('switch')), None)
+lbl = next((info['fn']
+           for info in datasets.values() if info.get('switch')), None)
 
 location = next(
     (v['fn'] for v in datasets.values() if v.get('switch')),
