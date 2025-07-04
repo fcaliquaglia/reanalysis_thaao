@@ -8,7 +8,6 @@ uom: "[deg]"
 comps:
   - c
   - e
-  - t2
 bin_nr: 200
 c:
   fn: "thaao_c_10m_wind_direction_"
