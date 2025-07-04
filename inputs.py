@@ -82,12 +82,12 @@ thaao_t = 'thaao'
 
 met = ['temp', 'surf_pres', 'rh', 'iwv']
 rad = ['lw_up', 'sw_up', 'lw_down', 'sw_down']
-clouds = ['cbh', 'lwp', 'tcc'] # , 'precip'
+clouds = ['cbh', 'lwp', 'tcc']  # , 'precip'
 extra = ['winds', 'windd']
 
 ##
-tres_list = ['original', '24h'] # ['original', '24h']
-list_var =   rad + clouds + extra  # + clouds
+tres_list = ['original', '24h']  # ['original', '24h']
+list_var = met + rad  # + clouds + extra  # + clouds
 
 
 tres = ''
@@ -175,7 +175,7 @@ extr = {'alb': {'name': 'alb', 'ref_x': 't', 'min': 0, 'max': 1,
                 't': {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''},
                 't1': {'fn': 'IWV_15_min_all', 'column': 'IWV[kg/m2]', 'data': '',
                              'data_res': ''},
-                't2': {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''}}, # radiosondes
+                't2': {'fn': '', 'column': np.nan, 'data': '', 'data_res': ''}},  # radiosondes
         'lwp': {'name': 'lwp', 'ref_x': 't1', 'min': 0, 'max': 50, 'res_min': -20, 'res_max': 20,
                 'uom': '[kg/m2]', 'comps': ['c', 'e'], 'bin_nr': 200,
                 'c': {'fn': f'{thaao_c}_total_column_cloud_liquid_water_', 'column': 2,

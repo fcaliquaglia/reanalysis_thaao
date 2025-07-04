@@ -201,15 +201,18 @@ def data_resampling(vr):
                 if res_strategy[vr] == 'closest':
                     resampled_data.update({
                         '1h': get_closest_subset_with_tolerance(data, '1h', tol_minutes=10),
+                        '3h': get_closest_subset_with_tolerance(data, '3h', tol_minutes=30),
                         '24h': data.resample('24h').mean(),
                     })
                 if res_strategy[vr] =='mean':
                     resampled_data.update({
+                        '3h': data,
                         '24h': data.resample('24h').mean(),
                     })
                 if res_strategy[vr] == 'cumul':
                     resampled_data.update({
                         '1h': data,
+                        '3h': data.resample('3h').sum(),
                         '24h': data.resample('24h').sum(),
                     })
                 print(
@@ -219,16 +222,19 @@ def data_resampling(vr):
                 if res_strategy[vr] == 'closest':
                     resampled_data.update({
                         '1h': get_closest_subset_with_tolerance(data, '1h', tol_minutes=10),
+                        '3h': get_closest_subset_with_tolerance(data, '3h', tol_minutes=30),
                         '24h': data.resample('24h').mean(),
                     })
                 if res_strategy[vr] == 'mean':
                     resampled_data.update({
                         '1h': data,
+                        '3h': data.resample('3h').mean(),
                         '24h': data.resample('24h').mean(),
                     })
                 if res_strategy[vr] == 'cumul':
                     resampled_data.update({
                         '1h': data,
+                        '3h': data.resample('3h').sum(),
                         '24h': data.resample('24h').sum(),
                     })
                 print(
@@ -238,16 +244,19 @@ def data_resampling(vr):
                 if res_strategy[vr] == 'closest':
                     resampled_data.update({
                         '1h': get_closest_subset_with_tolerance(data, '1h', tol_minutes=10),
+                        '3h': get_closest_subset_with_tolerance(data, '3h', tol_minutes=30),
                         '24h': data.resample('24h').mean(),
                     })
                 if res_strategy[vr] == 'mean':
                     resampled_data.update({
                         '1h': data.resample('1h').mean(),
+                        '3h': data.resample('3h').mean(),
                         '24h': data.resample('24h').mean(),
                     })
                 if res_strategy[vr] == 'cumul':
                     resampled_data.update({
                         '1h': data.resample('1h').sum(),
+                        '3h': data.resample('3h').sum(),
                         '24h': data.resample('24h').sum(),
                     })
                 print(
