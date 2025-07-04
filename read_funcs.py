@@ -845,16 +845,16 @@ def read_wind():
     rd_frea.read_rean(vr, "e")
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
     e_ws = wind_speed(
-        inpt.extr["windu"]["e"]["data"][vr].values * units("m/s"),
-        inpt.extr["windv"]["e"]["data"][vr].values * units("m/s"))
+        inpt.extr["windu"]["e"]["data"]["windu"].values * units("m/s"),
+        inpt.extr["windv"]["e"]["data"]["windv"].values * units("m/s"))
     inpt.extr["winds"]["e"]["data"] = pd.DataFrame(
-        index=inpt.extr["windu"]["e"]["data"][vr].index, data=e_ws.magnitude, columns=["winds"])
+        index=inpt.extr["windu"]["e"]["data"]["windu"].index, data=e_ws.magnitude, columns=["winds"])
 
     e_wd = wind_direction(
-        inpt.extr["windu"]["e"]["data"][vr].values * units("m/s"),
-        inpt.extr["windv"]["e"]["data"][vr].values * units("m/s"))
-    inpt.extr["windd"]["e"]["data"][vr] = pd.DataFrame(
-        index=inpt.extr["windu"]["e"]["data"][vr].index, data=e_wd.magnitude, columns=["windd"])
+        inpt.extr["windu"]["e"]["data"]["windu"].values * units("m/s"),
+        inpt.extr["windv"]["e"]["data"]["windv"].values * units("m/s"))
+    inpt.extr["windd"]["e"]["data"] = pd.DataFrame(
+        index=inpt.extr["windu"]["e"]["data"]["windu"].index, data=e_wd.magnitude, columns=["windd"])
 
     # --- THAAO ---
     if inpt.datasets['THAAO']['switch']:

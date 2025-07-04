@@ -112,7 +112,7 @@ def read_ceilometer(vr):
     if count < len(inpt.years):
         t_all = []
 
-        for i in inpt.ceilometer_daterange[inpt.ceilometer_daterange.year.isin(inpt.years)]:
+        for i in inpt.dateranges["ceilometer"][inpt.dateranges["ceilometer"].year.isin(inpt.years)]:
             date_str = i.strftime("%Y%m%d")
             file = Path(inpt.basefol["t"]["base"]) / "thaao_ceilometer" / \
                 "medie_tat_rianalisi" / \
@@ -172,7 +172,7 @@ def read_aws_ecapac(vr):
     # If not all years found, read raw .dat files
     if count < len(inpt.years):
         t_all = []
-        for i in inpt.aws_ecapac_daterange[inpt.aws_ecapac_daterange.year.isin(inpt.years)]:
+        for i in inpt.dateranges["aws_ecapac"][inpt.dateranges["aws_ecapac"].year.isin(inpt.years)]:
             date_str = i.strftime("%Y_%m_%d")
             file = (
                 Path(inpt.basefol["t"]['base']) / "thaao_ecapac_aws_snow" /
