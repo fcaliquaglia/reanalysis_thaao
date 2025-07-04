@@ -99,13 +99,12 @@ location = next((info['fn'] for info in datasets.values() if info.get('switch'))
 # ========== VARIABLES ==========
 thaao_c, thaao_e, thaao_t = 'carra1', 'era5_NG', 'thaao'
 
-met_vars = ['windd', 'winds', 'temp', 'surf_pres', 'rh', 'iwv']
+met_vars = ['temp', 'surf_pres', 'rh', 'iwv', 'windd', 'winds']
 rad_vars = ['lw_up', 'sw_up', 'lw_down', 'sw_down']
 cloud_vars = ['cbh', 'lwp', 'tcc']
-extra_vars = ['winds', 'windd']
-technical_vars = ['windu', 'windv', 'dewpt', 'sw_net']
+technical_vars = ['windu', 'windv', 'dewpt', 'sw_net', 'lw_net']
 
-list_var = met_vars + rad_vars  # you can add + cloud_vars + extra_vars if needed
+list_var = ['iwv'] # met_vars + rad_vars + cloud_vars # you can add + cloud_vars  if needed
 tres_list = ['original', '24h']
 tres = var = ''
 
@@ -141,7 +140,7 @@ var_dict = {
 config_dir = Path('config')
 extr = {}
 
-for var_name in met_vars + rad_vars + cloud_vars + extra_vars + technical_vars:
+for var_name in met_vars + rad_vars + cloud_vars + technical_vars:
     cfg = load_and_process_yaml(config_dir / f'{var_name}.yaml')
     if cfg is not None:
         extr[var_name] = cfg

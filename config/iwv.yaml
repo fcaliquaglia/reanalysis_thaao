@@ -9,7 +9,6 @@ comps:
   - c
   - e
   - t1
-  - t2
 bin_nr: 200
 
 c:
@@ -27,13 +26,14 @@ e:
   var_name: "tcwv"
 
 t:
-  fn: ''
+  fn: ""
   column: ""
-  data: ''
-  data_res: ''
+  data: ""
+  data_res: ""
 
 t1:
   fn: "IWV_15_min_all"
-  column: 'IWV[kg/m2]'
+  column: "IWV[kg/m2]"
   data: ""
   data_res: ""
+  
