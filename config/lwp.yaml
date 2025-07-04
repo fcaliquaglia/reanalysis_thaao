@@ -1,37 +1,36 @@
-lwp:
-  name: lwp
-  ref_x: t1
-  min: 0
-  max: 50
-  res_min: -20
-  res_max: 20
-  uom: "[kg/m2]"
-  comps: ["c", "e"]
-  bin_nr: 200
-  c:
-    fn: "carra1_total_column_cloud_liquid_water_"
-    column: 2
-    data: ""
-    data_res: ""
-    var_name: tclw
-  e:
-    fn: "era5_NG_total_column_cloud_liquid_water_"
-    column: 2
-    data: ""
-    data_res: ""
-    var_name: tclw
-  t:
-    fn: ""
-    column: .nan
-    data: ""
-    data_res: ""
-  t1:
-    fn: "LWP_15_min_all"
-    column: "LWP[g/m2]"
-    data: ""
-    data_res: ""
-  t2:
-    fn: ""
-    column: .nan
-    data: ""
-    data_res: ""
+name: lwp
+ref_x: t1
+min: 0
+max: 50
+res_min: -20
+res_max: 20
+uom: "[kg/m2]"
+comps: ["c", "e"]
+bin_nr: 200
+c:
+  fn: "thaao_c_total_column_cloud_liquid_water_"
+  column: 2
+  data: ""
+  data_res: ""
+  var_name: tclw
+e:
+  fn: "thaao_e_total_column_cloud_liquid_water_"
+  column: 2
+  data: ""
+  data_res: ""
+  var_name: tclw
+t:
+  fn: ""
+  column: .nan
+  data: ""
+  data_res: ""
+t1:
+  fn: "LWP_15_min_all"
+  column: "LWP[g/m2]"
+  data: ""
+  data_res: ""
+t2:
+  fn: ""
+  column: .nan
+  data: ""
+  data_res: ""

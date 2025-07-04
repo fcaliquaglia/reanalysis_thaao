@@ -31,7 +31,7 @@ import tools as tls
 import glob
 
 
-def read_rean(vr, dataset_type):
+def read_rean(vr, data_typ):
     """
     Generalized function to read and process data from CARRA or ERA5 datasets.
 
@@ -52,22 +52,22 @@ def read_rean(vr, dataset_type):
         for file_path in drop_files:
             file_name = os.path.basename(file_path)
             year = 2024
-            output_file = f"{inpt.extr[vr][dataset_type]['fn']}{file_name.replace('_loc.txt', '')}_{year}.parquet"
+            output_file = f"{inpt.extr[vr][data_typ]['fn']}{file_name.replace('_loc.txt', '')}_{year}.parquet"
             print(output_file)
             output_path = os.path.join(
-                inpt.basefol[dataset_type]['parquets'], output_file)
+                inpt.basefol[data_typ]['parquets'], output_file)
             inpt.location = file_name.replace('_loc.txt', '')
             if not os.path.exists(output_path):
-                tls.process_rean(vr, dataset_type, year)
+                tls.process_rean(vr, data_typ, year)
     else:
         # Process missing yearly files if needed
         for year in inpt.years:
-            output_file = f"{inpt.extr[vr][dataset_type]['fn']}{inpt.location}_{year}.parquet"
+            output_file = f"{inpt.extr[vr][data_typ]['fn']}{inpt.location}_{year}.parquet"
             output_path = os.path.join(
-                inpt.basefol[dataset_type]['parquets'], output_file)
+                inpt.basefol[data_typ]['parquets'], output_file)
 
             if not os.path.exists(output_path):
-                tls.process_rean(vr, dataset_type, year)
+                tls.process_rean(vr, data_typ, year)
 
     # Read all yearly parquet files and concatenate into a single DataFrame
     data_all = []
@@ -76,9 +76,9 @@ def read_rean(vr, dataset_type):
         for file_path in drop_files:
             file_name = os.path.basename(file_path)
             year = 2024
-            input_file = f"{inpt.extr[vr][dataset_type]['fn']}{file_name.replace('_loc.txt', '')}_{year}.parquet"
+            input_file = f"{inpt.extr[vr][data_typ]['fn']}{file_name.replace('_loc.txt', '')}_{year}.parquet"
             input_path = os.path.join(
-                inpt.basefol[dataset_type]['parquets'], input_file)
+                inpt.basefol[data_typ]['parquets'], input_file)
             try:
                 data_tmp = pd.read_parquet(input_path)
                 print(f"Loaded {input_path}")
@@ -88,9 +88,9 @@ def read_rean(vr, dataset_type):
                 print(f"File not found: {input_path} ({e})")
     else:
         for year in inpt.years:
-            input_file = f"{inpt.extr[vr][dataset_type]['fn']}{inpt.location}_{year}.parquet"
+            input_file = f"{inpt.extr[vr][data_typ]['fn']}{inpt.location}_{year}.parquet"
             input_path = os.path.join(
-                inpt.basefol[dataset_type]['parquets'], input_file)
+                inpt.basefol[data_typ]['parquets'], input_file)
             try:
                 data_tmp = pd.read_parquet(input_path)
                 print(f"Loaded {input_path}")
@@ -106,7 +106,7 @@ def read_rean(vr, dataset_type):
         data_all = pd.DataFrame()
 
     # Store the concatenated data in the input extraction dictionary
-    inpt.extr[vr][dataset_type]["data"] = data_all
+    inpt.extr[vr][data_typ]["data"] = data_all
 
 
 def read():

@@ -1,40 +1,39 @@
-temp:
-  name: temp
-  ref_x: t
-  min: -40
-  max: 20
-  res_min: -15
-  res_max: 15
-  uom: "[deg]"
-  comps:
-    - c
-    - e
-    - t2
-  bin_nr: 200
-  c:
-    fn: "{thaao_c}_2m_temperature_"
-    column: 2
-    data: ""
-    data_res: ""
-    var_name: "t2m"
-  e:
-    fn: "{thaao_e}_2m_temperature_"
-    column: 2
-    data: ""
-    data_res: ""
-    var_name: "t2m"
-  t:
-    fn: "Meteo_weekly_all"
-    column: "Air_K"
-    data: ""
-    data_res: ""
-  t1:
-    fn: ""
-    column: null
-    data: ""
-    data_res: ""
-  t2:
-    fn: "AWS_THAAO_"
-    column: "AirTC"
-    data: ""
-    data_res: ""
+name: temp
+ref_x: t
+min: -40
+max: 20
+res_min: -15
+res_max: 15
+uom: "[deg]"
+comps:
+  - c
+  - e
+  - t2
+bin_nr: 200
+c:
+  fn: "thaao_c_2m_temperature_"
+  column: 2
+  data: ""
+  data_res: ""
+  var_name: "t2m"
+e:
+  fn: "thaao_e_2m_temperature_"
+  column: 2
+  data: ""
+  data_res: ""
+  var_name: "t2m"
+t:
+  fn: "Meteo_weekly_all"
+  column: "Air_K"
+  data: ""
+  data_res: ""
+t1:
+  fn: ""
+  column: null
+  data: ""
+  data_res: ""
+t2:
+  fn: "AWS_THAAO_"
+  column: "AirTC"
+  data: ""
+  data_res: ""

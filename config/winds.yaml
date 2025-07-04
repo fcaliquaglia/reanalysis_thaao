@@ -1,40 +1,39 @@
-winds:
-  name: winds
-  ref_x: t2
-  min: 0
-  max: 30
-  res_min: -10
-  res_max: 10
-  uom: "[m/s]"
-  comps:
-    - c
-    - e
-    - t2
-  bin_nr: 200
-  c:
-    fn: "{thaao_c}_10m_wind_speed_"
-    column: 2
-    data: ""
-    data_res: ""
-    var_name: "si10"
-  e:
-    fn: ""
-    column: null
-    data: ""
-    data_res: ""
-    var_name: ""
-  t:
-    fn: ""
-    column: null
-    data: ""
-    data_res: ""
-  t1:
-    fn: ""
-    column: null
-    data: ""
-    data_res: ""
-  t2:
-    fn: "AWS_THAAO_"
-    column: "WS_aws"
-    data: ""
-    data_res: ""
+name: winds
+ref_x: t2
+min: 0
+max: 30
+res_min: -10
+res_max: 10
+uom: "[m/s]"
+comps:
+  - c
+  - e
+  - t2
+bin_nr: 200
+c:
+  fn: "thaao_c_10m_wind_speed_"
+  column: 2
+  data: ""
+  data_res: ""
+  var_name: "si10"
+e:
+  fn: ""
+  column: null
+  data: ""
+  data_res: ""
+  var_name: ""
+t:
+  fn: ""
+  column: null
+  data: ""
+  data_res: ""
+t1:
+  fn: ""
+  column: null
+  data: ""
+  data_res: ""
+t2:
+  fn: "AWS_THAAO_"
+  column: "WS_aws"
+  data: ""
+  data_res: ""

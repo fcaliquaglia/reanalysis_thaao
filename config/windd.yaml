@@ -1,40 +1,39 @@
-windd:
-  name: windd
-  ref_x: t2
-  min: 0
-  max: 360
-  res_min: -90
-  res_max: 90
-  uom: "[deg]"
-  comps:
-    - c
-    - e
-    - t2
-  bin_nr: 200
-  c:
-    fn: "{thaao_c}_10m_wind_direction_"
-    column: 2
-    data: ""
-    data_res: ""
-    var_name: "wdir10"
-  e:
-    fn: ""
-    column: null
-    data: ""
-    data_res: ""
-    var_name: ""
-  t:
-    fn: ""
-    column: null
-    data: ""
-    data_res: ""
-  t1:
-    fn: ""
-    column: null
-    data: ""
-    data_res: ""
-  t2:
-    fn: "AWS_THAAO_"
-    column: "WD_aws"
-    data: ""
-    data_res: ""
+name: windd
+ref_x: t2
+min: 0
+max: 360
+res_min: -90
+res_max: 90
+uom: "[deg]"
+comps:
+  - c
+  - e
+  - t2
+bin_nr: 200
+c:
+  fn: "thaao_c_10m_wind_direction_"
+  column: 2
+  data: ""
+  data_res: ""
+  var_name: "wdir10"
+e:
+  fn: ""
+  column: null
+  data: ""
+  data_res: ""
+  var_name: ""
+t:
+  fn: ""
+  column: null
+  data: ""
+  data_res: ""
+t1:
+  fn: ""
+  column: null
+  data: ""
+  data_res: ""
+t2:
+  fn: "AWS_THAAO_"
+  column: "WD_aws"
+  data: ""
+  data_res: ""

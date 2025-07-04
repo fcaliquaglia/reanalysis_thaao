@@ -20,6 +20,7 @@ import pandas as pd
 import yaml
 from pathlib import Path
 
+
 def replace_none_with_nan(obj):
     if isinstance(obj, dict):
         return {k: replace_none_with_nan(v) for k, v in obj.items()}
@@ -29,6 +30,7 @@ def replace_none_with_nan(obj):
         return np.nan
     else:
         return obj
+
 
 # ============ CONFIGURATION ============
 dpi = 300
@@ -68,7 +70,12 @@ datasets = {
 }
 
 # Get active dataset label
-active_dataset = next((v['fn'] for v in datasets.values() if v['switch']), None)
+lbl = next((info['fn'] for info in datasets.values() if info.get('switch')), None)
+
+location = next(
+    (v['fn'] for v in datasets.values() if v.get('switch')),
+    None
+)
 
 # ============ VARIABLES ============
 thaao_c, thaao_e, thaao_t = 'carra1', 'era5_NG', 'thaao'
@@ -77,6 +84,7 @@ met = ['windd', 'winds', 'temp', 'surf_pres', 'rh', 'iwv']
 rad = ['lw_up', 'sw_up', 'lw_down', 'sw_down']
 clouds = ['cbh', 'lwp', 'tcc']
 extra = ['winds', 'windd']
+technical = ['windu', 'windv', 'dewpt', 'sw_net', '']
 
 list_var = met + rad  # + clouds + extra
 tres_list = ['original', '24h']
@@ -105,23 +113,22 @@ seasons = {
 var_dict = {
     'c': {'nanval': np.nan, 'col': 'red', 'col_ori': 'orange', 'label': 'CARRA', 'label_uom': ''},
     'e': {'nanval': -32767.0, 'col': 'blue', 'col_ori': 'cyan', 'label': 'ERA5', 'label_uom': ''},
-    't': {'nanval': -9999.9, 'col': 'black', 'col_ori': 'grey', 'label': active_dataset, 'label_uom': ''},
+    't': {'nanval': -9999.9, 'col': 'black', 'col_ori': 'grey', 'label': lbl, 'label_uom': ''},
     't1': {'nanval': np.nan, 'col': 'green', 'col_ori': 'lightgreen', 'label': 'HATPRO', 'label_uom': ''},
     't2': {'nanval': np.nan, 'col': 'purple', 'col_ori': 'violet', 'label': 'AWS_ECAPAC', 'label_uom': ''}
 }
 
 
-
 config_dir = Path('config')
 extr = {}
 
-for var_name in met+rad+clouds+extra:
+for var_name in met+rad+clouds+extra+technical:
     yaml_path = config_dir / f'{var_name}.yaml'
-    
+
     if not yaml_path.exists():
         print(f'⚠️ Config file not found for variable: {var_name}')
         continue
-    
+
     with open(yaml_path, 'r') as f:
         config = yaml.safe_load(f)
         config = replace_none_with_nan(config)
@@ -130,8 +137,8 @@ for var_name in met+rad+clouds+extra:
             if key in config and 'fn' in config[key]:
                 config[key]['fn'] = (
                     config[key]['fn']
-                    .replace('carra1', thaao_c)
-                    .replace('era5_NG', thaao_e)
+                    .replace('thaao_c', 'carra1')
+                    .replace('thaao_e', 'era5_NG')
                 )
-        
+
         extr[var_name] = config

@@ -1,39 +1,38 @@
-tcc:
-  name: tcc
-  ref_x: t
-  min: 0
-  max: 1
-  res_min: -50
-  res_max: 50
-  uom: "[octave]"
-  comps:
-    - c
-    - e
-  bin_nr: 200
-  c:
-    fn: "{thaao_c}_total_cloud_cover_"
-    column: 2
-    data: ""
-    data_res: ""
-    var_name: ""
-  e:
-    fn: "{thaao_e}_total_cloud_cover_"
-    column: 2
-    data: ""
-    data_res: ""
-    var_name: ""
-  t:
-    fn: "_Thule_CHM190147_000_0060cloud"
-    column: "TCC[okt]"
-    data: ""
-    data_res: ""
-  t1:
-    fn: ""
-    column: null
-    data: ""
-    data_res: ""
-  t2:
-    fn: ""
-    column: null
-    data: ""
-    data_res: ""
+name: tcc
+ref_x: t
+min: 0
+max: 1
+res_min: -50
+res_max: 50
+uom: "[octave]"
+comps:
+  - c
+  - e
+bin_nr: 200
+c:
+  fn: "thaao_c_total_cloud_cover_"
+  column: 2
+  data: ""
+  data_res: ""
+  var_name: ""
+e:
+  fn: "thaao_e_total_cloud_cover_"
+  column: 2
+  data: ""
+  data_res: ""
+  var_name: ""
+t:
+  fn: "_Thule_CHM190147_000_0060cloud"
+  column: "TCC[okt]"
+  data: ""
+  data_res: ""
+t1:
+  fn: ""
+  column: null
+  data: ""
+  data_res: ""
+t2:
+  fn: ""
+  column: null
+  data: ""
+  data_res: ""

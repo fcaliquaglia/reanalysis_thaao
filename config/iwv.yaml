@@ -9,14 +9,14 @@ comps: ['c', 'e', 't1', 't2']
 bin_nr: 200
 
 c:
-  fn: carra1_total_column_integrated_water_vapour_
+  fn: "thaao_c_total_column_integrated_water_vapour_"
   column: 2
   data: ''
   data_res: ''
   var_name: tciwv
 
 e:
-  fn: era5_NG_total_column_water_vapour_
+  fn: "thaao_e_total_column_water_vapour_"
   column: 2
   data: ''
   data_res: ''

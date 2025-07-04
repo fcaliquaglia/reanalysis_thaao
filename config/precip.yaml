@@ -1,39 +1,38 @@
-precip:
-  name: precip
-  ref_x: t2
-  min: 0
-  max: 5
-  res_min: -10
-  res_max: 10
-  uom: "[mm?]"
-  comps:
-    - c
-    - e
-  bin_nr: 200
-  c:
-    fn: "{thaao_c}_total_precipitation_"
-    column: 2
-    data: ""
-    data_res: ""
-    var_name: tp
-  e:
-    fn: "{thaao_e}_total_precipitation_"
-    column: 2
-    data: ""
-    data_res: ""
-    var_name: tp
-  t:
-    fn: ""
-    column: .nan
-    data: ""
-    data_res: ""
-  t1:
-    fn: ""
-    column: .nan
-    data: ""
-    data_res: ""
-  t2:
-    fn: "AWS_THAAO_"
-    column: RH
-    data: ""
-    data_res: ""
+name: precip
+ref_x: t2
+min: 0
+max: 5
+res_min: -10
+res_max: 10
+uom: "[mm?]"
+comps:
+  - c
+  - e
+bin_nr: 200
+c:
+  fn: "thaao_c_total_precipitation_"
+  column: 2
+  data: ""
+  data_res: ""
+  var_name: tp
+e:
+  fn: "thaao_e_total_precipitation_"
+  column: 2
+  data: ""
+  data_res: ""
+  var_name: tp
+t:
+  fn: ""
+  column: .nan
+  data: ""
+  data_res: ""
+t1:
+  fn: ""
+  column: .nan
+  data: ""
+  data_res: ""
+t2:
+  fn: "AWS_THAAO_"
+  column: RH
+  data: ""
+  data_res: ""

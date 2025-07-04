@@ -1,37 +1,36 @@
-cbh:
-  name: cbh
-  ref_x: t
-  min: 0
-  max: 10000
-  res_min: -1500
-  res_max: 1500
-  uom: "[m]"
-  comps: [c, e]
-  bin_nr: 200
-  c:
-    fn: "carra1_cloud_base_"
-    column: 2
-    data: ""
-    data_res: ""
-    var_name: cdcb
-  e:
-    fn: "era5_NG_cloud_base_height_"
-    column: 2
-    data: ""
-    data_res: ""
-    var_name: cbh
-  t:
-    fn: "_Thule_CHM190147_000_0060cloud"
-    column: CBH_L1[m]
-    data: null
-    data_res: ""
-  t1:
-    fn: ""
-    column: .nan
-    data: ""
-    data_res: ""
-  t2:
-    fn: ""
-    column: .nan
-    data: ""
-    data_res: ""
+name: cbh
+ref_x: t
+min: 0
+max: 10000
+res_min: -1500
+res_max: 1500
+uom: "[m]"
+comps: [c, e]
+bin_nr: 200
+c:
+  fn: "thaao_c_cloud_base_"
+  column: 2
+  data: ""
+  data_res: ""
+  var_name: cdcb
+e:
+  fn: "thaao_e_cloud_base_height_"
+  column: 2
+  data: ""
+  data_res: ""
+  var_name: cbh
+t:
+  fn: "_Thule_CHM190147_000_0060cloud"
+  column: CBH_L1[m]
+  data: null
+  data_res: ""
+t1:
+  fn: ""
+  column: .nan
+  data: ""
+  data_res: ""
+t2:
+  fn: ""
+  column: .nan
+  data: ""
+  data_res: ""
