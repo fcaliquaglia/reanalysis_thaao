@@ -187,7 +187,7 @@ def plot_scatter(period_label):
     axs = ax.ravel()
 
     # Prepare metadata
-    season_name = inpt.seass[period_label]['name']
+    season_name = inpt.seasons[period_label]['name']
     str_name = f"{inpt.tres} {season_name} scatter {inpt.var} {inpt.var_dict['t']['label']} {inpt.years[0]}-{inpt.years[-1]}"
     fig.suptitle(str_name, fontweight='bold')
     fig.subplots_adjust(top=0.93)
@@ -210,7 +210,7 @@ def plot_scatter(period_label):
             freq=tres
         )
         x_all = x.reindex(time_range).astype(float)
-        season_months = inpt.seass[period_label]['months']
+        season_months = inpt.seasons[period_label]['months']
         x_season = x_all.loc[x_all.index.month.isin(season_months)]
         y = var_data[comp]['data_res'][tres][inpt.var].reindex(
             time_range).astype(float)
@@ -225,7 +225,7 @@ def plot_scatter(period_label):
         if season_name != 'all':
             axs[i].scatter(
                 x_valid, y_valid,
-                s=5, facecolors='none', edgecolors=inpt.seass[period_label]['col'],
+                s=5, facecolors='none', edgecolors=inpt.seasons[period_label]['col'],
                 alpha=0.5, label=period_label
             )
         else:
@@ -309,7 +309,7 @@ def plot_scatter_cum():
     fig.suptitle(str_name, fontweight='bold')
     fig.subplots_adjust(top=0.93)
 
-    seass_new = {k: v for k, v in inpt.seass.items() if k != 'all'}
+    seasons_new = {k: v for k, v in inpt.seasons.items() if k != 'all'}
 
     var_data = inpt.extr[inpt.var]
 
@@ -367,7 +367,7 @@ def plot_scatter_cum():
             axs[i].legend()
 
     else:
-        for period_label, season in seass_new.items():
+        for period_label, season in seasons_new.items():
             print(f"SCATTERPLOTS CUMULATIVE {period_label}")
 
             for i, comp in enumerate(comps):
@@ -378,7 +378,7 @@ def plot_scatter_cum():
                     freq=tres
                 )
                 x_all = x.reindex(time_range).astype(float)
-                season_months = inpt.seass[period_label]['months']
+                season_months = inpt.seasons[period_label]['months']
                 x_season = x_all.loc[x_all.index.month.isin(season_months)]
                 y = var_data[comp]['data_res'][tres][inpt.var].reindex(
                     time_range).astype(float)
@@ -419,7 +419,7 @@ def calc_draw_fit(axs, i, xxx, yyy, per_lab, print_stats=True):
     :param i: Index of subplot to plot on.
     :param xxx: x-data (pd.Series or np.array).
     :param yyy: y-data (pd.Series or np.array).
-    :param per_lab: Key for color in inpt.seass.
+    :param per_lab: Key for color in inpt.seasons.
     :param print_stats: Whether to display stats text.
     """
     xx = xxx.values.flatten()
@@ -438,7 +438,7 @@ def calc_draw_fit(axs, i, xxx, yyy, per_lab, print_stats=True):
     xseq = np.linspace(var_min, var_max, 1000)
 
     axs[i].plot(xseq, a + b * xseq,
-                color=inpt.seass[per_lab]['col'],
+                color=inpt.seasons[per_lab]['col'],
                 lw=2.5, ls='--', alpha=0.5)
     axs[i].plot([var_min, var_max], [var_min, var_max],
                 color='black', lw=1.5, ls='-')
@@ -549,7 +549,7 @@ def get_tres(comp):
 #     """
 #     print('BLAND-ALTMAN')
 #     [vr_c, vr_e, vr_l, vr_t, vr_t1, vr_t2, vr_c_res, vr_e_res, vr_l_res, vr_t_res, vr_t1_res, vr_t2_res] = avar
-#     seas_name = seass[period_label]['name']
+#     seas_name = seasons[period_label]['name']
 #     fig, ax = plt.subplots(2, 2, figsize=(12, 12), dpi=inpt.dpi)
 #     ax = np.atleast_1d(ax)
 #     axs = ax.ravel()
@@ -628,9 +628,9 @@ def get_tres(comp):
 #             if x.empty | y.empty:
 #                 continue
 #             x_all = x.reindex(time_list)
-#             x_s = x_all.loc[(x_all.index.month.isin(seass[period_label]['months']))]
+#             x_s = x_all.loc[(x_all.index.month.isin(seasons[period_label]['months']))]
 #             y_all = y.reindex(time_list)
-#             y_s = y_all.loc[(y_all.index.month.isin(seass[period_label]['months']))]
+#             y_s = y_all.loc[(y_all.index.month.isin(seasons[period_label]['months']))]
 #
 #             idx = np.isfinite(x_s) & np.isfinite(y_s)
 #
