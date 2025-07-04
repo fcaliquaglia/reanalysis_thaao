@@ -6,31 +6,31 @@ res_min: ""
 res_max: ""
 uom: "[deg]"
 comps: []
-bin_nr: .nan
+bin_nr: null
 c:
   fn: ""
-  column: .nan
+  column: ""
   data: ""
   data_res: ""
   var_name: ""
 e:
   fn: "thaao_e_2m_dewpoint_temperature_"
-  column: .nan
+  column: ""
   data: ""
   data_res: ""
-  var_name: d2m
+  var_name: "d2m"
 t:
   fn: ""
-  column: .nan
+  column: ""
   data: ""
   data_res: ""
 t1:
   fn: ""
-  column: .nan
+  column: ""
   data: ""
   data_res: ""
 t2:
   fn: ""
-  column: .nan
+  column: ""
   data: ""
   data_res: ""

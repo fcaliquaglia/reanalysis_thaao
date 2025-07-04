@@ -5,10 +5,7 @@ max: 30
 res_min: -10
 res_max: 10
 uom: "[m/s]"
-comps:
-  - c
-  - e
-  - t2
+comps: [c, e, t2]
 bin_nr: 200
 c:
   fn: "thaao_c_10m_wind_speed_"
@@ -18,18 +15,18 @@ c:
   var_name: "si10"
 e:
   fn: ""
-  column: null
+  column: ""
   data: ""
   data_res: ""
   var_name: ""
 t:
   fn: ""
-  column: null
+  column: ""
   data: ""
   data_res: ""
 t1:
   fn: ""
-  column: null
+  column: ""
   data: ""
   data_res: ""
 t2:

@@ -29,7 +29,7 @@ t:
   data_res: ""
 t1:
   fn: ""
-  column: null
+  column: ""
   data: ""
   data_res: ""
 t2:

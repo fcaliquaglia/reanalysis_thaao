@@ -18,18 +18,18 @@ c:
   var_name: "wdir10"
 e:
   fn: ""
-  column: null
+  column: ""
   data: ""
   data_res: ""
   var_name: ""
 t:
   fn: ""
-  column: null
+  column: ""
   data: ""
   data_res: ""
 t1:
   fn: ""
-  column: null
+  column: ""
   data: ""
   data_res: ""
 t2:

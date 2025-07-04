@@ -5,23 +5,25 @@ max: 50
 res_min: -20
 res_max: 20
 uom: "[kg/m2]"
-comps: ["c", "e"]
+comps: 
+  - c 
+  - e
 bin_nr: 200
 c:
   fn: "thaao_c_total_column_cloud_liquid_water_"
   column: 2
   data: ""
   data_res: ""
-  var_name: tclw
+  var_name: "tclw"
 e:
   fn: "thaao_e_total_column_cloud_liquid_water_"
   column: 2
   data: ""
   data_res: ""
-  var_name: tclw
+  var_name: "tclw"
 t:
   fn: ""
-  column: .nan
+  column: ""
   data: ""
   data_res: ""
 t1:

@@ -15,13 +15,13 @@ c:
   column: 2
   data: ""
   data_res: ""
-  var_name: sp
+  var_name: "sp"
 e:
   fn: "thaao_e_surface_pressure_"
   column: 2
   data: ""
   data_res: ""
-  var_name: sp
+  var_name: "sp"
 t:
   fn: "Meteo_weekly_all"
   column: "BP_hPa"
@@ -29,7 +29,7 @@ t:
   data_res: ""
 t1:
   fn: ""
-  column: .nan
+  column: ""
   data: ""
   data_res: ""
 t2:

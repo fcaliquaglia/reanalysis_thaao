@@ -4,32 +4,36 @@ min: 0
 max: 20
 res_min: -5
 res_max: 5
-uom: '[mm]'
-comps: ['c', 'e', 't1', 't2']
+uom: "[mm]"
+comps: 
+  - c
+  - e
+  - t1
+  - t2
 bin_nr: 200
 
 c:
   fn: "thaao_c_total_column_integrated_water_vapour_"
   column: 2
-  data: ''
-  data_res: ''
-  var_name: tciwv
+  data: ""
+  data_res: ""
+  var_name: "tciwv"
 
 e:
   fn: "thaao_e_total_column_water_vapour_"
   column: 2
-  data: ''
-  data_res: ''
-  var_name: tcwv
+  data: ""
+  data_res: ""
+  var_name: "tcwv"
 
 t:
   fn: ''
-  column: null
+  column: ""
   data: ''
   data_res: ''
 
 t1:
-  fn: IWV_15_min_all
+  fn: "IWV_15_min_all"
   column: 'IWV[kg/m2]'
-  data: ''
-  data_res: ''
+  data: ""
+  data_res: ""

@@ -12,13 +12,13 @@ comps:
 bin_nr: 200
 c:
   fn: "thaao_c_2m_relative_humidity_"
-  column: null
+  column: ""
   data: ""
   data_res: ""
-  var_name: r2
+  var_name: "r2"
 e:
   fn: ""
-  column: null
+  column: ""
   data: ""
   data_res: ""
   var_name: ""
@@ -29,11 +29,11 @@ t:
   data_res: ""
 t1:
   fn: ""
-  column: null
+  column: ""
   data: ""
   data_res: ""
 t2:
   fn: "AWS_THAAO_"
-  column: RH
+  column: "RH"
   data: ""
   data_res: ""

@@ -14,25 +14,25 @@ c:
   column: 4
   data: ""
   data_res: ""
-  var_name: ssr
+  var_name: "ssr"
 e:
   fn: "thaao_e_surface_net_solar_radiation_"
   column: 2
   data: ""
   data_res: ""
-  var_name: ssr
+  var_name: "ssr"
 t:
   fn: ""
-  column: null
+  column: ""
   data: ""
   data_res: ""
 t1:
   fn: ""
-  column: null
+  column: ""
   data: ""
   data_res: ""
 t2:
   fn: ""
-  column: null
+  column: ""
   data: ""
   data_res: ""

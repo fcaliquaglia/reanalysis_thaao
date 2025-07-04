@@ -11,7 +11,7 @@ comps:
 bin_nr: 350
 c:
   fn: ""
-  column: null
+  column: ""
   data: ""
   data_res: ""
   var_name: ""
@@ -22,17 +22,17 @@ e:
   data_res: ""
   var_name: ""
 t:
-  fn: MERGED_SW_LW_UP_DW_METEO_
-  column: SW_UP
+  fn: "MERGED_SW_LW_UP_DW_METEO_"
+  column: "SW_UP"
   data: ""
   data_res: ""
 t1:
   fn: ""
-  column: null
+  column: ""
   data: ""
   data_res: ""
 t2:
   fn: ""
-  column: null
+  column: ""
   data: ""
   data_res: ""

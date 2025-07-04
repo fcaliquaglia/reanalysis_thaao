@@ -13,48 +13,73 @@ __status__ = "Research"
 
 import datetime as dt
 import string
+from pathlib import Path
 
 import matplotlib.dates as mdates
 import numpy as np
 import pandas as pd
 import yaml
-from pathlib import Path
 
 
 def replace_none_with_nan(obj):
     if isinstance(obj, dict):
         return {k: replace_none_with_nan(v) for k, v in obj.items()}
-    elif isinstance(obj, list):
+    if isinstance(obj, list):
         return [replace_none_with_nan(v) for v in obj]
-    elif obj is None:
-        return np.nan
-    else:
-        return obj
+    return np.nan if obj is None else obj
 
 
-# ============ CONFIGURATION ============
+def load_and_process_yaml(path: Path):
+    if not path.exists():
+        print(f'⚠️ Config file not found for variable: {path.stem}')
+        return None
+
+    with open(path, 'r') as f:
+        cfg = yaml.safe_load(f)
+    cfg = replace_none_with_nan(cfg)
+
+    # Replace placeholders in filenames for keys 'c' and 'e'
+    for key in ('c', 'e'):
+        if key in cfg and 'fn' in cfg[key]:
+            cfg[key]['fn'] = (
+                cfg[key]['fn']
+                .replace('thaao_c', 'carra1')
+                .replace('thaao_e', 'era5_NG')
+            )
+    return cfg
+
+
+# ========== CONFIGURATION ==========
 dpi = 300
 SMALL_SIZE = 12
 myFmt = mdates.DateFormatter('%d-%b')
 letters = list(string.ascii_lowercase)
 
-# ============ FILE SYSTEM ============
-shared = 'H:\\Shared drives'
+# ========== FILE SYSTEM ==========
+shared_drive = Path(r'H:\Shared drives')
 
 basefol = {
-    'c': {'base': f'{shared}\\Reanalysis\\carra1',
-          'parquets': f'{shared}\\Reanalysis\\carra1\\parquets',
-          'raw': f'{shared}\\Reanalysis\\carra1\\raw'},
-    'e': {'base': f'{shared}\\Reanalysis\\era5',
-          'parquets': f'{shared}\\Reanalysis\\era5\\parquets',
-          'raw': f'{shared}\\Reanalysis\\era5\\raw'},
-    't': {'base': f'{shared}\\Dati_THAAO',
-          'arcsix': f'{shared}\\Dati_THAAO\\thaao_arcsix'},
-    'out': {'base': f'{shared}\\Dati_elab_docs\\thaao_reanalysis',
-            'parquets': f'{shared}\\Dati_elab_docs\\thaao_reanalysis\\parquets'}
+    'c': {
+        'base': shared_drive / 'Reanalysis' / 'carra1',
+        'parquets': shared_drive / 'Reanalysis' / 'carra1' / 'parquets',
+        'raw': shared_drive / 'Reanalysis' / 'carra1' / 'raw',
+    },
+    'e': {
+        'base': shared_drive / 'Reanalysis' / 'era5',
+        'parquets': shared_drive / 'Reanalysis' / 'era5' / 'parquets',
+        'raw': shared_drive / 'Reanalysis' / 'era5' / 'raw',
+    },
+    't': {
+        'base': shared_drive / 'Dati_THAAO',
+        'arcsix': shared_drive / 'Dati_THAAO' / 'thaao_arcsix',
+    },
+    'out': {
+        'base': shared_drive / 'Dati_elab_docs' / 'thaao_reanalysis',
+        'parquets': shared_drive / 'Dati_elab_docs' / 'thaao_reanalysis' / 'parquets',
+    }
 }
 
-# ============ DATASET SELECTION ============
+# ========== DATASET SELECTION ==========
 datasets = {
     'THAAO': {'switch': True, 'fn': 'THAAO'},
     'Alert': {'switch': False, 'fn': 'Alert'},
@@ -69,31 +94,27 @@ datasets = {
     'radiosondes': {'switch': False, 'fn': ''}
 }
 
-# Get active dataset label
-lbl = next((info['fn']
-           for info in datasets.values() if info.get('switch')), None)
+# Get first active dataset's 'fn' value or None if none active
+active_dataset = next((info['fn'] for info in datasets.values() if info.get('switch')), None)
 
-location = next(
-    (v['fn'] for v in datasets.values() if v.get('switch')),
-    None
-)
+location = active_dataset  # same as above, can be merged if needed
 
-# ============ VARIABLES ============
+# ========== VARIABLES ==========
 thaao_c, thaao_e, thaao_t = 'carra1', 'era5_NG', 'thaao'
 
-met = ['windd', 'winds', 'temp', 'surf_pres', 'rh', 'iwv']
-rad = ['lw_up', 'sw_up', 'lw_down', 'sw_down']
-clouds = ['cbh', 'lwp', 'tcc']
-extra = ['winds', 'windd']
-technical = ['windu', 'windv', 'dewpt', 'sw_net', '']
+met_vars = ['windd', 'winds', 'temp', 'surf_pres', 'rh', 'iwv']
+rad_vars = ['lw_up', 'sw_up', 'lw_down', 'sw_down']
+cloud_vars = ['cbh', 'lwp', 'tcc']
+extra_vars = ['winds', 'windd']
+technical_vars = ['windu', 'windv', 'dewpt', 'sw_net', '']
 
-list_var = met + rad  # + clouds + extra
+list_var = met_vars + rad_vars  # you can add + cloud_vars + extra_vars if needed
 tres_list = ['original', '24h']
 tres = var = ''  # Defaults
 
 years = np.arange(2016, 2025)
 
-# ============ DATE RANGES ============
+# ========== DATE RANGES ==========
 dateranges = {
     'aws_ecapac': pd.date_range(start=dt.datetime(2023, 4, 1), end=dt.datetime(2024, 12, 31)),
     'ceilometer': pd.date_range(start=dt.datetime(2019, 9, 1), end=dt.datetime(2024, 12, 31)),
@@ -101,7 +122,7 @@ dateranges = {
     'hatpro': pd.date_range(start=dt.datetime(2016, 9, 1), end=dt.datetime(2024, 10, 30), freq='YE')
 }
 
-# ============ SEASONAL SETTINGS ============
+# ========== SEASONAL SETTINGS ==========
 seasons = {
     'all': {'months': list(range(1, 13)), 'col': 'pink'},
     'DJF': {'months': [12, 1, 2], 'col': 'blue'},
@@ -110,36 +131,21 @@ seasons = {
     'SON': {'months': [9, 10, 11], 'col': 'brown'}
 }
 
-# ============ VARIABLE METADATA ============
+# ========== VARIABLE METADATA ==========
 var_dict = {
     'c': {'nanval': np.nan, 'col': 'red', 'col_ori': 'orange', 'label': 'CARRA', 'label_uom': ''},
     'e': {'nanval': -32767.0, 'col': 'blue', 'col_ori': 'cyan', 'label': 'ERA5', 'label_uom': ''},
-    't': {'nanval': -9999.9, 'col': 'black', 'col_ori': 'grey', 'label': lbl, 'label_uom': ''},
+    't': {'nanval': -9999.9, 'col': 'black', 'col_ori': 'grey', 'label': active_dataset, 'label_uom': ''},
     't1': {'nanval': np.nan, 'col': 'green', 'col_ori': 'lightgreen', 'label': 'HATPRO', 'label_uom': ''},
     't2': {'nanval': np.nan, 'col': 'purple', 'col_ori': 'violet', 'label': 'AWS_ECAPAC', 'label_uom': ''}
 }
 
-
+# ========== LOAD YAML CONFIGS ==========
 config_dir = Path('config')
 extr = {}
 
-for var_name in met+rad+clouds+extra+technical:
-    yaml_path = config_dir / f'{var_name}.yaml'
+for var_name in met_vars + rad_vars + cloud_vars + extra_vars + technical_vars:
+    cfg = load_and_process_yaml(config_dir / f'{var_name}.yaml')
+    if cfg is not None:
+        extr[var_name] = cfg
 
-    if not yaml_path.exists():
-        print(f'⚠️ Config file not found for variable: {var_name}')
-        continue
-
-    with open(yaml_path, 'r') as f:
-        config = yaml.safe_load(f)
-        config = replace_none_with_nan(config)
-
-        for key in ['c', 'e']:
-            if key in config and 'fn' in config[key]:
-                config[key]['fn'] = (
-                    config[key]['fn']
-                    .replace('thaao_c', 'carra1')
-                    .replace('thaao_e', 'era5_NG')
-                )
-
-        extr[var_name] = config

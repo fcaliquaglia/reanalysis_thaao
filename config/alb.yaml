@@ -5,20 +5,22 @@ max: 1
 res_min: -0.5
 res_max: 0.5
 uom: "[none]"
-comps: [c, e]
+comps: 
+  - c
+  - e
 bin_nr: 100
 c:
   fn: "thaao_c_albedo_"
   column: 2
   data: ""
   data_res: ""
-  var_name: alb
+  var_name: "alb"
 e:
   fn: "thaao_e_forecast_albedo_"
   column: 2
   data: ""
   data_res: ""
-  var_name: fal
+  var_name: "fal"
 t:
   fn: "MERGED_SW_LW_UP_DW_METEO_"
   column: "ALBEDO_SW"

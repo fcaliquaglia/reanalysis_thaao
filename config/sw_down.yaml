@@ -14,13 +14,13 @@ c:
   column: 4
   data: ""
   data_res: ""
-  var_name: ssrd
+  var_name: "ssrd"
 e:
   fn: "thaao_e_surface_solar_radiation_downwards_"
   column: 2
   data: ""
   data_res: ""
-  var_name: ssrd
+  var_name: "ssrd"
 t:
   fn: "MERGED_SW_LW_UP_DW_METEO_"
   column: "SW_DOWN"
@@ -28,11 +28,11 @@ t:
   data_res: ""
 t1:
   fn: ""
-  column: .nan
+  column: ""
   data: ""
   data_res: ""
 t2:
   fn: ""
-  column: .nan
+  column: ""
   data: ""
   data_res: ""

@@ -9,7 +9,7 @@ comps: []
 bin_nr: 200
 c:
   fn: ""
-  column: null
+  column: ""
   data: ""
   data_res: ""
   var_name: ""
@@ -21,16 +21,16 @@ e:
   var_name: "v10"
 t:
   fn: ""
-  column: null
+  column: ""
   data: ""
   data_res: ""
 t1:
   fn: ""
-  column: null
+  column: ""
   data: ""
   data_res: ""
 t2:
   fn: "AWS_THAAO_"
-  column: null
+  column: ""
   data: ""
   data_res: ""
