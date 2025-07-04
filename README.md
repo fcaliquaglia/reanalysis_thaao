@@ -272,6 +272,7 @@ high cloud cover is above 5 km height, while low cloud cover is below or at
 considered relative to the surface! Fog is the cloud cover at the lowest 
 model level that has a thickness of approximately 20 m. The unit for all cloud 
 cover and fog output is % in the range from 0% to 100%.
+
 ### Precipitation (``precip``)
 
 - CARRA: ``total_precipitation``
@@ -294,8 +295,22 @@ cover and fog output is % in the range from 0% to 100%.
 ### Liquid Water Path - LWP (``lwp``)
 
 > [!CAUTION]
-> CARRA LWP values have issues.
+> CARRA LWP values have issues or ERA5?
 
 - CARRA: ``total_column_cloud_liquid_water``
 - ERA-5: ``total_column_cloud_liquid_water``
 - THAAO (hatpro): LWP
+
+## Integrated water vapour - IWV (``iwv``)
+
+> [!WARNING]
+- CARRA: ``total_column_integrated_water_vapour``
+> C'è un problema per CARRA iwv nel dicembre 2023. i valori sono
+> tutti nulli. Ho provato a riscaricare a fine 2024 ma non cambia. 
+
+- ERA-5: ``total_column_water_vapour``
+- THAAO (rs): The vertical integration for rs is **missing**.
+- THAAO (vespa):
+
+> [!WARNING]
+- THAAO (hatpro):

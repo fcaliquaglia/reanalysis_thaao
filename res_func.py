@@ -216,7 +216,7 @@ def data_resampling(vr):
                         '24h': data.resample('24h').sum(),
                     })
                 print(
-                    f'Resampled (mean or cumul) at 1h, 3h, 24h for {data_typ}, {vr}.')
+                    f'Resampled (mean or cumul) for {data_typ}, {vr}.')
                 
             elif data_typ == 'e':
                 if res_strategy[vr] == 'closest':
@@ -238,7 +238,7 @@ def data_resampling(vr):
                         '24h': data.resample('24h').sum(),
                     })
                 print(
-                    f'Resampled (mean or cumul) at 1h, 3h, 24h for {data_typ}, {vr}.')
+                    f'Resampled (mean or cumul) for {data_typ}, {vr}.')
 
             elif data_typ in ['t', 't1', 't2']:
                 if res_strategy[vr] == 'closest':
