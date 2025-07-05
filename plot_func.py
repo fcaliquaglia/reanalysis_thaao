@@ -158,9 +158,16 @@ def plot_residuals(period_label):
             if y_mask.any() and x_mask.any():
                 residuals = y.loc[y_mask] - x.loc[x_mask]
                 residuals = residuals.dropna()
-                ax[i].scatter(residuals.index,
-                              residuals.values, color=inpt.var_dict[data_typ]['col'],
-                              label=inpt.var_dict[data_typ]['label'], marker='.')
+                # ax[i].stem(residuals.index,
+                #               residuals.values, color=inpt.var_dict[data_typ]['col'],
+                #               label=inpt.var_dict[data_typ]['label'], marker='.')
+                markerline, stemlines, baseline = ax[i].stem(residuals.index,
+                                                             residuals.values, label=inpt.var_dict[data_typ]['label'])
+                markerline.set_color(inpt.var_dict[data_typ]['col'])
+                stemlines.set_color(inpt.var_dict[data_typ]['col'])
+                baseline.set_visible(False)
+                stemlines.set_linewidth(0.1)
+                markerline.set_markersize(1)
 
         # Format axis
         format_ts(ax, year, i, residuals=True)
@@ -194,6 +201,9 @@ def plot_ba(period_label):
     ref_x = var_data['ref_x']
     plot_vars = tls.plot_vars_cleanup(comps, var_data)
 
+    frame_and_axis_removal(axs, len(comps))
+
+    control = 0
     for i, comp in enumerate(plot_vars):
         tres, tres_tol = get_tres(comp)
         x = var_data[ref_x]['data_res'][tres][inpt.var]
@@ -211,8 +221,61 @@ def plot_ba(period_label):
 
         blandAltman(
             x_valid, y_valid, ax=axs[i], limitOfAgreement=1.96, confidenceInterval=95,
-            confidenceIntervalMethod='approximate', detrend='ODR',
-            percentage=False)
+            confidenceIntervalMethod='approximate', detrend=None,
+            percentage=False, pointColour='blue')
+
+        # blandAltman(
+        #     x_valid, y_valid, ax=axs, i=i, ctrl=control, fig=fig, limitOfAgreement=1.96, confidenceInterval=95,
+        #     confidenceIntervalMethod='approximate', detrend=None,
+        #     percentage=False, pointColour='blue')
+
+        # bin_size = (var_data['max'] -
+        #             var_data['min']) / var_data['bin_nr']
+        # axs[i].text(
+        #     0.10, 0.90, f"bin_size={bin_size:.3f}", transform=axs[i].transAxes)
+
+        # # Extract and align the data
+        # x = var_data[ref_x]['data_res'][tres][inpt.var]
+        # time_range = pd.date_range(
+        #     start=pd.Timestamp(inpt.years[0], 1, 1),
+        #     end=pd.Timestamp(inpt.years[-1], 12, 31, 23, 59),
+        #     freq=tres
+        # )
+        # x_all = x.reindex(time_range, method='nearest',
+        #                   tolerance=pd.Timedelta(tres_tol)).astype(float)
+        # y_all = var_data[comp]['data_res'][tres][inpt.var].reindex(
+        #     time_range).astype(float)
+        # valid_idx = ~(x_all.isna() | y_all.isna())
+        # x_valid, y_valid = x_all[valid_idx], y_all[valid_idx]
+
+        # # Compute difference and mean for LoA calculation
+        # x_np = x_valid.to_numpy()
+        # y_np = y_valid.to_numpy()
+        # mean = np.mean([x_np, y_np], axis=0)
+        # diff = x_np - y_np
+        # md = np.mean(diff)
+        # sd = np.std(diff)
+
+        # # Define masks
+        # loa_upper = md + 1.96 * sd
+        # loa_lower = md - 1.96 * sd
+        # inside_mask = (diff >= loa_lower) & (diff <= loa_upper)
+        # outside_mask = ~inside_mask
+
+        # # Plot inside points (default color)
+        # blandAltman(
+        #     x_np[inside_mask], y_np[inside_mask], ax=axs[i], limitOfAgreement=1.96,
+        #     confidenceInterval=95, confidenceIntervalMethod='approximate',
+        #     detrend=None, percentage=False, pointColour='#6495ED'
+        # )
+
+        # # Plot outside points (highlighted in red)
+        # blandAltman(
+        #     x_np[outside_mask], y_np[outside_mask], ax=axs[i], limitOfAgreement=1.96,
+        #     confidenceInterval=95, confidenceIntervalMethod='approximate',
+        #     detrend=None, percentage=False, pointColour='red'
+        # )
+
         # confidenceIntervalMethod='exact paired' or 'approximate'  # detrend='Linear' or 'None'
         # b, a = np.polyfit(x_s[idx], y_s[idx], deg=1)
         # xseq = np.linspace(inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'], num=1000)
@@ -337,7 +400,7 @@ def plot_scatter(period_label):
                                          borderpad=0)
 
                         cbar = fig.colorbar(
-                            h[3], cax=cax, orientation='horizontal')
+                            axs[3], cax=cax, orientation='horizontal')
                         cbar.set_label('Counts')
                         control = 1
 
@@ -522,6 +585,7 @@ def calc_draw_fit(axs, i, xxx, yyy, per_lab, print_stats=True):
                     ha='left', va='center',
                     bbox=dict(facecolor='white', edgecolor='white'))
 
+
 def format_ba(axs, comp, i):
     """
     Sets title, labels, limits, and annotations for a scatterplot axs[i] of component `comp`.
@@ -543,11 +607,11 @@ def format_ba(axs, comp, i):
     # axs[i].set_ylim(var_min, var_max)
     axs[i].text(0.01, 0.95, inpt.letters[i] + ')',
                 transform=axs[i].transAxes)
-    pos = axs[i].get_position()  # get current position: Bbox(x0, y0, x1, y1)
-    # Raise the axis position by increasing y0 and y1
-    new_pos = [pos.x0, pos.y0 + 0.03, pos.x1, pos.y1 + 0.03]  # shift up by 0.03
-    axs[i].set_position(new_pos)
-    
+    # pos = axs[i].get_position()  # get current position: Bbox(x0, y0, x1, y1)
+
+    # new_pos = [pos.x0, pos.y0 + 0.03, pos.x1, pos.y1 + 0.03]  # shift up by 0.03
+    # axs[i].set_position(new_pos)
+
 
 def format_scatterplot(axs, comp, i):
     """
@@ -651,3 +715,4 @@ def get_tres(comp):
     tolerance = pd.tseries.frequencies.to_offset(freq / 6).freqstr
 
     return freq_str, tolerance
+
