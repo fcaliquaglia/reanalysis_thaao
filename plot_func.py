@@ -156,7 +156,7 @@ def plot_residuals(period_label):
             x_mask = x.index.year == year
             y_mask = y.index.year == year
             if y_mask.any() and x_mask.any():
-                residuals = y.loc[y_mask] -  x.loc[x_mask]
+                residuals = y.loc[y_mask] - x.loc[x_mask]
                 residuals = residuals.dropna()
                 ax[i].scatter(residuals.index,
                               residuals.values, color=inpt.var_dict[data_typ]['col'],
@@ -182,10 +182,9 @@ def plot_ba(period_label):
     """
     print('BLAND-ALTMAN')
     plt.ioff()
-    n_years = len(inpt.years)
-    fig, ax = plt.subplots(n_years, 1, figsize=(12, 17), dpi=inpt.dpi)
+    fig, ax = plt.subplots(2, 2, figsize=(12, 12), dpi=inpt.dpi)
     axs = ax.ravel()
-    str_name = f"{inpt.tres} {period_label} bland-altman_{inpt.var} {inpt.var_dict['t']['label']} {inpt.years[0]}-{inpt.years[-1]}"
+    str_name = f"{inpt.tres} {period_label} bland-altman {inpt.var} {inpt.var_dict['t']['label']} {inpt.years[0]}-{inpt.years[-1]}"
     fig.suptitle(str_name, fontweight='bold')
     fig.subplots_adjust(top=0.93)
 
@@ -193,15 +192,11 @@ def plot_ba(period_label):
     var_data = inpt.extr[inpt.var]
     comps = var_data['comps']
     ref_x = var_data['ref_x']
-    comps_all = comps + [ref_x]
-    plot_vars = tls.plot_vars_cleanup(comps_all, var_data)
-
+    plot_vars = tls.plot_vars_cleanup(comps, var_data)
 
     for i, comp in enumerate(plot_vars):
         tres, tres_tol = get_tres(comp)
-        # Preprocess time and data
         x = var_data[ref_x]['data_res'][tres][inpt.var]
-        # Generate regular time grid (target)
         time_range = pd.date_range(
             start=pd.Timestamp(inpt.years[0], 1, 1),
             end=pd.Timestamp(inpt.years[-1], 12, 31, 23, 59),
@@ -209,39 +204,35 @@ def plot_ba(period_label):
         )
         x_all = x.reindex(time_range, method='nearest',
                           tolerance=pd.Timedelta(tres_tol)).astype(float)
-        season_months = inpt.seasons[period_label]['months']
-        x_season = x_all.loc[x_all.index.month.isin(season_months)]
-        y = var_data[comp]['data_res'][tres][inpt.var].reindex(
+        y_all = var_data[comp]['data_res'][tres][inpt.var].reindex(
             time_range).astype(float)
-        y_season = y.loc[y.index.month.isin(season_months)]
-
-        valid_idx = ~(x_season.isna() | y_season.isna())
-        x_valid, y_valid = x_season[valid_idx], y_season[valid_idx]
+        valid_idx = ~(x_all.isna() | y_all.isna())
+        x_valid, y_valid = x_all[valid_idx], y_all[valid_idx]
 
         blandAltman(
             x_valid, y_valid, ax=axs[i], limitOfAgreement=1.96, confidenceInterval=95,
-            confidenceIntervalMethod='approximate', detrend=None,
-            percentage=False)  
+            confidenceIntervalMethod='approximate', detrend='ODR',
+            percentage=False)
         # confidenceIntervalMethod='exact paired' or 'approximate'  # detrend='Linear' or 'None'
-        # b, a = np.polyfit(x_s[idx], y_s[idx], deg=1)  
-        # xseq = np.linspace(inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'], num=1000)  
-        # axs[i].plot(xseq, a + b * xseq, color='red', lw=2.5, ls='--')  
-        # axs[i].plot(  
-        #         [inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max']], [inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max']], color='black', lw=1.5,  
-        #         ls='-')  
-        # corcoef = ma.corrcoef(x_s[idx], y_s[idx])  
-        #  
-        # N = x_s[idx].shape[0]  
-        # rmse = np.sqrt(np.nanmean((x_s[idx] - y_s[idx]) ** 2))  
-        # mae = np.nanmean(np.abs(x_s[idx] - y_s[idx]))  
-        # axs[i].text(  
-        #         0.60, 0.15, f"R={corcoef[0, 1]:1.3}\nrmse={rmse:1.3}\nN={N}\nmae={mae:1.3}', fontsize=14,  
-        #         transform=axs[i].transAxes)  
-        # axs[i].set_xlim(extr[inpt.var]['min'], inpt.extr[inpt.var]['max'])  
+        # b, a = np.polyfit(x_s[idx], y_s[idx], deg=1)
+        # xseq = np.linspace(inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'], num=1000)
+        # axs[i].plot(xseq, a + b * xseq, color='red', lw=2.5, ls='--')
+        # axs[i].plot(
+        #         [inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max']], [inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max']], color='black', lw=1.5,
+        #         ls='-')
+        # corcoef = ma.corrcoef(x_s[idx], y_s[idx])
+        #
+        # N = x_s[idx].shape[0]
+        # rmse = np.sqrt(np.nanmean((x_s[idx] - y_s[idx]) ** 2))
+        # mae = np.nanmean(np.abs(x_s[idx] - y_s[idx]))
+        # axs[i].text(
+        #         0.60, 0.15, f"R={corcoef[0, 1]:1.3}\nrmse={rmse:1.3}\nN={N}\nmae={mae:1.3}', fontsize=14,
+        #         transform=axs[i].transAxes)
+        # axs[i].set_xlim(extr[inpt.var]['min'], inpt.extr[inpt.var]['max'])
         # axs[i].set_ylim(extr[inpt.var]['min'], inpt.extr[inpt.var]['max'])
 
-        format_scatterplot(axs, comp, i)
-    
+        format_ba(axs, comp, i)
+
     save_path = os.path.join(
         inpt.basefol['out']['base'], inpt.tres, f"{str_name.replace(' ', '_')}.png")
     plt.savefig(save_path, bbox_inches='tight')
@@ -384,14 +375,14 @@ def plot_scatter_cum():
     comps = var_data['comps']
     ref_x = var_data['ref_x']
     plot_vars = tls.plot_vars_cleanup(comps, var_data)
-    
+
     frame_and_axis_removal(axs, len(comps))
 
     if inpt.datasets['dropsondes']['switch']:
         period_label = 'all'
         print(f"SCATTERPLOTS CUMULATIVE {period_label}")
 
-        for i, comp in enumerate(comps):
+        for i, comp in enumerate(plot_vars):
             tres, tres_tol = get_tres(comp)
             x = var_data[ref_x]['data_res'][tres][inpt.var]
             # Prepare full time range for reindexing once
@@ -437,11 +428,11 @@ def plot_scatter_cum():
             axs[i].legend()
 
     else:
-        for period_label, season in inpt.season_subset.items():
+        for period_label, season in inpt.seasons_subset.items():
             print(f"SCATTERPLOTS CUMULATIVE {period_label}")
-
-            for i, comp in enumerate(comps):
+            for i, comp in enumerate(plot_vars):
                 tres, tres_tol = get_tres(comp)
+                x = var_data[ref_x]['data_res'][tres][inpt.var]
                 time_range = pd.date_range(
                     start=pd.Timestamp(inpt.years[0], 1, 1),
                     end=pd.Timestamp(inpt.years[-1], 12, 31, 23, 59),
@@ -531,6 +522,32 @@ def calc_draw_fit(axs, i, xxx, yyy, per_lab, print_stats=True):
                     ha='left', va='center',
                     bbox=dict(facecolor='white', edgecolor='white'))
 
+def format_ba(axs, comp, i):
+    """
+    Sets title, labels, limits, and annotations for a scatterplot axs[i] of component `comp`.
+
+    :param axs: Array-like of matplotlib Axes.
+    :param comp: Component key for labeling.
+    :param i: Index of subplot.
+    """
+    var = inpt.var
+    var_dict = inpt.var_dict
+    # var_min = -2
+    # var_max = 2
+    ref_x = inpt.extr[var]['ref_x']
+
+    axs[i].set_title(var_dict[comp]['label'])
+    axs[i].set_xlabel(var_dict[ref_x]['label'])
+    axs[i].set_ylabel(var_dict[comp]['label'])
+    # axs[i].set_xlim(var_min, var_max)
+    # axs[i].set_ylim(var_min, var_max)
+    axs[i].text(0.01, 0.95, inpt.letters[i] + ')',
+                transform=axs[i].transAxes)
+    pos = axs.get_position()  # get current position: Bbox(x0, y0, x1, y1)
+    # Raise the axis position by increasing y0 and y1
+    new_pos = [pos.x0, pos.y0 + 0.03, pos.x1, pos.y1 + 0.03]  # shift up by 0.03
+    axs.set_position(new_pos)
+    
 
 def format_scatterplot(axs, comp, i):
     """
