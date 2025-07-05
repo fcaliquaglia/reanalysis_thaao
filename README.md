@@ -19,6 +19,7 @@
 - xarray
 - metpy
 - pyarrow
+- pyCompare
 - (spyder-kernels=3.0)
 
 ## Reanalysis considered

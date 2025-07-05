@@ -127,6 +127,8 @@ seasons = {
     'SON': {'months': [9, 10, 11], 'col': 'brown'}
 }
 
+seasons_subset = {k: v for k, v in seasons.items() if k != 'all'}
+
 # ========== VARIABLE METADATA ==========
 var_dict = {
     'c': {'nanval': np.nan, 'col': 'red', 'col_ori': 'orange', 'label': 'CARRA', 'label_uom': ''},
