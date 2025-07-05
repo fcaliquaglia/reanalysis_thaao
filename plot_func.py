@@ -543,10 +543,10 @@ def format_ba(axs, comp, i):
     # axs[i].set_ylim(var_min, var_max)
     axs[i].text(0.01, 0.95, inpt.letters[i] + ')',
                 transform=axs[i].transAxes)
-    pos = axs.get_position()  # get current position: Bbox(x0, y0, x1, y1)
+    pos = axs[i].get_position()  # get current position: Bbox(x0, y0, x1, y1)
     # Raise the axis position by increasing y0 and y1
     new_pos = [pos.x0, pos.y0 + 0.03, pos.x1, pos.y1 + 0.03]  # shift up by 0.03
-    axs.set_position(new_pos)
+    axs[i].set_position(new_pos)
     
 
 def format_scatterplot(axs, comp, i):
