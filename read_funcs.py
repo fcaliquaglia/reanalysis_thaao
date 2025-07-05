@@ -36,64 +36,64 @@ import inputs as inpt
 import tools as tls
 
 
-def read_alb():
-    """
-    Reads and processes the input variable data from multiple sources including CARRA, ERA5,
-    and THAAO. Adjusts the datasets by scaling and cleaning data points
-    as per defined conditions.
+# def read_alb():
+#     """
+#     Reads and processes the input variable data from multiple sources including CARRA, ERA5,
+#     and THAAO. Adjusts the datasets by scaling and cleaning data points
+#     as per defined conditions.
 
-    :raises KeyError: If required keys are missing in the input dictionary for any source.
-    :raises TypeError: If data type mismatches occur when processing datasets within sources.
-    :raises ValueError: If data contains invalid values not conforming to the expected range.
-    """
-    vr = inpt.var
-    var_dict = inpt.extr[vr]
+#     :raises KeyError: If required keys are missing in the input dictionary for any source.
+#     :raises TypeError: If data type mismatches occur when processing datasets within sources.
+#     :raises ValueError: If data contains invalid values not conforming to the expected range.
+#     """
+#     vr = inpt.var
+#     var_dict = inpt.extr[vr]
 
-    # --- CARRA ---
-    rd_frea.read_rean(vr, "c")
-    var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
-    var_dict["c"]["data"][vr] /= 100.
-    # var_dict["c"]["data"].loc[var_dict["c"]["data"][vr] <= 0., vr] = np.nan
+#     # --- CARRA ---
+#     rd_frea.read_rean(vr, "c")
+#     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
+#     var_dict["c"]["data"][vr] /= 100.
+#     # var_dict["c"]["data"].loc[var_dict["c"]["data"][vr] <= 0., vr] = np.nan
 
-    # --- ERA5 ---
-    rd_frea.read_rean(vr, "e")
-    var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
-    # var_dict["e"]["data"].loc[var_dict["e"]["data"][vr] <= 0., vr] = np.nan
+#     # --- ERA5 ---
+#     rd_frea.read_rean(vr, "e")
+#     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
+#     # var_dict["e"]["data"].loc[var_dict["e"]["data"][vr] <= 0., vr] = np.nan
 
-    # --- THAAO ---
-    if inpt.datasets['THAAO']['switch']:
-        rd_ft.read_rad(vr)
-        var_dict["t"]["data"], _ = tls.check_empty_df(
-            var_dict["t"]["data"], vr)
+#     # --- THAAO ---
+#     if inpt.datasets['THAAO']['switch']:
+#         rd_ft.read_rad(vr)
+#         var_dict["t"]["data"], _ = tls.check_empty_df(
+#             var_dict["t"]["data"], vr)
 
-    # --- Buoys ---
-    if inpt.datasets['buoys']['switch']:
-        data_all = pd.DataFrame()
-        for y in inpt.years:
-            path = os.path.join('txt_locations', f"{inpt.location}_loc.txt")
-            data_tmp = pd.read_csv(path)
-            data_all = pd.concat([data_all, data_tmp])
-        data_all['time'] = pd.to_datetime(data_all['time'], errors='coerce')
-        data_all = data_all.set_index('time')
-        var_dict["t"]["data"] = data_all
-        var_dict["t"]["data"][inpt.var] = var_dict["t"]["data"][inpt.var].mask(
-            var_dict["t"]["data"][inpt.var] == 0.0, np.nan)
-        var_dict["t"]["data"], _ = tls.check_empty_df(
-            var_dict["t"]["data"], vr)
+#     # --- Buoys ---
+#     if inpt.datasets['buoys']['switch']:
+#         data_all = pd.DataFrame()
+#         for y in inpt.years:
+#             path = os.path.join('txt_locations', f"{inpt.location}_loc.txt")
+#             data_tmp = pd.read_csv(path)
+#             data_all = pd.concat([data_all, data_tmp])
+#         data_all['time'] = pd.to_datetime(data_all['time'], errors='coerce')
+#         data_all = data_all.set_index('time')
+#         var_dict["t"]["data"] = data_all
+#         var_dict["t"]["data"][inpt.var] = var_dict["t"]["data"][inpt.var].mask(
+#             var_dict["t"]["data"][inpt.var] == 0.0, np.nan)
+#         var_dict["t"]["data"], _ = tls.check_empty_df(
+#             var_dict["t"]["data"], vr)
 
-    # --- Sigma-A ---
-    if inpt.datasets['Sigma-A']['switch']:
-        rd_fsa.read_weather(vr)
-        var_dict["t"]["data"], _ = tls.check_empty_df(
-            var_dict["t"]["data"], vr)
+#     # --- Sigma-A ---
+#     if inpt.datasets['Sigma-A']['switch']:
+#         rd_fsa.read_weather(vr)
+#         var_dict["t"]["data"], _ = tls.check_empty_df(
+#             var_dict["t"]["data"], vr)
 
-    # --- Sigma-B ---
-    if inpt.datasets['Sigma-B']['switch']:
-        rd_fsb.read_weather(vr)
-        var_dict["t"]["data"], _ = tls.check_empty_df(
-            var_dict["t"]["data"], vr)
+#     # --- Sigma-B ---
+#     if inpt.datasets['Sigma-B']['switch']:
+#         rd_fsb.read_weather(vr)
+#         var_dict["t"]["data"], _ = tls.check_empty_df(
+#             var_dict["t"]["data"], vr)
 
-    return
+#     return
 
 
 def read_cbh():

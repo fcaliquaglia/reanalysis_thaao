@@ -89,10 +89,12 @@ def read_hatpro(vr):
                 parse_dates={"datetime": [0, 1]},
                 index_col="datetime"
             )
-            print(f"OK: {file.name}")
+
             df = df[[inpt.extr[vr]["t1"]["column"]]].rename(
                 columns={inpt.extr[vr]["t1"]["column"]: vr})
+            df.index.name = 'datetime'
             df_all = df
+            print(f"OK: {file.name}")
         except FileNotFoundError:
             print(f"NOT FOUND: {file.name}")
             df_all = pd.DataFrame(columns=[vr])
@@ -141,6 +143,7 @@ def read_ceilometer(vr):
 
                 df.index = pd.to_datetime(
                     datetime_str, errors='raise', format='mixed')
+                df.index.name = 'datetime'
 
                 # Select relevant variable column and rename to vr
                 df = df[[inpt.extr[vr]["t"]["column"]]].astype(
@@ -148,7 +151,6 @@ def read_ceilometer(vr):
 
                 t_all.append(df)
                 print(f"OK: {file.name}")
-
             except (FileNotFoundError, pd.errors.EmptyDataError, ValueError) as e:
                 print(f"NOT FOUND or EMPTY or FORMAT ERROR: {file.name} - {e}")
 
@@ -217,8 +219,9 @@ def read_iwv_rs(vr):
     df_all, count = load_per_year_parquets(vr, "RS")
 
     # If not all years found, read raw .dat files
-    t2 = pd.DataFrame()
+
     if count < len(inpt.years):
+        t_all = pd.DataFrame()
         for year in inpt.years:
             files = os.listdir(
                 Path(inpt.basefol["t"]['base']) / "thaao_rs_sondes" / "txt" / f'{year}' /
@@ -247,15 +250,18 @@ def read_iwv_rs(vr):
                     min_index = df[df['pres'] == min_pres].index.min()
                     df = df.iloc[:min_index]
                     df = df.set_index('height')
+                    df.columns = [vr]
 
                     iwv = tls.convert_rs_to_iwv(df, 1.01)
-                    t2 = pd.concat(
-                        [t2, pd.DataFrame(index=[file_date], data=[iwv.magnitude])])
-
+                    t_all.append(pd.DataFrame(index=[file_date], data=[iwv.magnitude]))
+                    print(f'OK: year {year}')
                 except FileNotFoundError:
                     print(f'NOT FOUND: year {year}')
-            print(f'OK: year {year}')
-        t2.columns = [vr]
+            
+        if t_all:
+            df_all = pd.concat(t_all)
+        else:
+            df_all = pd.DataFrame()
 
     # Save per-year data
     save_per_year_parquets(vr, df_all, 'IWV_RS')
@@ -279,13 +285,13 @@ def read_iwv_vespa(vr):
             df = pd.read_table(file, sep='\s+', skipfooter=1,
                                skiprows=1, header=None, engine='python'
                                )
-            print(f'OK: {file}')
             df.index = pd.to_datetime(
                 df[0] + ' ' + df[1], format='%Y-%m-%d %H:%M:%S')
             df.drop(columns=[0, 1, 3, 4, 5], inplace=True)
             df.index.name = 'datetime'
             df.columns = [vr]
             df_all = df
+            print(f'OK: {file}')
         except FileNotFoundError:
             print(f'NOT FOUND: {file}.txt')
 
