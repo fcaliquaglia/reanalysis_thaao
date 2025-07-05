@@ -33,6 +33,7 @@ import tools as tls
 
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 import matplotlib.colors as mcolors
+from pyCompare import blandAltman
 
 
 def plot_ts(period_label):
