@@ -144,7 +144,7 @@ def plot_residuals(period_label):
 
         # Plot residuals (component - reference) for the year
         for comp in comps:
-            tres = get_tres(comp)
+            tres, tres_tol = get_tres(comp)
             ref_data_res = var_data[ref_x]['data_res'][tres][inpt.var]
             null, chck = tls.check_empty_df(
                 var_data[ref_x]['data_res'][tres][inpt.var], inpt.var)
@@ -199,7 +199,7 @@ def plot_scatter(period_label):
 
     control = 0
     for i, comp in enumerate(comps):
-        tres = get_tres(comp)
+        tres, tres_tol = get_tres(comp)
         # Preprocess time and data
         x = var_data[ref_x]['data_res'][tres][inpt.var]
         # Generate regular time grid (target)
@@ -208,7 +208,8 @@ def plot_scatter(period_label):
             end=pd.Timestamp(inpt.years[-1], 12, 31, 23, 59),
             freq=tres
         )
-        x_all = x.reindex(time_range).astype(float)
+        x_all = x.reindex(time_range, method='nearest',
+                          tolerance=pd.Timedelta(tres_tol)).astype(float)
         season_months = inpt.seasons[period_label]['months']
         x_season = x_all.loc[x_all.index.month.isin(season_months)]
         y = var_data[comp]['data_res'][tres][inpt.var].reindex(
@@ -323,15 +324,16 @@ def plot_scatter_cum():
         print(f"SCATTERPLOTS CUMULATIVE {period_label}")
 
         for i, comp in enumerate(comps):
+            tres, tres_tol = get_tres(comp)
             # Prepare full time range for reindexing once
             time_range = pd.date_range(
                 start=pd.Timestamp(inpt.years[0], 1, 1),
                 end=pd.Timestamp(inpt.years[-1], 12, 31, 23, 59),
-                freq=inpt.tres
+                freq=tres
             )
-            x_all = x.reindex(time_range).astype(float)
+            x_all = x.reindex(time_range, method='nearest',
+                              tolerance=pd.Timedelta(tres_tol)).astype(float)
             y = var_data[comp]['data_res'][inpt.tres][inpt.var]
-            tolerance = pd.Timedelta(hours=2 if comp == 'e' else 4)
 
             x_clean = x.dropna()
             y_clean = y.dropna()
@@ -350,7 +352,7 @@ def plot_scatter_cum():
                 x_df, y_df,
                 left_index=True,
                 right_index=True,
-                tolerance=tolerance,
+                tolerance=tres_tol,
                 direction='nearest'
             ).dropna()
 
@@ -370,13 +372,14 @@ def plot_scatter_cum():
             print(f"SCATTERPLOTS CUMULATIVE {period_label}")
 
             for i, comp in enumerate(comps):
-                tres = get_tres(comp)
+                tres, tres_tol = get_tres(comp)
                 time_range = pd.date_range(
                     start=pd.Timestamp(inpt.years[0], 1, 1),
                     end=pd.Timestamp(inpt.years[-1], 12, 31, 23, 59),
                     freq=tres
                 )
-                x_all = x.reindex(time_range).astype(float)
+                x_all = x.reindex(time_range, method='nearest',
+                                  tolerance=pd.Timedelta(tres_tol)).astype(float)
                 season_months = inpt.seasons[period_label]['months']
                 x_season = x_all.loc[x_all.index.month.isin(season_months)]
                 y = var_data[comp]['data_res'][tres][inpt.var].reindex(
@@ -534,10 +537,17 @@ def frame_and_axis_removal(ax, len_comps):
 
 def get_tres(comp):
     if inpt.tres != 'original':
-        return inpt.tres
-    if inpt.var in ['sw_up', 'sw_down', 'lw_up', 'lw_down']:
-        return '1h'
-    return '3h' if comp == 'c' else '1h'
+        return inpt.tres, inpt.tres
+
+    if inpt.var in {'sw_up', 'sw_down', 'lw_up', 'lw_down'}:
+        freq_str = '1h'
+    else:
+        freq_str = '3h' if comp == 'c' else '1h'
+
+    freq = pd.Timedelta(freq_str)
+    tolerance = freq / 6
+
+    return freq_str, pd.tseries.frequencies.to_offset(tolerance).freqstr
 
 # def plot_ba(period_label):
 #     """

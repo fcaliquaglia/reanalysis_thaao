@@ -104,7 +104,7 @@ rad_vars = ['lw_up', 'sw_up', 'lw_down', 'sw_down']
 cloud_vars = ['cbh', 'lwp', 'tcc']
 technical_vars = ['windu', 'windv', 'dewpt', 'sw_net', 'lw_net']
 
-list_var = met_vars + rad_vars + cloud_vars # you can add + cloud_vars if needed
+list_var =['iwv'] #  met_vars + rad_vars + cloud_vars # you can add + cloud_vars if needed
 tres_list = ['original', '24h']
 tres = var = ''
 
