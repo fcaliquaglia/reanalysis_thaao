@@ -48,8 +48,8 @@ def main():
 
             # Plotting
             if not inpt.datasets['dropsondes']['switch']:
-                #plt_f.plot_ts('all')
-                #plt_f.plot_residuals('all')
+                plt_f.plot_ts('all')
+                plt_f.plot_residuals('all')
                 plt_f.plot_ba('all')
                 for season in inpt.seasons:
                     plt_f.plot_scatter(season)

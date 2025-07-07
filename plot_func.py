@@ -219,9 +219,12 @@ def plot_ba(period_label):
         valid_idx = ~(x_all.isna() | y_all.isna())
         x_valid, y_valid = x_all[valid_idx], y_all[valid_idx]
 
-        perc=True
+        perc=False
         if inpt.var=='windd':
             return
+        # if inpt.var=='winds':
+        #     y_valid = np.log(y_valid)
+        #     x_valid = np.log(x_valid)
         blandAltman(
             y_valid, x_valid, ax=axs[i], limitOfAgreement=1.96, confidenceInterval=95,
             confidenceIntervalMethod='approximate', detrend=None,
