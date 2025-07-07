@@ -9,7 +9,7 @@ comps:
   - c
   - e
   - t2
-bin_nr: 400
+bin_nr: 500
 c:
   fn: "thaao_c_surface_pressure_"
   column: 2

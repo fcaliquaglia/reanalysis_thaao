@@ -388,8 +388,6 @@ def plot_scatter(period_label):
                         cmin=1,
                         vmin=vmin
                     )
-                    axs[i].text(
-                        0.10, 0.90, f"bin_size={bin_size:.3f}", transform=axs[i].transAxes)
 
                     counts = h[0]
                     pctl=99
@@ -417,7 +415,9 @@ def plot_scatter(period_label):
                     cbar = fig.colorbar(
                         h[3], cax=cax, orientation='horizontal', extend=extend_opt)
                     cbar.set_label(f'Counts {inpt.var_dict[comp]["label"]}\n max: {pctl}pctl')
-
+                    axs[i].text(
+                        0.10, 0.90, f"bin_size={bin_size:.3f}", transform=axs[i].transAxes)
+                    
         if valid_idx.sum() >= 2:
             calc_draw_fit(axs, i, x_valid, y_valid, period_label)
         else:
@@ -589,8 +589,9 @@ def calc_draw_fit(axs, i, xxx, yyy, per_lab, print_stats=True):
         rmse = np.sqrt(np.nanmean((yy - xx) ** 2))
         mbe = np.nanmean(yy - xx)
         stats_text = (
-            f"R² = {r2:.2f}    N = {N}\n"
-            f"y  = {b:+.2f}x {a:+.2f}\n"
+            f"R² = {r2:.2f}\n"
+            f"N = {N}\n"
+            f"y = {b:+.2f}x {a:+.2f}\n"
             f"MBE = {mbe:.2f}\n"
             f"RMSE = {rmse:.2f}"
         )
