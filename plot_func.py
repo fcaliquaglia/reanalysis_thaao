@@ -157,6 +157,9 @@ def plot_residuals(period_label):
             y_mask = y.index.year == year
             if y_mask.any() and x_mask.any():
                 residuals = y.loc[y_mask] - x.loc[x_mask]
+                null, chck = tls.check_empty_df(residuals, inpt.var)
+                if chck:
+                    continue
                 residuals = residuals.dropna()
                 # ax[i].stem(residuals.index,
                 #               residuals.values, color=inpt.var_dict[data_typ]['col'],
@@ -400,7 +403,7 @@ def plot_scatter(period_label):
                                          borderpad=0)
 
                         cbar = fig.colorbar(
-                            h[3], cax=cax, orientation='horizontal')
+                            axs[3], cax=cax, orientation='horizontal')
                         cbar.set_label('Counts')
                         control = 1
 
