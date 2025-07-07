@@ -401,7 +401,7 @@ def plot_scatter(period_label):
                                          borderpad=0)
 
                         cbar = fig.colorbar(
-                            axs[3], cax=cax, orientation='horizontal')
+                            h[3], cax=cax, orientation='horizontal')
                         cbar.set_label('Counts')
                         control = 1
 
