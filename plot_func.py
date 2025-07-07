@@ -392,10 +392,11 @@ def plot_scatter(period_label):
                         0.10, 0.90, f"bin_size={bin_size:.3f}", transform=axs[i].transAxes)
 
                     counts = h[0]
-                    vmax = np.percentile(counts[counts > 0], 99) 
+                    pctl=99
+                    vmax = np.percentile(counts[counts > 0], pctl) 
                     has_overflow = np.any(counts > vmax)# Exclude zeros to ignore empty bins
                     extend_opt = 'max' if has_overflow else 'neither'
-                    # Redraw hist2d with vmax limited to 90th percentile
+
                     axs[i].cla()  # Clear axis to avoid overplotting
                     h = axs[i].hist2d(
                         x_valid, y_valid,
@@ -415,7 +416,7 @@ def plot_scatter(period_label):
 
                     cbar = fig.colorbar(
                         h[3], cax=cax, orientation='horizontal', extend=extend_opt)
-                    cbar.set_label(f'Counts {inpt.var_dict[comp]["label"]}\n max: 90pctl')
+                    cbar.set_label(f'Counts {inpt.var_dict[comp]["label"]}\n max: {pctl}pctl')
 
         if valid_idx.sum() >= 2:
             calc_draw_fit(axs, i, x_valid, y_valid, period_label)
