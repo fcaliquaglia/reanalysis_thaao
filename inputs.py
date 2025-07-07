@@ -100,12 +100,12 @@ location = next((info['fn']
 # ========== VARIABLES ==========
 thaao_c, thaao_e, thaao_t = 'carra1', 'era5_NG', 'thaao'
 
-met_vars = ['temp', 'surf_pres', 'rh', 'iwv', 'windd', 'winds']
+met_vars = ['windd', 'temp', 'surf_pres', 'rh', 'iwv', 'windd', 'winds']
 rad_vars = ['sw_up', 'lw_up', 'lw_down', 'sw_down']
 cloud_vars = ['cbh', 'lwp', 'tcc']
 technical_vars = ['windu', 'windv', 'dewpt', 'sw_net', 'lw_net']
 
-list_var = rad_vars + met_vars  # you can add + cloud_vars if needed
+list_var = met_vars + rad_vars  # you can add + cloud_vars if needed
 tres_list = ['original', '24h']
 tres = var = ''
 
@@ -132,7 +132,7 @@ seasons_subset = {k: v for k, v in seasons.items() if k != 'all'}
 
 # ========== VARIABLE METADATA ==========
 var_dict = {
-    'c': {'nanval': np.nan, 'col': 'red', 'col_ori': 'orange', 'label': 'CARRA', 
+    'c': {'nanval': np.nan, 'col': 'red', 'col_ori': 'orange', 'label': 'CARRA1', 
           'cmap': 'jet', 'cmap_pos': (0.2, 0.85, 0.6, 0.1), 'label_uom': ''},
     'e': {'nanval': -32767.0, 'col': 'blue', 'col_ori': 'cyan', 'label': 'ERA5', 
           'cmap': 'viridis', 'cmap_pos': (0.2, 0.65, 0.6, 0.1), 'label_uom': ''},

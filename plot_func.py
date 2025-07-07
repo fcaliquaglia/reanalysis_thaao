@@ -204,7 +204,6 @@ def plot_ba(period_label):
 
     frame_and_axis_removal(axs, len(comps))
 
-    control = 0
     for i, comp in enumerate(plot_vars):
         tres, tres_tol = get_tres(comp)
         x = var_data[ref_x]['data_res'][tres][inpt.var]
@@ -220,10 +219,13 @@ def plot_ba(period_label):
         valid_idx = ~(x_all.isna() | y_all.isna())
         x_valid, y_valid = x_all[valid_idx], y_all[valid_idx]
 
+        perc=True
+        if inpt.var=='windd':
+            return
         blandAltman(
             y_valid, x_valid, ax=axs[i], limitOfAgreement=1.96, confidenceInterval=95,
             confidenceIntervalMethod='approximate', detrend=None,
-            percentage=False, pointColour='blue')
+            percentage=perc, pointColour='blue')
 
         # blandAltman(
         #     x_valid, y_valid, ax=axs, i=i, ctrl=control, fig=fig, limitOfAgreement=1.96, confidenceInterval=95,
@@ -297,7 +299,11 @@ def plot_ba(period_label):
 
         format_ba(axs, comp, i)
 
-    save_path = os.path.join(
+    if perc:
+        save_path = os.path.join(
+        inpt.basefol['out']['base'], inpt.tres, f"{str_name.replace(' ', '_')}_perc.png")
+    else:
+        save_path = os.path.join(
         inpt.basefol['out']['base'], inpt.tres, f"{str_name.replace(' ', '_')}.png")
     plt.savefig(save_path, bbox_inches='tight')
     plt.close('all')
