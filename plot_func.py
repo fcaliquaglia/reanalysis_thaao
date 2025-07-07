@@ -145,22 +145,20 @@ def plot_residuals(period_label):
             tres, tres_tol = get_tres(data_typ)
             x = var_data[ref_x]['data_res'][tres][inpt.var]
             y = var_data[data_typ]['data_res'][tres][inpt.var]
-            null, chck = tls.check_empty_df(
-                x, inpt.var)
+            null, chck = tls.check_empty_df(x, inpt.var)
             if chck:
                 return
-            null, chck = tls.check_empty_df(
-                y, inpt.var)
+            null, chck = tls.check_empty_df(y, inpt.var)
             if chck:
                 continue
             x_mask = x.index.year == year
             y_mask = y.index.year == year
             if y_mask.any() and x_mask.any():
                 residuals = y.loc[y_mask] - x.loc[x_mask]
+                residuals = residuals.dropna()
                 null, chck = tls.check_empty_df(residuals, inpt.var)
                 if chck:
                     continue
-                residuals = residuals.dropna()
                 # ax[i].stem(residuals.index,
                 #               residuals.values, color=inpt.var_dict[data_typ]['col'],
                 #               label=inpt.var_dict[data_typ]['label'], marker='.')
