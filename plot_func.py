@@ -221,7 +221,7 @@ def plot_ba(period_label):
         x_valid, y_valid = x_all[valid_idx], y_all[valid_idx]
 
         blandAltman(
-            x_valid, y_valid, ax=axs[i], limitOfAgreement=1.96, confidenceInterval=95,
+            y_valid, x_valid, ax=axs[i], limitOfAgreement=1.96, confidenceInterval=95,
             confidenceIntervalMethod='approximate', detrend=None,
             percentage=False, pointColour='blue')
 
@@ -617,8 +617,8 @@ def format_ba(axs, comp, i):
     ref_x = inpt.extr[var]['ref_x']
 
     axs[i].set_title(var_dict[comp]['label'])
-    axs[i].set_xlabel(var_dict[ref_x]['label'])
-    axs[i].set_ylabel(var_dict[comp]['label'])
+    axs[i].set_xlabel(f"mean({var_dict[ref_x]['label']},{var_dict[comp]['label']})")
+    axs[i].set_ylabel(f"{var_dict[comp]['label']}-{var_dict[ref_x]['label']}")
     # axs[i].set_xlim(var_min, var_max)
     # axs[i].set_ylim(var_min, var_max)
     axs[i].text(0.01, 0.95, inpt.letters[i] + ')',
