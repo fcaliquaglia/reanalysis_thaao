@@ -113,7 +113,6 @@ def read_ceilometer(vr):
     # If not all years were loaded, parse original .txt files
     if count < len(inpt.years):
         t_all = []
-
         for i in inpt.dateranges["ceilometer"][inpt.dateranges["ceilometer"].year.isin(inpt.years)]:
             date_str = i.strftime("%Y%m%d")
             file = Path(inpt.basefol["t"]["base"]) / "thaao_ceilometer" / \

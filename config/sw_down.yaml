@@ -1,7 +1,7 @@
 name: sw_down
 ref_x: t
 min: 0
-max: 700
+max: 800
 res_min: -20
 res_max: 20
 uom: "[W/m2]"

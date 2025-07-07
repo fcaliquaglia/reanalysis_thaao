@@ -323,7 +323,6 @@ def plot_scatter(period_label):
 
     frame_and_axis_removal(axs, len(comps))
 
-    control = 0
     for i, comp in enumerate(plot_vars):
         tres, tres_tol = get_tres(comp)
         # Preprocess time and data
@@ -370,13 +369,13 @@ def plot_scatter(period_label):
                     axs[i].text(0.1, 0.5, "Invalid histogram range",
                                 transform=axs[i].transAxes)
                 else:
-                    cmap = plt.cm.jet.copy()
+                    #cmap = cmap[comp] # plt.cm.jet.copy()
 
-                    # Modify the colormap so that the lowest color is white
-                    # Create a new colormap with white at the bottom, then jet for the rest
-                    colors = cmap(np.linspace(0, 1, cmap.N))
-                    colors[0] = [1, 1, 1, 1]  # RGBA for white
-                    new_cmap = mcolors.ListedColormap(colors)
+                    # # Modify the colormap so that the lowest color is white
+                    # # Create a new colormap with white at the bottom, then jet for the rest
+                    # colors = cmap(np.linspace(0, 1, cmap.N))
+                    # colors[0] = [1, 1, 1, 1]  # RGBA for white
+                    # new_cmap = mcolors.ListedColormap(colors)
 
                     bin_edges = np.linspace(
                         var_data['min'], var_data['max'], var_data['bin_nr'])
@@ -385,25 +384,38 @@ def plot_scatter(period_label):
                     h = axs[i].hist2d(
                         x_valid, y_valid,
                         bins=[bin_edges, bin_edges],
-                        cmap=new_cmap,
+                        cmap=inpt.var_dict[comp]['cmap'],
                         cmin=1,
                         vmin=vmin
                     )
                     axs[i].text(
                         0.10, 0.90, f"bin_size={bin_size:.3f}", transform=axs[i].transAxes)
 
-                    while control == 0:
-                        cax = inset_axes(axs[3],
-                                         width="100%",
-                                         height="40%",
-                                         bbox_to_anchor=(0.2, 0.85, 0.6, 0.1),
-                                         bbox_transform=axs[3].transAxes,
-                                         borderpad=0)
+                    counts = h[0]
+                    vmax = np.percentile(counts[counts > 0], 99) 
+                    has_overflow = np.any(counts > vmax)# Exclude zeros to ignore empty bins
+                    extend_opt = 'max' if has_overflow else 'neither'
+                    # Redraw hist2d with vmax limited to 90th percentile
+                    axs[i].cla()  # Clear axis to avoid overplotting
+                    h = axs[i].hist2d(
+                        x_valid, y_valid,
+                        bins=[bin_edges, bin_edges],
+                        cmap=inpt.var_dict[comp]['cmap'],
+                        cmin=1,
+                        vmin=vmin,
+                        vmax=vmax
+                        )
 
-                        cbar = fig.colorbar(
-                            h[3], cax=cax, orientation='horizontal')
-                        cbar.set_label('Counts')
-                        control = 1
+                    cax = inset_axes(axs[3],
+                                     width="100%",
+                                     height="40%",
+                                     bbox_to_anchor=inpt.var_dict[comp]['cmap_pos'],
+                                     bbox_transform=axs[3].transAxes,
+                                     borderpad=0)
+
+                    cbar = fig.colorbar(
+                        h[3], cax=cax, orientation='horizontal', extend=extend_opt)
+                    cbar.set_label(f'Counts {inpt.var_dict[comp]["label"]}\n max: 90pctl')
 
         if valid_idx.sum() >= 2:
             calc_draw_fit(axs, i, x_valid, y_valid, period_label)
@@ -578,7 +590,8 @@ def calc_draw_fit(axs, i, xxx, yyy, per_lab, print_stats=True):
         stats_text = (
             f"R² = {r2:.2f}    N = {N}\n"
             f"y  = {b:+.2f}x {a:+.2f}\n"
-            f"MBE = {mbe:.2f}   RMSE = {rmse:.2f}"
+            f"MBE = {mbe:.2f}\n"
+            f"RMSE = {rmse:.2f}"
         )
         axs[i].text(0.50, 0.30, stats_text,
                     transform=axs[i].transAxes,
