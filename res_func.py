@@ -211,7 +211,6 @@ def data_resampling(vr):
 
     # return
 
-    import re
     for data_typ in inpt.extr[vr]['comps'] + [inpt.extr[vr]['ref_x']]:
         data = inpt.extr[vr][data_typ]['data']
         data, chk = tls.check_empty_df(data, vr)
@@ -220,18 +219,6 @@ def data_resampling(vr):
             print('NO TIME RESAMPLING FOR DROPSONDES')
             inpt.extr[vr][data_typ]['data_res'] = {inpt.tres: data}
             return
-
-        # Get original resolution as timedelta
-        tres = data.index[1] - data.index[0]
-        if isinstance(tres, str) and not re.match(r'^\d+', tres):
-            tres = '1' + tres
-        tres = pd.to_timedelta(tres)
-
-        # Set target_res only if not 'original'
-        if inpt.tres != 'original':
-            target_res = pd.to_timedelta(inpt.tres)
-        else:
-            target_res = None
 
         if vr in ['winds', 'windd']:
             resampled_data = {'original': data}
@@ -256,7 +243,7 @@ def data_resampling(vr):
 
                 if inpt.tres != 'original':
                     uv_masked = tls.mask_low_count_intervals(
-                        uv_df, target_res, tres, min_frac=inpt.min_frac)
+                        uv_df, data_typ, min_frac=inpt.min_frac)
                     resampled_uv[inpt.tres] = uv_masked.resample(
                         inpt.tres).mean()
                 else:
@@ -288,7 +275,7 @@ def data_resampling(vr):
 
             if inpt.tres != 'original':
                 masked = tls.mask_low_count_intervals(
-                    data, target_res, tres, min_frac=inpt.min_frac)
+                    data, data_typ, min_frac=inpt.min_frac)
                 resampled_data[inpt.tres] = masked.resample(inpt.tres).mean()
             else:
                 resampled_data[inpt.tres] = data

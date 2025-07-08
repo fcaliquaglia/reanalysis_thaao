@@ -222,83 +222,11 @@ def plot_ba(period_label):
         perc=False
         if inpt.var=='windd':
             return
-        # if inpt.var=='winds':
-        #     y_valid = np.log(y_valid)
-        #     x_valid = np.log(x_valid)
+
         blandAltman(
             y_valid, x_valid, ax=axs[i], limitOfAgreement=1.96, confidenceInterval=95,
             confidenceIntervalMethod='approximate', detrend=None,
             percentage=perc, pointColour='blue')
-
-        # blandAltman(
-        #     x_valid, y_valid, ax=axs, i=i, ctrl=control, fig=fig, limitOfAgreement=1.96, confidenceInterval=95,
-        #     confidenceIntervalMethod='approximate', detrend=None,
-        #     percentage=False, pointColour='blue')
-
-        # bin_size = (var_data['max'] -
-        #             var_data['min']) / var_data['bin_nr']
-        # axs[i].text(
-        #     0.10, 0.90, f"bin_size={bin_size:.3f}", transform=axs[i].transAxes)
-
-        # # Extract and align the data
-        # x = var_data[ref_x]['data_res'][tres][inpt.var]
-        # time_range = pd.date_range(
-        #     start=pd.Timestamp(inpt.years[0], 1, 1),
-        #     end=pd.Timestamp(inpt.years[-1], 12, 31, 23, 59),
-        #     freq=tres
-        # )
-        # x_all = x.reindex(time_range, method='nearest',
-        #                   tolerance=pd.Timedelta(tres_tol)).astype(float)
-        # y_all = var_data[comp]['data_res'][tres][inpt.var].reindex(
-        #     time_range).astype(float)
-        # valid_idx = ~(x_all.isna() | y_all.isna())
-        # x_valid, y_valid = x_all[valid_idx], y_all[valid_idx]
-
-        # # Compute difference and mean for LoA calculation
-        # x_np = x_valid.to_numpy()
-        # y_np = y_valid.to_numpy()
-        # mean = np.mean([x_np, y_np], axis=0)
-        # diff = x_np - y_np
-        # md = np.mean(diff)
-        # sd = np.std(diff)
-
-        # # Define masks
-        # loa_upper = md + 1.96 * sd
-        # loa_lower = md - 1.96 * sd
-        # inside_mask = (diff >= loa_lower) & (diff <= loa_upper)
-        # outside_mask = ~inside_mask
-
-        # # Plot inside points (default color)
-        # blandAltman(
-        #     x_np[inside_mask], y_np[inside_mask], ax=axs[i], limitOfAgreement=1.96,
-        #     confidenceInterval=95, confidenceIntervalMethod='approximate',
-        #     detrend=None, percentage=False, pointColour='#6495ED'
-        # )
-
-        # # Plot outside points (highlighted in red)
-        # blandAltman(
-        #     x_np[outside_mask], y_np[outside_mask], ax=axs[i], limitOfAgreement=1.96,
-        #     confidenceInterval=95, confidenceIntervalMethod='approximate',
-        #     detrend=None, percentage=False, pointColour='red'
-        # )
-
-        # confidenceIntervalMethod='exact paired' or 'approximate'  # detrend='Linear' or 'None'
-        # b, a = np.polyfit(x_s[idx], y_s[idx], deg=1)
-        # xseq = np.linspace(inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'], num=1000)
-        # axs[i].plot(xseq, a + b * xseq, color='red', lw=2.5, ls='--')
-        # axs[i].plot(
-        #         [inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max']], [inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max']], color='black', lw=1.5,
-        #         ls='-')
-        # corcoef = ma.corrcoef(x_s[idx], y_s[idx])
-        #
-        # N = x_s[idx].shape[0]
-        # rmse = np.sqrt(np.nanmean((x_s[idx] - y_s[idx]) ** 2))
-        # mae = np.nanmean(np.abs(x_s[idx] - y_s[idx]))
-        # axs[i].text(
-        #         0.60, 0.15, f"R={corcoef[0, 1]:1.3}\nrmse={rmse:1.3}\nN={N}\nmae={mae:1.3}', fontsize=14,
-        #         transform=axs[i].transAxes)
-        # axs[i].set_xlim(extr[inpt.var]['min'], inpt.extr[inpt.var]['max'])
-        # axs[i].set_ylim(extr[inpt.var]['min'], inpt.extr[inpt.var]['max'])
 
         format_ba(axs, data_typ, i)
 

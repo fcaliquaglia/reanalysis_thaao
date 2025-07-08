@@ -106,18 +106,18 @@ cloud_vars = ['cbh', 'lwp', 'tcc']
 technical_vars = ['windu', 'windv', 'dewpt', 'sw_net', 'lw_net']
 
 # met_vars + rad_vars  # you can add + cloud_vars if needed
-list_var = met_vars + rad_vars
-tres_list = ['original', '3h', '6h', '12h', '24h']
+list_var = ['iwv'] # met_vars + rad_vars
+tres_list = ['3h', 'original', '6h', '12h', '24h']
 tres = var = ''
 
 years = np.arange(2016, 2025)
 
-# ========== DATE RANGES ==========
+# ========== RESAMPLING THRESHOLD ==========
 # we require at least 75% of the values at the native resolution 
 # (1h ERA5, 3h CARRA, 1min ECAPAC, 15min HATPRO, 20 min fro meteo VESPA)
 # in the resampling interval to be valid for avaraging.
 
-# For IWV ESPA, 2,4,6 or 8 values at 3h, 6h, 12h, 24h resampling resolution
+# For IWV VESPA, custom thesholds. CHeck the fucntion in tools.py
 min_frac = 0.75
 
 # ========== DATE RANGES ==========

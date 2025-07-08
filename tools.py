@@ -14,6 +14,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 import inputs as inpt
+import re
 import metpy.calc as mpcalc
 from metpy.units import units
 
@@ -92,6 +93,7 @@ def calc_rh_from_tdp():
 
     return
 
+
 def convert_rs_to_iwv(df, tp):
     """
     Convertito concettualmente in python da codice di Giovanni: PWV_Gio.m
@@ -101,9 +103,9 @@ def convert_rs_to_iwv(df, tp):
     """
 
     td = mpcalc.dewpoint_from_relative_humidity(
-            df['temp'].to_xarray() * units("degC"), df['rh'].to_xarray() / 100)
+        df['temp'].to_xarray() * units("degC"), df['rh'].to_xarray() / 100)
     iwv = mpcalc.precipitable_water(
-            df['pres'].to_xarray() * units("hPa"), td, bottom=None, top=np.nanmin(df['pres']) * tp * units('hPa'))
+        df['pres'].to_xarray() * units("hPa"), td, bottom=None, top=np.nanmin(df['pres']) * tp * units('hPa'))
 
     return iwv
 
@@ -117,6 +119,7 @@ def decompose_wind(speed_series, direction_series):
     wdir = direction_series.values * units.degrees
     u, v = mpcalc.wind_components(wspd, wdir)
     return pd.Series(u.magnitude, index=speed_series.index), pd.Series(v.magnitude, index=speed_series.index)
+
 
 def recompose_wind(u_series, v_series):
     """
@@ -164,6 +167,7 @@ def get_tres(data_typ):
 
     return freq_str, tolerance
 
+
 def get_common_paths(vr, y, prefix):
 
     base_out = Path(inpt.basefol['out']['parquets'])
@@ -196,24 +200,44 @@ def wait_for_complete_download(file_path, timeout=600, interval=5):
         prev_size = current_size
         time.sleep(interval)
 
-def mask_low_count_intervals(df, newres, originalres, min_frac):
-    group_labels = df.index.floor(newres)
+
+def mask_low_count_intervals(df, data_typ, min_frac):
+    import pandas as pd
+    import re
+
+    originalres = df.index[1] - df.index[0]
+    if isinstance(originalres, str) and not re.match(r'^\d+', originalres):
+        originalres = '1' + originalres
+    if isinstance(originalres, str):
+        originalres = pd.to_timedelta(originalres)
+
+    group_labels = df.index.floor(inpt.tres)
     counts = group_labels.value_counts()
-    if inpt.var=='iwv':
-        if newres =='3h':
-            threshold=2
-        if newres =='6h':
-            threshold=4
-        if newres =='12h':
-            threshold=6
-        if newres =='24h':
-            threshold=8
+
+    def fallback_thresh():
+        return int(pd.Timedelta(inpt.tres) / originalres * min_frac)
+
+    # Custom thresholds for 'iwv' var
+    thresholds = {
+        '1h': {'e': 1, 't': 1, 't2': 1},
+        '3h': {'c': 1, 'e': 2, 't': 2, 't2': 2},
+        '6h': {'c': 2, 't': 3},
+        '12h': {'c': 4, 't': 5},
+        '24h': {'t': 10}
+    }
+
+    if inpt.var == 'iwv':
+        tres_dict = thresholds.get(inpt.tres, {})
+        threshold = tres_dict.get(data_typ, fallback_thresh())
     else:
-        threshold = int((newres / originalres) * min_frac)
+        threshold = fallback_thresh()
+
     valid = counts[counts >= threshold].index
     df_masked = df.copy()
     df_masked[~group_labels.isin(valid)] = np.nan
     return df_masked
+
+
 
 def process_rean(vr, data_typ, y):
     raw_dir = inpt.basefol[data_typ]['raw']
