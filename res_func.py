@@ -38,7 +38,8 @@ def get_closest_subset_with_tolerance(df, freq, tol_minutes):
         return pd.DataFrame(columns=df.columns)
 
     # Generate regular time grid (target)
-    target_times = pd.date_range(df.index.min().normalize(), df.index.max(), freq=freq)
+    target_times = pd.date_range(
+        df.index.min().normalize(), df.index.max(), freq=freq)
     # Get closest real indices for each target time
     indexer = df.index.get_indexer(target_times, method='nearest')
 
@@ -108,39 +109,137 @@ def data_resampling(vr):
     None
     """
 
-    res_strategy = {
-        'temp': 'closest',
-        'cbh': 'closest',
-        'iwv': 'closest',
-        'lwp': 'closest',
-        'lw_down': 'closest',
-        'lw_up': 'closest',
-        'precip': 'cumul',
-        'rh': 'closest',
-        'surf_pres': 'closest',
-        'sw_down': 'closest',
-        'sw_up': 'closest',
-        'tcc': 'closest',
-        'temp': 'closest',
-        'windd': 'closest',
-        'winds': 'closest'
-    }
+    # for data_typ in inpt.extr[vr]['comps'] + [inpt.extr[vr]['ref_x']]:
+    #     data = inpt.extr[vr][data_typ]['data']
+    #     data, chk = tls.check_empty_df(data, vr)
 
-    for data_typ in inpt.extr[vr]['comps'] + [inpt.extr[vr]['ref_x']]:           
+    #     if inpt.datasets['dropsondes']['switch']:
+    #         print('NO TIME RESAMPLING FOR DROPSONDES')
+    #         inpt.extr[vr][data_typ]['data_res'] = {inpt.tres: data}
+    #         return
+    #     if vr in ['winds', 'windd']:
+    #         resampled_data = {'original': data}
+    #         wspd = inpt.extr['winds'][data_typ]['data']['winds']
+    #         wdir = inpt.extr['windd'][data_typ]['data']['windd']
+    #         wspd, chk1 = tls.check_empty_df(wspd, 'winds')
+    #         wdir, chk2 = tls.check_empty_df(wdir, 'windd')
+
+    #         if not chk1 and not chk2:
+    #             common_index = wspd.index.intersection(wdir.index)
+    #             wspd = wspd.loc[common_index]
+    #             wdir = wdir.loc[common_index]
+
+    #             u, v = tls.decompose_wind(wspd, wdir)
+    #             uv_df = pd.DataFrame({'u': u, 'v': v}, index=wspd.index)
+
+    #             resampled_uv = {
+    #                 'original': uv_df,
+    #                 '1h': uv_df.resample('1h').mean(),
+    #                 '3h': uv_df.resample('3h').mean(),
+    #                 inpt.tres: uv_df.resample(inpt.tres).mean()
+    #             }
+
+    #             winds_resampled = {}
+    #             windd_resampled = {}
+    #             for key, df in resampled_uv.items():
+    #                 spd, dire = tls.recompose_wind(df['u'], df['v'])
+    #                 winds_resampled[key] = pd.DataFrame(spd, columns=['winds'])
+    #                 windd_resampled[key] = pd.DataFrame(dire, columns=['windd'])
+
+    #             inpt.extr['winds'][data_typ]['data_res'] = winds_resampled
+    #             inpt.extr['windd'][data_typ]['data_res'] = windd_resampled
+
+    #             print(f"Wind resampled via MetPy and recomposed for {data_typ}")
+    #             continue
+
+    #     if not chk:
+    #         resampled_data = {'original': data}
+    #         if data_typ == 'c':
+    #             if vr != 'precip':
+    #                 resampled_data.update({
+    #                     '1h': get_closest_subset_with_tolerance(data, '1h', tol_minutes=10),
+    #                     '3h': get_closest_subset_with_tolerance(data, '3h', tol_minutes=30),
+    #                     inpt.tres: data.resample(inpt.tres).mean()
+    #                 })
+    #             else:
+    #                 resampled_data.update({
+    #                     '1h': data,
+    #                     '3h': data.resample('3h').sum(),
+    #                     inpt.tres: data.resample(inpt.tres).sum()
+    #                 })
+    #             print(
+    #                 f'Resampled (closest or cumul) for {data_typ}, {vr}.')
+
+    #         elif data_typ == 'e':
+    #             if vr != 'precip':
+    #                 resampled_data.update({
+    #                     '1h': get_closest_subset_with_tolerance(data, '1h', tol_minutes=10),
+    #                     '3h': get_closest_subset_with_tolerance(data, '3h', tol_minutes=30),
+    #                     inpt.tres: data.resample(inpt.tres).mean()
+    #                 })
+    #             else:
+    #                 resampled_data.update({
+    #                     '1h': data,
+    #                     '3h': data.resample('3h').sum(),
+    #                     inpt.tres: data.resample(inpt.tres).sum()
+    #                 })
+    #             print(
+    #                 f'Resampled (closest or cumul) for {data_typ}, {vr}.')
+
+    #         elif data_typ in ['t', 't1', 't2']:
+    #             if vr != 'precip':
+    #                 resampled_data.update({
+    #                     '1h': get_closest_subset_with_tolerance(data, '1h', tol_minutes=10),
+    #                     '3h': get_closest_subset_with_tolerance(data, '3h', tol_minutes=30),
+    #                     inpt.tres: data.resample(inpt.tres).mean()
+    #                 })
+    #             else:
+    #                 resampled_data.update({
+    #                     '1h': data.resample('1h').sum(),
+    #                     '3h': data.resample('3h').sum(),
+    #                     inpt.tres: data.resample(inpt.tres).sum()
+    #                 })
+    #             print(
+    #                 f'Extracted closest timestamps within tolerance for {data_typ}, {vr}.')
+    #         inpt.extr[vr][data_typ]['data_res'] = resampled_data
+
+    #     else:
+    #         # Empty DataFrame case
+    #         inpt.extr[vr][data_typ]['data_res'] = {inpt.tres: data}
+    #         print(
+    #             f'NOT Resampled for {data_typ}, {vr} at {inpt.tres} resolution. Probably empty DataFrame.')
+
+    # return
+
+    import re
+    for data_typ in inpt.extr[vr]['comps'] + [inpt.extr[vr]['ref_x']]:
         data = inpt.extr[vr][data_typ]['data']
         data, chk = tls.check_empty_df(data, vr)
-        
+
         if inpt.datasets['dropsondes']['switch']:
             print('NO TIME RESAMPLING FOR DROPSONDES')
             inpt.extr[vr][data_typ]['data_res'] = {inpt.tres: data}
             return
-        if vr in ['winds', 'windd'] and data_typ=='c':
+
+        # Get original resolution as timedelta
+        tres = data.index[1] - data.index[0]
+        if isinstance(tres, str) and not re.match(r'^\d+', tres):
+            tres = '1' + tres
+        tres = pd.to_timedelta(tres)
+
+        # Set target_res only if not 'original'
+        if inpt.tres != 'original':
+            target_res = pd.to_timedelta(inpt.tres)
+        else:
+            target_res = None
+
+        if vr in ['winds', 'windd']:
             resampled_data = {'original': data}
             wspd = inpt.extr['winds'][data_typ]['data']['winds']
             wdir = inpt.extr['windd'][data_typ]['data']['windd']
             wspd, chk1 = tls.check_empty_df(wspd, 'winds')
             wdir, chk2 = tls.check_empty_df(wdir, 'windd')
-            
+
             if not chk1 and not chk2:
                 common_index = wspd.index.intersection(wdir.index)
                 wspd = wspd.loc[common_index]
@@ -148,101 +247,58 @@ def data_resampling(vr):
 
                 u, v = tls.decompose_wind(wspd, wdir)
                 uv_df = pd.DataFrame({'u': u, 'v': v}, index=wspd.index)
-        
+
                 resampled_uv = {
                     'original': uv_df,
-                    '1h': uv_df.resample('1h').mean(),
-                    '3h': uv_df.resample('3h').mean(),
-                    inpt.tres: uv_df.resample(inpt.tres).mean()
+                    '1h': get_closest_subset_with_tolerance(uv_df, '1h', tol_minutes=10),
+                    '3h': get_closest_subset_with_tolerance(uv_df, '3h', tol_minutes=30),
                 }
-        
+
+                if inpt.tres != 'original':
+                    uv_masked = tls.mask_low_count_intervals(
+                        uv_df, target_res, tres, min_frac=0.5)
+                    resampled_uv[inpt.tres] = uv_masked.resample(
+                        inpt.tres).mean()
+                else:
+                    resampled_uv[inpt.tres] = uv_df
+
                 winds_resampled = {}
                 windd_resampled = {}
                 for key, df in resampled_uv.items():
                     spd, dire = tls.recompose_wind(df['u'], df['v'])
                     winds_resampled[key] = pd.DataFrame(spd, columns=['winds'])
-                    windd_resampled[key] = pd.DataFrame(dire, columns=['windd'])
-        
+                    windd_resampled[key] = pd.DataFrame(
+                        dire, columns=['windd'])
+
                 inpt.extr['winds'][data_typ]['data_res'] = winds_resampled
                 inpt.extr['windd'][data_typ]['data_res'] = windd_resampled
-        
-                print(f"Wind resampled via MetPy and recomposed for {data_typ}")
+
+                print(
+                    f"Wind resampled via MetPy and recomposed for {data_typ}")
                 continue
-            
+
         if not chk:
             resampled_data = {'original': data}
 
-            if data_typ == 'c':
-                if res_strategy[vr] == 'closest':
-                    resampled_data.update({
-                        '1h': get_closest_subset_with_tolerance(data, '1h', tol_minutes=10),
-                        '3h': get_closest_subset_with_tolerance(data, '3h', tol_minutes=30),
-                        inpt.tres: data.resample(inpt.tres).mean()
-                    })
-                if res_strategy[vr] =='mean':
-                    resampled_data.update({
-                        '3h': data,
-                        inpt.tres: data.resample(inpt.tres).mean()
-                    })
-                if res_strategy[vr] == 'cumul':
-                    resampled_data.update({
-                        '1h': data,
-                        '3h': data.resample('3h').sum(),
-                        inpt.tres: data.resample(inpt.tres).sum()
-                    })
-                print(
-                    f'Resampled (mean or cumul) for {data_typ}, {vr}.')
-                
-            elif data_typ == 'e':
-                if res_strategy[vr] == 'closest':
-                    resampled_data.update({
-                        '1h': get_closest_subset_with_tolerance(data, '1h', tol_minutes=10),
-                        '3h': get_closest_subset_with_tolerance(data, '3h', tol_minutes=30),
-                        inpt.tres: data.resample(inpt.tres).mean()
-                    })
-                if res_strategy[vr] == 'mean':
-                    resampled_data.update({
-                        '1h': data,
-                        '3h': data.resample('3h').mean(),
-                        inpt.tres: data.resample(inpt.tres).mean()
-                    })
-                if res_strategy[vr] == 'cumul':
-                    resampled_data.update({
-                        '1h': data,
-                        '3h': data.resample('3h').sum(),
-                        inpt.tres: data.resample(inpt.tres).sum()
-                    })
-                print(
-                    f'Resampled (mean or cumul) for {data_typ}, {vr}.')
+            # Always get closest for 1h and 3h
+            resampled_data.update({
+                '1h': get_closest_subset_with_tolerance(data, '1h', tol_minutes=10),
+                '3h': get_closest_subset_with_tolerance(data, '3h', tol_minutes=30),
+            })
 
-            elif data_typ in ['t', 't1', 't2']:
-                if res_strategy[vr] == 'closest':
-                    resampled_data.update({
-                        '1h': get_closest_subset_with_tolerance(data, '1h', tol_minutes=10),
-                        '3h': get_closest_subset_with_tolerance(data, '3h', tol_minutes=30),
-                        '24h': data.resample('24h').mean(),
-                    })
-                if res_strategy[vr] == 'mean':
-                    resampled_data.update({
-                        '1h': data.resample('1h').mean(),
-                        '3h': data.resample('3h').mean(),
-                        '24h': data.resample('24h').mean(),
-                    })
-                if res_strategy[vr] == 'cumul':
-                    resampled_data.update({
-                        '1h': data.resample('1h').sum(),
-                        '3h': data.resample('3h').sum(),
-                        '24h': data.resample('24h').sum(),
-                    })
-                print(
-                    f'Extracted closest timestamps within tolerance for {data_typ}, {vr}.')
+            if inpt.tres != 'original':
+                masked = tls.mask_low_count_intervals(
+                    data, target_res, tres, min_frac=0.5)
+                resampled_data[inpt.tres] = masked.resample(inpt.tres).mean()
+            else:
+                resampled_data[inpt.tres] = uv_df
+            print(f"Resampled (closest or mean) for {data_typ}, {vr}.")
+
             inpt.extr[vr][data_typ]['data_res'] = resampled_data
 
         else:
-            # Empty DataFrame case
             inpt.extr[vr][data_typ]['data_res'] = {inpt.tres: data}
             print(
-                f'NOT Resampled for {data_typ}, {vr} at {inpt.tres} resolution. Probably empty DataFrame.')
+                f"NOT Resampled for {data_typ}, {vr} at {inpt.tres} resolution. Probably empty DataFrame.")
 
     return
-

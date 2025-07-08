@@ -132,6 +132,38 @@ def recompose_wind(u_series, v_series):
         pd.Series(direction.magnitude, index=u_series.index)
     )
 
+
+def get_tres(data_typ):
+    """
+    Returns the time resolution and a derived tolerance frequency based on input settings.
+
+    Parameters:
+        data_typ (str): Component identifier, typically 'c' for CARRA.
+
+    Returns:
+        tuple[str, str]: A tuple containing:
+            - Primary time resolution string (e.g., '1h', '3h')
+            - Tolerance frequency string (e.g., '10min'), equal to one-sixth of the primary
+
+    Logic:
+        - If inpt.tres is set (not 'original'), return it as both values.
+        - Otherwise:
+            - Use '1h' for radiation variables ('sw_up', 'sw_down', 'lw_up', 'lw_down')
+            - Use '3h' if data_typ == 'c', else '1h'
+        - Compute tolerance as one-sixth of the base frequency.
+    """
+    if inpt.tres != 'original':
+        return inpt.tres, inpt.tres
+
+    radiation_vars = {'sw_up', 'sw_down', 'lw_up', 'lw_down'}
+    freq_str = '1h' if inpt.var in radiation_vars else (
+        '3h' if data_typ == 'c' else '1h')
+
+    freq = pd.Timedelta(freq_str)
+    tolerance = pd.tseries.frequencies.to_offset(freq / 6).freqstr
+
+    return freq_str, tolerance
+
 def get_common_paths(vr, y, prefix):
 
     base_out = Path(inpt.basefol['out']['parquets'])
@@ -163,6 +195,15 @@ def wait_for_complete_download(file_path, timeout=600, interval=5):
 
         prev_size = current_size
         time.sleep(interval)
+
+def mask_low_count_intervals(df, newres, originalres, min_frac):
+    group_labels = df.index.floor(newres)
+    counts = group_labels.value_counts()
+    threshold = int((newres / originalres) * min_frac)
+    valid = counts[counts >= threshold].index
+    df_masked = df.copy()
+    df_masked[~group_labels.isin(valid)] = np.nan
+    return df_masked
 
 def process_rean(vr, data_typ, y):
     raw_dir = inpt.basefol[data_typ]['raw']

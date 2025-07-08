@@ -142,7 +142,7 @@ def plot_residuals(period_label):
 
         # Plot residuals (component - reference) for the year
         for data_typ in plot_vars:
-            tres, tres_tol = get_tres(data_typ)
+            tres, tres_tol = tls.get_tres(data_typ)
             x = var_data[ref_x]['data_res'][tres][inpt.var]
             y = var_data[data_typ]['data_res'][tres][inpt.var]
             null, chck = tls.check_empty_df(x, inpt.var)
@@ -205,7 +205,7 @@ def plot_ba(period_label):
     frame_and_axis_removal(axs, len(comps))
 
     for i, data_typ in enumerate(plot_vars):
-        tres, tres_tol = get_tres(data_typ)
+        tres, tres_tol = tls.get_tres(data_typ)
         x = var_data[ref_x]['data_res'][tres][inpt.var]
         time_range = pd.date_range(
             start=pd.Timestamp(inpt.years[0], 1, 1),
@@ -333,7 +333,7 @@ def plot_scatter(period_label):
     frame_and_axis_removal(axs, len(comps))
 
     for i, data_typ in enumerate(plot_vars):
-        tres, tres_tol = get_tres(data_typ)
+        tres, tres_tol = tls.get_tres(data_typ)
         # Preprocess time and data
         x = var_data[ref_x]['data_res'][tres][inpt.var]
         # Generate regular time grid (target)
@@ -469,7 +469,7 @@ def plot_scatter_cum():
         print(f"SCATTERPLOTS CUMULATIVE {period_label}")
 
         for i, data_typ in enumerate(plot_vars):
-            tres, tres_tol = get_tres(data_typ)
+            tres, tres_tol = tls.get_tres(data_typ)
             x = var_data[ref_x]['data_res'][tres][inpt.var]
             # Prepare full time range for reindexing once
             time_range = pd.date_range(
@@ -517,7 +517,7 @@ def plot_scatter_cum():
         for period_label, season in inpt.seasons_subset.items():
             print(f"SCATTERPLOTS CUMULATIVE {period_label}")
             for i, data_typ in enumerate(plot_vars):
-                tres, tres_tol = get_tres(data_typ)
+                tres, tres_tol = tls.get_tres(data_typ)
                 x = var_data[ref_x]['data_res'][tres][inpt.var]
                 time_range = pd.date_range(
                     start=pd.Timestamp(inpt.years[0], 1, 1),
@@ -710,34 +710,5 @@ def frame_and_axis_removal(ax, len_comps):
         ax[idx].get_yaxis().set_visible(False)
 
 
-def get_tres(data_typ):
-    """
-    Returns the time resolution and a derived tolerance frequency based on input settings.
 
-    Parameters:
-        data_typ (str): Component identifier, typically 'c' for CARRA.
-
-    Returns:
-        tuple[str, str]: A tuple containing:
-            - Primary time resolution string (e.g., '1h', '3h')
-            - Tolerance frequency string (e.g., '10min'), equal to one-sixth of the primary
-
-    Logic:
-        - If inpt.tres is set (not 'original'), return it as both values.
-        - Otherwise:
-            - Use '1h' for radiation variables ('sw_up', 'sw_down', 'lw_up', 'lw_down')
-            - Use '3h' if data_typ == 'c', else '1h'
-        - Compute tolerance as one-sixth of the base frequency.
-    """
-    if inpt.tres != 'original':
-        return inpt.tres, inpt.tres
-
-    radiation_vars = {'sw_up', 'sw_down', 'lw_up', 'lw_down'}
-    freq_str = '1h' if inpt.var in radiation_vars else (
-        '3h' if data_typ == 'c' else '1h')
-
-    freq = pd.Timedelta(freq_str)
-    tolerance = pd.tseries.frequencies.to_offset(freq / 6).freqstr
-
-    return freq_str, tolerance
 
