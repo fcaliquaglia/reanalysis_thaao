@@ -28,58 +28,6 @@ import pandas as pd
 import numpy as np
 
 
-# def get_closest_subset_with_tolerance(df, freq, tol_minutes):
-#     """
-#     Returns a DataFrame indexed by regular timestamps (e.g., every 3 hours from 00:00),
-#     where each row is filled with the closest actual data within a given tolerance.
-#     If no data is found within tolerance, the row is NaN.
-
-#     Parameters:
-#     -----------
-#     df : pd.DataFrame
-#         DataFrame with a DatetimeIndex.
-#     freq : str
-#         Target frequency like '1H', '3H'.
-#     tol_minutes : float
-#         Maximum allowed time difference in minutes from the ideal target times.
-
-#     Returns:
-#     --------
-#     pd.DataFrame
-#         New DataFrame with target timestamps as index and data from nearest match (or NaN).
-#     """
-#     if df.empty:
-#         return pd.DataFrame(columns=df.columns)
-
-#     # Create the target time grid
-#     start_time = df.index.min().normalize()
-#     end_time = df.index.max()
-#     target_times = pd.date_range(start=start_time, end=end_time, freq=freq)
-
-#     # Prepare list of matched rows
-#     matched_rows = []
-
-#     for target_time in target_times:
-#         try:
-#             pos = df.index.get_indexer([target_time], method='nearest')[0]
-#             closest_time = df.index[pos]
-#             diff_minutes = abs(
-#                 (closest_time - target_time).total_seconds()) / 60
-
-#             if diff_minutes <= tol_minutes:
-#                 matched_rows.append(df.iloc[pos].values)
-#             else:
-#                 matched_rows.append([np.nan] * df.shape[1])
-
-#         except IndexError:
-#             matched_rows.append([np.nan] * df.shape[1])
-
-#     # Build the result DataFrame
-#     result_df = pd.DataFrame(
-#         matched_rows, index=target_times, columns=df.columns)
-#     return result_df
-
-
 def get_closest_subset_with_tolerance(df, freq, tol_minutes):
     """
     Returns a DataFrame indexed by regular timestamps (e.g., every 3 hours from 00:00),
@@ -178,19 +126,49 @@ def data_resampling(vr):
         'winds': 'closest'
     }
 
-    # Early exit if variable is wind or precipitation-related, no resampling allowed
-    if (inpt.var in ['winds', 'windd']) and (inpt.tres != 'original'):
-        print('NO TIME RESAMPLING FOR WIND!')
-        sys.exit()
-
-    for data_typ in inpt.extr[vr]['comps'] + [inpt.extr[vr]['ref_x']]:
+    for data_typ in inpt.extr[vr]['comps'] + [inpt.extr[vr]['ref_x']]:           
         data = inpt.extr[vr][data_typ]['data']
         data, chk = tls.check_empty_df(data, vr)
+        
         if inpt.datasets['dropsondes']['switch']:
             print('NO TIME RESAMPLING FOR DROPSONDES')
             inpt.extr[vr][data_typ]['data_res'] = {inpt.tres: data}
             return
+        if vr in ['winds', 'windd'] and data_typ=='c':
+            resampled_data = {'original': data}
+            wspd = inpt.extr['winds'][data_typ]['data']['winds']
+            wdir = inpt.extr['windd'][data_typ]['data']['windd']
+            wspd, chk1 = tls.check_empty_df(wspd, 'winds')
+            wdir, chk2 = tls.check_empty_df(wdir, 'windd')
+            
+            if not chk1 and not chk2:
+                common_index = wspd.index.intersection(wdir.index)
+                wspd = wspd.loc[common_index]
+                wdir = wdir.loc[common_index]
 
+                u, v = tls.decompose_wind(wspd, wdir)
+                uv_df = pd.DataFrame({'u': u, 'v': v}, index=wspd.index)
+        
+                resampled_uv = {
+                    'original': uv_df,
+                    '1h': uv_df.resample('1h').mean(),
+                    '3h': uv_df.resample('3h').mean(),
+                    inpt.tres: uv_df.resample(inpt.tres).mean()
+                }
+        
+                winds_resampled = {}
+                windd_resampled = {}
+                for key, df in resampled_uv.items():
+                    spd, dire = tls.recompose_wind(df['u'], df['v'])
+                    winds_resampled[key] = pd.DataFrame(spd, columns=['winds'])
+                    windd_resampled[key] = pd.DataFrame(dire, columns=['windd'])
+        
+                inpt.extr['winds'][data_typ]['data_res'] = winds_resampled
+                inpt.extr['windd'][data_typ]['data_res'] = windd_resampled
+        
+                print(f"Wind resampled via MetPy and recomposed for {data_typ}")
+                continue
+            
         if not chk:
             resampled_data = {'original': data}
 
@@ -199,18 +177,18 @@ def data_resampling(vr):
                     resampled_data.update({
                         '1h': get_closest_subset_with_tolerance(data, '1h', tol_minutes=10),
                         '3h': get_closest_subset_with_tolerance(data, '3h', tol_minutes=30),
-                        '24h': data.resample('24h').mean(),
+                        inpt.tres: data.resample(inpt.tres).mean()
                     })
                 if res_strategy[vr] =='mean':
                     resampled_data.update({
                         '3h': data,
-                        '24h': data.resample('24h').mean(),
+                        inpt.tres: data.resample(inpt.tres).mean()
                     })
                 if res_strategy[vr] == 'cumul':
                     resampled_data.update({
                         '1h': data,
                         '3h': data.resample('3h').sum(),
-                        '24h': data.resample('24h').sum(),
+                        inpt.tres: data.resample(inpt.tres).sum()
                     })
                 print(
                     f'Resampled (mean or cumul) for {data_typ}, {vr}.')
@@ -220,19 +198,19 @@ def data_resampling(vr):
                     resampled_data.update({
                         '1h': get_closest_subset_with_tolerance(data, '1h', tol_minutes=10),
                         '3h': get_closest_subset_with_tolerance(data, '3h', tol_minutes=30),
-                        '24h': data.resample('24h').mean(),
+                        inpt.tres: data.resample(inpt.tres).mean()
                     })
                 if res_strategy[vr] == 'mean':
                     resampled_data.update({
                         '1h': data,
                         '3h': data.resample('3h').mean(),
-                        '24h': data.resample('24h').mean(),
+                        inpt.tres: data.resample(inpt.tres).mean()
                     })
                 if res_strategy[vr] == 'cumul':
                     resampled_data.update({
                         '1h': data,
                         '3h': data.resample('3h').sum(),
-                        '24h': data.resample('24h').sum(),
+                        inpt.tres: data.resample(inpt.tres).sum()
                     })
                 print(
                     f'Resampled (mean or cumul) for {data_typ}, {vr}.')
@@ -268,37 +246,3 @@ def data_resampling(vr):
 
     return
 
-
-# def data_resampling(vr):
-#     """
-#     Resamples the data for a specified variable to the defined temporal resolution. The function checks
-#     the specified variable for compatibility with the resampling process. If the variable is related
-#     to wind or precipitation data, resampling is not allowed, and the function exits. For compatible
-#     variables, it performs resampling over the associated components and reference data.
-
-#     :param vr: The variable for which the data resampling is performed.
-#     :type vr: str
-#     :return: None
-#     """
-#     if inpt.var in ['winds', 'windd', 'precip']:
-#         print('NO WIND/PRECIP RESAMPLING!')
-#         sys.exit()
-
-
-#     for vvrr in inpt.extr[vr]['comps'] + [inpt.extr[vr]['ref_x']]:
-#         data = inpt.extr[vr][vvrr]['data']
-#         data, chk = tls.check_empty_df(data, vr)
-#         if not chk:
-#             if inpt.datasets['dropsondes']['switch']:
-#                 print('NO TIME RESAMPLING FOR DROPSONDES')
-#                 inpt.extr[vr][vvrr]['data_res'] = data
-#             else:
-#                 data_res = data.resample(inpt.tres).mean()
-#                 inpt.extr[vr][vvrr]['data_res'] = data_res
-#             print(f'Resampled for {vvrr}, {vr} at {inpt.tres} resolution')
-#         else:
-#             inpt.extr[vr][vvrr]['data_res'] = data
-#             print(
-#                 f'NOT Resampled for {vvrr}, {vr} at {inpt.tres} resolution. Probably empty DataFrame.')
-
-#     return

@@ -107,6 +107,31 @@ def convert_rs_to_iwv(df, tp):
 
     return iwv
 
+
+def decompose_wind(speed_series, direction_series):
+    """
+    Convert wind speed and direction (in degrees FROM) to u and v components using MetPy.
+    Inputs must be pandas Series with units attached (knots, m/s, etc.).
+    """
+    wspd = speed_series.values * units.meter / units.second  # or your unit
+    wdir = direction_series.values * units.degrees
+    u, v = mpcalc.wind_components(wspd, wdir)
+    return pd.Series(u.magnitude, index=speed_series.index), pd.Series(v.magnitude, index=speed_series.index)
+
+def recompose_wind(u_series, v_series):
+    """
+    Convert u and v components back to wind speed and direction using MetPy.
+    Returns pandas Series for speed and direction.
+    """
+    u = u_series.values * units.meter / units.second
+    v = v_series.values * units.meter / units.second
+    speed = mpcalc.wind_speed(u, v)
+    direction = mpcalc.wind_direction(u, v)
+    return (
+        pd.Series(speed.magnitude, index=u_series.index),
+        pd.Series(direction.magnitude, index=u_series.index)
+    )
+
 def get_common_paths(vr, y, prefix):
 
     base_out = Path(inpt.basefol['out']['parquets'])
@@ -138,7 +163,6 @@ def wait_for_complete_download(file_path, timeout=600, interval=5):
 
         prev_size = current_size
         time.sleep(interval)
-
 
 def process_rean(vr, data_typ, y):
     raw_dir = inpt.basefol[data_typ]['raw']

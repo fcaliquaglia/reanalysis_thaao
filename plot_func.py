@@ -204,8 +204,8 @@ def plot_ba(period_label):
 
     frame_and_axis_removal(axs, len(comps))
 
-    for i, comp in enumerate(plot_vars):
-        tres, tres_tol = get_tres(comp)
+    for i, data_typ in enumerate(plot_vars):
+        tres, tres_tol = get_tres(data_typ)
         x = var_data[ref_x]['data_res'][tres][inpt.var]
         time_range = pd.date_range(
             start=pd.Timestamp(inpt.years[0], 1, 1),
@@ -214,7 +214,7 @@ def plot_ba(period_label):
         )
         x_all = x.reindex(time_range, method='nearest',
                           tolerance=pd.Timedelta(tres_tol)).astype(float)
-        y_all = var_data[comp]['data_res'][tres][inpt.var].reindex(
+        y_all = var_data[data_typ]['data_res'][tres][inpt.var].reindex(
             time_range).astype(float)
         valid_idx = ~(x_all.isna() | y_all.isna())
         x_valid, y_valid = x_all[valid_idx], y_all[valid_idx]
@@ -300,7 +300,7 @@ def plot_ba(period_label):
         # axs[i].set_xlim(extr[inpt.var]['min'], inpt.extr[inpt.var]['max'])
         # axs[i].set_ylim(extr[inpt.var]['min'], inpt.extr[inpt.var]['max'])
 
-        format_ba(axs, comp, i)
+        format_ba(axs, data_typ, i)
 
     if perc:
         save_path = os.path.join(
@@ -332,8 +332,8 @@ def plot_scatter(period_label):
 
     frame_and_axis_removal(axs, len(comps))
 
-    for i, comp in enumerate(plot_vars):
-        tres, tres_tol = get_tres(comp)
+    for i, data_typ in enumerate(plot_vars):
+        tres, tres_tol = get_tres(data_typ)
         # Preprocess time and data
         x = var_data[ref_x]['data_res'][tres][inpt.var]
         # Generate regular time grid (target)
@@ -346,7 +346,7 @@ def plot_scatter(period_label):
                           tolerance=pd.Timedelta(tres_tol)).astype(float)
         season_months = inpt.seasons[period_label]['months']
         x_season = x_all.loc[x_all.index.month.isin(season_months)]
-        y = var_data[comp]['data_res'][tres][inpt.var].reindex(
+        y = var_data[data_typ]['data_res'][tres][inpt.var].reindex(
             time_range).astype(float)
         y_season = y.loc[y.index.month.isin(season_months)]
 
@@ -354,7 +354,7 @@ def plot_scatter(period_label):
         x_valid, y_valid = x_season[valid_idx], y_season[valid_idx]
 
         print(
-            f"Plotting scatter {inpt.var_dict['t']['label']} - {inpt.var_dict[comp]['label']}")
+            f"Plotting scatter {inpt.var_dict['t']['label']} - {inpt.var_dict[data_typ]['label']}")
 
         if period_label != 'all':
             axs[i].scatter(
@@ -378,7 +378,7 @@ def plot_scatter(period_label):
                     axs[i].text(0.1, 0.5, "Invalid histogram range",
                                 transform=axs[i].transAxes)
                 else:
-                    #cmap = cmap[comp] # plt.cm.jet.copy()
+                    #cmap = cmap[data_typ] # plt.cm.jet.copy()
 
                     # # Modify the colormap so that the lowest color is white
                     # # Create a new colormap with white at the bottom, then jet for the rest
@@ -393,7 +393,7 @@ def plot_scatter(period_label):
                     h = axs[i].hist2d(
                         x_valid, y_valid,
                         bins=[bin_edges, bin_edges],
-                        cmap=inpt.var_dict[comp]['cmap'],
+                        cmap=inpt.var_dict[data_typ]['cmap'],
                         cmin=1,
                         vmin=vmin
                     )
@@ -408,7 +408,7 @@ def plot_scatter(period_label):
                     h = axs[i].hist2d(
                         x_valid, y_valid,
                         bins=[bin_edges, bin_edges],
-                        cmap=inpt.var_dict[comp]['cmap'],
+                        cmap=inpt.var_dict[data_typ]['cmap'],
                         cmin=1,
                         vmin=vmin,
                         vmax=vmax
@@ -417,13 +417,13 @@ def plot_scatter(period_label):
                     cax = inset_axes(axs[3],
                                      width="100%",
                                      height="40%",
-                                     bbox_to_anchor=inpt.var_dict[comp]['cmap_pos'],
+                                     bbox_to_anchor=inpt.var_dict[data_typ]['cmap_pos'],
                                      bbox_transform=axs[3].transAxes,
                                      borderpad=0)
 
                     cbar = fig.colorbar(
                         h[3], cax=cax, orientation='horizontal', extend=extend_opt)
-                    cbar.set_label(f'Counts {inpt.var_dict[comp]["label"]}\n max: {pctl}pctl')
+                    cbar.set_label(f'Counts {inpt.var_dict[data_typ]["label"]}\n max: {pctl}pctl')
                     axs[i].text(
                         0.10, 0.90, f"bin_size={bin_size:.3f}", transform=axs[i].transAxes)
                     
@@ -432,7 +432,7 @@ def plot_scatter(period_label):
         else:
             print("ERROR: Not enough data points for fit.")
 
-        format_scatterplot(axs, comp, i)
+        format_scatterplot(axs, data_typ, i)
 
     save_path = os.path.join(
         inpt.basefol['out']['base'], inpt.tres, f"{str_name.replace(' ', '_')}.png")
@@ -468,8 +468,8 @@ def plot_scatter_cum():
         period_label = 'all'
         print(f"SCATTERPLOTS CUMULATIVE {period_label}")
 
-        for i, comp in enumerate(plot_vars):
-            tres, tres_tol = get_tres(comp)
+        for i, data_typ in enumerate(plot_vars):
+            tres, tres_tol = get_tres(data_typ)
             x = var_data[ref_x]['data_res'][tres][inpt.var]
             # Prepare full time range for reindexing once
             time_range = pd.date_range(
@@ -479,7 +479,7 @@ def plot_scatter_cum():
             )
             x_all = x.reindex(time_range, method='nearest',
                               tolerance=pd.Timedelta(tres_tol)).astype(float)
-            y = var_data[comp]['data_res'][inpt.tres][inpt.var]
+            y = var_data[data_typ]['data_res'][inpt.tres][inpt.var]
 
             x_clean = x.dropna()
             y_clean = y.dropna()
@@ -510,14 +510,14 @@ def plot_scatter_cum():
             calc_draw_fit(axs, i,  merged['x'],  merged['y'],
                           period_label, print_stats=True)
 
-            format_scatterplot(axs, comp, i)
+            format_scatterplot(axs, data_typ, i)
             axs[i].legend()
 
     else:
         for period_label, season in inpt.seasons_subset.items():
             print(f"SCATTERPLOTS CUMULATIVE {period_label}")
-            for i, comp in enumerate(plot_vars):
-                tres, tres_tol = get_tres(comp)
+            for i, data_typ in enumerate(plot_vars):
+                tres, tres_tol = get_tres(data_typ)
                 x = var_data[ref_x]['data_res'][tres][inpt.var]
                 time_range = pd.date_range(
                     start=pd.Timestamp(inpt.years[0], 1, 1),
@@ -528,7 +528,7 @@ def plot_scatter_cum():
                                   tolerance=pd.Timedelta(tres_tol)).astype(float)
                 season_months = inpt.seasons[period_label]['months']
                 x_season = x_all.loc[x_all.index.month.isin(season_months)]
-                y = var_data[comp]['data_res'][tres][inpt.var].reindex(
+                y = var_data[data_typ]['data_res'][tres][inpt.var].reindex(
                     time_range).astype(float)
                 y_season = y.loc[y.index.month.isin(season_months)]
 
@@ -549,7 +549,7 @@ def plot_scatter_cum():
                     calc_draw_fit(axs, i, x_valid, y_valid,
                                   period_label, print_stats=False)
 
-                format_scatterplot(axs, comp, i)
+                format_scatterplot(axs, data_typ, i)
                 axs[i].legend()
 
     save_path = os.path.join(
@@ -611,12 +611,12 @@ def calc_draw_fit(axs, i, xxx, yyy, per_lab, print_stats=True):
                     bbox=dict(facecolor='white', edgecolor='white'))
 
 
-def format_ba(axs, comp, i):
+def format_ba(axs, data_typ, i):
     """
     Sets title, labels, limits, and annotations for a scatterplot axs[i] of component `comp`.
 
     :param axs: Array-like of matplotlib Axes.
-    :param comp: Component key for labeling.
+    :param data_typ: Component key for labeling.
     :param i: Index of subplot.
     """
     var = inpt.var
@@ -625,9 +625,9 @@ def format_ba(axs, comp, i):
     # var_max = 2
     ref_x = inpt.extr[var]['ref_x']
 
-    axs[i].set_title(var_dict[comp]['label'])
-    axs[i].set_xlabel(f"mean({var_dict[ref_x]['label']},{var_dict[comp]['label']})")
-    axs[i].set_ylabel(f"{var_dict[comp]['label']}-{var_dict[ref_x]['label']}")
+    axs[i].set_title(var_dict[data_typ]['label'])
+    axs[i].set_xlabel(f"mean({var_dict[ref_x]['label']},{var_dict[data_typ]['label']})")
+    axs[i].set_ylabel(f"{var_dict[data_typ]['label']}-{var_dict[ref_x]['label']}")
     # axs[i].set_xlim(var_min, var_max)
     # axs[i].set_ylim(var_min, var_max)
     axs[i].text(0.01, 0.95, inpt.letters[i] + ')',
@@ -638,12 +638,12 @@ def format_ba(axs, comp, i):
     # axs[i].set_position(new_pos)
 
 
-def format_scatterplot(axs, comp, i):
+def format_scatterplot(axs, data_typ, i):
     """
     Sets title, labels, limits, and annotations for a scatterplot axs[i] of component `comp`.
 
     :param axs: Array-like of matplotlib Axes.
-    :param comp: Component key for labeling.
+    :param data_typ: Component key for labeling.
     :param i: Index of subplot.
     """
     var = inpt.var
@@ -652,9 +652,9 @@ def format_scatterplot(axs, comp, i):
     var_max = inpt.extr[var]['max']
     ref_x = inpt.extr[var]['ref_x']
 
-    axs[i].set_title(var_dict[comp]['label'])
+    axs[i].set_title(var_dict[data_typ]['label'])
     axs[i].set_xlabel(var_dict[ref_x]['label'])
-    axs[i].set_ylabel(var_dict[comp]['label'])
+    axs[i].set_ylabel(var_dict[data_typ]['label'])
     axs[i].set_xlim(var_min, var_max)
     axs[i].set_ylim(var_min, var_max)
     axs[i].text(0.01, 0.95, inpt.letters[i] + ')',
@@ -710,12 +710,12 @@ def frame_and_axis_removal(ax, len_comps):
         ax[idx].get_yaxis().set_visible(False)
 
 
-def get_tres(comp):
+def get_tres(data_typ):
     """
     Returns the time resolution and a derived tolerance frequency based on input settings.
 
     Parameters:
-        comp (str): Component identifier, typically 'c' for coarse resolution.
+        data_typ (str): Component identifier, typically 'c' for CARRA.
 
     Returns:
         tuple[str, str]: A tuple containing:
@@ -726,7 +726,7 @@ def get_tres(comp):
         - If inpt.tres is set (not 'original'), return it as both values.
         - Otherwise:
             - Use '1h' for radiation variables ('sw_up', 'sw_down', 'lw_up', 'lw_down')
-            - Use '3h' if comp == 'c', else '1h'
+            - Use '3h' if data_typ == 'c', else '1h'
         - Compute tolerance as one-sixth of the base frequency.
     """
     if inpt.tres != 'original':
@@ -734,7 +734,7 @@ def get_tres(comp):
 
     radiation_vars = {'sw_up', 'sw_down', 'lw_up', 'lw_down'}
     freq_str = '1h' if inpt.var in radiation_vars else (
-        '3h' if comp == 'c' else '1h')
+        '3h' if data_typ == 'c' else '1h')
 
     freq = pd.Timedelta(freq_str)
     tolerance = pd.tseries.frequencies.to_offset(freq / 6).freqstr
