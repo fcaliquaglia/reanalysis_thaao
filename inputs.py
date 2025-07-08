@@ -105,11 +105,20 @@ rad_vars = ['sw_up', 'lw_up', 'lw_down', 'sw_down']
 cloud_vars = ['cbh', 'lwp', 'tcc']
 technical_vars = ['windu', 'windv', 'dewpt', 'sw_net', 'lw_net']
 
-list_var = ['temp', 'winds'] # met_vars + rad_vars  # you can add + cloud_vars if needed
-tres_list = ['original', '3h', '12h', '24h']
+# met_vars + rad_vars  # you can add + cloud_vars if needed
+list_var = met_vars + rad_vars
+tres_list = ['original', '3h', '6h', '12h', '24h']
 tres = var = ''
 
 years = np.arange(2016, 2025)
+
+# ========== DATE RANGES ==========
+# we require at least 75% of the values at the native resolution 
+# (1h ERA5, 3h CARRA, 1min ECAPAC, 15min HATPRO, 20 min fro meteo VESPA)
+# in the resampling interval to be valid for avaraging.
+
+# For IWV ESPA, 2,4,6 or 8 values at 3h, 6h, 12h, 24h resampling resolution
+min_frac = 0.75
 
 # ========== DATE RANGES ==========
 dateranges = {
@@ -132,14 +141,14 @@ seasons_subset = {k: v for k, v in seasons.items() if k != 'all'}
 
 # ========== VARIABLE METADATA ==========
 var_dict = {
-    'c': {'nanval': np.nan, 'col': 'red', 'col_ori': 'orange', 'label': 'CARRA1', 
+    'c': {'nanval': np.nan, 'col': 'red', 'col_ori': 'orange', 'label': 'CARRA1',
           'cmap': 'jet', 'cmap_pos': (0.2, 0.85, 0.6, 0.1), 'label_uom': ''},
-    'e': {'nanval': -32767.0, 'col': 'blue', 'col_ori': 'cyan', 'label': 'ERA5', 
+    'e': {'nanval': -32767.0, 'col': 'blue', 'col_ori': 'cyan', 'label': 'ERA5',
           'cmap': 'viridis', 'cmap_pos': (0.2, 0.65, 0.6, 0.1), 'label_uom': ''},
     't': {'nanval': -9999.9, 'col': 'black', 'col_ori': 'grey', 'label': location, 'label_uom': ''},
-    't1': {'nanval': np.nan, 'col': 'green', 'col_ori': 'lightgreen', 'label': 'HATPRO', 
+    't1': {'nanval': np.nan, 'col': 'green', 'col_ori': 'lightgreen', 'label': 'HATPRO',
            'cmap': 'plasma', 'cmap_pos': (0.2, 0.45, 0.6, 0.1), 'label_uom': ''},
-    't2': {'nanval': np.nan, 'col': 'purple', 'col_ori': 'violet', 'label': 'AWS_ECAPAC', 
+    't2': {'nanval': np.nan, 'col': 'purple', 'col_ori': 'violet', 'label': 'AWS_ECAPAC',
            'cmap': 'cividis', 'cmap_pos': (0.2, 0.25, 0.6, 0.1), 'label_uom': ''}
 }
 

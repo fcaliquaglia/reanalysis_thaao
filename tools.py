@@ -199,7 +199,17 @@ def wait_for_complete_download(file_path, timeout=600, interval=5):
 def mask_low_count_intervals(df, newres, originalres, min_frac):
     group_labels = df.index.floor(newres)
     counts = group_labels.value_counts()
-    threshold = int((newres / originalres) * min_frac)
+    if inpt.var=='iwv':
+        if newres =='3h':
+            threshold=2
+        if newres =='6h':
+            threshold=4
+        if newres =='12h':
+            threshold=6
+        if newres =='24h':
+            threshold=8
+    else:
+        threshold = int((newres / originalres) * min_frac)
     valid = counts[counts >= threshold].index
     df_masked = df.copy()
     df_masked[~group_labels.isin(valid)] = np.nan

@@ -256,7 +256,7 @@ def data_resampling(vr):
 
                 if inpt.tres != 'original':
                     uv_masked = tls.mask_low_count_intervals(
-                        uv_df, target_res, tres, min_frac=0.7)
+                        uv_df, target_res, tres, min_frac=inpt.min_frac)
                     resampled_uv[inpt.tres] = uv_masked.resample(
                         inpt.tres).mean()
                 else:
@@ -288,7 +288,7 @@ def data_resampling(vr):
 
             if inpt.tres != 'original':
                 masked = tls.mask_low_count_intervals(
-                    data, target_res, tres, min_frac=0.7)
+                    data, target_res, tres, min_frac=inpt.min_frac)
                 resampled_data[inpt.tres] = masked.resample(inpt.tres).mean()
             else:
                 resampled_data[inpt.tres] = data
