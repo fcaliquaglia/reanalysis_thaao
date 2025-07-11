@@ -39,6 +39,7 @@ def main():
         for var in inpt.list_var:
             inpt.var = var
             print(f"**************Processing variable: {var}**************\n")
+            print(f"Processing time resolution: {tres}")
 
             # Read data
             rd_funcs.read()
