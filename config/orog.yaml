@@ -1,0 +1,38 @@
+name: orog
+ref_x: 
+min: 0
+max: 1000
+res_min: -500
+res_max: 500
+uom: "[mm]"
+comps: 
+  - c
+  - e
+bin_nr: 100
+
+c:
+  fn: "thaao_c_orography_"
+  column: ""
+  data: ""
+  data_res: ""
+  var_name: "orography"
+
+e:
+  fn: "thaao_e_geopotential_"
+  column: ""
+  data: ""
+  data_res: ""
+  var_name: "z"
+
+t:
+  fn: ""
+  column: ""
+  data: ""
+  data_res: ""
+
+t1:
+  fn: ""
+  column: ""
+  data: ""
+  data_res: ""
+  

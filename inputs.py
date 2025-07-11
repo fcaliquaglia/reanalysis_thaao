@@ -104,9 +104,10 @@ met_vars = ['temp', 'surf_pres', 'rh', 'iwv', 'windd', 'winds']
 rad_vars = ['sw_up', 'lw_up', 'lw_down', 'sw_down']
 cloud_vars = ['cbh', 'lwp', 'tcc']
 technical_vars = ['windu', 'windv', 'dewpt', 'sw_net', 'lw_net']
+extra_vars = ['orog']
 
 # met_vars + rad_vars  # you can add + cloud_vars if needed
-list_var = met_vars + rad_vars
+list_var = ['orog'] # + met_vars + rad_vars
 tres_list = ['3h', 'original', '6h', '12h', '24h']
 tres = var = ''
 
@@ -156,7 +157,7 @@ var_dict = {
 config_dir = Path('config')
 extr = {}
 
-for var_name in met_vars + rad_vars + cloud_vars + technical_vars:
+for var_name in met_vars + rad_vars + cloud_vars + technical_vars + extra_vars:
     cfg = load_and_process_yaml(config_dir / f'{var_name}.yaml')
     if cfg is not None:
         extr[var_name] = cfg

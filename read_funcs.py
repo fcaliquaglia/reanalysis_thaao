@@ -34,6 +34,7 @@ from metpy.calc import wind_direction, wind_speed
 from metpy.units import units
 import inputs as inpt
 import tools as tls
+from metpy.constants import g
 
 
 # def read_alb():
@@ -322,6 +323,23 @@ def read_lw_up():
         rd_fsb.read_weather(vr)
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
+
+    return
+
+def read_orog():
+    """
+    """
+    vr = inpt.var
+    var_dict = inpt.extr[vr]
+
+    # --- CARRA ---
+    rd_frea.read_rean(vr, "c")
+    var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
+
+    # --- ERA5 ---
+    rd_frea.read_rean(vr, "e")
+    var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
+    var_dict["e"]["data"][vr] /= g
 
     return
 
@@ -936,6 +954,7 @@ def read():
         "lwp": read_lwp,
         "lw_down": read_lw_down,
         "lw_up": read_lw_up,
+        "orog": read_orog,
         "precip": read_precip,
         "rh": read_rh,
         "surf_pres": read_surf_pres,
