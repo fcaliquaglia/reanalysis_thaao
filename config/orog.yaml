@@ -15,7 +15,7 @@ c:
   column: ""
   data: ""
   data_res: ""
-  var_name: "orography"
+  var_name: "orog"
 
 e:
   fn: "thaao_e_geopotential_"
