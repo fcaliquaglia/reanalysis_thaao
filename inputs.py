@@ -100,14 +100,14 @@ location = next((info['fn']
 # ========== VARIABLES ==========
 thaao_c, thaao_e, thaao_t = 'carra1', 'era5_NG', 'thaao'
 
-met_vars = ['temp', 'surf_pres', 'rh', 'iwv', 'windd', 'winds']
+met_vars = ['temp', 'surf_pres', 'rh', 'iwv', 'windd', 'winds', 'precip']
 rad_vars = ['sw_up', 'lw_up', 'lw_down', 'sw_down']
 cloud_vars = ['cbh', 'lwp', 'tcc']
 technical_vars = ['windu', 'windv', 'dewpt', 'sw_net', 'lw_net']
 extra_vars = ['orog']
 
 # met_vars + rad_vars  # you can add + cloud_vars if needed
-list_var = met_vars + rad_vars #  ['orog'] # 
+list_var = ['precip'] # met_vars + rad_vars #  ['orog'] # 
 tres_list = ['3h', 'original', '6h', '12h', '24h']
 tres = var = ''
 
