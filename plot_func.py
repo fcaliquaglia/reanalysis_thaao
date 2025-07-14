@@ -224,6 +224,11 @@ def plot_ba(period_label):
             return
         
         if inpt.var =='precip':
+            perc=True
+            threshold = 1e-1
+            mean = (x_valid + y_valid) / 2
+            valid_mask = mean > threshold
+            x_valid, y_valid = x_valid[valid_mask], y_valid[valid_mask]
             x_valid, y_valid = np.log1p(x_valid), np.log1p(y_valid)
             
         blandAltman(
