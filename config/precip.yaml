@@ -2,8 +2,8 @@ name: precip
 ref_x: t2
 min: 0
 max: 5
-res_min: -10
-res_max: 10
+res_min: -5
+res_max: 5
 uom: "[mm?]"
 comps:
   - c
@@ -33,6 +33,6 @@ t1:
   data_res: ""
 t2:
   fn: "AWS_THAAO_"
-  column: "RH"
+  column: "PR"
   data: ""
   data_res: ""

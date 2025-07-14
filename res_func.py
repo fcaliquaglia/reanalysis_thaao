@@ -265,7 +265,9 @@ def data_resampling(vr):
                 continue
 
         if not chk:
+
             resampled_data = {'original': data}
+
 
             # Always get closest for 1h and 3h
             resampled_data.update({
@@ -276,7 +278,10 @@ def data_resampling(vr):
             if inpt.tres != 'original':
                 masked = tls.mask_low_count_intervals(
                     data, data_typ, min_frac=inpt.min_frac)
-                resampled_data[inpt.tres] = masked.resample(inpt.tres).mean()
+                if vr != 'precip':
+                    resampled_data[inpt.tres] = masked.resample(inpt.tres).mean()
+                else:
+                    resampled_data[inpt.tres] =  masked.resample(inpt.tres).apply(lambda x: x.sum() if x.notna().any() else np.nan)
             else:
                 resampled_data[inpt.tres] = data
             print(f"Resampled (closest or mean) for {data_typ}, {vr}.")

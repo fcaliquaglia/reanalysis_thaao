@@ -202,6 +202,7 @@ def read_aws_ecapac(vr):
 
         if t_all:
             df_all = pd.concat(t_all)
+            df_all=df_all.resample('1h').apply(lambda x: x.sum() if x.notna().any() else np.nan)
         else:
             df_all = pd.DataFrame()
 
