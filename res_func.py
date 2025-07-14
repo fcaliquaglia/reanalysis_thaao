@@ -268,7 +268,6 @@ def data_resampling(vr):
 
             resampled_data = {'original': data}
 
-
             # Always get closest for 1h and 3h
             resampled_data.update({
                 '1h': get_closest_subset_with_tolerance(data, '1h', tol_minutes=10),
@@ -279,9 +278,11 @@ def data_resampling(vr):
                 masked = tls.mask_low_count_intervals(
                     data, data_typ, min_frac=inpt.min_frac)
                 if vr != 'precip':
-                    resampled_data[inpt.tres] = masked.resample(inpt.tres).mean()
+                    resampled_data[inpt.tres] = masked.resample(
+                        inpt.tres).mean()
                 else:
-                    resampled_data[inpt.tres] =  masked.resample(inpt.tres).apply(lambda x: x.sum() if x.notna().any() else np.nan)
+                    resampled_data[inpt.tres] = masked.resample(inpt.tres).apply(
+                        lambda x: x.sum() if x.notna().any() else np.nan)
             else:
                 resampled_data[inpt.tres] = data
             print(f"Resampled (closest or mean) for {data_typ}, {vr}.")

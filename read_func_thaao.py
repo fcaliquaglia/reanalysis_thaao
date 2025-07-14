@@ -195,6 +195,7 @@ def read_aws_ecapac(vr):
                     columns={inpt.extr[vr]["t2"]["column"]: vr}
                 )
                 df.index.name = 'datetime'
+                df.loc[df[vr] > 0.5, vr] = np.nan
                 t_all.append(df)
                 print(f"OK: {file.name}")
             except (FileNotFoundError, pd.errors.EmptyDataError):
@@ -202,7 +203,9 @@ def read_aws_ecapac(vr):
 
         if t_all:
             df_all = pd.concat(t_all)
-            df_all=df_all.resample('1h').apply(lambda x: x.sum() if x.notna().any() else np.nan)
+            df_all = df_all.resample('1h').apply(
+                lambda x: x.sum() if x.notna().any() else np.nan)
+            df_all.loc[df_all[vr] > 20, vr] = np.nan
         else:
             df_all = pd.DataFrame()
 
@@ -253,11 +256,12 @@ def read_iwv_rs(vr):
                     df.columns = [vr]
 
                     iwv = tls.convert_rs_to_iwv(df, 1.01)
-                    t_all.append(pd.DataFrame(index=[file_date], data=[iwv.magnitude]))
+                    t_all.append(pd.DataFrame(
+                        index=[file_date], data=[iwv.magnitude]))
                     print(f'OK: year {year}')
                 except FileNotFoundError:
                     print(f'NOT FOUND: year {year}')
-            
+
         if t_all:
             df_all = pd.concat(t_all)
         else:

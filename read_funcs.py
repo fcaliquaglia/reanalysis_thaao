@@ -367,6 +367,7 @@ def read_precip():
         rd_ft.read_aws_ecapac(vr)
         var_dict["t2"]["data"], _ = tls.check_empty_df(
             var_dict["t2"]["data"], vr)
+        
 
     return
 

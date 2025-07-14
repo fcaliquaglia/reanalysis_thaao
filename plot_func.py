@@ -222,7 +222,10 @@ def plot_ba(period_label):
         perc=False
         if inpt.var=='windd':
             return
-
+        
+        if inpt.var =='precip':
+            x_valid, y_valid = np.log1p(x_valid), np.log1p(y_valid)
+            
         blandAltman(
             y_valid, x_valid, ax=axs[i], limitOfAgreement=1.96, confidenceInterval=95,
             confidenceIntervalMethod='approximate', detrend=None,

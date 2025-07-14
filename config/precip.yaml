@@ -1,14 +1,14 @@
 name: precip
 ref_x: t2
 min: 0
-max: 5
+max: 25
 res_min: -5
 res_max: 5
-uom: "[mm?]"
+uom: "[mm]"
 comps:
   - c
   - e
-bin_nr: 200
+bin_nr: 50
 c:
   fn: "thaao_c_total_precipitation_"
   column: 2

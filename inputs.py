@@ -108,7 +108,7 @@ extra_vars = ['orog']
 
 # met_vars + rad_vars  # you can add + cloud_vars if needed
 list_var = ['precip'] # met_vars + rad_vars #  ['orog'] # 
-tres_list = ['3h', 'original', '6h', '12h', '24h']
+tres_list = ['original', '3h', '6h', '12h', '24h']
 tres = var = ''
 
 years = np.arange(2016, 2025)
