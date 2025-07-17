@@ -541,15 +541,19 @@ def calc_draw_fit(axs, i, xxx, yyy, per_lab, data_typ, print_stats=True):
         N = len(yy)
         rmse = np.sqrt(np.nanmean((yy - xx) ** 2))
         mbe = np.nanmean(yy - xx)
+        def escape_label(label):
+            return label.replace('_', r'\_')
+        
         stats_text = (
             f"R² = {r2:.2f}\n"
             f"N = {N}\n"
             f"y = {b:+.2f}x {a:+.2f}\n"
             f"MBE = {mbe:.2f}\n"
             f"RMSE = {rmse:.2f}\n"
-            f"σ_{var_dict[ref_x]['label']} = {sigma_x:.2f}\n"
-            f"σ_{var_dict[data_typ]['label']} = {sigma_y:.2f}"
+            f"$\\sigma_{{{escape_label(var_dict[ref_x]['label'])}}} = {sigma_x:.2f}$\n"
+            f"$\\sigma_{{{escape_label(var_dict[data_typ]['label'])}}} = {sigma_y:.2f}$"
         )
+
         axs[i].text(0.50, 0.30, stats_text,
                     transform=axs[i].transAxes,
                     fontsize=14, color='black',
