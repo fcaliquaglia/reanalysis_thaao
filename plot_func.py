@@ -219,18 +219,18 @@ def plot_ba(period_label):
         valid_idx = ~(x_all.isna() | y_all.isna())
         x_valid, y_valid = x_all[valid_idx], y_all[valid_idx]
 
-        perc=False
-        if inpt.var=='windd':
+        perc = False
+        if inpt.var == 'windd':
             return
-        
-        if inpt.var =='precip':
-            perc=True
+
+        if inpt.var == 'precip':
+            perc = True
             threshold = 1e-1
             mean = (x_valid + y_valid) / 2
             valid_mask = mean > threshold
             x_valid, y_valid = x_valid[valid_mask], y_valid[valid_mask]
             x_valid, y_valid = np.log1p(x_valid), np.log1p(y_valid)
-            
+
         blandAltman(
             y_valid, x_valid, ax=axs[i], limitOfAgreement=1.96, confidenceInterval=95,
             confidenceIntervalMethod='approximate', detrend=None,
@@ -240,10 +240,10 @@ def plot_ba(period_label):
 
     if perc:
         save_path = os.path.join(
-        inpt.basefol['out']['base'], inpt.tres, f"{str_name.replace(' ', '_')}_perc.png")
+            inpt.basefol['out']['base'], inpt.tres, f"{str_name.replace(' ', '_')}_perc.png")
     else:
         save_path = os.path.join(
-        inpt.basefol['out']['base'], inpt.tres, f"{str_name.replace(' ', '_')}.png")
+            inpt.basefol['out']['base'], inpt.tres, f"{str_name.replace(' ', '_')}.png")
     plt.savefig(save_path, bbox_inches='tight')
     plt.close('all')
 
@@ -314,7 +314,7 @@ def plot_scatter(period_label):
                     axs[i].text(0.1, 0.5, "Invalid histogram range",
                                 transform=axs[i].transAxes)
                 else:
-                    #cmap = cmap[data_typ] # plt.cm.jet.copy()
+                    # cmap = cmap[data_typ] # plt.cm.jet.copy()
 
                     # # Modify the colormap so that the lowest color is white
                     # # Create a new colormap with white at the bottom, then jet for the rest
@@ -335,9 +335,10 @@ def plot_scatter(period_label):
                     )
 
                     counts = h[0]
-                    pctl=99
-                    vmax = np.percentile(counts[counts > 0], pctl) 
-                    has_overflow = np.any(counts > vmax)# Exclude zeros to ignore empty bins
+                    pctl = 99
+                    vmax = np.percentile(counts[counts > 0], pctl)
+                    # Exclude zeros to ignore empty bins
+                    has_overflow = np.any(counts > vmax)
                     extend_opt = 'max' if has_overflow else 'neither'
 
                     axs[i].cla()  # Clear axis to avoid overplotting
@@ -348,7 +349,7 @@ def plot_scatter(period_label):
                         cmin=1,
                         vmin=vmin,
                         vmax=vmax
-                        )
+                    )
 
                     cax = inset_axes(axs[3],
                                      width="100%",
@@ -359,12 +360,13 @@ def plot_scatter(period_label):
 
                     cbar = fig.colorbar(
                         h[3], cax=cax, orientation='horizontal', extend=extend_opt)
-                    cbar.set_label(f'Counts {inpt.var_dict[data_typ]["label"]}\n max: {pctl}pctl')
+                    cbar.set_label(
+                        f'Counts {inpt.var_dict[data_typ]["label"]}\n max: {pctl}pctl')
                     axs[i].text(
                         0.10, 0.90, f"bin_size={bin_size:.3f}", transform=axs[i].transAxes)
-                    
+
         if valid_idx.sum() >= 2:
-            calc_draw_fit(axs, i, x_valid, y_valid, period_label)
+            calc_draw_fit(axs, i, x_valid, y_valid, period_label, data_typ)
         else:
             print("ERROR: Not enough data points for fit.")
 
@@ -444,7 +446,7 @@ def plot_scatter_cum():
             )
 
             calc_draw_fit(axs, i,  merged['x'],  merged['y'],
-                          period_label, print_stats=True)
+                          period_label, data_typ, print_stats=True)
 
             format_scatterplot(axs, data_typ, i)
             axs[i].legend()
@@ -483,7 +485,7 @@ def plot_scatter_cum():
                     # raise ValueError("Insufficient data for fitting.")
                 else:
                     calc_draw_fit(axs, i, x_valid, y_valid,
-                                  period_label, print_stats=False)
+                                  period_label, data_typ, print_stats=False)
 
                 format_scatterplot(axs, data_typ, i)
                 axs[i].legend()
@@ -494,7 +496,7 @@ def plot_scatter_cum():
     plt.close('all')
 
 
-def calc_draw_fit(axs, i, xxx, yyy, per_lab, print_stats=True):
+def calc_draw_fit(axs, i, xxx, yyy, per_lab, data_typ, print_stats=True):
     """
     Performs linear regression on data (xxx, yyy), plots the fit line and 1:1 line,
     and optionally annotates stats (R, N, MBE, RMSE) on subplot axs[i].
@@ -506,6 +508,10 @@ def calc_draw_fit(axs, i, xxx, yyy, per_lab, print_stats=True):
     :param per_lab: Key for color in inpt.seasons.
     :param print_stats: Whether to display stats text.
     """
+    var = inpt.var
+    var_dict = inpt.var_dict
+    ref_x = inpt.extr[var]['ref_x']
+
     xx = xxx.values.flatten()
     yy = yyy.values.flatten()
     # Make sure xx and yy are numpy arrays
@@ -526,6 +532,8 @@ def calc_draw_fit(axs, i, xxx, yyy, per_lab, print_stats=True):
                 lw=2.5, ls='--', alpha=0.5)
     axs[i].plot([var_min, var_max], [var_min, var_max],
                 color='black', lw=1.5, ls='-')
+    sigma_x = np.std(xx)
+    sigma_y = np.std(yy)
 
     if print_stats:
         corcoef = np.corrcoef(xx, yy)[0, 1]
@@ -538,7 +546,9 @@ def calc_draw_fit(axs, i, xxx, yyy, per_lab, print_stats=True):
             f"N = {N}\n"
             f"y = {b:+.2f}x {a:+.2f}\n"
             f"MBE = {mbe:.2f}\n"
-            f"RMSE = {rmse:.2f}"
+            f"RMSE = {rmse:.2f}\n"
+            f"σ_{var_dict[ref_x]['label']} = {sigma_x:.2f}\n"
+            f"σ_{var_dict[data_typ]['label']} = {sigma_y:.2f}"
         )
         axs[i].text(0.50, 0.30, stats_text,
                     transform=axs[i].transAxes,
@@ -562,8 +572,10 @@ def format_ba(axs, data_typ, i):
     ref_x = inpt.extr[var]['ref_x']
 
     axs[i].set_title(var_dict[data_typ]['label'])
-    axs[i].set_xlabel(f"mean({var_dict[ref_x]['label']},{var_dict[data_typ]['label']})")
-    axs[i].set_ylabel(f"{var_dict[data_typ]['label']}-{var_dict[ref_x]['label']}")
+    axs[i].set_xlabel(
+        f"mean({var_dict[ref_x]['label']},{var_dict[data_typ]['label']})")
+    axs[i].set_ylabel(
+        f"{var_dict[data_typ]['label']}-{var_dict[ref_x]['label']}")
     # axs[i].set_xlim(var_min, var_max)
     # axs[i].set_ylim(var_min, var_max)
     axs[i].text(0.01, 0.95, inpt.letters[i] + ')',
@@ -644,7 +656,3 @@ def frame_and_axis_removal(ax, len_comps):
         ax[idx].axis('off')
         ax[idx].get_xaxis().set_visible(False)
         ax[idx].get_yaxis().set_visible(False)
-
-
-
-
