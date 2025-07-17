@@ -34,12 +34,16 @@ def main():
     print(inpt.location, end="\n\n")
     for tres in inpt.tres_list:
         inpt.tres = tres
-        print(f"Processing time resolution: {tres}")
+        print("**************")
+        print(f"Processing time resolution: {tres}\n")
+        print("**************")
 
         for var in inpt.list_var:
             inpt.var = var
-            print(f"**************Processing variable: {var}**************\n")
-            print(f"Processing time resolution: {tres}")
+            print("**************")
+            print(f"************** Processing variable: {var}\n")
+            print(f"************** Processing time resolution: {tres}")
+            print("**************")
 
             # Read data
             rd_funcs.read()
@@ -56,10 +60,11 @@ def main():
             #         plt_f.plot_scatter(season)
 
             # plt_f.plot_scatter_cum()
-            
+
     # Plotting Taylor Diagram
-    
+
     plt_f.plot_taylor()
+
 
 if __name__ == "__main__":
     main()

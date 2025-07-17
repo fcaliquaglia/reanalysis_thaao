@@ -32,6 +32,7 @@ import inputs as inpt
 import tools as tls
 
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+from matplotlib.lines import Line2D
 from pyCompare import blandAltman
 import skill_metrics as sm
 
@@ -528,19 +529,19 @@ def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
 
     for i, (std, corr) in enumerate(zip(std_models, corr_coeffs)):
         theta = np.arccos(corr)
-        
+
         # Extract tres from model_labels[i], assuming format: "model (var, tres)"
         label = model_labels[i]
         tres = None
         try:
-            # Extract the last comma-separated part inside parentheses
             tres = label.split('(')[1].split(')')[0].split(',')[-1].strip()
         except Exception:
             pass
-    
-        if tres == 'original':
+
+        if tres in ['1h', '3h']:
             # Plot black circle (slightly bigger marker)
-            ax.plot(theta, std, marker='o', color='black', markersize=10, linestyle='None')
+            ax.plot(theta, std, marker='o', color='black',
+                    markersize=10, linestyle='None')
             # Plot actual marker inside (smaller size, white face)
             ax.plot(theta, std,
                     marker=markers[i],
@@ -554,16 +555,25 @@ def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
                     color=colors[i % len(colors)],
                     linestyle='None')
 
-    # Legend for variables (one marker per variable)
+    # Legend for variables (markers)
     if var_marker_map:
-        from matplotlib.lines import Line2D
         legend_elements = [
             Line2D([], [], color='black', marker=mark,
                    linestyle='None', label=var)
             for var, mark in var_marker_map.items()
         ]
-        ax.legend(handles=legend_elements, title='Variables',
-                  loc=legend_loc, fontsize='small', title_fontsize='medium')
+        leg1 = ax.legend(handles=legend_elements, title='Variables',
+                         loc=legend_loc, fontsize='small', title_fontsize='medium')
+        ax.add_artist(leg1)  # Add first legend manually
+
+        model_keys = ['e', 'c', 't1', 't2']
+        model_color_legend = [
+            Line2D([], [], color=inpt.var_dict[k]['col'], marker='o',
+                   linestyle='None', label=inpt.var_dict[k]['label'])
+            for k in model_keys
+        ]
+        ax.legend(handles=model_color_legend, title='Models',
+                  loc='lower right', fontsize='small', title_fontsize='medium')
 
 
 def plot_taylor():
@@ -590,9 +600,8 @@ def plot_taylor():
         plot_vars = tls.plot_vars_cleanup(comps, var_data)
 
         for tres in inpt.tres_list:
-
             for model in plot_vars:
-                tres, tres_tol = tls.get_tres(model)
+                tres, tres_tol = tls.get_tres(model, tres)
                 try:
                     x = var_data[ref_x]['data_res'][tres][var]
                     y = var_data[model]['data_res'][tres][var]
@@ -620,18 +629,23 @@ def plot_taylor():
                 combined_stds.append(np.std(y_valid))
                 combined_cors.append(np.corrcoef(x_valid, y_valid)[0, 1])
                 combined_labels.append(f"{model} ({var}, {tres})")
-                combined_colors.append(inpt.var_dict[model]['col'])
-                combined_markers.append(var_marker_map[var])
-
-                # Set color by model type
+                # Debug print summary
                 if model == 'c':
-                    combined_colors.append('red')
+                    color = 'red'
                 elif model == 'e':
-                    combined_colors.append('blue')
+                    color = 'blue'
                 elif model == 't2':
-                    combined_colors.append('purple')
+                    color = 'purple'
+                elif model == 't1':
+                    color = 'cyan'
                 else:
-                    combined_colors.append('gray')
+                    color = inpt.var_dict[model]['col'] if model in inpt.var_dict else 'gray'
+
+                combined_colors.append(color)
+                combined_markers.append(var_marker_map[var])
+                print(f"DEBUG: Model={model}, Var={var}, Tres={tres} | "
+                      f"StdRef={combined_stdrefs[-1]:.3f}, StdModel={combined_stds[-1]:.3f}, "
+                      f"Corr={combined_cors[-1]:.3f}, Color={combined_colors[-1]}, Marker={combined_markers[-1]}")
 
     # Plot
     fig = plt.figure(figsize=(12, 10), dpi=inpt.dpi)

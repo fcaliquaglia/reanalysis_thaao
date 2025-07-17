@@ -136,27 +136,12 @@ def recompose_wind(u_series, v_series):
     )
 
 
-def get_tres(data_typ):
-    """
-    Returns the time resolution and a derived tolerance frequency based on input settings.
+def get_tres(data_typ, tres=None):
+    if tres is None:
+        tres = inpt.tres
 
-    Parameters:
-        data_typ (str): Component identifier, typically 'c' for CARRA.
-
-    Returns:
-        tuple[str, str]: A tuple containing:
-            - Primary time resolution string (e.g., '1h', '3h')
-            - Tolerance frequency string (e.g., '10min'), equal to one-sixth of the primary
-
-    Logic:
-        - If inpt.tres is set (not 'original'), return it as both values.
-        - Otherwise:
-            - Use '1h' for radiation variables ('sw_up', 'sw_down', 'lw_up', 'lw_down')
-            - Use '3h' if data_typ == 'c', else '1h'
-        - Compute tolerance as one-sixth of the base frequency.
-    """
-    if inpt.tres != 'original':
-        return inpt.tres, inpt.tres
+    if tres != 'original':
+        return tres, tres
 
     _vars = {'sw_up', 'sw_down', 'lw_up', 'lw_down', 'precip'}
     freq_str = '1h' if inpt.var in _vars else (
@@ -166,6 +151,7 @@ def get_tres(data_typ):
     tolerance = pd.tseries.frequencies.to_offset(freq / 6).freqstr
 
     return freq_str, tolerance
+
 
 
 def get_common_paths(vr, y, prefix):
