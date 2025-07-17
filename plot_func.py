@@ -33,6 +33,7 @@ import tools as tls
 
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from pyCompare import blandAltman
+import skill_metrics as sm
 
 
 def plot_ts(period_label):
@@ -495,6 +496,168 @@ def plot_scatter_cum():
     plt.close('all')
 
 
+def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
+                    ref_label='REF', colors=None, markers=None,
+                    srange=(0, 1.5),
+                    figsize=(8, 6), legend_loc='upper right',
+                    var_marker_map=None):
+
+    std_models = np.array(std_models)
+    corr_coeffs = np.clip(np.array(corr_coeffs), -1, 1)
+
+    rmax = std_ref * srange[1]
+    ax.set_ylim(0, rmax)
+
+    # Limit to upper-right quadrant: correlation from 0 to 1
+    ax.set_thetamin(0)
+    ax.set_thetamax(90)
+
+    # Grid lines for correlation (cosine of theta)
+    tgrid = np.arange(0, 100, 10)
+    labels = [f"{np.cos(np.deg2rad(t)):.2f}" for t in tgrid]
+    ax.set_thetagrids(tgrid, labels=labels)
+    ax.set_rlabel_position(135)
+
+    # Reference point
+    ax.plot(0, std_ref, 'ko', label=ref_label)
+
+    if colors is None:
+        colors = plt.cm.tab10.colors
+    if markers is None:
+        markers = ['o'] * len(std_models)
+
+    for i, (std, corr) in enumerate(zip(std_models, corr_coeffs)):
+        theta = np.arccos(corr)
+        
+        # Extract tres from model_labels[i], assuming format: "model (var, tres)"
+        label = model_labels[i]
+        tres = None
+        try:
+            # Extract the last comma-separated part inside parentheses
+            tres = label.split('(')[1].split(')')[0].split(',')[-1].strip()
+        except Exception:
+            pass
+    
+        if tres == 'original':
+            # Plot black circle (slightly bigger marker)
+            ax.plot(theta, std, marker='o', color='black', markersize=10, linestyle='None')
+            # Plot actual marker inside (smaller size, white face)
+            ax.plot(theta, std,
+                    marker=markers[i],
+                    markerfacecolor='white',
+                    markeredgecolor=colors[i % len(colors)],
+                    markersize=6,
+                    linestyle='None')
+        else:
+            ax.plot(theta, std,
+                    marker=markers[i],
+                    color=colors[i % len(colors)],
+                    linestyle='None')
+
+    # Legend for variables (one marker per variable)
+    if var_marker_map:
+        from matplotlib.lines import Line2D
+        legend_elements = [
+            Line2D([], [], color='black', marker=mark,
+                   linestyle='None', label=var)
+            for var, mark in var_marker_map.items()
+        ]
+        ax.legend(handles=legend_elements, title='Variables',
+                  loc=legend_loc, fontsize='small', title_fontsize='medium')
+
+
+def plot_taylor():
+    print("Taylor Diagram")
+    str_name = f"Taylor Diagram {inpt.var_dict['t']['label']} {inpt.years[0]}-{inpt.years[-1]}"
+
+    combined_stdrefs = []
+    combined_stds = []
+    combined_cors = []
+    combined_labels = []
+    combined_colors = []
+    combined_markers = []
+    var_marker_map = {}
+    available_markers = ['o', 's', '^', 'D',
+                         'v', 'P', '*', 'X', 'H', '>', '<', '8']
+
+    for var_idx, var in enumerate(inpt.list_var):
+        marker = available_markers[var_idx % len(available_markers)]
+        var_marker_map[var] = marker
+        inpt.var = var
+        var_data = inpt.extr[var]
+        comps = var_data['comps']
+        ref_x = var_data['ref_x']
+        plot_vars = tls.plot_vars_cleanup(comps, var_data)
+
+        for tres in inpt.tres_list:
+
+            for model in plot_vars:
+                tres, tres_tol = tls.get_tres(model)
+                try:
+                    x = var_data[ref_x]['data_res'][tres][var]
+                    y = var_data[model]['data_res'][tres][var]
+                except KeyError:
+                    continue  # skip if missing data
+
+                time_range = pd.date_range(
+                    start=pd.Timestamp(inpt.years[0], 1, 1),
+                    end=pd.Timestamp(inpt.years[-1], 12, 31, 23, 59),
+                    freq=tres
+                )
+
+                x_all = x.reindex(time_range, method='nearest',
+                                  tolerance=tres_tol).astype(float)
+                y_all = y.reindex(time_range).astype(float)
+
+                valid_idx = ~(x_all.isna() | y_all.isna())
+                x_valid = x_all[valid_idx]
+                y_valid = y_all[valid_idx]
+
+                if len(x_valid) == 0 or len(y_valid) == 0:
+                    continue
+
+                combined_stdrefs.append(np.std(x_valid))
+                combined_stds.append(np.std(y_valid))
+                combined_cors.append(np.corrcoef(x_valid, y_valid)[0, 1])
+                combined_labels.append(f"{model} ({var}, {tres})")
+                combined_colors.append(inpt.var_dict[model]['col'])
+                combined_markers.append(var_marker_map[var])
+
+                # Set color by model type
+                if model == 'c':
+                    combined_colors.append('red')
+                elif model == 'e':
+                    combined_colors.append('blue')
+                elif model == 't2':
+                    combined_colors.append('purple')
+                else:
+                    combined_colors.append('gray')
+
+    # Plot
+    fig = plt.figure(figsize=(12, 10), dpi=inpt.dpi)
+    ax = fig.add_subplot(111, polar=True)
+    ax.set_theta_direction(-1)
+    ax.set_theta_zero_location('N')
+    fig.suptitle(f"{str_name}", fontweight='bold')
+    fig.subplots_adjust(top=0.93)
+
+    std_ref = combined_stdrefs[0] if combined_stdrefs else 1.0
+
+    plot_taylor_dia(ax, std_ref,
+                    combined_stds,
+                    combined_cors,
+                    combined_labels,
+                    ref_label='Obs',
+                    colors=combined_colors,
+                    markers=combined_markers,
+                    var_marker_map=var_marker_map)
+
+    save_path = os.path.join(
+        inpt.basefol['out']['base'], f"{str_name.replace(' ', '_')}.png")
+    fig.savefig(save_path, bbox_inches='tight')
+    plt.close(fig)
+
+
 def calc_draw_fit(axs, i, xxx, yyy, per_lab, data_typ, print_stats=True):
     """
     Performs linear regression on data (xxx, yyy), plots the fit line and 1:1 line,
@@ -559,7 +722,6 @@ def calc_stats(x, y):
 
     corcoef = np.corrcoef(x, y)[0, 1]
     diff = y-x
-
     r2 = corcoef*corcoef
     N = len(y)
     rmse = np.sqrt(np.nanmean(diff ** 2))
