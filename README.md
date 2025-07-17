@@ -20,6 +20,7 @@
 - metpy
 - pyarrow
 - pyCompare
+- skillmetrics
 - (spyder-kernels=3.0)
 
 ## Reanalysis considered

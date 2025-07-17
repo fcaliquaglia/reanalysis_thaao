@@ -32,7 +32,6 @@ import inputs as inpt
 import tools as tls
 
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
-import matplotlib.colors as mcolors
 from pyCompare import blandAltman
 
 
@@ -532,26 +531,21 @@ def calc_draw_fit(axs, i, xxx, yyy, per_lab, data_typ, print_stats=True):
                 lw=2.5, ls='--', alpha=0.5)
     axs[i].plot([var_min, var_max], [var_min, var_max],
                 color='black', lw=1.5, ls='-')
-    sigma_x = np.std(xx)
-    sigma_y = np.std(yy)
 
     if print_stats:
-        corcoef = np.corrcoef(xx, yy)[0, 1]
-        r2 = corcoef*corcoef
-        N = len(yy)
-        rmse = np.sqrt(np.nanmean((yy - xx) ** 2))
-        mbe = np.nanmean(yy - xx)
+        (r2, N, rmse, mbe, std_x, std_y) = calc_stats(xx, yy)
+
         def escape_label(label):
             return label.replace('_', r'\_')
-        
+
         stats_text = (
             f"R² = {r2:.2f}\n"
             f"N = {N}\n"
             f"y = {b:+.2f}x {a:+.2f}\n"
             f"MBE = {mbe:.2f}\n"
             f"RMSE = {rmse:.2f}\n"
-            f"$\\sigma_{{{escape_label(var_dict[ref_x]['label'])}}} = {sigma_x:.2f}$\n"
-            f"$\\sigma_{{{escape_label(var_dict[data_typ]['label'])}}} = {sigma_y:.2f}$"
+            f"$\\sigma_{{{escape_label(var_dict[ref_x]['label'])}}} = {std_x:.2f}$\n"
+            f"$\\sigma_{{{escape_label(var_dict[data_typ]['label'])}}} = {std_y:.2f}$"
         )
 
         axs[i].text(0.50, 0.30, stats_text,
@@ -559,6 +553,20 @@ def calc_draw_fit(axs, i, xxx, yyy, per_lab, data_typ, print_stats=True):
                     fontsize=14, color='black',
                     ha='left', va='center',
                     bbox=dict(facecolor='white', edgecolor='white'))
+
+
+def calc_stats(x, y):
+
+    corcoef = np.corrcoef(x, y)[0, 1]
+    diff = y-x
+
+    r2 = corcoef*corcoef
+    N = len(y)
+    rmse = np.sqrt(np.nanmean(diff ** 2))
+    mbe = np.nanmean(diff)
+    std_x = np.std(x)
+    std_y = np.std(y)
+    return r2, N, rmse, mbe, std_x, std_y
 
 
 def format_ba(axs, data_typ, i):
