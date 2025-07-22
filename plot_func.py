@@ -709,10 +709,10 @@ def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
     theta_degrees = np.degrees(np.arccos(corr_values))
     labels = [f"{c:.2f}" for c in corr_values]
     ticks, label_texts = ax.set_thetagrids(theta_degrees, labels=labels)
-    
+
     for label in label_texts:
         label.set_color('darkgoldenrod')
-    
+
     # Set radial label position (unchanged)
     ax.set_rlabel_position(135)
 
@@ -777,9 +777,8 @@ def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
                 ha='center', va='center',
                 fontsize=8, color='darkgreen',
                 backgroundcolor='white',
-                clip_on=True, zorder=5  )
+                clip_on=True, zorder=5)
 
-    
     ax.add_artist(plt.Circle((0, 0), std_ref, transform=ax.transData._b,
                              color='black', fill=False, linestyle='--', linewidth=3))
     # Defaults for colors/markers
