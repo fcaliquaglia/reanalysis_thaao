@@ -35,6 +35,7 @@ from matplotlib.ticker import MaxNLocator
 from matplotlib.ticker import FormatStrFormatter
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from pyCompare import blandAltman
+from matplotlib.lines import Line2D
 
 
 def plot_ts(period_label):
@@ -355,10 +356,10 @@ def plot_scatter_all(period_label):
 
             # Fit
             if valid_idx.sum() >= 2:
-                calc_draw_fit(joint_axes, i, x_valid, y_valid, tres,
+                calc_draw_fit(joint_axes, i, x_valid, y_valid, inpt.tres,
                               inpt.all_seasons['all']['col'], data_typ, print_stats=True)
             else:
-                calc_draw_fit(joint_axes, i, x_valid, y_valid, tres,
+                calc_draw_fit(joint_axes, i, x_valid, y_valid, inpt.tres,
                               inpt.all_seasons['all']['col'], data_typ, print_stats=False)
                 print("ERROR: Not enough data points for fit.")
 
@@ -392,9 +393,6 @@ def plot_scatter_all(period_label):
                 FormatStrFormatter('%d'))  # Format counts as integers
             cbar.ax.xaxis.set_ticks_position('bottom')
             cbar.ax.xaxis.set_label_position('bottom')
-
-            # Debug print (optional)
-            print("Colorbar limits:", quadmesh.get_clim())
 
     save_path = os.path.join(
         inpt.basefol['out']['base'], inpt.tres, f"{str_name.replace(' ', '_')}.png")
@@ -451,10 +449,10 @@ def plot_scatter_seasonal(period_label):
         )
 
         if valid_idx.sum() >= 2:
-            calc_draw_fit(axs, i, x_valid, y_valid, tres,
+            calc_draw_fit(axs, i, x_valid, y_valid, inpt.tres,
                           inpt.seasons[period_label]['col'], data_typ, print_stats=True)
         else:
-            calc_draw_fit(axs, i, x_valid, y_valid, tres,
+            calc_draw_fit(axs, i, x_valid, y_valid, inpt.tres,
                           inpt.seasons[period_label]['col'], data_typ, print_stats=False)
             print("ERROR: Not enough data points for fit.")
 
@@ -537,7 +535,7 @@ def plot_scatter_cum():
                 s=5, color='blue', edgecolors='none', alpha=0.5, label=period_label
             )
 
-            calc_draw_fit(axs, i,  merged['x'],  merged['y'], tres,
+            calc_draw_fit(axs, i,  merged['x'],  merged['y'], inpt.tres,
                           inpt.seasons[period_label]['col'], data_typ, print_stats=True)
 
             format_scatterplot(axs, data_typ, i)
@@ -576,7 +574,7 @@ def plot_scatter_cum():
                     # Optionally raise ValueError here if needed
                     # raise ValueError("Insufficient data for fitting.")
                 else:
-                    calc_draw_fit(axs, i, x_valid, y_valid, tres,
+                    calc_draw_fit(axs, i, x_valid, y_valid, inpt.tres,
                                   inpt.seasons[period_label]['col'], data_typ, print_stats=False)
 
                 format_scatterplot(axs, data_typ, i)
@@ -586,99 +584,6 @@ def plot_scatter_cum():
         inpt.basefol['out']['base'], inpt.tres, f"{str_name.replace(' ', '_')}.png")
     plt.savefig(save_path, bbox_inches='tight')
     plt.close('all')
-
-
-def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
-                    ref_label='REF', colors=None, markers=None,
-                    srange=(0, 1.5),
-                    figsize=(8, 6), legend_loc='upper right',
-                    var_marker_map=None):
-
-    import matplotlib.pyplot as plt
-    import numpy as np
-    from matplotlib.lines import Line2D
-
-    std_models = np.array(std_models)
-    corr_coeffs = np.clip(np.array(corr_coeffs), -1, 1)
-
-    # Range per asse radiale (std dev)
-    rmax = std_ref * srange[1]
-    ax.set_ylim(0, rmax)
-
-    # Setup polare
-    ax.set_theta_direction(-1)            # senso orario
-    ax.set_theta_zero_location('N')       # 0° a destra, REF sull'asse x
-
-    ax.set_thetamin(0)
-    ax.set_thetamax(90)
-
-    # Etichette dei coefficienti di correlazione
-    tgrid_degrees = np.arccos([1.0, 0.95, 0.9, 0.8, 0.6, 0.0]) * 180 / np.pi
-    labels = [f"{np.cos(np.deg2rad(t)):.2f}" for t in tgrid_degrees]
-    ax.set_thetagrids(tgrid_degrees, labels=labels)
-    ax.set_rlabel_position(135)
-
-    # ✅ Cerchio riferimento deviazione standard (ref)
-    ref_circle = plt.Circle((0, 0), std_ref, transform=ax.transData._b,
-                            color='black', fill=False, linestyle='--',
-                            linewidth=1, label='Std Ref')
-    ax.add_artist(ref_circle)
-
-    # Punto di riferimento (REF)
-    ax.plot(0, std_ref, 'ko', label=ref_label, markersize=6)
-
-    if colors is None:
-        colors = plt.cm.tab10.colors
-    if markers is None:
-        markers = ['o'] * len(std_models)
-
-    # Punti modello
-    for i, (std, corr) in enumerate(zip(std_models, corr_coeffs)):
-        theta = np.arccos(corr)
-
-        label = model_labels[i]
-        tres = None
-        try:
-            tres = label.split('(')[1].split(')')[0].split(',')[-1].strip()
-        except Exception:
-            pass
-
-        if tres == 'original':
-            # Contorno nero (vuoto)
-            ax.plot(theta, std, marker='o', color='black',
-                    markersize=10, linestyle='None', markerfacecolor='none')
-            # Marker interno
-            ax.plot(theta, std,
-                    marker=markers[i],
-                    markerfacecolor=colors[i % len(colors)],
-                    markeredgecolor=colors[i % len(colors)],
-                    markersize=6,
-                    linestyle='None')
-        else:
-            ax.plot(theta, std,
-                    marker=markers[i],
-                    color=colors[i % len(colors)],
-                    linestyle='None')
-
-    # Legend for variables (markers)
-    if var_marker_map:
-        legend_elements = [
-            Line2D([], [], color='black', marker=mark,
-                   linestyle='None', label=var)
-            for var, mark in var_marker_map.items()
-        ]
-        leg1 = ax.legend(handles=legend_elements, title='Variables',
-                         loc=legend_loc, fontsize='small', title_fontsize='medium')
-        ax.add_artist(leg1)  # Add first legend manually
-
-        model_keys = ['e', 'c', 't1', 't2']
-        model_color_legend = [
-            Line2D([], [], color=inpt.var_dict[k]['col'], marker='o',
-                   linestyle='None', label=inpt.var_dict[k]['label'])
-            for k in model_keys
-        ]
-        ax.legend(handles=model_color_legend, title='Models',
-                  loc='lower right', fontsize='small', title_fontsize='medium')
 
 
 def plot_taylor():
@@ -706,11 +611,12 @@ def plot_taylor():
 
         for tres in inpt.tres_list:
             for data_typ in plot_vars:
-                tres, tres_tol = tls.get_tres(data_typ, tres)
 
-                combined_stdrefs.append(var_data[ref_x]['data_stats'][tres]['std_y'])
-                combined_stds.append(var_data[data_typ]['data_stats'][tres]['std_y'])
-                combined_cors.append(var_data[data_typ]['data_stats'][tres]['r2'])
+                combined_stdrefs.append(1)
+                combined_stds.append(
+                    var_data[data_typ]['data_stats'][tres]['std_y']/var_data[ref_x]['data_stats'][tres]['std_x'])
+                combined_cors.append(
+                    var_data[data_typ]['data_stats'][tres]['r2'])
                 combined_labels.append(f"{data_typ} ({var}, {tres})")
                 # Debug print summary
                 if data_typ == 'c':
@@ -753,6 +659,122 @@ def plot_taylor():
         inpt.basefol['out']['base'], f"{str_name.replace(' ', '_')}.png")
     fig.savefig(save_path, bbox_inches='tight')
     plt.close(fig)
+
+
+def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
+                    ref_label='REF', colors=None, markers=None,
+                    srange=(0, 2.0),  # increased radius range
+                    figsize=(8, 6), legend_loc='upper right',
+                    var_marker_map=None):
+
+    std_models = np.array(std_models)
+    corr_coeffs = np.clip(np.array(corr_coeffs), -1, 1)
+
+    rmax = std_ref * srange[1]
+    ax.set_ylim(0, rmax)
+
+    # Polar plot setup: zero at top (N), clockwise direction
+    ax.set_theta_direction(-1)
+    ax.set_theta_zero_location('N')
+
+    # Limit angle to 0-90 degrees
+    ax.set_thetamin(0)
+    ax.set_thetamax(90)
+
+    # Angular (correlation) ticks & labels
+    tgrid_degrees = np.arccos([1.0, 0.95, 0.9, 0.8, 0.6, 0.0]) * 180 / np.pi
+    labels = [f"{np.cos(np.deg2rad(t)):.2f}" for t in tgrid_degrees]
+    ax.set_thetagrids(tgrid_degrees, labels=labels)
+    ax.set_rlabel_position(135)
+
+    # Radial (std dev) ticks - increased number
+    num_radial_ticks = 6
+    radial_ticks = np.linspace(0, rmax, num_radial_ticks)
+    ax.set_yticks(radial_ticks)
+    # Add radial grid lines at correlation tick angles
+
+    for angle_deg in tgrid_degrees:
+        angle_rad = np.deg2rad(angle_deg)
+        ax.plot([angle_rad, angle_rad], [0, rmax], color='gray',
+                linestyle='--', linewidth=0.8, alpha=0.5)
+
+    # Replace radial tick label at std_ref by 'REF'
+    yticklabels = ["REF" if np.isclose(
+        rt, std_ref) else f"{rt:.2f}" for rt in radial_ticks]
+    ax.set_yticklabels(yticklabels)
+
+    # Reference std dev circle & marker
+    ref_circle = plt.Circle((0, 0), std_ref, transform=ax.transData._b,
+                            color='black', fill=False, linestyle='--',
+                            linewidth=1, label='Std Ref')
+    ax.add_artist(ref_circle)
+    ax.plot(0, std_ref, 'ko', label=ref_label, markersize=6)
+
+    # Default colors and markers if not given
+    if colors is None:
+        colors = plt.cm.tab10.colors
+    if markers is None:
+        markers = ['o'] * len(std_models)
+
+    # Plot model points
+    for i, (std, corr) in enumerate(zip(std_models, corr_coeffs)):
+        theta = np.arccos(corr)
+        label = model_labels[i]
+
+        try:
+            tres = label.split('(')[1].split(')')[0].split(',')[-1].strip()
+        except Exception:
+            tres = None
+
+        if tres == 'original':
+            # Outer black empty circle + inner colored marker
+            ax.plot(theta, std, marker='o', color='black',
+                    markersize=10, linestyle='None', markerfacecolor='none')
+            ax.plot(theta, std,
+                    marker=markers[i],
+                    markerfacecolor=colors[i % len(colors)],
+                    markeredgecolor=colors[i % len(colors)],
+                    markersize=6,
+                    linestyle='None')
+        else:
+            ax.plot(theta, std,
+                    marker=markers[i],
+                    color=colors[i % len(colors)],
+                    linestyle='None')
+
+    # Add approximate x/y axis labels with text positioning
+    ax.text(0.5 * rmax, -0.12 * rmax, "Normalized Standard Deviation",
+            ha='center', va='top', fontsize=10)
+    ax.text(-0.12 * rmax, 0.5 * rmax, "Correlation",
+            ha='right', va='center', rotation=90, fontsize=10)
+
+    # Legend for variables (markers)
+    if var_marker_map:
+        legend_elements = [
+            Line2D([], [], color='black', marker=mark,
+                   linestyle='None', label=var)
+            for var, mark in var_marker_map.items()
+        ]
+        leg1 = ax.legend(handles=legend_elements, title='Variables',
+                         loc=legend_loc, fontsize='small', title_fontsize='medium')
+        ax.add_artist(leg1)
+
+        # Legend for model colors
+        model_keys = ['e', 'c', 't1', 't2']
+        model_color_legend = [
+            Line2D([], [], color=inpt.var_dict[k]['col'], marker='o',
+                   linestyle='None', label=inpt.var_dict[k]['label'])
+            for k in model_keys
+        ]
+
+        # Add legend entry for original resolution (empty black circle)
+        original_res_legend = Line2D([], [], color='black', marker='o',
+                                     linestyle='None', markerfacecolor='none',
+                                     markersize=10, label='Original resolution')
+        model_color_legend.append(original_res_legend)
+
+        ax.legend(handles=model_color_legend, title='Models',
+                  loc='lower right', fontsize='small', title_fontsize='medium')
 
 
 def calc_draw_fit(axs, i, xxx, yyy, tr, col, data_typ, print_stats=True):
