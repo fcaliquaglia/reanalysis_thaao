@@ -130,8 +130,8 @@ dateranges = {
 }
 
 # ========== SEASONAL SETTINGS ==========
+all_seasons={'all': {'months': list(range(1, 13)), 'col': 'pink'}}
 seasons = {
-    'all': {'months': list(range(1, 13)), 'col': 'pink'},
     'DJF': {'months': [12, 1, 2], 'col': 'blue'},
     'MAM': {'months': [3, 4, 5], 'col': 'green'},
     'JJA': {'months': [6, 7, 8], 'col': 'orange'},

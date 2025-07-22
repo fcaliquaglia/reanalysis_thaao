@@ -56,8 +56,9 @@ def main():
                 # plt_f.plot_ts('all')
                 # plt_f.plot_residuals('all')
                 # plt_f.plot_ba('all')
+                plt_f.plot_scatter_all('all')
                 for season in inpt.seasons:
-                    plt_f.plot_scatter(season)
+                    plt_f.plot_scatter_seasonal(season)
 
             # plt_f.plot_scatter_cum()
 

@@ -249,7 +249,7 @@ def plot_ba(period_label):
     plt.close('all')
 
 
-def plot_scatter(period_label):
+def plot_scatter_all(period_label):
     """
     Plots a 2x2 grid of scatter plots or 2D histograms by season or full period.
     Applies polynomial fitting, formatting, and saves the figure.
@@ -309,7 +309,7 @@ def plot_scatter(period_label):
         )
         x_all = x.reindex(time_range, method='nearest',
                           tolerance=pd.Timedelta(tres_tol)).astype(float)
-        season_months = inpt.seasons[period_label]['months']
+        season_months = inpt.all_seasons['all']['months']
         x_season = x_all.loc[x_all.index.month.isin(season_months)]
         y = var_data[data_typ]['data_res'][tres][inpt.var].reindex(
             time_range).astype(float)
@@ -321,87 +321,153 @@ def plot_scatter(period_label):
         print(
             f"Plotting scatter {inpt.var_dict['t']['label']} - {inpt.var_dict[data_typ]['label']}")
 
-        if period_label != 'all':
-            ax_joint.scatter(
-                x_valid, y_valid,
-                s=5, facecolors='none', edgecolors=inpt.seasons[period_label]['col'],
-                alpha=0.5, label=period_label
-            )
+        vmin, vmax = var_data['min'], var_data['max']
+        if vmin >= vmax or not (np.isfinite(vmin) and np.isfinite(vmax)):
+            ax_joint.text(0.1, 0.5, "Invalid histogram range",
+                          transform=ax_joint.transAxes)
         else:
-            vmin, vmax = var_data['min'], var_data['max']
-            if vmin >= vmax or not (np.isfinite(vmin) and np.isfinite(vmax)):
-                ax_joint.text(0.1, 0.5, "Invalid histogram range",
-                              transform=ax_joint.transAxes)
+            # Set up bin edges
+            bin_edges = np.linspace(vmin, vmax, var_data['bin_nr'])
+            bin_size = (vmax - vmin) / var_data['bin_nr']
+
+            # First draw to compute counts
+            counts, _, _, _ = ax_joint.hist2d(
+                x_valid, y_valid,
+                bins=[bin_edges, bin_edges],
+                cmin=1
+            )
+            pctl = 99
+            vmax_hist = np.percentile(counts[counts > 0], pctl)
+            has_overflow = np.any(counts > vmax_hist)
+            extend_opt = 'max' if has_overflow else 'neither'
+
+            # Clear and re-plot for actual display
+            ax_joint.cla()
+            h = ax_joint.hist2d(
+                x_valid, y_valid,
+                bins=[bin_edges, bin_edges],
+                cmap=inpt.var_dict[data_typ]['cmap'],
+                cmin=1,
+                vmin=1,
+                vmax=vmax_hist
+            )
+            quadmesh = h[-1]  # Correct QuadMesh for colorbar
+
+            # Fit
+            if valid_idx.sum() >= 2:
+                calc_draw_fit(joint_axes, i, x_valid, y_valid,
+                              inpt.all_seasons['all']['col'], data_typ, print_stats=True)
             else:
-                bin_edges = np.linspace(vmin, vmax, var_data['bin_nr'])
-                bin_size = (vmax - vmin) / var_data['bin_nr']
-                h = ax_joint.hist2d(
-                    x_valid, y_valid,
-                    bins=[bin_edges, bin_edges],
-                    cmap=inpt.var_dict[data_typ]['cmap'],
-                    cmin=1,
-                    vmin=vmin
-                )
-                counts = h[0]
-                pctl = 99
-                vmax_hist = np.percentile(counts[counts > 0], pctl)
-                has_overflow = np.any(counts > vmax_hist)
-                extend_opt = 'max' if has_overflow else 'neither'
+                calc_draw_fit(joint_axes, i, x_valid, y_valid,
+                              inpt.all_seasons['all']['col'], data_typ, print_stats=False)
+                print("ERROR: Not enough data points for fit.")
 
-                ax_joint.cla()
-                h = ax_joint.hist2d(
-                    x_valid, y_valid,
-                    bins=[bin_edges, bin_edges],
-                    cmap=inpt.var_dict[data_typ]['cmap'],
-                    cmin=1,
-                    vmin=vmin,
-                    vmax=vmax_hist
-                )
-                if period_label == 'all':
-                    if valid_idx.sum() >= 2:
-                        calc_draw_fit(joint_axes, i, x_valid, y_valid,
-                                      period_label, data_typ, print_stats=True)
-                    else:
-                        calc_draw_fit(joint_axes, i, x_valid, y_valid,
-                                      period_label, data_typ, print_stats=False)
-                        print("ERROR: Not enough data points for fit.")
-                        # format_scatterplot(fig.axes, data_typ, i)
+            # Marginal histograms
+            ax_marg_x.hist(x_valid, bins=bin_edges,
+                           color='orange', alpha=0.5, density=True)
+            ax_marg_x.set_xlim(ax_joint.get_xlim())
+            ax_marg_x.yaxis.set_major_locator(
+                MaxNLocator(nbins=3, prune='both'))
+            ax_marg_x.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
 
-                # Marginal histograms
-                ax_marg_x.hist(x_valid, bins=bin_edges,
-                               color='orange', alpha=0.5, density=True)
-                ax_marg_x.set_xlim(ax_joint.get_xlim())
-                ax_marg_x.yaxis.set_major_locator(
-                    MaxNLocator(nbins=3, prune='both'))
-                ax_marg_x.yaxis.set_major_formatter(
-                    FormatStrFormatter('%.2f'))  # Format y labels with 1 decimal
+            ax_marg_y.hist(y_valid, bins=bin_edges,
+                           orientation='horizontal', color='blue', alpha=0.5, density=True)
+            ax_marg_y.set_ylim(ax_joint.get_ylim())
+            ax_marg_y.xaxis.set_major_locator(
+                MaxNLocator(nbins=3, prune='both'))
+            ax_marg_y.xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
 
+            # Colorbar (linked to QuadMesh, not x-axis)
+            cax = inset_axes(ax_joint,
+                             width="80%", height="25%", loc='lower center',
+                             bbox_to_anchor=(0, -0.10, 1, 0.1),
+                             bbox_transform=ax_joint.transAxes,
+                             borderpad=0)
 
-                ax_marg_y.hist(y_valid, bins=bin_edges,
-                               orientation='horizontal', color='blue', alpha=0.5, density=True)
-                ax_marg_y.set_ylim(ax_joint.get_ylim())
-                ax_marg_y.xaxis.set_major_locator(
-                    MaxNLocator(nbins=3, prune='both'))
-                ax_marg_y.xaxis.set_major_formatter(
-                    FormatStrFormatter('%.2f'))  # Format y labels with 1 decimal
+            cbar = fig.colorbar(
+                quadmesh, cax=cax, orientation='horizontal', extend=extend_opt)
+            cbar.set_label(
+                f'Counts {inpt.var_dict[data_typ]["label"]} max: {pctl}pctl')
+            cbar.ax.xaxis.set_major_formatter(
+                FormatStrFormatter('%d'))  # Format counts as integers
+            cbar.ax.xaxis.set_ticks_position('bottom')
+            cbar.ax.xaxis.set_label_position('bottom')
 
-                cax = inset_axes(ax_joint,
-                                 width="100%", height="25%", loc='lower center',
-                                 bbox_to_anchor=(0, -0.10, 1, 0.1),
-                                 bbox_transform=ax_joint.transAxes,
-                                 borderpad=0)
-                
-                cbar = fig.colorbar(
-                    h[3], cax=cax, orientation='horizontal', extend=extend_opt)
-                cbar.set_label(
-                    f'Counts {inpt.var_dict[data_typ]["label"]} max: {pctl}pctl')
-                ax_joint.text(
-                    0.10, 0.90, f"bin_size={bin_size:.3f}",
-                    transform=ax_joint.transAxes
-                )
+            # Debug print (optional)
+            print("Colorbar limits:", quadmesh.get_clim())
 
     save_path = os.path.join(
         inpt.basefol['out']['base'], inpt.tres, f"{str_name.replace(' ', '_')}.png")
+    plt.savefig(save_path, bbox_inches='tight')
+    plt.close(fig)
+
+
+def plot_scatter_seasonal(period_label):
+    print(f"SCATTERPLOTS {period_label}")
+    plt.ioff()
+
+    fig, axes = plt.subplots(2, 2, figsize=(12, 12), dpi=inpt.dpi)
+
+    # Keep str_name for title and saving
+    str_name = f"{inpt.tres} {period_label} scatter {inpt.var} {inpt.var_dict['t']['label']} {inpt.years[0]}-{inpt.years[-1]}"
+    fig.suptitle(str_name, fontweight='bold')
+
+    var_data = inpt.extr[inpt.var]
+    comps = var_data['comps']
+    ref_x = var_data['ref_x']
+    plot_vars = tls.plot_vars_cleanup(comps, var_data)
+
+    for ax, data_typ in zip(axes.flat, plot_vars):
+        tres, tres_tol = tls.get_tres(data_typ)
+
+        x = var_data[ref_x]['data_res'][tres][inpt.var]
+        y = var_data[data_typ]['data_res'][tres][inpt.var]
+
+        time_range = pd.date_range(
+            start=pd.Timestamp(inpt.years[0], 1, 1),
+            end=pd.Timestamp(inpt.years[-1], 12, 31, 23, 59),
+            freq=tres
+        )
+
+        x_all = x.reindex(time_range, method='nearest',
+                          tolerance=pd.Timedelta(tres_tol)).astype(float)
+        y_all = y.reindex(time_range).astype(float)
+
+        season_months = inpt.seasons[period_label]['months']
+        x_season = x_all.loc[x_all.index.month.isin(season_months)]
+        y_season = y_all.loc[y_all.index.month.isin(season_months)]
+
+        valid_idx = ~(x_season.isna() | y_season.isna())
+        x_valid, y_valid = x_season[valid_idx], y_season[valid_idx]
+
+        print(
+            f"Plotting scatter {inpt.var_dict['t']['label']} - {inpt.var_dict[data_typ]['label']}")
+
+        ax.scatter(
+            x_valid, y_valid,
+            s=5, facecolors='none',
+            edgecolors=inpt.seasons[period_label]['col'],
+            alpha=0.5
+        )
+
+        if valid_idx.sum() >= 2:
+            calc_draw_fit(axes.flat, plot_vars.index(data_typ), x_valid,
+                          y_valid, inpt.seasons[period_label]['col'], data_typ, print_stats=True)
+        else:
+            calc_draw_fit(axes.flat, plot_vars.index(data_typ), x_valid,
+                          y_valid, inpt.seasons[period_label]['col'], data_typ, print_stats=False)
+            print("ERROR: Not enough data points for fit.")
+
+        ax.set_title(inpt.var_dict[data_typ]['label'])
+        ax.set_xlabel(inpt.var_dict['t']['label'])
+        ax.set_ylabel(inpt.var_dict[data_typ]['label'])
+
+    plt.tight_layout(rect=[0, 0.03, 1, 0.97])
+
+    save_path = os.path.join(
+        inpt.basefol['out']['base'], inpt.tres,
+        f"{str_name.replace(' ', '_')}.png"
+    )
     plt.savefig(save_path, bbox_inches='tight')
     plt.close(fig)
 
@@ -474,7 +540,7 @@ def plot_scatter_cum():
             )
 
             calc_draw_fit(axs, i,  merged['x'],  merged['y'],
-                          period_label, data_typ, print_stats=True)
+                          inpt.seasons[period_label]['col'], data_typ, print_stats=True)
 
             format_scatterplot(axs, data_typ, i)
             axs[i].legend()
@@ -513,7 +579,7 @@ def plot_scatter_cum():
                     # raise ValueError("Insufficient data for fitting.")
                 else:
                     calc_draw_fit(axs, i, x_valid, y_valid,
-                                  period_label, data_typ, print_stats=False)
+                                  inpt.seasons[period_label]['col'], data_typ, print_stats=False)
 
                 format_scatterplot(axs, data_typ, i)
                 axs[i].legend()
@@ -713,7 +779,7 @@ def plot_taylor():
     plt.close(fig)
 
 
-def calc_draw_fit(axs, i, xxx, yyy, per_lab, data_typ, print_stats=True):
+def calc_draw_fit(axs, i, xxx, yyy, col, data_typ, print_stats=True):
     """
     Performs linear regression on data (xxx, yyy), plots the fit line and 1:1 line,
     and optionally annotates stats (R, N, MBE, RMSE) on subplot axs[i].
@@ -745,7 +811,7 @@ def calc_draw_fit(axs, i, xxx, yyy, per_lab, data_typ, print_stats=True):
     xseq = np.linspace(var_min, var_max, 1000)
 
     axs[i].plot(xseq, a + b * xseq,
-                color=inpt.seasons[per_lab]['col'],
+                color=col,
                 lw=2.5, ls='--', alpha=0.5)
     axs[i].plot([var_min, var_max], [var_min, var_max],
                 color='black', lw=1.5, ls='-')
@@ -766,7 +832,7 @@ def calc_draw_fit(axs, i, xxx, yyy, per_lab, data_typ, print_stats=True):
             f"$\\sigma_{{{escape_label(var_dict[data_typ]['label'])}}} = {std_y:.2f}$"
         )
 
-        axs[i].text(0.50, 0.30, stats_text,
+        axs[i].text(0.57, 0.20, stats_text,
                     transform=axs[i].transAxes,
                     fontsize=12, color='black',
                     ha='left', va='center',
