@@ -451,11 +451,11 @@ def plot_scatter_seasonal(period_label):
         )
 
         if valid_idx.sum() >= 2:
-            calc_draw_fit(axs, i, x_valid, tres,
-                          y_valid, inpt.seasons[period_label]['col'], data_typ, print_stats=True)
+            calc_draw_fit(axs, i, x_valid, y_valid, tres,
+                          inpt.seasons[period_label]['col'], data_typ, print_stats=True)
         else:
-            calc_draw_fit(axs, i, x_valid, tres,
-                          y_valid, inpt.seasons[period_label]['col'], data_typ, print_stats=False)
+            calc_draw_fit(axs, i, x_valid, y_valid, tres,
+                          inpt.seasons[period_label]['col'], data_typ, print_stats=False)
             print("ERROR: Not enough data points for fit.")
 
         format_scatterplot(axs, data_typ, i)
@@ -705,50 +705,28 @@ def plot_taylor():
         plot_vars = tls.plot_vars_cleanup(comps, var_data)
 
         for tres in inpt.tres_list:
-            for model in plot_vars:
-                tres, tres_tol = tls.get_tres(model, tres)
-                try:
-                    x = var_data[ref_x]['data_res'][tres][var]
-                    y = var_data[model]['data_res'][tres][var]
-                except KeyError:
-                    continue  # skip if missing data
+            for data_typ in plot_vars:
+                tres, tres_tol = tls.get_tres(data_typ, tres)
 
-                time_range = pd.date_range(
-                    start=pd.Timestamp(inpt.years[0], 1, 1),
-                    end=pd.Timestamp(inpt.years[-1], 12, 31, 23, 59),
-                    freq=tres
-                )
-
-                x_all = x.reindex(time_range, method='nearest',
-                                  tolerance=tres_tol).astype(float)
-                y_all = y.reindex(time_range).astype(float)
-
-                valid_idx = ~(x_all.isna() | y_all.isna())
-                x_valid = x_all[valid_idx]
-                y_valid = y_all[valid_idx]
-
-                if len(x_valid) == 0 or len(y_valid) == 0:
-                    continue
-
-                combined_stdrefs.append(np.std(x_valid))
-                combined_stds.append(np.std(y_valid))
-                combined_cors.append(np.corrcoef(x_valid, y_valid)[0, 1])
-                combined_labels.append(f"{model} ({var}, {tres})")
+                combined_stdrefs.append(var_data[ref_x]['data_stats'][tres]['std_y'])
+                combined_stds.append(var_data[data_typ]['data_stats'][tres]['std_y'])
+                combined_cors.append(var_data[data_typ]['data_stats'][tres]['r2'])
+                combined_labels.append(f"{data_typ} ({var}, {tres})")
                 # Debug print summary
-                if model == 'c':
+                if data_typ == 'c':
                     color = 'red'
-                elif model == 'e':
+                elif data_typ == 'e':
                     color = 'blue'
-                elif model == 't2':
+                elif data_typ == 't2':
                     color = 'purple'
-                elif model == 't1':
+                elif data_typ == 't1':
                     color = 'cyan'
                 else:
-                    color = inpt.var_dict[model]['col'] if model in inpt.var_dict else 'gray'
+                    color = inpt.var_dict[data_typ]['col'] if data_typ in inpt.var_dict else 'gray'
 
                 combined_colors.append(color)
                 combined_markers.append(var_marker_map[var])
-                print(f"DEBUG: Model={model}, Var={var}, Tres={tres} | "
+                print(f"DEBUG: Model={data_typ}, Var={var}, Tres={tres} | "
                       f"StdRef={combined_stdrefs[-1]:.3f}, StdModel={combined_stds[-1]:.3f}, "
                       f"Corr={combined_cors[-1]:.3f}, Color={combined_colors[-1]}, Marker={combined_markers[-1]}")
 
@@ -851,7 +829,7 @@ def calc_stats(x, y, data_typ, tr):
         inpt.extr[inpt.var][data_typ]['data_stats'] = {}
     if 'data_stats' not in inpt.extr[inpt.var][ref_x]:
         inpt.extr[inpt.var][ref_x]['data_stats'] = {}
-    
+
     inpt.extr[inpt.var][data_typ]['data_stats'][tr] = {}
     inpt.extr[inpt.var][ref_x]['data_stats'][tr] = {}
     inpt.extr[inpt.var][data_typ]['data_stats'][tr]['r2'] = corcoeff*corcoeff

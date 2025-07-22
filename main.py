@@ -63,7 +63,6 @@ def main():
             plt_f.plot_scatter_cum()
 
     # Plotting Taylor Diagram
-
     plt_f.plot_taylor()
 
 
