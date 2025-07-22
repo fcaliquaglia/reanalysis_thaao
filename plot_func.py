@@ -816,12 +816,12 @@ def calc_draw_fit(axs, i, xxx, yyy, tr, col, data_typ, print_stats=True):
 
     if print_stats:
         calc_stats(xx, yy, data_typ, tr)
-        r2 = inpt.extr[inpt.var][data_typ]['data_res'][tr]['r2']
-        N = inpt.extr[inpt.var][data_typ]['data_res'][tr]['N']
-        rmse = inpt.extr[inpt.var][data_typ]['data_res'][tr]['rmse']
-        mbe = inpt.extr[inpt.var][data_typ]['data_res'][tr]['mbe']
-        std_x = inpt.extr[inpt.var][ref_x]['data_res'][tr]['std_x']
-        std_y = inpt.extr[inpt.var][data_typ]['data_res'][tr]['std_y']
+        r2 = inpt.extr[inpt.var][data_typ]['data_stats'][tr]['r2']
+        N = inpt.extr[inpt.var][data_typ]['data_stats'][tr]['N']
+        rmse = inpt.extr[inpt.var][data_typ]['data_stats'][tr]['rmse']
+        mbe = inpt.extr[inpt.var][data_typ]['data_stats'][tr]['mbe']
+        std_x = inpt.extr[inpt.var][ref_x]['data_stats'][tr]['std_x']
+        std_y = inpt.extr[inpt.var][data_typ]['data_stats'][tr]['std_y']
 
         def escape_label(label):
             return label.replace('_', r'\_')
@@ -847,15 +847,22 @@ def calc_stats(x, y, data_typ, tr):
     ref_x = inpt.extr[inpt.var]['ref_x']
     corcoeff = np.corrcoef(x, y)[0, 1]
     diff = y-x
-    inpt.extr[inpt.var][data_typ]['data_res'][tr]['r2'] = corcoeff*corcoeff
+    if 'data_stats' not in inpt.extr[inpt.var][data_typ]:
+        inpt.extr[inpt.var][data_typ]['data_stats'] = {}
+    if 'data_stats' not in inpt.extr[inpt.var][ref_x]:
+        inpt.extr[inpt.var][ref_x]['data_stats'] = {}
+    
+    inpt.extr[inpt.var][data_typ]['data_stats'][tr] = {}
+    inpt.extr[inpt.var][ref_x]['data_stats'][tr] = {}
+    inpt.extr[inpt.var][data_typ]['data_stats'][tr]['r2'] = corcoeff*corcoeff
 
-    inpt.extr[inpt.var][data_typ]['data_res'][tr]['N'] = len(y)
+    inpt.extr[inpt.var][data_typ]['data_stats'][tr]['N'] = len(y)
 
-    inpt.extr[inpt.var][data_typ]['data_res'][tr]['rmse'] = np.sqrt(
+    inpt.extr[inpt.var][data_typ]['data_stats'][tr]['rmse'] = np.sqrt(
         np.nanmean(diff ** 2))
-    inpt.extr[inpt.var][data_typ]['data_res'][tr]['mbe'] = np.nanmean(diff)
-    inpt.extr[inpt.var][ref_x]['data_res'][tr]['std_x'] = np.std(x)
-    inpt.extr[inpt.var][data_typ]['data_res'][tr]['std_y'] = np.std(y)
+    inpt.extr[inpt.var][data_typ]['data_stats'][tr]['mbe'] = np.nanmean(diff)
+    inpt.extr[inpt.var][ref_x]['data_stats'][tr]['std_x'] = np.std(x)
+    inpt.extr[inpt.var][data_typ]['data_stats'][tr]['std_y'] = np.std(y)
     return
 
 
