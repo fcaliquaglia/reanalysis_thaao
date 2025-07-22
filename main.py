@@ -60,7 +60,7 @@ def main():
                 for season in inpt.seasons:
                     plt_f.plot_scatter_seasonal(season)
 
-            # plt_f.plot_scatter_cum()
+            plt_f.plot_scatter_cum()
 
     # Plotting Taylor Diagram
 

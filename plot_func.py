@@ -355,10 +355,10 @@ def plot_scatter_all(period_label):
 
             # Fit
             if valid_idx.sum() >= 2:
-                calc_draw_fit(joint_axes, i, x_valid, y_valid,
+                calc_draw_fit(joint_axes, i, x_valid, y_valid, tres,
                               inpt.all_seasons['all']['col'], data_typ, print_stats=True)
             else:
-                calc_draw_fit(joint_axes, i, x_valid, y_valid,
+                calc_draw_fit(joint_axes, i, x_valid, y_valid, tres,
                               inpt.all_seasons['all']['col'], data_typ, print_stats=False)
                 print("ERROR: Not enough data points for fit.")
 
@@ -406,8 +406,8 @@ def plot_scatter_seasonal(period_label):
     print(f"SCATTERPLOTS {period_label}")
     plt.ioff()
 
-    fig, axes = plt.subplots(2, 2, figsize=(12, 12), dpi=inpt.dpi)
-
+    fig, ax = plt.subplots(2, 2, figsize=(12, 12), dpi=inpt.dpi)
+    axs = ax.ravel()
     # Keep str_name for title and saving
     str_name = f"{inpt.tres} {period_label} scatter {inpt.var} {inpt.var_dict['t']['label']} {inpt.years[0]}-{inpt.years[-1]}"
     fig.suptitle(str_name, fontweight='bold')
@@ -417,7 +417,7 @@ def plot_scatter_seasonal(period_label):
     ref_x = var_data['ref_x']
     plot_vars = tls.plot_vars_cleanup(comps, var_data)
 
-    for ax, data_typ in zip(axes.flat, plot_vars):
+    for i, data_typ in enumerate(plot_vars):
         tres, tres_tol = tls.get_tres(data_typ)
 
         x = var_data[ref_x]['data_res'][tres][inpt.var]
@@ -443,7 +443,7 @@ def plot_scatter_seasonal(period_label):
         print(
             f"Plotting scatter {inpt.var_dict['t']['label']} - {inpt.var_dict[data_typ]['label']}")
 
-        ax.scatter(
+        axs[i].scatter(
             x_valid, y_valid,
             s=5, facecolors='none',
             edgecolors=inpt.seasons[period_label]['col'],
@@ -451,16 +451,14 @@ def plot_scatter_seasonal(period_label):
         )
 
         if valid_idx.sum() >= 2:
-            calc_draw_fit(axes.flat, plot_vars.index(data_typ), x_valid,
+            calc_draw_fit(axs, i, x_valid, tres,
                           y_valid, inpt.seasons[period_label]['col'], data_typ, print_stats=True)
         else:
-            calc_draw_fit(axes.flat, plot_vars.index(data_typ), x_valid,
+            calc_draw_fit(axs, i, x_valid, tres,
                           y_valid, inpt.seasons[period_label]['col'], data_typ, print_stats=False)
             print("ERROR: Not enough data points for fit.")
 
-        ax.set_title(inpt.var_dict[data_typ]['label'])
-        ax.set_xlabel(inpt.var_dict['t']['label'])
-        ax.set_ylabel(inpt.var_dict[data_typ]['label'])
+        format_scatterplot(axs, data_typ, i)
 
     plt.tight_layout(rect=[0, 0.03, 1, 0.97])
 
@@ -539,7 +537,7 @@ def plot_scatter_cum():
                 s=5, color='blue', edgecolors='none', alpha=0.5, label=period_label
             )
 
-            calc_draw_fit(axs, i,  merged['x'],  merged['y'],
+            calc_draw_fit(axs, i,  merged['x'],  merged['y'], tres,
                           inpt.seasons[period_label]['col'], data_typ, print_stats=True)
 
             format_scatterplot(axs, data_typ, i)
@@ -578,7 +576,7 @@ def plot_scatter_cum():
                     # Optionally raise ValueError here if needed
                     # raise ValueError("Insufficient data for fitting.")
                 else:
-                    calc_draw_fit(axs, i, x_valid, y_valid,
+                    calc_draw_fit(axs, i, x_valid, y_valid, tres,
                                   inpt.seasons[period_label]['col'], data_typ, print_stats=False)
 
                 format_scatterplot(axs, data_typ, i)
@@ -779,7 +777,7 @@ def plot_taylor():
     plt.close(fig)
 
 
-def calc_draw_fit(axs, i, xxx, yyy, col, data_typ, print_stats=True):
+def calc_draw_fit(axs, i, xxx, yyy, tr, col, data_typ, print_stats=True):
     """
     Performs linear regression on data (xxx, yyy), plots the fit line and 1:1 line,
     and optionally annotates stats (R, N, MBE, RMSE) on subplot axs[i].
@@ -817,7 +815,13 @@ def calc_draw_fit(axs, i, xxx, yyy, col, data_typ, print_stats=True):
                 color='black', lw=1.5, ls='-')
 
     if print_stats:
-        (r2, N, rmse, mbe, std_x, std_y) = calc_stats(xx, yy)
+        calc_stats(xx, yy, data_typ, tr)
+        r2 = inpt.extr[inpt.var][data_typ]['data_res'][tr]['r2']
+        N = inpt.extr[inpt.var][data_typ]['data_res'][tr]['N']
+        rmse = inpt.extr[inpt.var][data_typ]['data_res'][tr]['rmse']
+        mbe = inpt.extr[inpt.var][data_typ]['data_res'][tr]['mbe']
+        std_x = inpt.extr[inpt.var][ref_x]['data_res'][tr]['std_x']
+        std_y = inpt.extr[inpt.var][data_typ]['data_res'][tr]['std_y']
 
         def escape_label(label):
             return label.replace('_', r'\_')
@@ -839,17 +843,20 @@ def calc_draw_fit(axs, i, xxx, yyy, col, data_typ, print_stats=True):
                     bbox=dict(facecolor='white', edgecolor='white'))
 
 
-def calc_stats(x, y):
-
-    corcoef = np.corrcoef(x, y)[0, 1]
+def calc_stats(x, y, data_typ, tr):
+    ref_x = inpt.extr[inpt.var]['ref_x']
+    corcoeff = np.corrcoef(x, y)[0, 1]
     diff = y-x
-    r2 = corcoef*corcoef
-    N = len(y)
-    rmse = np.sqrt(np.nanmean(diff ** 2))
-    mbe = np.nanmean(diff)
-    std_x = np.std(x)
-    std_y = np.std(y)
-    return r2, N, rmse, mbe, std_x, std_y
+    inpt.extr[inpt.var][data_typ]['data_res'][tr]['r2'] = corcoeff*corcoeff
+
+    inpt.extr[inpt.var][data_typ]['data_res'][tr]['N'] = len(y)
+
+    inpt.extr[inpt.var][data_typ]['data_res'][tr]['rmse'] = np.sqrt(
+        np.nanmean(diff ** 2))
+    inpt.extr[inpt.var][data_typ]['data_res'][tr]['mbe'] = np.nanmean(diff)
+    inpt.extr[inpt.var][ref_x]['data_res'][tr]['std_x'] = np.std(x)
+    inpt.extr[inpt.var][data_typ]['data_res'][tr]['std_y'] = np.std(y)
+    return
 
 
 def format_ba(axs, data_typ, i):
