@@ -261,6 +261,7 @@ def plot_scatter_all(period_label):
     fig = plt.figure(figsize=(12, 12), dpi=inpt.dpi)
     str_name = f"{inpt.tres} {period_label} scatter {inpt.var} {inpt.var_dict['t']['label']} {inpt.years[0]}-{inpt.years[-1]}"
     fig.suptitle(str_name, fontweight='bold')
+    fig.subplots_adjust(top=0.93)
 
     var_data = inpt.extr[inpt.var]
     comps = var_data['comps']
@@ -268,7 +269,7 @@ def plot_scatter_all(period_label):
     plot_vars = tls.plot_vars_cleanup(comps, var_data)
 
     # Layout constants for 2x2 main plots each with marginal histograms
-    nrows, ncols = 2, 2
+    ncols = 2
     width_ratios = [4, 1]
     height_ratios = [1, 4]
 
@@ -329,7 +330,6 @@ def plot_scatter_all(period_label):
         else:
             # Set up bin edges
             bin_edges = np.linspace(vmin, vmax, var_data['bin_nr'])
-            bin_size = (vmax - vmin) / var_data['bin_nr']
 
             # First draw to compute counts
             counts, _, _, _ = ax_joint.hist2d(
@@ -388,12 +388,20 @@ def plot_scatter_all(period_label):
             cbar = fig.colorbar(
                 quadmesh, cax=cax, orientation='horizontal', extend=extend_opt)
             cbar.set_label(
-                f'Counts {inpt.var_dict[data_typ]["label"]} max: {pctl}pctl')
+                f'Counts  max: {pctl}pctl')
             cbar.ax.xaxis.set_major_formatter(
                 FormatStrFormatter('%d'))  # Format counts as integers
             cbar.ax.xaxis.set_ticks_position('bottom')
             cbar.ax.xaxis.set_label_position('bottom')
 
+            format_hist2d(
+                ax_joint,
+                xlabel=inpt.var_dict[ref_x]['label'],
+                ylabel=inpt.var_dict[data_typ]['label'],
+                letter=inpt.letters[i] + ')',
+                xlim=(vmin, vmax),
+                ylim=(vmin, vmax)
+            )
     save_path = os.path.join(
         inpt.basefol['out']['base'], inpt.tres, f"{str_name.replace(' ', '_')}.png")
     plt.savefig(save_path, bbox_inches='tight')
@@ -406,14 +414,16 @@ def plot_scatter_seasonal(period_label):
 
     fig, ax = plt.subplots(2, 2, figsize=(12, 12), dpi=inpt.dpi)
     axs = ax.ravel()
-    # Keep str_name for title and saving
     str_name = f"{inpt.tres} {period_label} scatter {inpt.var} {inpt.var_dict['t']['label']} {inpt.years[0]}-{inpt.years[-1]}"
     fig.suptitle(str_name, fontweight='bold')
+    fig.subplots_adjust(top=0.93)
 
     var_data = inpt.extr[inpt.var]
     comps = var_data['comps']
     ref_x = var_data['ref_x']
     plot_vars = tls.plot_vars_cleanup(comps, var_data)
+
+    frame_and_axis_removal(axs, len(comps))
 
     for i, data_typ in enumerate(plot_vars):
         tres, tres_tol = tls.get_tres(data_typ)
@@ -457,8 +467,6 @@ def plot_scatter_seasonal(period_label):
             print("ERROR: Not enough data points for fit.")
 
         format_scatterplot(axs, data_typ, i)
-
-    plt.tight_layout(rect=[0, 0.03, 1, 0.97])
 
     save_path = os.path.join(
         inpt.basefol['out']['base'], inpt.tres,
@@ -538,9 +546,8 @@ def plot_scatter_cum():
             calc_draw_fit(axs, i,  merged['x'],  merged['y'], inpt.tres,
                           inpt.seasons[period_label]['col'], data_typ, print_stats=True)
 
-            format_scatterplot(axs, data_typ, i)
             axs[i].legend()
-
+            format_scatterplot(axs, data_typ, i)
     else:
         for period_label, season in inpt.seasons_subset.items():
             print(f"SCATTERPLOTS CUMULATIVE {period_label}")
@@ -577,8 +584,8 @@ def plot_scatter_cum():
                     calc_draw_fit(axs, i, x_valid, y_valid, inpt.tres,
                                   inpt.seasons[period_label]['col'], data_typ, print_stats=False)
 
+                    axs[i].legend()
                 format_scatterplot(axs, data_typ, i)
-                axs[i].legend()
 
     save_path = os.path.join(
         inpt.basefol['out']['base'], inpt.tres, f"{str_name.replace(' ', '_')}.png")
@@ -586,9 +593,17 @@ def plot_scatter_cum():
     plt.close('all')
 
 
-def plot_taylor():
-    print("Taylor Diagram")
-    str_name = f"Taylor Diagram {inpt.var_dict['t']['label']} {inpt.years[0]}-{inpt.years[-1]}"
+def plot_taylor(var_list):
+
+    if var_list == inpt.met_vars:
+        plot_name = 'Weather variables'
+        available_markers = ['o', 's', '^', 'D', 'v', 'P', '*']
+    if var_list == inpt.rad_vars:
+        plot_name = 'Radiation variables'
+        available_markers = ['X', 'H', '>', '<', '8']
+
+    print(f"Taylor Diagram {plot_name}")
+    str_name = f"Taylor Diagram {plot_name} {inpt.var_dict['t']['label']} {inpt.years[0]}-{inpt.years[-1]}"
 
     combined_stdrefs = []
     combined_stds = []
@@ -597,15 +612,13 @@ def plot_taylor():
     combined_colors = []
     combined_markers = []
     var_marker_map = {}
-    available_markers = ['o', 's', '^', 'D',
-                         'v', 'P', '*', 'X', 'H', '>', '<', '8']
 
-    for var_idx, var in enumerate(inpt.list_var):
+    for var_idx, var in enumerate(var_list):
         marker = available_markers[var_idx % len(available_markers)]
         var_marker_map[var] = marker
         inpt.var = var
         var_data = inpt.extr[var]
-        comps = var_data['comps']
+        comps = ['c', 'e']
         ref_x = var_data['ref_x']
         plot_vars = tls.plot_vars_cleanup(comps, var_data)
 
@@ -632,25 +645,18 @@ def plot_taylor():
 
                 combined_colors.append(color)
                 combined_markers.append(var_marker_map[var])
-                print(f"DEBUG: Model={data_typ}, Var={var}, Tres={tres} | "
-                      f"StdRef={combined_stdrefs[-1]:.3f}, StdModel={combined_stds[-1]:.3f}, "
-                      f"Corr={combined_cors[-1]:.3f}, Color={combined_colors[-1]}, Marker={combined_markers[-1]}")
-
     # Plot
     fig = plt.figure(figsize=(12, 10), dpi=inpt.dpi)
     ax = fig.add_subplot(111, polar=True)
-    ax.set_theta_direction(-1)
-    ax.set_theta_zero_location('N')
     fig.suptitle(f"{str_name}", fontweight='bold')
-    fig.subplots_adjust(top=0.93)
+    fig.subplots_adjust(top=0.93, bottom=0.07)
 
-    std_ref = combined_stdrefs[0] if combined_stdrefs else 1.0
+    std_ref = 1.0
 
     plot_taylor_dia(ax, std_ref,
                     combined_stds,
                     combined_cors,
                     combined_labels,
-                    ref_label='Obs',
                     colors=combined_colors,
                     markers=combined_markers,
                     var_marker_map=var_marker_map)
@@ -662,119 +668,135 @@ def plot_taylor():
 
 
 def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
-                    ref_label='REF', colors=None, markers=None,
-                    srange=(0, 2.0),  # increased radius range
-                    figsize=(8, 6), legend_loc='upper right',
-                    var_marker_map=None):
+                    ref_label='REF',
+                    colors=None, markers=None,
+                    var_marker_map=None, inpt=None):
 
     std_models = np.array(std_models)
-    corr_coeffs = np.clip(np.array(corr_coeffs), -1, 1)
+    corr_coeffs = np.array(corr_coeffs)
+    rmax = 2
 
-    rmax = std_ref * srange[1]
+    # Polar setup
     ax.set_ylim(0, rmax)
-
-    # Polar plot setup: zero at top (N), clockwise direction
-    ax.set_theta_direction(-1)
-    ax.set_theta_zero_location('N')
-
-    # Limit angle to 0-90 degrees
+    ax.set_xlim(0, rmax)
+    ax.set_theta_direction(1)
+    ax.set_theta_zero_location('E')
     ax.set_thetamin(0)
     ax.set_thetamax(90)
 
-    # Angular (correlation) ticks & labels
-    tgrid_degrees = np.arccos([1.0, 0.95, 0.9, 0.8, 0.6, 0.0]) * 180 / np.pi
-    labels = [f"{np.cos(np.deg2rad(t)):.2f}" for t in tgrid_degrees]
-    ax.set_thetagrids(tgrid_degrees, labels=labels)
+    # Correlation ticks
+    corr_values = [1.0, 0.99, 0.95, 0.9, 0.8, 0.7,
+                   0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0]
+    theta_degrees = np.degrees(np.arccos(corr_values))
+    ax.set_thetagrids(theta_degrees, labels=[f"{c:.2f}" for c in corr_values])
     ax.set_rlabel_position(135)
 
-    # Radial (std dev) ticks - increased number
-    num_radial_ticks = 6
-    radial_ticks = np.linspace(0, rmax, num_radial_ticks)
+    # Radial ticks
+    radial_ticks = np.arange(0, rmax, 0.2)
+    radial_tick_labels = [ref_label if rt ==
+                          1.0 else f"{rt:.2f}" for rt in radial_ticks]
     ax.set_yticks(radial_ticks)
-    # Add radial grid lines at correlation tick angles
+    ax.set_yticklabels(radial_tick_labels)
 
-    for angle_deg in tgrid_degrees:
-        angle_rad = np.deg2rad(angle_deg)
-        ax.plot([angle_rad, angle_rad], [0, rmax], color='gray',
+    # Sync y-axis (cartesian) ticks for visual reference
+    ax.yaxis.set_ticks(radial_ticks)
+    ax.yaxis.set_ticklabels(radial_tick_labels)
+    ax.yaxis.set_label_position("right")
+    ax.text(np.pi, 1.0, "Normalized Standard Deviations",
+            ha='center', va='top',
+            fontsize='medium',
+            rotation=0)
+
+    # Add "Correlation" label following the arc
+    theta_text = np.radians(45)   # 45° angle
+    r_text = rmax + 0.05          # Slightly outside the outer circle
+    ax.text(theta_text, r_text, "Correlation",
+            rotation=-45,         # Negative to follow arc orientation
+            rotation_mode='anchor',
+            ha='center', va='center',
+            fontsize='medium')
+
+    # Correlation grid lines
+    for theta in np.radians(theta_degrees):
+        ax.plot([theta, theta], [0, rmax], color='gray',
                 linestyle='--', linewidth=0.8, alpha=0.5)
 
-    # Replace radial tick label at std_ref by 'REF'
-    yticklabels = ["REF" if np.isclose(
-        rt, std_ref) else f"{rt:.2f}" for rt in radial_ticks]
-    ax.set_yticklabels(yticklabels)
-
-    # Reference std dev circle & marker
-    ref_circle = plt.Circle((0, 0), std_ref, transform=ax.transData._b,
-                            color='black', fill=False, linestyle='--',
-                            linewidth=1, label='Std Ref')
-    ax.add_artist(ref_circle)
+    # Reference std circle + point
+    ax.add_artist(plt.Circle((0, 0), std_ref, transform=ax.transData._b,
+                             color='black', fill=False, linestyle='--', linewidth=1))
     ax.plot(0, std_ref, 'ko', label=ref_label, markersize=6)
 
-    # Default colors and markers if not given
+    # Defaults for colors/markers
     if colors is None:
         colors = plt.cm.tab10.colors
     if markers is None:
         markers = ['o'] * len(std_models)
 
+    # Store positions by (var_name, data_type)
+    # key = (var, data_type), value = {'original': (theta, std), 'others': [(theta, std)]}
+    var_points = {}
+
     # Plot model points
-    for i, (std, corr) in enumerate(zip(std_models, corr_coeffs)):
+    for i, (std, corr, label) in enumerate(zip(std_models, corr_coeffs, model_labels)):
         theta = np.arccos(corr)
-        label = model_labels[i]
+        color = colors[i % len(colors)]
+        marker = markers[i]
 
+        # Example label format: "tas (daily, original)"
         try:
-            tres = label.split('(')[1].split(')')[0].split(',')[-1].strip()
+            base, meta = label.split('(')
+            var_name = base.strip()
+            meta_parts = meta.strip(')').split(',')
+            data_type = meta_parts[0].strip() if len(meta_parts) > 0 else None
+            resolution = meta_parts[1].strip() if len(meta_parts) > 1 else None
         except Exception:
-            tres = None
+            var_name = label
+            data_type = None
+            resolution = None
 
-        if tres == 'original':
-            # Outer black empty circle + inner colored marker
-            ax.plot(theta, std, marker='o', color='black',
-                    markersize=10, linestyle='None', markerfacecolor='none')
-            ax.plot(theta, std,
-                    marker=markers[i],
-                    markerfacecolor=colors[i % len(colors)],
-                    markeredgecolor=colors[i % len(colors)],
-                    markersize=6,
-                    linestyle='None')
+        key = (var_name, data_type)
+        if key not in var_points:
+            var_points[key] = {'original': None, 'others': []}
+
+        if resolution == 'original':
+            # Outer black circle
+            ax.plot(theta, std, marker='o', color='black', markersize=10,
+                    linestyle='None', markerfacecolor='none')
+            # Inner color marker
+            ax.plot(theta, std, marker=marker, color=color,
+                    linestyle='None', markersize=6)
+            var_points[key]['original'] = (theta, std)
         else:
-            ax.plot(theta, std,
-                    marker=markers[i],
-                    color=colors[i % len(colors)],
+            ax.plot(theta, std, marker=marker, color=color,
                     linestyle='None')
+            var_points[key]['others'].append((theta, std))
 
-    # Add approximate x/y axis labels with text positioning
-    ax.text(0.5 * rmax, -0.12 * rmax, "Normalized Standard Deviation",
-            ha='center', va='top', fontsize=10)
-    ax.text(-0.12 * rmax, 0.5 * rmax, "Correlation",
-            ha='right', va='center', rotation=90, fontsize=10)
-
-    # Legend for variables (markers)
+    # Variable marker legend
     if var_marker_map:
         legend_elements = [
             Line2D([], [], color='black', marker=mark,
                    linestyle='None', label=var)
             for var, mark in var_marker_map.items()
         ]
-        leg1 = ax.legend(handles=legend_elements, title='Variables',
-                         loc=legend_loc, fontsize='small', title_fontsize='medium')
-        ax.add_artist(leg1)
+        legend1 = ax.legend(handles=legend_elements, title='Variables',
+                            loc='upper right', fontsize='small', title_fontsize='medium')
+        ax.add_artist(legend1)
 
-        # Legend for model colors
-        model_keys = ['e', 'c', 't1', 't2']
+    # Model color legend
+    if inpt:
+        model_keys = ['c', 'e']
         model_color_legend = [
             Line2D([], [], color=inpt.var_dict[k]['col'], marker='o',
                    linestyle='None', label=inpt.var_dict[k]['label'])
-            for k in model_keys
+            for k in model_keys if k in inpt.var_dict
         ]
+        model_color_legend.append(Line2D([], [], color='black', marker='o',
+                                         linestyle='None', markerfacecolor='none',
+                                         markersize=10, label='Original resolution'))
 
-        # Add legend entry for original resolution (empty black circle)
-        original_res_legend = Line2D([], [], color='black', marker='o',
-                                     linestyle='None', markerfacecolor='none',
-                                     markersize=10, label='Original resolution')
-        model_color_legend.append(original_res_legend)
-
-        ax.legend(handles=model_color_legend, title='Models',
-                  loc='lower right', fontsize='small', title_fontsize='medium')
+        legend2 = ax.legend(handles=model_color_legend, title='Reanalyses',
+                            loc='lower right', fontsize='small', title_fontsize='medium')
+        ax.add_artist(legend2)
 
 
 def calc_draw_fit(axs, i, xxx, yyy, tr, col, data_typ, print_stats=True):
@@ -838,7 +860,7 @@ def calc_draw_fit(axs, i, xxx, yyy, tr, col, data_typ, print_stats=True):
 
         axs[i].text(0.57, 0.20, stats_text,
                     transform=axs[i].transAxes,
-                    fontsize=12, color='black',
+                    fontsize=10, color='black',
                     ha='left', va='center',
                     bbox=dict(facecolor='white', edgecolor='white'))
 
@@ -866,102 +888,99 @@ def calc_stats(x, y, data_typ, tr):
     return
 
 
-def format_ba(axs, data_typ, i):
+def format_ax(ax, xlabel='', ylabel='', title=None, letter=None,
+              xlim=None, ylim=None, identity_line=False,
+              fontweight='bold', fontsize='medium'):
     """
-    Sets title, labels, limits, and annotations for a scatterplot axs[i] of component `comp`.
+    Generic axis formatting helper.
 
-    :param axs: Array-like of matplotlib Axes.
-    :param data_typ: Component key for labeling.
-    :param i: Index of subplot.
+    :param ax: Matplotlib Axes object.
+    :param xlabel: Label for x-axis.
+    :param ylabel: Label for y-axis.
+    :param title: Optional title.
+    :param letter: Optional subplot label (e.g. 'a)').
+    :param xlim: Tuple for x-axis limits.
+    :param ylim: Tuple for y-axis limits.
+    :param identity_line: If True, draw a y=x identity line.
+    :param fontweight: Font weight for annotation letter.
+    :param fontsize: Font size for annotation letter.
     """
-    var = inpt.var
-    var_dict = inpt.var_dict
-    # var_min = -2
-    # var_max = 2
-    ref_x = inpt.extr[var]['ref_x']
+    if title:
+        ax.set_title(title)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
 
-    axs[i].set_title(var_dict[data_typ]['label'])
-    axs[i].set_xlabel(
-        f"mean({var_dict[ref_x]['label']},{var_dict[data_typ]['label']})")
-    axs[i].set_ylabel(
-        f"{var_dict[data_typ]['label']}-{var_dict[ref_x]['label']}")
-    # axs[i].set_xlim(var_min, var_max)
-    # axs[i].set_ylim(var_min, var_max)
-    axs[i].text(0.01, 0.95, inpt.letters[i] + ')',
-                transform=axs[i].transAxes)
-    # pos = axs[i].get_position()  # get current position: Bbox(x0, y0, x1, y1)
+    if xlim:
+        ax.set_xlim(xlim)
+    if ylim:
+        ax.set_ylim(ylim)
 
-    # new_pos = [pos.x0, pos.y0 + 0.03, pos.x1, pos.y1 + 0.03]  # shift up by 0.03
-    # axs[i].set_position(new_pos)
+    if letter:
+        ax.text(0.01, 0.95, letter, transform=ax.transAxes,
+                fontsize=fontsize, fontweight=fontweight,
+                verticalalignment='top')
 
-
-def format_scatterplot(axs, data_typ, i):
-    """
-    Sets title, labels, limits, and annotations for a scatterplot axs[i] of component `comp`.
-
-    :param axs: Array-like of matplotlib Axes.
-    :param data_typ: Component key for labeling.
-    :param i: Index of subplot.
-    """
-    var = inpt.var
-    var_dict = inpt.var_dict
-    var_min = inpt.extr[var]['min']
-    var_max = inpt.extr[var]['max']
-    ref_x = inpt.extr[var]['ref_x']
-
-    axs[i].set_title(var_dict[data_typ]['label'])
-    axs[i].set_xlabel(var_dict[ref_x]['label'])
-    axs[i].set_ylabel(var_dict[data_typ]['label'])
-    axs[i].set_xlim(var_min, var_max)
-    axs[i].set_ylim(var_min, var_max)
-    axs[i].text(0.01, 0.95, inpt.letters[i] + ')',
-                transform=axs[i].transAxes)
-    axs[i].plot([var_min, var_max], [var_min, var_max],
+    if identity_line and xlim and ylim:
+        min_val = min(xlim[0], ylim[0])
+        max_val = max(xlim[1], ylim[1])
+        ax.plot([min_val, max_val], [min_val, max_val],
                 color='black', lw=1.5, ls='-')
 
 
 def format_ts(ax, year, yy, residuals=False):
-    """
-    Formats a time series subplot ax[yy] for a given year, setting x-axis limits, labels,
-    and optionally y-axis limits for residuals.
-
-    :param ax: Axes array/dict.
-    :param year: Year to plot.
-    :param yy: Index/key of subplot.
-    :param residuals: If True, use residuals y-limits.
-    """
     ax[yy].xaxis.set_major_formatter(inpt.myFmt)
     ax[yy].set_xlim(dt.datetime(year, 1, 1), dt.datetime(year, 12, 31))
-    ax[yy].text(0.5, 0.90, str(year),
-                transform=ax[yy].transAxes,
-                horizontalalignment='center')
-    ax[yy].text(0.01, 0.95, inpt.letters[yy] + ')',
-                transform=ax[yy].transAxes)
+    ylim = (inpt.extr[inpt.var]['res_min'], inpt.extr[inpt.var]['res_max']) if residuals \
+        else (inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'])
 
-    if residuals:
-        ax[yy].set_ylim(inpt.extr[inpt.var]['res_min'],
-                        inpt.extr[inpt.var]['res_max'])
-    else:
-        ax[yy].set_ylim(inpt.extr[inpt.var]['min'],
-                        inpt.extr[inpt.var]['max'])
+    format_ax(ax[yy],
+              ylim=ylim,
+              letter=f"{inpt.letters[yy]})    {year}")
 
 
-def frame_and_axis_removal(ax, len_comps):
+def format_ba(axs, data_typ, i):
+    var = inpt.var
+    var_dict = inpt.var_dict
+    ref_x = inpt.extr[var]['ref_x']
+
+    format_ax(axs[i],
+              xlabel=f"mean({var_dict[ref_x]['label']}, {var_dict[data_typ]['label']})",
+              ylabel=f"{var_dict[data_typ]['label']} - {var_dict[ref_x]['label']}",
+              title=var_dict[data_typ]['label'],
+              letter=inpt.letters[i] + ')')
+
+
+def format_hist2d(ax, xlabel, ylabel, letter, xlim=None, ylim=None):
+    format_ax(ax,
+              xlabel=xlabel,
+              ylabel=ylabel,
+              xlim=xlim,
+              ylim=ylim,
+              letter=letter)
+
+
+def format_scatterplot(axs, data_typ, i):
+    var = inpt.var
+    var_dict = inpt.var_dict
+    vmin = inpt.extr[var]['min']
+    vmax = inpt.extr[var]['max']
+    ref_x = inpt.extr[var]['ref_x']
+
+    format_ax(axs[i],
+              xlabel=var_dict[ref_x]['label'],
+              ylabel=var_dict[data_typ]['label'],
+              title=var_dict[data_typ]['label'],
+              xlim=(vmin, vmax), ylim=(vmin, vmax),
+              letter=inpt.letters[i] + ')',
+              identity_line=True)
+
+
+def frame_and_axis_removal(axs, n_plots):
     """
-    Disables frame and axes for unused subplots based on the number of components.
+    Hide extra axes beyond the number of plots needed.
 
-    :param ax: Array-like of matplotlib Axes.
-    :param len_comps: Number of active components.
+    :param axs: Flattened array of matplotlib axes.
+    :param n_plots: Number of actual plots to show.
     """
-    # Define which axes to disable based on len_comps
-    disable_indices = {
-        1: [1, 2, 3],
-        2: [2, 3],
-        3: [3],
-        4: []
-    }.get(len_comps, [])
-
-    for idx in disable_indices:
-        ax[idx].axis('off')
-        ax[idx].get_xaxis().set_visible(False)
-        ax[idx].get_yaxis().set_visible(False)
+    for i in range(n_plots, len(axs)):
+        axs[i].set_visible(False)
