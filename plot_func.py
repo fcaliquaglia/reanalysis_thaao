@@ -629,7 +629,7 @@ def plot_taylor(var_list):
                 combined_stds.append(
                     var_data[data_typ]['data_stats'][tres]['std_y']/var_data[ref_x]['data_stats'][tres]['std_x'])
                 combined_cors.append(
-                    var_data[data_typ]['data_stats'][tres]['r2'])
+                    np.sqrt(var_data[data_typ]['data_stats'][tres]['r2']))
                 combined_labels.append(f"{data_typ} ({var}, {tres})")
                 # Debug print summary
                 if data_typ == 'c':
@@ -649,7 +649,7 @@ def plot_taylor(var_list):
     fig = plt.figure(figsize=(12, 10), dpi=inpt.dpi)
     ax = fig.add_subplot(111, polar=True)
     fig.suptitle(f"{str_name}", fontweight='bold')
-    fig.subplots_adjust(top=0.93, bottom=0.07)
+    fig.subplots_adjust(top=0.93, bottom=0.15)
 
     std_ref = 1.0
 
@@ -692,7 +692,7 @@ def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
     ax.set_rlabel_position(135)
 
     # Radial ticks
-    radial_ticks = np.arange(0, rmax, 0.2)
+    radial_ticks = np.arange(0, rmax+0.2, 0.2)
     radial_tick_labels = [ref_label if rt ==
                           1.0 else f"{rt:.2f}" for rt in radial_ticks]
     ax.set_yticks(radial_ticks)
@@ -702,15 +702,23 @@ def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
     ax.yaxis.set_ticks(radial_ticks)
     ax.yaxis.set_ticklabels(radial_tick_labels)
     ax.yaxis.set_label_position("right")
-    ax.text(np.pi, 1.0, "Normalized Standard Deviations",
+    ax.text(-0.10, 1.0, "Normalized Standard Deviations",
             ha='center', va='top',
             fontsize='medium',
             rotation=0)
+    
+    ax.set_xticks(radial_ticks)
+    ax.set_xticklabels(radial_tick_labels)
+
+    # Sync y-axis (cartesian) ticks for visual reference
+    ax.xaxis.set_ticks(radial_ticks)
+    ax.xaxis.set_ticklabels(radial_tick_labels)
+    ax.xaxis.set_label_position("left")
 
     # Add "Correlation" label following the arc
     theta_text = np.radians(45)   # 45° angle
-    r_text = rmax + 0.05          # Slightly outside the outer circle
-    ax.text(theta_text, r_text, "Correlation",
+    r_text = rmax + 0.15         # Slightly outside the outer circle
+    ax.text(theta_text, r_text, "Correlation (R)",
             rotation=-45,         # Negative to follow arc orientation
             rotation_mode='anchor',
             ha='center', va='center',
@@ -718,23 +726,50 @@ def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
 
     # Correlation grid lines
     for theta in np.radians(theta_degrees):
-        ax.plot([theta, theta], [0, rmax], color='gray',
+        ax.plot([theta, theta], [0, rmax], color='darkblue',
                 linestyle='--', linewidth=0.8, alpha=0.5)
 
     # Reference std circle + point
+    # Draw concentric dashed arcs centered at the reference point (1, 0)
+
+    rad_tick = np.arange(0.2, rmax + 0.2, 0.2)
+    for rtick in rad_tick:
+
+        # Angles from 0 to 90°
+        angles = np.linspace(-np.pi, np.pi, 300)
+        # Convert polar arc (theta, r) centered at (1,0) to Cartesian
+        x_arc = std_ref + rtick * np.cos(angles)
+        y_arc = rtick * np.sin(angles)
+
+        ax.plot(np.arctan2(y_arc, x_arc), np.sqrt(x_arc**2 + y_arc**2),
+                color='darkgreen', linestyle='--', linewidth=0.7, alpha=0.6, zorder=1,
+                clip_on=True)
+
+        # Label: place along arc at 60° from the center
+        angle_deg = 120
+        angle_rad = np.radians(angle_deg)
+        x_label = std_ref + rtick * np.cos(angle_rad)
+        y_label = rtick * np.sin(angle_rad)
+        r_label = np.sqrt(x_label**2 + y_label**2)
+        theta_label = np.arctan2(y_label, x_label)
+
+        ax.text(theta_label, r_label,
+                f"{rtick:.2f}",
+                ha='center', va='center',
+                fontsize=8, color='darkgreen',
+                backgroundcolor='white',
+                clip_on=True)
+
     ax.add_artist(plt.Circle((0, 0), std_ref, transform=ax.transData._b,
                              color='black', fill=False, linestyle='--', linewidth=1))
-    ax.plot(0, std_ref, 'ko', label=ref_label, markersize=6)
-
     # Defaults for colors/markers
     if colors is None:
         colors = plt.cm.tab10.colors
     if markers is None:
         markers = ['o'] * len(std_models)
 
-    # Store positions by (var_name, data_type)
-    # key = (var, data_type), value = {'original': (theta, std), 'others': [(theta, std)]}
-    var_points = {}
+    # Store points by (var, data_typ, color, marker)
+    point_map = {}
 
     # Plot model points
     for i, (std, corr, label) in enumerate(zip(std_models, corr_coeffs, model_labels)):
@@ -742,21 +777,19 @@ def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
         color = colors[i % len(colors)]
         marker = markers[i]
 
-        # Example label format: "tas (daily, original)"
+        # Parse label: expected format "data_typ (var, resolution)"
         try:
-            base, meta = label.split('(')
-            var_name = base.strip()
-            meta_parts = meta.strip(')').split(',')
-            data_type = meta_parts[0].strip() if len(meta_parts) > 0 else None
-            resolution = meta_parts[1].strip() if len(meta_parts) > 1 else None
+            data_typ, meta = label.split('(')
+            var_name, resolution = [x.strip(' )') for x in meta.split(',')]
+            data_typ = data_typ.strip()
         except Exception:
             var_name = label
-            data_type = None
+            data_typ = None
             resolution = None
 
-        key = (var_name, data_type)
-        if key not in var_points:
-            var_points[key] = {'original': None, 'others': []}
+        key = (var_name, data_typ, color, marker)
+        if key not in point_map:
+            point_map[key] = {'original': None, 'others': []}
 
         if resolution == 'original':
             # Outer black circle
@@ -765,11 +798,25 @@ def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
             # Inner color marker
             ax.plot(theta, std, marker=marker, color=color,
                     linestyle='None', markersize=6)
-            var_points[key]['original'] = (theta, std)
+            point_map[key]['original'] = (theta, std)
         else:
             ax.plot(theta, std, marker=marker, color=color,
                     linestyle='None')
-            var_points[key]['others'].append((theta, std))
+            point_map[key]['others'].append((theta, std))
+
+    # Draw arrows from circled (original) to same color/marker points with same var/data_typ
+    for key, points in point_map.items():
+        orig = points['original']
+        if orig is not None:
+            for other in points['others']:
+                # Use native polar coordinates for annotation
+                ax.annotate("",
+                            xy=(other[0], other[1]),     # target (theta, r)
+                            xytext=(orig[0], orig[1]),   # start (theta, r)
+                            arrowprops=dict(arrowstyle="->",
+                                            color="gray",
+                                            lw=1),
+                            annotation_clip=False)
 
     # Variable marker legend
     if var_marker_map:
