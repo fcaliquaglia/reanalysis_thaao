@@ -727,8 +727,7 @@ def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
     ax.yaxis.set_ticks(radial_ticks)
     ax.yaxis.set_ticklabels(radial_tick_labels)
     ax.yaxis.set_label_position("left")
-    for label in ax.get_yticklabels():
-        label.set_color('darkgreen')
+ 
     ax.text(-0.10, 1.0, "Normalized Standard Deviations",
             ha='center', va='top',
             fontsize='medium',
