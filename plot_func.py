@@ -30,11 +30,11 @@ import pandas as pd
 
 import inputs as inpt
 import tools as tls
-
+from matplotlib.gridspec import GridSpec
+from matplotlib.ticker import MaxNLocator
+from matplotlib.ticker import FormatStrFormatter
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
-from matplotlib.lines import Line2D
 from pyCompare import blandAltman
-import skill_metrics as sm
 
 
 def plot_ts(period_label):
@@ -254,26 +254,54 @@ def plot_scatter(period_label):
     Plots a 2x2 grid of scatter plots or 2D histograms by season or full period.
     Applies polynomial fitting, formatting, and saves the figure.
     """
+
     print(f"SCATTERPLOTS {period_label}")
     plt.ioff()
-    fig, ax = plt.subplots(2, 2, figsize=(12, 12), dpi=inpt.dpi)
-    axs = ax.ravel()
+    fig = plt.figure(figsize=(12, 12), dpi=inpt.dpi)
     str_name = f"{inpt.tres} {period_label} scatter {inpt.var} {inpt.var_dict['t']['label']} {inpt.years[0]}-{inpt.years[-1]}"
     fig.suptitle(str_name, fontweight='bold')
-    fig.subplots_adjust(top=0.93)
 
     var_data = inpt.extr[inpt.var]
     comps = var_data['comps']
     ref_x = var_data['ref_x']
     plot_vars = tls.plot_vars_cleanup(comps, var_data)
 
-    frame_and_axis_removal(axs, len(comps))
+    # Layout constants for 2x2 main plots each with marginal histograms
+    nrows, ncols = 2, 2
+    width_ratios = [4, 1]
+    height_ratios = [1, 4]
 
+    joint_axes = []
     for i, data_typ in enumerate(plot_vars):
+        # Determine position in grid (row, col)
+        row, col = divmod(i, ncols)
+
+        # Compute left/right/bottom/top margins per subplot
+        left = 0.05 + col * 0.475
+        right = left + 0.4
+        bottom = 0.05 + (1 - row) * 0.475
+        top = bottom + 0.4
+
+        gs = GridSpec(
+            2, 2,
+            width_ratios=width_ratios,
+            height_ratios=height_ratios,
+            left=left, right=right, bottom=bottom, top=top,
+            wspace=0.05, hspace=0.05,
+            figure=fig
+        )
+
+        ax_marg_x = fig.add_subplot(gs[0, 0])
+        ax_joint = fig.add_subplot(gs[1, 0], sharex=ax_marg_x)
+        joint_axes.append(ax_joint)
+        ax_marg_y = fig.add_subplot(gs[1, 1], sharey=ax_joint)
+
+        # Hide inner tick labels for marginal plots
+        plt.setp(ax_marg_x.get_xticklabels(), visible=False)
+        plt.setp(ax_marg_y.get_yticklabels(), visible=False)
+
         tres, tres_tol = tls.get_tres(data_typ)
-        # Preprocess time and data
         x = var_data[ref_x]['data_res'][tres][inpt.var]
-        # Generate regular time grid (target)
         time_range = pd.date_range(
             start=pd.Timestamp(inpt.years[0], 1, 1),
             end=pd.Timestamp(inpt.years[-1], 12, 31, 23, 59),
@@ -294,89 +322,88 @@ def plot_scatter(period_label):
             f"Plotting scatter {inpt.var_dict['t']['label']} - {inpt.var_dict[data_typ]['label']}")
 
         if period_label != 'all':
-            axs[i].scatter(
+            ax_joint.scatter(
                 x_valid, y_valid,
                 s=5, facecolors='none', edgecolors=inpt.seasons[period_label]['col'],
                 alpha=0.5, label=period_label
             )
         else:
-            # Fix for invalid histogram bins when min == max
             vmin, vmax = var_data['min'], var_data['max']
-            if vmin >= vmax:
-                print("WARNING: Histogram bin min >= max, skipping hist2d")
-                axs[i].text(0.1, 0.5, "Invalid bin range",
-                            transform=axs[i].transAxes)
+            if vmin >= vmax or not (np.isfinite(vmin) and np.isfinite(vmax)):
+                ax_joint.text(0.1, 0.5, "Invalid histogram range",
+                              transform=ax_joint.transAxes)
             else:
-                # Ensure valid bin range
-                vmin = 0
-                if not np.isfinite(var_data['min']) or not np.isfinite(var_data['max']) or var_data['min'] >= var_data['max']:
-                    print(
-                        f"WARNING: Invalid histogram bin range (vmin={vmin}, vmax={vmax}) — skipping hist2d.")
-                    axs[i].text(0.1, 0.5, "Invalid histogram range",
-                                transform=axs[i].transAxes)
-                else:
-                    # cmap = cmap[data_typ] # plt.cm.jet.copy()
+                bin_edges = np.linspace(vmin, vmax, var_data['bin_nr'])
+                bin_size = (vmax - vmin) / var_data['bin_nr']
+                h = ax_joint.hist2d(
+                    x_valid, y_valid,
+                    bins=[bin_edges, bin_edges],
+                    cmap=inpt.var_dict[data_typ]['cmap'],
+                    cmin=1,
+                    vmin=vmin
+                )
+                counts = h[0]
+                pctl = 99
+                vmax_hist = np.percentile(counts[counts > 0], pctl)
+                has_overflow = np.any(counts > vmax_hist)
+                extend_opt = 'max' if has_overflow else 'neither'
 
-                    # # Modify the colormap so that the lowest color is white
-                    # # Create a new colormap with white at the bottom, then jet for the rest
-                    # colors = cmap(np.linspace(0, 1, cmap.N))
-                    # colors[0] = [1, 1, 1, 1]  # RGBA for white
-                    # new_cmap = mcolors.ListedColormap(colors)
+                ax_joint.cla()
+                h = ax_joint.hist2d(
+                    x_valid, y_valid,
+                    bins=[bin_edges, bin_edges],
+                    cmap=inpt.var_dict[data_typ]['cmap'],
+                    cmin=1,
+                    vmin=vmin,
+                    vmax=vmax_hist
+                )
+                if period_label == 'all':
+                    if valid_idx.sum() >= 2:
+                        calc_draw_fit(joint_axes, i, x_valid, y_valid,
+                                      period_label, data_typ, print_stats=True)
+                    else:
+                        calc_draw_fit(joint_axes, i, x_valid, y_valid,
+                                      period_label, data_typ, print_stats=False)
+                        print("ERROR: Not enough data points for fit.")
+                        # format_scatterplot(fig.axes, data_typ, i)
 
-                    bin_edges = np.linspace(
-                        var_data['min'], var_data['max'], var_data['bin_nr'])
-                    bin_size = (var_data['max'] -
-                                var_data['min']) / var_data['bin_nr']
-                    h = axs[i].hist2d(
-                        x_valid, y_valid,
-                        bins=[bin_edges, bin_edges],
-                        cmap=inpt.var_dict[data_typ]['cmap'],
-                        cmin=1,
-                        vmin=vmin
-                    )
+                # Marginal histograms
+                ax_marg_x.hist(x_valid, bins=bin_edges,
+                               color='orange', alpha=0.5, density=True)
+                ax_marg_x.set_xlim(ax_joint.get_xlim())
+                ax_marg_x.yaxis.set_major_locator(
+                    MaxNLocator(nbins=3, prune='both'))
+                ax_marg_x.yaxis.set_major_formatter(
+                    FormatStrFormatter('%.2f'))  # Format y labels with 1 decimal
 
-                    counts = h[0]
-                    pctl = 99
-                    vmax = np.percentile(counts[counts > 0], pctl)
-                    # Exclude zeros to ignore empty bins
-                    has_overflow = np.any(counts > vmax)
-                    extend_opt = 'max' if has_overflow else 'neither'
 
-                    axs[i].cla()  # Clear axis to avoid overplotting
-                    h = axs[i].hist2d(
-                        x_valid, y_valid,
-                        bins=[bin_edges, bin_edges],
-                        cmap=inpt.var_dict[data_typ]['cmap'],
-                        cmin=1,
-                        vmin=vmin,
-                        vmax=vmax
-                    )
+                ax_marg_y.hist(y_valid, bins=bin_edges,
+                               orientation='horizontal', color='blue', alpha=0.5, density=True)
+                ax_marg_y.set_ylim(ax_joint.get_ylim())
+                ax_marg_y.xaxis.set_major_locator(
+                    MaxNLocator(nbins=3, prune='both'))
+                ax_marg_y.xaxis.set_major_formatter(
+                    FormatStrFormatter('%.2f'))  # Format y labels with 1 decimal
 
-                    cax = inset_axes(axs[3],
-                                     width="100%",
-                                     height="40%",
-                                     bbox_to_anchor=inpt.var_dict[data_typ]['cmap_pos'],
-                                     bbox_transform=axs[3].transAxes,
-                                     borderpad=0)
-
-                    cbar = fig.colorbar(
-                        h[3], cax=cax, orientation='horizontal', extend=extend_opt)
-                    cbar.set_label(
-                        f'Counts {inpt.var_dict[data_typ]["label"]}\n max: {pctl}pctl')
-                    axs[i].text(
-                        0.10, 0.90, f"bin_size={bin_size:.3f}", transform=axs[i].transAxes)
-
-        if valid_idx.sum() >= 2:
-            calc_draw_fit(axs, i, x_valid, y_valid, period_label, data_typ)
-        else:
-            print("ERROR: Not enough data points for fit.")
-
-        format_scatterplot(axs, data_typ, i)
+                cax = inset_axes(ax_joint,
+                                 width="100%", height="25%", loc='lower center',
+                                 bbox_to_anchor=(0, -0.10, 1, 0.1),
+                                 bbox_transform=ax_joint.transAxes,
+                                 borderpad=0)
+                
+                cbar = fig.colorbar(
+                    h[3], cax=cax, orientation='horizontal', extend=extend_opt)
+                cbar.set_label(
+                    f'Counts {inpt.var_dict[data_typ]["label"]} max: {pctl}pctl')
+                ax_joint.text(
+                    0.10, 0.90, f"bin_size={bin_size:.3f}",
+                    transform=ax_joint.transAxes
+                )
 
     save_path = os.path.join(
         inpt.basefol['out']['base'], inpt.tres, f"{str_name.replace(' ', '_')}.png")
     plt.savefig(save_path, bbox_inches='tight')
-    plt.close('all')
+    plt.close(fig)
 
 
 def plot_scatter_cum():
@@ -503,34 +530,48 @@ def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
                     figsize=(8, 6), legend_loc='upper right',
                     var_marker_map=None):
 
+    import matplotlib.pyplot as plt
+    import numpy as np
+    from matplotlib.lines import Line2D
+
     std_models = np.array(std_models)
     corr_coeffs = np.clip(np.array(corr_coeffs), -1, 1)
 
+    # Range per asse radiale (std dev)
     rmax = std_ref * srange[1]
     ax.set_ylim(0, rmax)
 
-    # Limit to upper-right quadrant: correlation from 0 to 1
+    # Setup polare
+    ax.set_theta_direction(-1)            # senso orario
+    ax.set_theta_zero_location('N')       # 0° a destra, REF sull'asse x
+
     ax.set_thetamin(0)
     ax.set_thetamax(90)
 
-    # Grid lines for correlation (cosine of theta)
-    tgrid = np.arange(0, 100, 10)
-    labels = [f"{np.cos(np.deg2rad(t)):.2f}" for t in tgrid]
-    ax.set_thetagrids(tgrid, labels=labels)
+    # Etichette dei coefficienti di correlazione
+    tgrid_degrees = np.arccos([1.0, 0.95, 0.9, 0.8, 0.6, 0.0]) * 180 / np.pi
+    labels = [f"{np.cos(np.deg2rad(t)):.2f}" for t in tgrid_degrees]
+    ax.set_thetagrids(tgrid_degrees, labels=labels)
     ax.set_rlabel_position(135)
 
-    # Reference point
-    ax.plot(0, std_ref, 'ko', label=ref_label)
+    # ✅ Cerchio riferimento deviazione standard (ref)
+    ref_circle = plt.Circle((0, 0), std_ref, transform=ax.transData._b,
+                            color='black', fill=False, linestyle='--',
+                            linewidth=1, label='Std Ref')
+    ax.add_artist(ref_circle)
+
+    # Punto di riferimento (REF)
+    ax.plot(0, std_ref, 'ko', label=ref_label, markersize=6)
 
     if colors is None:
         colors = plt.cm.tab10.colors
     if markers is None:
         markers = ['o'] * len(std_models)
 
+    # Punti modello
     for i, (std, corr) in enumerate(zip(std_models, corr_coeffs)):
         theta = np.arccos(corr)
 
-        # Extract tres from model_labels[i], assuming format: "model (var, tres)"
         label = model_labels[i]
         tres = None
         try:
@@ -538,14 +579,14 @@ def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
         except Exception:
             pass
 
-        if tres in ['1h', '3h']:
-            # Plot black circle (slightly bigger marker)
+        if tres == 'original':
+            # Contorno nero (vuoto)
             ax.plot(theta, std, marker='o', color='black',
-                    markersize=10, linestyle='None')
-            # Plot actual marker inside (smaller size, white face)
+                    markersize=10, linestyle='None', markerfacecolor='none')
+            # Marker interno
             ax.plot(theta, std,
                     marker=markers[i],
-                    markerfacecolor='white',
+                    markerfacecolor=colors[i % len(colors)],
                     markeredgecolor=colors[i % len(colors)],
                     markersize=6,
                     linestyle='None')
@@ -727,7 +768,7 @@ def calc_draw_fit(axs, i, xxx, yyy, per_lab, data_typ, print_stats=True):
 
         axs[i].text(0.50, 0.30, stats_text,
                     transform=axs[i].transAxes,
-                    fontsize=14, color='black',
+                    fontsize=12, color='black',
                     ha='left', va='center',
                     bbox=dict(facecolor='white', edgecolor='white'))
 

@@ -51,13 +51,13 @@ def main():
             # Resample data (special handling for wind and precipitation)
             rs_f.data_resampling(inpt.var)
 
-            # # Plotting
-            # if not inpt.datasets['dropsondes']['switch']:
-            #     plt_f.plot_ts('all')
-            #     plt_f.plot_residuals('all')
-            #     plt_f.plot_ba('all')
-            #     for season in inpt.seasons:
-            #         plt_f.plot_scatter(season)
+            # Plotting
+            if not inpt.datasets['dropsondes']['switch']:
+                # plt_f.plot_ts('all')
+                # plt_f.plot_residuals('all')
+                # plt_f.plot_ba('all')
+                for season in inpt.seasons:
+                    plt_f.plot_scatter(season)
 
             # plt_f.plot_scatter_cum()
 
