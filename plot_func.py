@@ -597,6 +597,8 @@ def plot_taylor(var_list):
 
     if var_list == inpt.met_vars:
         plot_name = 'Weather variables'
+        inpt.met_vars.remove('surf_pres')
+        var_list == inpt.met_vars
         available_markers = ['o', 's', '^', 'D', 'v', 'P', '*']
     if var_list == inpt.rad_vars:
         plot_name = 'Radiation variables'
@@ -641,7 +643,7 @@ def plot_taylor(var_list):
                 elif data_typ == 't1':
                     color = 'cyan'
                 else:
-                    color = inpt.var_dict[data_typ]['col'] if data_typ in inpt.var_dict else 'gray'
+                    color = inpt.var_dict[data_typ]['col'] if data_typ in inpt.var_dict else 'purple'
 
                 combined_colors.append(color)
                 combined_markers.append(var_marker_map[var])
@@ -684,6 +686,22 @@ def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
     ax.set_thetamin(0)
     ax.set_thetamax(90)
 
+    # Example: ax is a polar subplot
+    ax.set_rgrids([0.2, 0.4, 0.6, 0.8, 1.2, 1.4, 1.6, 1.8, 2.0],       # Specify which radii to draw circles for
+                  labels=['0.2', '0.4', '0.6', '0.8', '1.2', '1.4',
+                          '1.6', '1.8', '2.0'],  # Labels for each radius
+                  # Angle to place the labels (degrees)
+                  angle=135,
+                  fontsize=10,                           # Font size of labels
+                  color='darksalmon',                     # Color of the labels
+                  fontweight='bold')                     # Bold labels
+
+    # Then customize grid appearance
+    # Enable grid (usually default)
+    ax.grid(False)
+    ax.yaxis.grid(True, color='darksalmon',
+                  linestyle='-', linewidth=1., alpha=0.3)
+
     # Correlation ticks
     corr_values = [1.0, 0.99, 0.95, 0.9, 0.8, 0.7,
                    0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0]
@@ -701,19 +719,11 @@ def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
     # Sync y-axis (cartesian) ticks for visual reference
     ax.yaxis.set_ticks(radial_ticks)
     ax.yaxis.set_ticklabels(radial_tick_labels)
-    ax.yaxis.set_label_position("right")
+    ax.yaxis.set_label_position("left")
     ax.text(-0.10, 1.0, "Normalized Standard Deviations",
             ha='center', va='top',
             fontsize='medium',
             rotation=0)
-    
-    ax.set_xticks(radial_ticks)
-    ax.set_xticklabels(radial_tick_labels)
-
-    # Sync y-axis (cartesian) ticks for visual reference
-    ax.xaxis.set_ticks(radial_ticks)
-    ax.xaxis.set_ticklabels(radial_tick_labels)
-    ax.xaxis.set_label_position("left")
 
     # Add "Correlation" label following the arc
     theta_text = np.radians(45)   # 45° angle
@@ -758,10 +768,10 @@ def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
                 ha='center', va='center',
                 fontsize=8, color='darkgreen',
                 backgroundcolor='white',
-                clip_on=True)
+                clip_on=True, zorder=5  )
 
     ax.add_artist(plt.Circle((0, 0), std_ref, transform=ax.transData._b,
-                             color='black', fill=False, linestyle='--', linewidth=1))
+                             color='black', fill=False, linestyle='--', linewidth=3))
     # Defaults for colors/markers
     if colors is None:
         colors = plt.cm.tab10.colors
