@@ -705,8 +705,15 @@ def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
     # Correlation ticks
     corr_values = [1.0, 0.99, 0.95, 0.9, 0.8, 0.7,
                    0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0]
+    # Set theta grids and get text objects
     theta_degrees = np.degrees(np.arccos(corr_values))
-    ax.set_thetagrids(theta_degrees, labels=[f"{c:.2f}" for c in corr_values])
+    labels = [f"{c:.2f}" for c in corr_values]
+    ticks, label_texts = ax.set_thetagrids(theta_degrees, labels=labels)
+    
+    for label in label_texts:
+        label.set_color('darkgoldenrod')
+    
+    # Set radial label position (unchanged)
     ax.set_rlabel_position(135)
 
     # Radial ticks
@@ -720,6 +727,8 @@ def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
     ax.yaxis.set_ticks(radial_ticks)
     ax.yaxis.set_ticklabels(radial_tick_labels)
     ax.yaxis.set_label_position("left")
+    for label in ax.get_yticklabels():
+        label.set_color('darkgreen')
     ax.text(-0.10, 1.0, "Normalized Standard Deviations",
             ha='center', va='top',
             fontsize='medium',
@@ -736,7 +745,7 @@ def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
 
     # Correlation grid lines
     for theta in np.radians(theta_degrees):
-        ax.plot([theta, theta], [0, rmax], color='darkblue',
+        ax.plot([theta, theta], [0, rmax], color='darkgoldenrod',
                 linestyle='--', linewidth=0.8, alpha=0.5)
 
     # Reference std circle + point
@@ -770,6 +779,7 @@ def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
                 backgroundcolor='white',
                 clip_on=True, zorder=5  )
 
+    
     ax.add_artist(plt.Circle((0, 0), std_ref, transform=ax.transData._b,
                              color='black', fill=False, linestyle='--', linewidth=3))
     # Defaults for colors/markers
