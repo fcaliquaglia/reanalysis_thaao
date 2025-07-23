@@ -281,7 +281,7 @@ def plot_scatter_all(period_label):
         # Compute left/right/bottom/top margins per subplot
         left = 0.05 + col * 0.475
         right = left + 0.4
-        bottom = 0.05 + (1 - row) * 0.475
+        bottom = 0.05 + (1 - row) * 0.485
         top = bottom + 0.4
 
         gs = GridSpec(
@@ -330,7 +330,7 @@ def plot_scatter_all(period_label):
         else:
             # Set up bin edges
             bin_edges = np.linspace(vmin, vmax, var_data['bin_nr'])
-
+            bin_size = bin_edges[1]-bin_edges[0]
             # First draw to compute counts
             counts, _, _, _ = ax_joint.hist2d(
                 x_valid, y_valid,
@@ -381,14 +381,14 @@ def plot_scatter_all(period_label):
             # Colorbar (linked to QuadMesh, not x-axis)
             cax = inset_axes(ax_joint,
                              width="80%", height="25%", loc='lower center',
-                             bbox_to_anchor=(0, -0.10, 1, 0.1),
+                             bbox_to_anchor=(0, -0.15, 1, 0.1),
                              bbox_transform=ax_joint.transAxes,
                              borderpad=0)
 
             cbar = fig.colorbar(
                 quadmesh, cax=cax, orientation='horizontal', extend=extend_opt)
             cbar.set_label(
-                f'Counts  max: {pctl}pctl')
+                f'Counts  max: {pctl}pctl', fontsize='small')
             cbar.ax.xaxis.set_major_formatter(
                 FormatStrFormatter('%d'))  # Format counts as integers
             cbar.ax.xaxis.set_ticks_position('bottom')
@@ -400,7 +400,8 @@ def plot_scatter_all(period_label):
                 ylabel=inpt.var_dict[data_typ]['label'],
                 letter=inpt.letters[i] + ')',
                 xlim=(vmin, vmax),
-                ylim=(vmin, vmax)
+                ylim=(vmin, vmax),
+                binsize=bin_size
             )
     save_path = os.path.join(
         inpt.basefol['out']['base'], inpt.tres, f"{str_name.replace(' ', '_')}.png")
@@ -955,7 +956,7 @@ def calc_stats(x, y, data_typ, tr):
 
 def format_ax(ax, xlabel='', ylabel='', title=None, letter=None,
               xlim=None, ylim=None, identity_line=False,
-              fontweight='bold', fontsize='medium'):
+              fontweight='bold', fontsize='medium', binsize=None):
     """
     Generic axis formatting helper.
 
@@ -1015,13 +1016,13 @@ def format_ba(axs, data_typ, i):
               letter=inpt.letters[i] + ')')
 
 
-def format_hist2d(ax, xlabel, ylabel, letter, xlim=None, ylim=None):
+def format_hist2d(ax, xlabel, ylabel, letter, xlim=None, ylim=None, binsize=None):
     format_ax(ax,
               xlabel=xlabel,
               ylabel=ylabel,
               xlim=xlim,
               ylim=ylim,
-              letter=letter)
+              letter=f"{letter}    bin size={binsize:.2f}")
 
 
 def format_scatterplot(axs, data_typ, i):
