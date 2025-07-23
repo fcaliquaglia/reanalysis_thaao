@@ -143,7 +143,7 @@ def get_tres(data_typ, tres=None):
     if tres != 'original':
         return tres, tres
 
-    _vars = {'sw_up', 'sw_down', 'lw_up', 'lw_down', 'precip'}
+    _vars = {'lw_net', 'sw_net', 'sw_up', 'sw_down', 'lw_up', 'lw_down', 'precip'}
     freq_str = '1h' if inpt.var in _vars else (
         '3h' if data_typ == 'c' else '1h')
 
@@ -188,8 +188,6 @@ def wait_for_complete_download(file_path, timeout=600, interval=5):
 
 
 def mask_low_count_intervals(df, data_typ, min_frac):
-    import pandas as pd
-    import re
 
     originalres = df.index[1] - df.index[0]
     if isinstance(originalres, str) and not re.match(r'^\d+', originalres):

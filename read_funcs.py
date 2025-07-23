@@ -302,9 +302,10 @@ def read_lw_net():
         
     vr = "lw_net"
     var_dict = inpt.extr[vr]
-    var_dict["t"]["data"][vr] = lw_down_t-lw_up_t
     var_dict["t"]["data"], _ = tls.check_empty_df(
         var_dict["t"]["data"], vr)
+    var_dict["t"]["data"][vr] = lw_down_t-lw_up_t
+
 
     return
 
@@ -686,25 +687,26 @@ def read_sw_net():
     var_dict = inpt.extr[vr]
     if inpt.datasets['THAAO']['switch']:
         rd_ft.read_rad(vr)
-        sw_up_t = var_dict["t"]["data"][vr]
-        var_dict["t"]["data"][vr] = sw_up_t.mask(sw_up_t < 1e-5, np.nan)
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
+        sw_up_t = var_dict["t"]["data"][vr].mask(var_dict["t"]["data"][vr] < 1e-5, np.nan)
+        var_dict["t"]["data"][vr] = sw_up_t
         
     vr = "sw_down"
     var_dict = inpt.extr[vr]
     if inpt.datasets['THAAO']['switch']:
         rd_ft.read_rad(vr)
-        sw_down_t = var_dict["t"]["data"][vr]
-        var_dict["t"]["data"][vr] = sw_down_t.mask(sw_down_t < 1e-5, np.nan)
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
+        sw_down_t = var_dict["t"]["data"][vr].mask(var_dict["t"]["data"][vr] < 1e-5, np.nan)
+        var_dict["t"]["data"][vr] = sw_down_t
 
     vr = "sw_net"
     var_dict = inpt.extr[vr]
-    var_dict["t"]["data"][vr] = sw_down_t-sw_up_t
     var_dict["t"]["data"], _ = tls.check_empty_df(
         var_dict["t"]["data"], vr)
+    var_dict["t"]["data"][vr] = sw_down_t-sw_up_t
+
 
     # # --- Sigma-A ---
     # if inpt.datasets['Sigma-A']['switch']:

@@ -603,7 +603,7 @@ def plot_taylor(var_list):
         available_markers = ['o', 's', '^', 'D', 'v', 'P', '*']
     if var_list == inpt.rad_vars:
         plot_name = 'Radiation variables'
-        available_markers = ['X', 'H', '>', '<', '8']
+        available_markers = ['X', 'H', '>', '<', '8', 'd']
 
     print(f"Taylor Diagram {plot_name}")
     str_name = f"Taylor Diagram {plot_name} {inpt.var_dict['t']['label']} {inpt.years[0]}-{inpt.years[-1]}"

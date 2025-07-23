@@ -53,18 +53,18 @@ def main():
 
             # Plotting
             if not inpt.datasets['dropsondes']['switch']:
-                # plt_f.plot_ts('all')
-                # plt_f.plot_residuals('all')
-                # plt_f.plot_ba('all')
+                plt_f.plot_ts('all')
+                plt_f.plot_residuals('all')
+                plt_f.plot_ba('all')
                 plt_f.plot_scatter_all('all')
-                # for season in inpt.seasons:
-                #     plt_f.plot_scatter_seasonal(season)
+                for season in inpt.seasons:
+                    plt_f.plot_scatter_seasonal(season)
 
-            # plt_f.plot_scatter_cum()
+            plt_f.plot_scatter_cum()
 
-    # Plotting Taylor Diagrams
-    plt_f.plot_taylor(inpt.met_vars)
-    plt_f.plot_taylor(inpt.rad_vars)
+    # # Plotting Taylor Diagrams
+    # plt_f.plot_taylor(inpt.met_vars)
+    # plt_f.plot_taylor(inpt.rad_vars)
 
 
 if __name__ == "__main__":
