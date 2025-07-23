@@ -255,6 +255,60 @@ def read_lw_down():
     return
 
 
+def read_lw_net():
+    """
+    Reads and processes longwave upwelling radiation data from multiple sources (CARRA, ERA5, THAAO).
+    Performs unit conversions, calculates upward LW radiation from net/downward components,
+    and handles invalid values.
+    """
+
+    # both CARRA AND ERA5
+    # --- CARRA ---
+    vr = "lw_net"
+    var_dict = inpt.extr[vr]
+    rd_frea.read_rean(vr, "c")
+    var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
+    lw_net_c = var_dict["c"]["data"][vr]
+    lw_net_c /= pd.Timedelta('1h').total_seconds()
+
+    # --- ERA5 ---
+    vr = "lw_net"
+    var_dict = inpt.extr[vr]
+    rd_frea.read_rean(vr, "e")
+    var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
+    lw_net_e = var_dict["e"]["data"][vr]
+    lw_net_e /= pd.Timedelta('1h').total_seconds()
+
+    # --- THAAO ---
+    vr = "lw_up"
+    var_dict = inpt.extr[vr]
+    if inpt.datasets['THAAO']['switch']:
+        rd_ft.read_rad(vr)
+        var_dict["t"]["data"], _ = tls.check_empty_df(
+            var_dict["t"]["data"], vr)
+        lw_up_t = var_dict["t"]["data"][vr].mask(
+            var_dict["t"]["data"][vr] < 1e-5, np.nan)
+        var_dict["t"]["data"][vr] = lw_up_t
+        
+    vr = "lw_down"
+    var_dict = inpt.extr[vr]
+    if inpt.datasets['THAAO']['switch']:
+        rd_ft.read_rad(vr)
+        var_dict["t"]["data"], _ = tls.check_empty_df(
+            var_dict["t"]["data"], vr)
+        lw_down_t = var_dict["t"]["data"][vr].mask(
+            var_dict["t"]["data"][vr] < 1e-5, np.nan)
+        var_dict["t"]["data"][vr] = lw_down_t
+        
+    vr = "lw_net"
+    var_dict = inpt.extr[vr]
+    var_dict["t"]["data"][vr] = lw_down_t-lw_up_t
+    var_dict["t"]["data"], _ = tls.check_empty_df(
+        var_dict["t"]["data"], vr)
+
+    return
+
+
 def read_lw_up():
     """
     Reads and processes longwave upwelling radiation data from multiple sources (CARRA, ERA5, THAAO).
@@ -601,6 +655,85 @@ def read_sw_down():
 
     return
 
+
+
+def read_sw_net():
+    """
+    Reads and processes shortwave upward radiation data from CARRA, ERA5, ERA5-LAND, and THAAO.
+    Applies unit conversions, calculates upwelling radiation, and filters invalid values.
+    Modifies `inpt` in-place.
+    """
+
+    # both CARRA AND ERA5
+    # --- CARRA ---
+    vr = "sw_net"
+    var_dict = inpt.extr[vr]
+    rd_frea.read_rean(vr, "c")
+    var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
+    sw_net_c = var_dict["c"]["data"][vr]
+    sw_net_c /= pd.Timedelta('1h').total_seconds()
+
+    # --- ERA5 ---
+    vr = "sw_net"
+    var_dict = inpt.extr[vr]
+    rd_frea.read_rean(vr, "e")
+    var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
+    sw_net_e = var_dict["e"]["data"][vr]
+    sw_net_e /= pd.Timedelta('1h').total_seconds()
+
+    # --- THAAO ---
+    vr = "sw_up"
+    var_dict = inpt.extr[vr]
+    if inpt.datasets['THAAO']['switch']:
+        rd_ft.read_rad(vr)
+        sw_up_t = var_dict["t"]["data"][vr]
+        var_dict["t"]["data"][vr] = sw_up_t.mask(sw_up_t < 1e-5, np.nan)
+        var_dict["t"]["data"], _ = tls.check_empty_df(
+            var_dict["t"]["data"], vr)
+        
+    vr = "sw_down"
+    var_dict = inpt.extr[vr]
+    if inpt.datasets['THAAO']['switch']:
+        rd_ft.read_rad(vr)
+        sw_down_t = var_dict["t"]["data"][vr]
+        var_dict["t"]["data"][vr] = sw_down_t.mask(sw_down_t < 1e-5, np.nan)
+        var_dict["t"]["data"], _ = tls.check_empty_df(
+            var_dict["t"]["data"], vr)
+
+    vr = "sw_net"
+    var_dict = inpt.extr[vr]
+    var_dict["t"]["data"][vr] = sw_down_t-sw_up_t
+    var_dict["t"]["data"], _ = tls.check_empty_df(
+        var_dict["t"]["data"], vr)
+
+    # # --- Sigma-A ---
+    # if inpt.datasets['Sigma-A']['switch']:
+    #     rd_fsa.read_sigmaa_weather(vr)
+    #     var_dict["t"]["data"], _ = tls.check_empty_df(
+    #         var_dict["t"]["data"], vr)
+
+    # # --- Sigma-B ---
+    # if inpt.datasets['Sigma-B']['switch']:
+    #     rd_fsb.read_weather(vr)
+    #     var_dict["t"]["data"], _ = tls.check_empty_df(
+    #         var_dict["t"]["data"], vr)
+
+    # # --- Buoys ---
+    # if inpt.datasets['buoys']['switch']:
+    #     data_all = pd.DataFrame()
+    #     for y in inpt.years:
+    #         path = os.path.join('txt_locations', f"{inpt.location}_loc.txt")
+    #         data_tmp = pd.read_csv(path)
+    #         data_all = pd.concat([data_all, data_tmp])
+    #     data_all['time'] = pd.to_datetime(data_all['time'], errors='coerce')
+    #     data_all = data_all.set_index('time')
+    #     var_dict["t"]["data"] = data_all
+    #     var_dict["t"]["data"][inpt.var] = var_dict["t"]["data"][inpt.var].mask(
+    #         var_dict["t"]["data"][inpt.var] == 0.0, np.nan)
+    #     var_dict["t"]["data"], _ = tls.check_empty_df(
+    #         var_dict["t"]["data"], vr)
+
+    return
 
 def read_sw_up():
     """
@@ -953,12 +1086,14 @@ def read():
         "iwv": read_iwv,
         "lwp": read_lwp,
         "lw_down": read_lw_down,
+        "lw_net": read_lw_net,
         "lw_up": read_lw_up,
         "orog": read_orog,
         "precip": read_precip,
         "rh": read_rh,
         "surf_pres": read_surf_pres,
         "sw_down": read_sw_down,
+        "sw_net": read_sw_net,
         "sw_up": read_sw_up,
         "tcc": read_tcc,
         "temp": read_temp,
