@@ -6,7 +6,7 @@ res_min: -10
 res_max: 10
 uom: "[m/s]"
 comps: []
-bin_nr: 200
+bin_size: null
 c:
   fn: ""
   column: ""

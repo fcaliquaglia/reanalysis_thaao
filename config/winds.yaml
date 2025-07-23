@@ -8,7 +8,7 @@ uom: "[m/s]"
 comps:
   - c
   - e
-bin_nr: 150
+bin_size: 0.2
 c:
   fn: "thaao_c_10m_wind_speed_"
   column: 2

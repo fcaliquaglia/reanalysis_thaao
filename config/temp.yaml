@@ -9,7 +9,7 @@ comps:
   - c
   - e
   - t2
-bin_nr: 200
+bin_size: 0.3
 c:
   fn: "thaao_c_2m_temperature_"
   column: 2

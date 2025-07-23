@@ -6,7 +6,7 @@ res_min: ""
 res_max: ""
 uom: "[deg]"
 comps: []
-bin_nr: null
+bin_size: null
 c:
   fn: ""
   column: ""

@@ -8,7 +8,7 @@ uom: "[octave]"
 comps:
   - c
   - e
-bin_nr: 200
+bin_size: 1
 c:
   fn: "thaao_c_total_cloud_cover_"
   column: 2

@@ -8,7 +8,7 @@ uom: "[W/m2]"
 comps: 
   - c
   - e
-bin_nr: 200
+bin_size: 2
 c:
   fn: "thaao_c_thermal_surface_radiation_downwards_"
   column: 4

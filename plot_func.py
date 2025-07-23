@@ -329,8 +329,8 @@ def plot_scatter_all(period_label):
                           transform=ax_joint.transAxes)
         else:
             # Set up bin edges
-            bin_edges = np.linspace(vmin, vmax, var_data['bin_nr'])
-            bin_size = bin_edges[1]-bin_edges[0]
+            bin_edges = np.arange(vmin, vmax+var_data['bin_size'], var_data['bin_size'])
+            bin_size = var_data['bin_size']
             # First draw to compute counts
             counts, _, _, _ = ax_joint.hist2d(
                 x_valid, y_valid,
