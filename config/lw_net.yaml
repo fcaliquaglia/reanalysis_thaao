@@ -1,7 +1,7 @@
 name: lw_net
 ref_x: t
-min: -250
-max: 250
+min: -200
+max: 50
 res_min: -20
 res_max: 20
 uom: "[W/m2]"

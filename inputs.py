@@ -121,6 +121,9 @@ years = np.arange(2016, 2025)
 # For IWV VESPA, custom thesholds. CHeck the fucntion in tools.py
 min_frac = 0.75
 
+# For radiation
+rad_low_thresh = 1e0
+
 # ========== DATE RANGES ==========
 dateranges = {
     'aws_ecapac': pd.date_range(start=dt.datetime(2023, 4, 1), end=dt.datetime(2024, 12, 31)),

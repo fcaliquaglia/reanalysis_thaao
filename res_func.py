@@ -21,7 +21,6 @@ __email__ = "filippo.caliquaglia@ingv.it"
 __status__ = "Research"
 __lastupdate__ = ""
 
-import sys
 import inputs as inpt
 import tools as tls
 import pandas as pd

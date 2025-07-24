@@ -62,9 +62,9 @@ def main():
 
             plt_f.plot_scatter_cum()
 
-    # # Plotting Taylor Diagrams
-    # plt_f.plot_taylor(inpt.met_vars)
-    # plt_f.plot_taylor(inpt.rad_vars)
+    # Plotting Taylor Diagrams
+    plt_f.plot_taylor(inpt.met_vars)
+    plt_f.plot_taylor(inpt.rad_vars)
 
 
 if __name__ == "__main__":

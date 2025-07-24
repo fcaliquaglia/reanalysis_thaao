@@ -1,7 +1,7 @@
 name: sw_net
 ref_x: t
-min: -500
-max: 500
+min: 0
+max: 600
 res_min: -20
 res_max: 20
 uom: "[W/m2]"
