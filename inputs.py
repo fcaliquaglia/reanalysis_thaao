@@ -107,7 +107,7 @@ technical_vars = ['windu', 'windv', 'dewpt', 'sw_net', 'lw_net']
 extra_vars = ['orog']
 
 # met_vars + rad_vars  # you can add + cloud_vars if needed
-list_var = rad_vars  + met_vars #  ['orog'] # 
+list_var = ['windd'] + rad_vars  + met_vars #  ['orog'] # 
 tres_list = ['original', '24h'] # '3h', '6h', '12h', 
 tres = var = ''
 
