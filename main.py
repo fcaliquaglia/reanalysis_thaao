@@ -63,8 +63,8 @@ def main():
             # plt_f.plot_scatter_cum()
 
     # Plotting Taylor Diagrams
-    plt_f.plot_taylor(['temp', 'winds'])  #inpt.met_vars)
-    plt_f.plot_taylor(['sw_net', 'lw_net']) # inpt.rad_vars)
+    plt_f.plot_taylor(['temp'])  #inpt.met_vars)
+    # plt_f.plot_taylor(['lw_net']) # inpt.rad_vars)
 
 
 if __name__ == "__main__":

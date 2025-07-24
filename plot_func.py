@@ -37,6 +37,7 @@ from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from pyCompare import blandAltman
 from matplotlib.lines import Line2D
 from matplotlib import cm
+import csv
 
 
 def plot_ts(period_label):
@@ -642,7 +643,6 @@ def plot_taylor(var_list):
 
     if var_list[0] in inpt.met_vars:
         plot_name = 'Weather variables'
-        inpt.met_vars.remove('surf_pres')
         var_list == inpt.met_vars
         available_markers = ['o', 's', '^', 'D', 'v', 'P', '*']
     if var_list[0] in inpt.rad_vars:
@@ -873,7 +873,8 @@ def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
             # Explicit dark version
             shade_color = base_color_lower  # or fixed like '#8B0000' for red
         else:
-            res_hour = parse_resolution(resolution) if resolution != 'original' else 0
+            res_hour = parse_resolution(
+                resolution) if resolution != 'original' else 0
             res_min, res_max = 1, 6
             res_norm = (res_hour - res_min) / (res_max - res_min)
             res_norm = np.clip(res_norm, 0, 1)
@@ -998,6 +999,8 @@ def calc_draw_fit(axs, i, xxx, yyy, tr, col, data_typ, print_stats=True):
         # KL divergence is zero only when P and Q are identical.
         KL_bits = inpt.extr[inpt.var][data_typ]['data_stats'][tr]['kl_bits']
 
+        #save_stats(data_typ, ref_x)
+        
         def escape_label(label):
             return label.replace('_', r'\_')
 
@@ -1055,6 +1058,40 @@ def calc_stats(x, y, data_typ, tr):
     return
 
 
+def save_stats(data_typ, ref_x, output_name="stats"):
+    out_dir = os.path.join(inpt.basefol['out']['base'], 'scatter_stats')
+    os.makedirs(out_dir, exist_ok=True)
+    stats_file = os.path.join(out_dir, f"{output_name}_{inpt.var}.csv")
+    write_header = not os.path.exists(stats_file)
+
+    with open(stats_file, mode='a', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+
+        if write_header:
+            writer.writerow(['Variable', 'Data_Type', 'Resolution', 'R2', 'N', 'RMSE', 'MBE', 'STD_X', 'STD_Y', 'KL_BITS'])
+
+        for tr, stats in inpt.extr[inpt.var][data_typ]['data_stats'].items():
+            try:
+                ref_stats = inpt.extr[inpt.var][ref_x]['data_stats'][tr]
+
+                writer.writerow([
+                    inpt.var,
+                    data_typ,
+                    tr,
+                    stats['r2'],
+                    stats['N'],
+                    stats['rmse'],
+                    stats['mbe'],
+                    ref_stats['std_x'],
+                    stats['std_y'],
+                    stats['kl_bits']
+                ])
+            except KeyError as e:
+                print(f"⚠️ Missing data for {data_typ}, {tr}: {e}")
+
+    
+    
+    
 def format_ax(ax, xlabel='', ylabel='', title=None, letter=None,
               xlim=None, ylim=None, identity_line=False,
               fontweight='bold', fontsize='medium', binsize=None):
