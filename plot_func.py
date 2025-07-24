@@ -640,12 +640,12 @@ def plot_scatter_cum():
 
 def plot_taylor(var_list):
 
-    if var_list == inpt.met_vars:
+    if var_list[0] in inpt.met_vars:
         plot_name = 'Weather variables'
         inpt.met_vars.remove('surf_pres')
         var_list == inpt.met_vars
         available_markers = ['o', 's', '^', 'D', 'v', 'P', '*']
-    if var_list == inpt.rad_vars:
+    if var_list[0] in inpt.rad_vars:
         plot_name = 'Radiation variables'
         available_markers = ['X', 'H', '>', '<', '8', 'd']
 
@@ -661,6 +661,7 @@ def plot_taylor(var_list):
     var_marker_map = {}
 
     for var_idx, var in enumerate(var_list):
+        print(var)
         marker = available_markers[var_idx % len(available_markers)]
         var_marker_map[var] = marker
         inpt.var = var
@@ -872,7 +873,7 @@ def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
             # Explicit dark version
             shade_color = base_color_lower  # or fixed like '#8B0000' for red
         else:
-            res_hour = parse_resolution(resolution)
+            res_hour = parse_resolution(resolution) if resolution != 'original' else 0
             res_min, res_max = 1, 6
             res_norm = (res_hour - res_min) / (res_max - res_min)
             res_norm = np.clip(res_norm, 0, 1)
@@ -899,19 +900,20 @@ def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
                     linestyle='None', markeredgecolor='none')
             point_map[key]['others'].append((theta, std))
 
-    # # Draw arrows from circled (original) to same color/marker points with same var/data_typ
-    # for key, points in point_map.items():
-    #     orig = points['original']
-    #     if orig is not None:
-    #         for other in points['others']:
-    #             # Use native polar coordinates for annotation
-    #             ax.annotate("",
-    #                         xy=(other[0], other[1]),     # target (theta, r)
-    #                         xytext=(orig[0], orig[1]),   # start (theta, r)
-    #                         arrowprops=dict(arrowstyle="->",
-    #                                         color="gray",
-    #                                         lw=1),
-    #                         annotation_clip=False)
+    for key, pts in point_map.items():
+        # Sort points by their numeric resolution (res_hour)
+        sorted_pts = sorted(pts, key=lambda x: x[2])
+        # Connect each consecutive pair with an arrow
+        for i in range(len(sorted_pts) - 1):
+            start = sorted_pts[i]
+            end = sorted_pts[i + 1]
+            ax.annotate("",
+                        xy=(end[0], end[1]),   # target (theta, r)
+                        xytext=(start[0], start[1]),  # start (theta, r)
+                        arrowprops=dict(arrowstyle="->",
+                                        color="gray",
+                                        lw=1),
+                        annotation_clip=False)
 
     # Variable marker legend
     if var_marker_map:
