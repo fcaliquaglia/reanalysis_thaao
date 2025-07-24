@@ -1,6 +1,6 @@
 name: lw_net
 ref_x: t
-min: -200
+min: -150
 max: 50
 res_min: -20
 res_max: 20

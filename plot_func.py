@@ -329,7 +329,8 @@ def plot_scatter_all(period_label):
                           transform=ax_joint.transAxes)
         else:
             # Set up bin edges
-            bin_edges = np.arange(vmin, vmax+var_data['bin_size'], var_data['bin_size'])
+            bin_edges = np.arange(
+                vmin, vmax+var_data['bin_size'], var_data['bin_size'])
             bin_size = var_data['bin_size']
             # First draw to compute counts
             counts, _, _, _ = ax_joint.hist2d(
@@ -687,18 +688,14 @@ def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
     ax.set_thetamin(0)
     ax.set_thetamax(90)
 
-    # Example: ax is a polar subplot
-    ax.set_rgrids([0.2, 0.4, 0.6, 0.8, 1.2, 1.4, 1.6, 1.8, 2.0],       # Specify which radii to draw circles for
+    ax.set_rgrids([0.2, 0.4, 0.6, 0.8, 1.2, 1.4, 1.6, 1.8, 2.0],
                   labels=['0.2', '0.4', '0.6', '0.8', '1.2', '1.4',
-                          '1.6', '1.8', '2.0'],  # Labels for each radius
-                  # Angle to place the labels (degrees)
+                          '1.6', '1.8', '2.0'],
                   angle=135,
-                  fontsize=10,                           # Font size of labels
-                  color='darksalmon',                     # Color of the labels
-                  fontweight='bold')                     # Bold labels
+                  fontsize=10,
+                  color='darksalmon',
+                  fontweight='bold')
 
-    # Then customize grid appearance
-    # Enable grid (usually default)
     ax.grid(False)
     ax.yaxis.grid(True, color='darksalmon',
                   linestyle='-', linewidth=1., alpha=0.3)
@@ -728,7 +725,7 @@ def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
     ax.yaxis.set_ticks(radial_ticks)
     ax.yaxis.set_ticklabels(radial_tick_labels)
     ax.yaxis.set_label_position("left")
- 
+
     ax.text(-0.10, 1.0, "Normalized Standard Deviations",
             ha='center', va='top',
             fontsize='medium',
@@ -781,11 +778,6 @@ def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
 
     ax.add_artist(plt.Circle((0, 0), std_ref, transform=ax.transData._b,
                              color='black', fill=False, linestyle='--', linewidth=3))
-    # Defaults for colors/markers
-    if colors is None:
-        colors = plt.cm.tab10.colors
-    if markers is None:
-        markers = ['o'] * len(std_models)
 
     # Store points by (var, data_typ, color, marker)
     point_map = {}
@@ -813,14 +805,14 @@ def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
         if resolution == 'original':
             # Outer black circle
             ax.plot(theta, std, marker='o', color='black', markersize=10,
-                    linestyle='None', markerfacecolor='none')
+                    linestyle='None', markerfacecolor='none', markeredgecolors='none')
             # Inner color marker
-            ax.plot(theta, std, marker=marker, color=color,
-                    linestyle='None', markersize=6)
+            ax.plot(theta, std, marker=marker, markerfacecolor=color,
+                    linestyle='None', markersize=6, markeredgecolors='none')
             point_map[key]['original'] = (theta, std)
         else:
-            ax.plot(theta, std, marker=marker, color=color,
-                    linestyle='None')
+            ax.plot(theta, std, marker=marker, markerfacecolor=color,
+                    linestyle='None', markeredgecolors='none')
             point_map[key]['others'].append((theta, std))
 
     # Draw arrows from circled (original) to same color/marker points with same var/data_typ
