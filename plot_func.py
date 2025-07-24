@@ -274,7 +274,9 @@ def plot_scatter_all(period_label):
     height_ratios = [1, 4]
 
     joint_axes = []
+
     for i, data_typ in enumerate(plot_vars):
+
         # Determine position in grid (row, col)
         row, col = divmod(i, ncols)
 
@@ -303,6 +305,20 @@ def plot_scatter_all(period_label):
         plt.setp(ax_marg_y.get_yticklabels(), visible=False)
 
         tres, tres_tol = tls.get_tres(data_typ)
+        
+        var_data['t']['data_marg_distr'] = {}
+        var_data['t']['data_marg_distr'][tres] = {}
+        var_data['t']['data_marg_distr'][tres][inpt.var] = {}
+        var_data[data_typ]['data_marg_distr'] = {}
+        var_data[data_typ]['data_marg_distr'][tres] = {}
+        var_data[data_typ]['data_marg_distr'][tres][inpt.var] = {}
+
+
+        var_data['t']['data_marg_distr']['tres'] = tres
+        var_data['t']['data_marg_distr']['tres_tol'] = tres_tol
+        var_data[data_typ]['data_marg_distr']['tres'] = tres
+        var_data[data_typ]['data_marg_distr']['tres_tol'] = tres_tol
+        
         x = var_data[ref_x]['data_res'][tres][inpt.var]
         time_range = pd.date_range(
             start=pd.Timestamp(inpt.years[0], 1, 1),
@@ -355,25 +371,16 @@ def plot_scatter_all(period_label):
             )
             quadmesh = h[-1]  # Correct QuadMesh for colorbar
 
-            # Fit
-            if valid_idx.sum() >= 2:
-                calc_draw_fit(joint_axes, i, x_valid, y_valid, inpt.tres,
-                              inpt.all_seasons['all']['col'], data_typ, print_stats=True)
-            else:
-                calc_draw_fit(joint_axes, i, x_valid, y_valid, inpt.tres,
-                              inpt.all_seasons['all']['col'], data_typ, print_stats=False)
-                print("ERROR: Not enough data points for fit.")
-
             # Marginal histograms
-            ax_marg_x.hist(x_valid, bins=bin_edges,
-                           color='orange', alpha=0.5, density=True)
+            var_data['t']['data_marg_distr'][tres][inpt.var], _, _ = ax_marg_x.hist(x_valid, bins=bin_edges,
+                                                                                    color='orange', alpha=0.5, density=True)
             ax_marg_x.set_xlim(ax_joint.get_xlim())
             ax_marg_x.yaxis.set_major_locator(
                 MaxNLocator(nbins=3, prune='both'))
             ax_marg_x.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
 
-            ax_marg_y.hist(y_valid, bins=bin_edges,
-                           orientation='horizontal', color='blue', alpha=0.5, density=True)
+            var_data[data_typ]['data_marg_distr'][tres][inpt.var], _, _ = ax_marg_y.hist(y_valid, bins=bin_edges,
+                                                                                         orientation='horizontal', color='blue', alpha=0.5, density=True)
             ax_marg_y.set_ylim(ax_joint.get_ylim())
             ax_marg_y.xaxis.set_major_locator(
                 MaxNLocator(nbins=3, prune='both'))
@@ -404,10 +411,37 @@ def plot_scatter_all(period_label):
                 ylim=(vmin, vmax),
                 binsize=bin_size
             )
+            
+            # Fit
+            if valid_idx.sum() >= 2:
+                calc_draw_fit(joint_axes, i, x_valid, y_valid, inpt.tres,
+                              inpt.all_seasons['all']['col'], data_typ, print_stats=True)
+            else:
+                calc_draw_fit(joint_axes, i, x_valid, y_valid, inpt.tres,
+                              inpt.all_seasons['all']['col'], data_typ, print_stats=False)
+                print("ERROR: Not enough data points for fit.")
+
     save_path = os.path.join(
         inpt.basefol['out']['base'], inpt.tres, f"{str_name.replace(' ', '_')}.png")
     plt.savefig(save_path, bbox_inches='tight')
     plt.close(fig)
+
+
+def kl_divergence(P, Q, eps=1e-12):
+    """
+    Compute the KL divergence D(P || Q) for discrete probability distributions.
+
+    Parameters:
+        P (list or np.array): True distribution
+        Q (list or np.array): Approximate distribution
+        eps (float): Small constant to avoid log(0)
+
+    Returns:
+        float: KL divergence value
+    """
+    P = np.asarray(P, dtype=np.float64) + eps
+    Q = np.asarray(Q, dtype=np.float64) + eps
+    return np.sum(P * np.log(P / Q))
 
 
 def plot_scatter_seasonal(period_label):
@@ -903,6 +937,10 @@ def calc_draw_fit(axs, i, xxx, yyy, tr, col, data_typ, print_stats=True):
         std_x = inpt.extr[inpt.var][ref_x]['data_stats'][tr]['std_x']
         std_y = inpt.extr[inpt.var][data_typ]['data_stats'][tr]['std_y']
 
+        # How much extra information (in nats) you'd need if you use Q instead of P when P is the truth
+        # KL divergence is zero only when P and Q are identical.
+        KL_bits = inpt.extr[inpt.var][data_typ]['data_stats'][tr]['kl_bits']
+
         def escape_label(label):
             return label.replace('_', r'\_')
 
@@ -914,7 +952,8 @@ def calc_draw_fit(axs, i, xxx, yyy, tr, col, data_typ, print_stats=True):
             f"RMSE = {rmse:.2f}\n"
             f"$\\sigma_{{{escape_label(var_dict[ref_x]['label'])}}} = {std_x:.2f}$\n"
             f"$\\sigma_{{{escape_label(var_dict[data_typ]['label'])}}} = {std_y:.2f}$"
-        )
+            f"$KL_{{bits}} = {KL_bits:.3f}$"
+       )
 
         axs[i].text(0.57, 0.20, stats_text,
                     transform=axs[i].transAxes,
@@ -943,6 +982,19 @@ def calc_stats(x, y, data_typ, tr):
     inpt.extr[inpt.var][data_typ]['data_stats'][tr]['mbe'] = np.nanmean(diff)
     inpt.extr[inpt.var][ref_x]['data_stats'][tr]['std_x'] = np.std(x)
     inpt.extr[inpt.var][data_typ]['data_stats'][tr]['std_y'] = np.std(y)
+    
+    # Normalize to ensure they sum to 1 (optional)
+    var_data=inpt.extr[inpt.var]
+    tres_ref_x = var_data[ref_x]['data_marg_distr']['tres']
+    tres = var_data[data_typ]['data_marg_distr']['tres']
+    P = np.array(var_data[ref_x]['data_marg_distr'][tres_ref_x][inpt.var]) / \
+        np.sum(var_data[ref_x]['data_marg_distr'][tres_ref_x][inpt.var])
+    Q = np.array(var_data[data_typ]['data_marg_distr'][tres][inpt.var]) / \
+        np.sum(var_data[data_typ]['data_marg_distr'][tres][inpt.var])
+
+    # Compute KL divergences
+    inpt.extr[inpt.var][data_typ]['data_stats'][tr]['kl_bits'] = kl_divergence(P, Q)/np.log(2)
+
     return
 
 
