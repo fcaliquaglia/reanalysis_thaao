@@ -36,6 +36,7 @@ from matplotlib.ticker import FormatStrFormatter
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from pyCompare import blandAltman
 from matplotlib.lines import Line2D
+from matplotlib import cm
 
 
 def plot_ts(period_label):
@@ -827,8 +828,34 @@ def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
     # Plot model points
     for i, (std, corr, label) in enumerate(zip(std_models, corr_coeffs, model_labels)):
         theta = np.arccos(corr)
-        color = colors[i % len(colors)]
-        marker = markers[i]
+        # Helper: parse resolution string like "1h", "3h"
+
+        def parse_resolution(res_str):
+            try:
+                return int(res_str.strip('h'))
+            except:
+                return None
+
+        # Map base color name to colormap
+        cmap_lookup = {
+            'red': cm.Reds,
+            'blue': cm.Blues,
+            'green': cm.Greens,
+            'orange': cm.Oranges,
+            'purple': cm.Purples,
+            'gray': cm.Greys,
+            'grey': cm.Greys,
+            'brown': cm.BuGn,   # Or another fallback
+            'cyan': cm.GnBu
+        }
+
+        # --- Inside the for-loop ---
+        # Choose base color
+        base_color_name = colors[i % len(colors)]
+        base_color_lower = base_color_name.lower()
+
+        # Default fallback colormap
+        cmap = cmap_lookup.get(base_color_lower, cm.Greys)
 
         # Parse label: expected format "data_typ (var, resolution)"
         try:
@@ -839,6 +866,21 @@ def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
             var_name = label
             data_typ = None
             resolution = None
+
+        # Assign color based on resolution
+        if data_typ == 'original':
+            # Explicit dark version
+            shade_color = base_color_lower  # or fixed like '#8B0000' for red
+        else:
+            res_hour = parse_resolution(resolution)
+            res_min, res_max = 1, 6
+            res_norm = (res_hour - res_min) / (res_max - res_min)
+            res_norm = np.clip(res_norm, 0, 1)
+            shade_color = cmap(1 - res_norm)  # Darker for finer res
+
+        color = shade_color
+
+        marker = markers[i]
 
         key = (var_name, data_typ, color, marker)
         if key not in point_map:
@@ -857,19 +899,19 @@ def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
                     linestyle='None', markeredgecolor='none')
             point_map[key]['others'].append((theta, std))
 
-    # Draw arrows from circled (original) to same color/marker points with same var/data_typ
-    for key, points in point_map.items():
-        orig = points['original']
-        if orig is not None:
-            for other in points['others']:
-                # Use native polar coordinates for annotation
-                ax.annotate("",
-                            xy=(other[0], other[1]),     # target (theta, r)
-                            xytext=(orig[0], orig[1]),   # start (theta, r)
-                            arrowprops=dict(arrowstyle="->",
-                                            color="gray",
-                                            lw=1),
-                            annotation_clip=False)
+    # # Draw arrows from circled (original) to same color/marker points with same var/data_typ
+    # for key, points in point_map.items():
+    #     orig = points['original']
+    #     if orig is not None:
+    #         for other in points['others']:
+    #             # Use native polar coordinates for annotation
+    #             ax.annotate("",
+    #                         xy=(other[0], other[1]),     # target (theta, r)
+    #                         xytext=(orig[0], orig[1]),   # start (theta, r)
+    #                         arrowprops=dict(arrowstyle="->",
+    #                                         color="gray",
+    #                                         lw=1),
+    #                         annotation_clip=False)
 
     # Variable marker legend
     if var_marker_map:
@@ -897,6 +939,11 @@ def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
         legend2 = ax.legend(handles=model_color_legend, title='Reanalyses',
                             loc='lower right', fontsize='small', title_fontsize='medium')
         ax.add_artist(legend2)
+
+
+def parse_resolution(res_str):
+    """Extract hours from resolution string like '1h', '3h'"""
+    return int(res_str.strip('h')) if res_str.endswith('h') else 1
 
 
 def calc_draw_fit(axs, i, xxx, yyy, tr, col, data_typ, print_stats=True):
