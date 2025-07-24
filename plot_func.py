@@ -805,7 +805,7 @@ def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
         if resolution == 'original':
             # Outer black circle
             ax.plot(theta, std, marker='o', color='black', markersize=10,
-                    linestyle='None', markerfacecolor='none', markeredgecolor='none')
+                    linestyle='None', markerfacecolor='none')
             # Inner color marker
             ax.plot(theta, std, marker=marker, markerfacecolor=color,
                     linestyle='None', markersize=6, markeredgecolor='none')
