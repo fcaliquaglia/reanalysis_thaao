@@ -56,13 +56,13 @@ def plot_ts(period_label):
     n_years = len(inpt.years)
     fig, ax = plt.subplots(n_years, 1, figsize=(12, 17), dpi=inpt.dpi)
     ax = np.atleast_1d(ax)
-    
+
     var_data = inpt.extr[inpt.var]
     comps = var_data['comps']
     ref_x = var_data['ref_x']
     comps_all = comps + [ref_x]
     plot_vars = tls.plot_vars_cleanup(comps_all, var_data)
-    
+
     str_name = f"{inpt.tres} {period_label} ts {inpt.var} {inpt.var_dict[ref_x]['label']} {inpt.years[0]}-{inpt.years[-1]}"
     fig.suptitle(str_name, fontweight='bold')
     fig.subplots_adjust(top=0.93)
@@ -72,7 +72,6 @@ def plot_ts(period_label):
     kwargs_res = {'lw': 0, 'marker': 'o', 'ms': 2, 'markerfacecolor': 'none'}
 
     # Cache frequently used variables
-
 
     for i, year in enumerate(inpt.years):
         print(f"plotting {year}")
@@ -127,17 +126,15 @@ def plot_residuals(period_label):
     n_years = len(inpt.years)
     fig, ax = plt.subplots(n_years, 1, figsize=(12, 17), dpi=inpt.dpi)
     ax = np.atleast_1d(ax)
-    
+
     var_data = inpt.extr[inpt.var]
     comps = var_data['comps']
     ref_x = var_data['ref_x']
     plot_vars = tls.plot_vars_cleanup(comps, var_data)
-    
+
     str_name = f"{inpt.tres} {period_label} residuals_{inpt.var} {inpt.var_dict[ref_x]['label']} {inpt.years[0]}-{inpt.years[-1]}"
     fig.suptitle(str_name, fontweight='bold')
     fig.subplots_adjust(top=0.93)
-
-
 
     for i, year in enumerate(inpt.years):
         print(f"plotting {year}")
@@ -205,12 +202,10 @@ def plot_ba(period_label):
     comps = var_data['comps']
     ref_x = var_data['ref_x']
     plot_vars = tls.plot_vars_cleanup(comps, var_data)
-    
+
     str_name = f"{inpt.tres} {period_label} bland-altman {inpt.var} {inpt.var_dict[ref_x]['label']} {inpt.years[0]}-{inpt.years[-1]}"
     fig.suptitle(str_name, fontweight='bold')
     fig.subplots_adjust(top=0.93)
-
-
 
     frame_and_axis_removal(axs, len(comps))
 
@@ -271,7 +266,7 @@ def plot_scatter_all(period_label):
     comps = var_data['comps']
     ref_x = var_data['ref_x']
     plot_vars = tls.plot_vars_cleanup(comps, var_data)
-    
+
     str_name = f"{inpt.tres} {period_label} scatter {inpt.var} {inpt.var_dict[ref_x]['label']} {inpt.years[0]}-{inpt.years[-1]}"
     fig.suptitle(str_name, fontweight='bold')
     fig.subplots_adjust(top=0.93)
@@ -379,7 +374,7 @@ def plot_scatter_all(period_label):
 
             # Marginal histograms
             var_data[ref_x]['data_marg_distr'][tres][inpt.var], _, _ = ax_marg_x.hist(x_valid, bins=bin_edges,
-                                                                                    color='orange', alpha=0.5, density=True)
+                                                                                      color='orange', alpha=0.5, density=True)
             var_data[data_typ]['data_marg_distr'][tres][inpt.var], _, _ = ax_marg_y.hist(y_valid, bins=bin_edges,
                                                                                          orientation='horizontal', color='blue', alpha=0.5, density=True)
 
@@ -472,7 +467,6 @@ def plot_scatter_seasonal(period_label):
     fig.suptitle(str_name, fontweight='bold')
     fig.subplots_adjust(top=0.93)
 
-
     frame_and_axis_removal(axs, len(comps))
 
     for i, data_typ in enumerate(plot_vars):
@@ -543,7 +537,7 @@ def plot_scatter_cum():
     comps = var_data['comps']
     ref_x = var_data['ref_x']
     plot_vars = tls.plot_vars_cleanup(comps, var_data)
-    
+
     str_name = f"{inpt.tres} all CumSeas scatter {inpt.var} {inpt.var_dict[ref_x]['label']} {inpt.years[0]}-{inpt.years[-1]}"
     fig.suptitle(str_name, fontweight='bold')
     fig.subplots_adjust(top=0.93)
@@ -1000,8 +994,10 @@ def calc_stats(x, y, data_typ, tr):
 
     tres_ref_x = var_data[ref_x]['data_marg_distr']['tres']
     tres = var_data[data_typ]['data_marg_distr']['tres']
-    P = np.array(var_data[ref_x]['data_marg_distr'][tres_ref_x][inpt.var]*var_data['bin_size'])
-    Q = np.array(var_data[data_typ]['data_marg_distr'][tres][inpt.var]*var_data['bin_size'])
+    P = np.array(var_data[ref_x]['data_marg_distr']
+                 [tres_ref_x][inpt.var]*var_data['bin_size'])
+    Q = np.array(var_data[data_typ]['data_marg_distr']
+                 [tres][inpt.var]*var_data['bin_size'])
 
     # Compute KL divergences
     var_data[data_typ]['data_stats'][tr]['kl_bits'] = kl_divergence(

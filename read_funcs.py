@@ -400,18 +400,23 @@ def read_precip():
     # --- CARRA ---
     rd_frea.read_rean(vr, "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
+    var_dict["c"]["data"][vr] = var_dict["c"]["data"][vr].mask(
+        var_dict["c"]["data"][vr] <= inpt.precip_low_thresh, np.nan)
 
     # --- ERA5 ---
     rd_frea.read_rean(vr, "e")
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
     var_dict["e"]["data"][vr] *= 1000
+    var_dict["e"]["data"][vr] = var_dict["e"]["data"][vr].mask(
+        var_dict["e"]["data"][vr] <= inpt.precip_low_thresh, np.nan)
 
     # --- THAAO ---
     if inpt.datasets['THAAO']['switch']:
         rd_ft.read_aws_ecapac(vr)
         var_dict["t2"]["data"], _ = tls.check_empty_df(
             var_dict["t2"]["data"], vr)
-
+    var_dict["t2"]["data"][vr] = var_dict["t2"]["data"][vr].mask(
+        var_dict["t2"]["data"][vr] <= inpt.precip_low_thresh, np.nan)
     return
 
 

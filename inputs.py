@@ -108,7 +108,7 @@ extra_vars = ['orog']
 
 # met_vars + rad_vars  # you can add + cloud_vars if needed
 list_var = rad_vars  + met_vars #  ['orog'] # 
-tres_list = ['original', '24h'] # '3h', '6h', '12h', 
+tres_list = ['original', '24h', '3h', '6h', '12h']
 tres = var = ''
 
 years = np.arange(2016, 2025)
@@ -123,6 +123,9 @@ min_frac = 0.75
 
 # For radiation
 rad_low_thresh = 1e0
+
+# For precipitation
+precip_low_thresh = 1e-3
 
 # ========== DATE RANGES ==========
 dateranges = {
