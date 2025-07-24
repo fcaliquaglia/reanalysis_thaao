@@ -354,7 +354,6 @@ def plot_scatter_all(period_label):
             # Set up bin edges
             bin_edges = np.arange(
                 vmin, vmax+var_data['bin_size'], var_data['bin_size'])
-            bin_size = var_data['bin_size']
             # First draw to compute counts
             counts, _, _, _ = ax_joint.hist2d(
                 x_valid, y_valid,
@@ -423,7 +422,7 @@ def plot_scatter_all(period_label):
                 letter=inpt.letters[i] + ')',
                 xlim=(vmin, vmax),
                 ylim=(vmin, vmax),
-                binsize=bin_size
+                binsize=var_data['bin_size']
             )
 
             # Fit
@@ -967,7 +966,7 @@ def calc_draw_fit(axs, i, xxx, yyy, tr, col, data_typ, print_stats=True):
             f"RMSE = {rmse:.2f}\n"
             f"$\\sigma_{{{escape_label(var_dict[ref_x]['label'])}}} = {std_x:.2f}$\n"
             f"$\\sigma_{{{escape_label(var_dict[data_typ]['label'])}}} = {std_y:.2f}$\n"
-            f"$KL = {KL_bits:.3f} bits$"
+            f"$KL = {KL_bits:.3f}$ bits"
         )
 
         axs[i].text(0.57, 0.20, stats_text,
@@ -999,14 +998,10 @@ def calc_stats(x, y, data_typ, tr):
     var_data[ref_x]['data_stats'][tr]['std_x'] = np.std(x)
     var_data[data_typ]['data_stats'][tr]['std_y'] = np.std(y)
 
-    # Normalize to ensure they sum to 1 (optional)
-
     tres_ref_x = var_data[ref_x]['data_marg_distr']['tres']
     tres = var_data[data_typ]['data_marg_distr']['tres']
-    P = np.array(var_data[ref_x]['data_marg_distr'][tres_ref_x][inpt.var]) / \
-        np.sum(var_data[ref_x]['data_marg_distr'][tres_ref_x][inpt.var])
-    Q = np.array(var_data[data_typ]['data_marg_distr'][tres][inpt.var]) / \
-        np.sum(var_data[data_typ]['data_marg_distr'][tres][inpt.var])
+    P = np.array(var_data[ref_x]['data_marg_distr'][tres_ref_x][inpt.var]*var_data['bin_size'])
+    Q = np.array(var_data[data_typ]['data_marg_distr'][tres][inpt.var]*var_data['bin_size'])
 
     # Compute KL divergences
     var_data[data_typ]['data_stats'][tr]['kl_bits'] = kl_divergence(
