@@ -747,19 +747,13 @@ def read_sw_lw_net():
     # SW_LW_NET
     vr = "sw_lw_net"
     var_dict = inpt.extr[vr]
-    var_dict["c"]["data"] = {}
-    var_dict["e"]["data"] = {}
-    var_dict["t"]["data"] = {}
+    sw_lw_net_c = sw_net_c.combine(lw_net_c, lambda a, b: a if pd.isna(b) else b if pd.isna(a) else a + b)
+    sw_lw_net_e = sw_net_e.combine(lw_net_e, lambda a, b: a if pd.isna(b) else b if pd.isna(a) else a + b)
+    sw_lw_net_t = sw_net_t.combine(lw_net_t, lambda a, b: a if pd.isna(b) else b if pd.isna(a) else a + b)
 
-    sw_net_c = sw_net_c.fillna(0)    
-    lw_net_c = lw_net_c.fillna(0) 
-    sw_net_e = sw_net_e.fillna(0) 
-    lw_net_e = lw_net_e.fillna(0) 
-    sw_net_t = sw_net_t.fillna(0) 
-    lw_net_t = lw_net_t.fillna(0) 
-    var_dict["c"]["data"][vr] = sw_net_c + lw_net_c
-    var_dict["e"]["data"][vr] = sw_net_e + lw_net_e
-    var_dict["t"]["data"][vr] = sw_net_t + lw_net_t
+    var_dict["c"]["data"] = pd.DataFrame(sw_lw_net_c, columns=[vr])
+    var_dict["e"]["data"] = pd.DataFrame(sw_lw_net_e, columns=[vr])
+    var_dict["t"]["data"] = pd.DataFrame(sw_lw_net_t, columns=[vr])
 
     return
 
