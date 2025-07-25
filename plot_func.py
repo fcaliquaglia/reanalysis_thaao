@@ -923,7 +923,7 @@ def calc_draw_fit(axs, i, xxx, yyy, tr, col, data_typ, print_stats=True):
 
     fn = f"{data_typ}_stats_{inpt.var}.csv"
     if print_stats:
-        if os.exists(fn):
+        if os.path.exists(fn):
             pass
             read_stats_from_csv(fn, data_typ, ref_x)
             stats = inpt.extr[inpt.var][data_typ]['data_stats'][tr]
