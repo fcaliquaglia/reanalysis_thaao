@@ -107,8 +107,8 @@ technical_vars = ['windu', 'windv', 'dewpt', 'sw_net', 'lw_net']
 extra_vars = ['orog']
 
 # met_vars + rad_vars  # you can add + cloud_vars if needed
-list_var = ['temp'] # [rad_vars  + met_vars #  ['orog'] # 
-tres_list = ['original', '6h', '12h', '24h']
+list_var = met_vars  + rad_vars #  ['orog'] # 
+tres_list = ['original', '6h', '12h', '18h', '24h']
 tres = var = ''
 
 years = np.arange(2016, 2025)

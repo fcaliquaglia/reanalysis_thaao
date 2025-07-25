@@ -37,6 +37,7 @@ from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from pyCompare import blandAltman
 from matplotlib.lines import Line2D
 from matplotlib import cm
+from matplotlib import colors as mcolors
 import csv
 
 
@@ -358,7 +359,11 @@ def plot_scatter_all(period_label):
                 cmin=1
             )
             pctl = 99
-            vmax_hist = np.percentile(counts[counts > 0], pctl)
+            filtered_counts = counts[counts > 0]
+            if filtered_counts.size == 0:
+                vmax_hist = 1  # or 0, or some safe default value
+            else:
+                vmax_hist = np.percentile(filtered_counts, pctl)
             has_overflow = np.any(counts > vmax_hist)
             extend_opt = 'max' if has_overflow else 'neither'
 
@@ -639,15 +644,61 @@ def plot_scatter_cum():
     plt.close('all')
 
 
-def plot_taylor(var_list):
 
+# def get_shaded_color(base_color, resolution):
+#     """
+#     Returns a shaded version of the base color depending on resolution.
+#     Higher temporal resolution (smaller steps like 1h) → darker.
+#     Coarser resolution (like 6h, 12h) → lighter.
+#     'original' is darkest to highlight it.
+#     """
+#     cmap = cm.get_cmap('Blues') if base_color == 'blue' else cm.get_cmap('Reds')
+
+#     def res_to_norm(res):
+#         if res == 'original':
+#             return 0.0  # darkest
+#         try:
+#             res_hour = int(res.replace('h', ''))
+#             # 1h → 0.2 (dark), 12h → 0.95 (light)
+#             norm_val = max(0.2, min(0.95, 0.2 + (res_hour - 1) / 15))
+#             return norm_val
+#         except:
+#             return 0.5  # fallback gray
+
+#     norm = res_to_norm(resolution)
+#     shaded = cmap(norm)
+#     return shaded[:3]  
+
+
+def get_color_by_resolution(base_color, resolution):
+    blues = ['navy', 'mediumblue', 'royalblue', 'dodgerblue', 'lightblue']
+    reds = ['darkred', 'firebrick', 'crimson', 'red', 'salmon']
+    res_order = ['original', '1h', '2h', '3h', '6h']
+    
+    try:
+        idx = res_order.index(resolution)
+    except ValueError:
+        idx = -1
+    
+    base_color = base_color.lower() if isinstance(base_color, str) else 'gray'
+
+    if base_color == 'blue':
+        return blues[idx] if idx >= 0 else 'lightblue'
+    elif base_color == 'red':
+        return reds[idx] if idx >= 0 else 'salmon'
+    else:
+        return 'gray'
+
+def plot_taylor(var_list):
     if var_list[0] in inpt.met_vars:
         plot_name = 'Weather variables'
-        var_list == inpt.met_vars
+        var_list = inpt.met_vars
         available_markers = ['o', 's', '^', 'D', 'v', 'P', '*']
-    if var_list[0] in inpt.rad_vars:
+    elif var_list[0] in inpt.rad_vars:
         plot_name = 'Radiation variables'
         available_markers = ['X', 'H', '>', '<', '8', 'd']
+    else:
+        raise ValueError("Unknown variable category.")
 
     print(f"Taylor Diagram {plot_name}")
     str_name = f"Taylor Diagram {plot_name} {inpt.years[0]}-{inpt.years[-1]}"
@@ -672,42 +723,34 @@ def plot_taylor(var_list):
 
         for tres in inpt.tres_list:
             for data_typ in plot_vars:
-
+                std_y = var_data[data_typ]['data_stats'][tres]['std_y']
+                std_x = var_data[ref_x]['data_stats'][tres]['std_x']
+                r2 = var_data[data_typ]['data_stats'][tres]['r2']
                 combined_stdrefs.append(1)
-                combined_stds.append(
-                    var_data[data_typ]['data_stats'][tres]['std_y']/var_data[ref_x]['data_stats'][tres]['std_x'])
-                combined_cors.append(
-                    np.sqrt(var_data[data_typ]['data_stats'][tres]['r2']))
+                combined_stds.append(std_y / std_x)
+                combined_cors.append(np.sqrt(r2))
                 combined_labels.append(f"{data_typ} ({var}, {tres})")
-                # Debug print summary
+
                 if data_typ == 'c':
                     color = 'red'
                 elif data_typ == 'e':
                     color = 'blue'
-                elif data_typ == 't2':
-                    color = 'purple'
-                elif data_typ == 't1':
-                    color = 'cyan'
                 else:
-                    color = inpt.var_dict[data_typ]['col'] if data_typ in inpt.var_dict else 'purple'
+                    color = inpt.var_dict.get(
+                        data_typ, {}).get('col', 'purple')
 
                 combined_colors.append(color)
                 combined_markers.append(var_marker_map[var])
-    # Plot
+
     fig = plt.figure(figsize=(12, 10), dpi=inpt.dpi)
     ax = fig.add_subplot(111, polar=True)
-    fig.suptitle(f"{str_name}", fontweight='bold')
+    fig.suptitle(str_name, fontweight='bold')
     fig.subplots_adjust(top=0.93, bottom=0.15)
 
     std_ref = 1.0
-
-    plot_taylor_dia(ax, std_ref,
-                    combined_stds,
-                    combined_cors,
-                    combined_labels,
-                    colors=combined_colors,
-                    markers=combined_markers,
-                    var_marker_map=var_marker_map)
+    plot_taylor_dia(ax, std_ref, combined_stds, combined_cors, combined_labels,
+                    colors=combined_colors, markers=combined_markers,
+                    var_marker_map=var_marker_map, inpt=inpt)
 
     save_path = os.path.join(
         inpt.basefol['out']['base'], f"{str_name.replace(' ', '_')}.png")
@@ -716,237 +759,128 @@ def plot_taylor(var_list):
 
 
 def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
-                    ref_label='REF',
-                    colors=None, markers=None,
+                    ref_label='REF', colors=None, markers=None,
                     var_marker_map=None, inpt=None):
 
     std_models = np.array(std_models)
     corr_coeffs = np.array(corr_coeffs)
     rmax = 2
 
-    # Polar setup
     ax.set_ylim(0, rmax)
-    ax.set_xlim(0, rmax)
     ax.set_theta_direction(1)
     ax.set_theta_zero_location('E')
     ax.set_thetamin(0)
     ax.set_thetamax(90)
 
-    ax.set_rgrids([0.2, 0.4, 0.6, 0.8, 1.2, 1.4, 1.6, 1.8, 2.0],
-                  labels=['0.2', '0.4', '0.6', '0.8', '1.2', '1.4',
-                          '1.6', '1.8', '2.0'],
-                  angle=135,
-                  fontsize=10,
-                  color='darksalmon',
-                  fontweight='bold')
-
-    ax.grid(False)
-    ax.yaxis.grid(True, color='darksalmon',
-                  linestyle='-', linewidth=1., alpha=0.3)
-
-    # Correlation ticks
     corr_values = [1.0, 0.99, 0.95, 0.9, 0.8, 0.7,
                    0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0]
-    # Set theta grids and get text objects
     theta_degrees = np.degrees(np.arccos(corr_values))
-    labels = [f"{c:.2f}" for c in corr_values]
-    ticks, label_texts = ax.set_thetagrids(theta_degrees, labels=labels)
-
+    ticks, label_texts = ax.set_thetagrids(
+        theta_degrees, labels=[f"{c:.2f}" for c in corr_values])
     for label in label_texts:
         label.set_color('darkgoldenrod')
 
-    # Set radial label position (unchanged)
     ax.set_rlabel_position(135)
-
-    # Radial ticks
-    radial_ticks = np.arange(0, rmax+0.2, 0.2)
-    radial_tick_labels = [ref_label if rt ==
-                          1.0 else f"{rt:.2f}" for rt in radial_ticks]
+    radial_ticks = np.arange(0, rmax + 0.2, 0.2)
+    radial_labels = [ref_label if r == 1.0 else f"{r:.2f}" for r in radial_ticks]
     ax.set_yticks(radial_ticks)
-    ax.set_yticklabels(radial_tick_labels)
+    ax.set_yticklabels(radial_labels, fontsize=10, color='black')
 
-    # Sync y-axis (cartesian) ticks for visual reference
-    ax.yaxis.set_ticks(radial_ticks)
-    ax.yaxis.set_ticklabels(radial_tick_labels)
-    ax.yaxis.set_label_position("left")
+    ax.yaxis.grid(True, color='darksalmon',
+                  linestyle='-', linewidth=1., alpha=0.3)
 
     ax.text(-0.10, 1.0, "Normalized Standard Deviations",
-            ha='center', va='top',
-            fontsize='medium',
-            rotation=0)
+            ha='center', va='top', fontsize='medium')
+    ax.text(np.radians(45), rmax + 0.15, "Correlation (R)",
+            rotation=-45, ha='center', va='center', fontsize='medium')
 
-    # Add "Correlation" label following the arc
-    theta_text = np.radians(45)   # 45° angle
-    r_text = rmax + 0.15         # Slightly outside the outer circle
-    ax.text(theta_text, r_text, "Correlation (R)",
-            rotation=-45,         # Negative to follow arc orientation
-            rotation_mode='anchor',
-            ha='center', va='center',
-            fontsize='medium')
-
-    # Correlation grid lines
     for theta in np.radians(theta_degrees):
         ax.plot([theta, theta], [0, rmax], color='darkgoldenrod',
                 linestyle='--', linewidth=0.8, alpha=0.5)
 
-    # Reference std circle + point
-    # Draw concentric dashed arcs centered at the reference point (1, 0)
-
-    rad_tick = np.arange(0.2, rmax + 0.2, 0.2)
-    for rtick in rad_tick:
-
-        # Angles from 0 to 90°
+    for rtick in np.arange(0.2, rmax + 0.2, 0.2):
         angles = np.linspace(-np.pi, np.pi, 300)
-        # Convert polar arc (theta, r) centered at (1,0) to Cartesian
         x_arc = std_ref + rtick * np.cos(angles)
         y_arc = rtick * np.sin(angles)
-
         ax.plot(np.arctan2(y_arc, x_arc), np.sqrt(x_arc**2 + y_arc**2),
-                color='darkgreen', linestyle='--', linewidth=0.7, alpha=0.6, zorder=1,
-                clip_on=True)
-
-        # Label: place along arc at 60° from the center
-        angle_deg = 120
-        angle_rad = np.radians(angle_deg)
-        x_label = std_ref + rtick * np.cos(angle_rad)
-        y_label = rtick * np.sin(angle_rad)
-        r_label = np.sqrt(x_label**2 + y_label**2)
-        theta_label = np.arctan2(y_label, x_label)
-
-        ax.text(theta_label, r_label,
-                f"{rtick:.2f}",
-                ha='center', va='center',
-                fontsize=8, color='darkgreen',
-                backgroundcolor='white',
-                clip_on=True, zorder=5)
+                color='darkgreen', linestyle='--', linewidth=0.7, alpha=0.6)
 
     ax.add_artist(plt.Circle((0, 0), std_ref, transform=ax.transData._b,
                              color='black', fill=False, linestyle='--', linewidth=3))
 
-    # Store points by (var, data_typ, color, marker)
     point_map = {}
 
-    # Plot model points
+    def parse_res(res):
+        return 0 if res == 'original' else int(res.strip('h'))
+
     for i, (std, corr, label) in enumerate(zip(std_models, corr_coeffs, model_labels)):
         theta = np.arccos(corr)
-        # Helper: parse resolution string like "1h", "3h"
-
-        def parse_resolution(res_str):
-            try:
-                return int(res_str.strip('h'))
-            except:
-                return None
-
-        # Map base color name to colormap
-        cmap_lookup = {
-            'red': cm.Reds,
-            'blue': cm.Blues,
-            'green': cm.Greens,
-            'orange': cm.Oranges,
-            'purple': cm.Purples,
-            'gray': cm.Greys,
-            'grey': cm.Greys,
-            'brown': cm.BuGn,   # Or another fallback
-            'cyan': cm.GnBu
-        }
-
-        # --- Inside the for-loop ---
-        # Choose base color
-        base_color_name = colors[i % len(colors)]
-        base_color_lower = base_color_name.lower()
-
-        # Default fallback colormap
-        cmap = cmap_lookup.get(base_color_lower, cm.Greys)
-
-        # Parse label: expected format "data_typ (var, resolution)"
         try:
             data_typ, meta = label.split('(')
             var_name, resolution = [x.strip(' )') for x in meta.split(',')]
             data_typ = data_typ.strip()
         except Exception:
             var_name = label
-            data_typ = None
-            resolution = None
+            data_typ = 'unknown'
+            resolution = 'original'
 
-        # Assign color based on resolution
-        if data_typ == 'original':
-            # Explicit dark version
-            shade_color = base_color_lower  # or fixed like '#8B0000' for red
-        else:
-            res_hour = parse_resolution(
-                resolution) if resolution != 'original' else 0
-            res_min, res_max = 1, 6
-            res_norm = (res_hour - res_min) / (res_max - res_min)
-            res_norm = np.clip(res_norm, 0, 1)
-            shade_color = cmap(1 - res_norm)  # Darker for finer res
-
-        color = shade_color
-
+        key = (var_name, data_typ)
+        color_base = colors[i]
         marker = markers[i]
+        color = get_color_by_resolution(color_base, resolution)
 
-        key = (var_name, data_typ, color, marker)
         if key not in point_map:
             point_map[key] = {'original': None, 'others': []}
 
+        res_hour = parse_res(resolution)
         if resolution == 'original':
-            # Outer black circle
             ax.plot(theta, std, marker='o', color='black', markersize=10,
                     linestyle='None', markerfacecolor='none')
-            # Inner color marker
             ax.plot(theta, std, marker=marker, markerfacecolor=color,
                     linestyle='None', markersize=6, markeredgecolor='none')
-            point_map[key]['original'] = (theta, std)
+            point_map[key]['original'] = (theta, std, res_hour)
         else:
             ax.plot(theta, std, marker=marker, markerfacecolor=color,
                     linestyle='None', markeredgecolor='none')
-            point_map[key]['others'].append((theta, std))
+            point_map[key]['others'].append((theta, std, res_hour))
 
     for key, pts in point_map.items():
-        # Sort points by their numeric resolution (res_hour)
-        sorted_pts = sorted(pts, key=lambda x: x[2])
-        # Connect each consecutive pair with an arrow
-        for i in range(len(sorted_pts) - 1):
-            start = sorted_pts[i]
-            end = sorted_pts[i + 1]
-            ax.annotate("",
-                        xy=(end[0], end[1]),   # target (theta, r)
-                        xytext=(start[0], start[1]),  # start (theta, r)
-                        arrowprops=dict(arrowstyle="->",
-                                        color="gray",
-                                        lw=1),
-                        annotation_clip=False)
+        all_pts = []
+        if pts['original']:
+            all_pts.append(pts['original'])
+        all_pts.extend(pts['others'])
+        # sorted_pts = sorted(all_pts, key=lambda x: x[2])
+        # for i in range(len(sorted_pts) - 1):
+        #     ax.annotate("",
+        #                 xy=(sorted_pts[i+1][0], sorted_pts[i+1][1]),
+        #                 xytext=(sorted_pts[i][0], sorted_pts[i][1]),
+        #                 arrowprops=dict(arrowstyle='->', color='gray', lw=1),
+        #                 annotation_clip=False)
 
-    # Variable marker legend
-    if var_marker_map:
-        legend_elements = [
-            Line2D([], [], color='black', marker=mark,
-                   linestyle='None', label=var)
-            for var, mark in var_marker_map.items()
-        ]
-        legend1 = ax.legend(handles=legend_elements, title='Variables',
-                            loc='upper right', fontsize='small', title_fontsize='medium')
-        ax.add_artist(legend1)
+    # Create first legend handles (variables)
+    legend_elements = [
+        Line2D([], [], color='black', marker=mark,
+               linestyle='None', label=var)
+        for var, mark in var_marker_map.items()
+    ]
 
-    # Model color legend
-    if inpt:
-        model_keys = ['c', 'e']
-        model_color_legend = [
-            Line2D([], [], color=inpt.var_dict[k]['col'], marker='o',
-                   linestyle='None', label=inpt.var_dict[k]['label'])
-            for k in model_keys if k in inpt.var_dict
-        ]
-        model_color_legend.append(Line2D([], [], color='black', marker='o',
-                                         linestyle='None', markerfacecolor='none',
-                                         markersize=10, label='Original resolution'))
+    # Create second legend handles (models)
+    model_keys = ['c', 'e']
+    model_legend = [
+        Line2D([], [], color=inpt.var_dict[k]['col'], marker='o',
+               linestyle='None', label=inpt.var_dict[k]['label'])
+        for k in model_keys if k in inpt.var_dict
+    ]
+    model_legend.append(Line2D([], [], color='black', marker='o',
+                               linestyle='None', markerfacecolor='none',
+                               markersize=10, label='Original resolution'))
 
-        legend2 = ax.legend(handles=model_color_legend, title='Reanalyses',
-                            loc='lower right', fontsize='small', title_fontsize='medium')
-        ax.add_artist(legend2)
+    # Combine handles and labels
+    all_handles = legend_elements + model_legend
+    all_labels = [h.get_label() for h in all_handles]
 
-
-def parse_resolution(res_str):
-    """Extract hours from resolution string like '1h', '3h'"""
-    return int(res_str.strip('h')) if res_str.endswith('h') else 1
+    ax.legend(all_handles, all_labels, loc='upper right',
+              fontsize='small', title_fontsize='medium', title='Legend')
 
 
 def calc_draw_fit(axs, i, xxx, yyy, tr, col, data_typ, print_stats=True):
@@ -999,8 +933,8 @@ def calc_draw_fit(axs, i, xxx, yyy, tr, col, data_typ, print_stats=True):
         # KL divergence is zero only when P and Q are identical.
         KL_bits = inpt.extr[inpt.var][data_typ]['data_stats'][tr]['kl_bits']
 
-        #save_stats(data_typ, ref_x)
-        
+        # save_stats(data_typ, ref_x)
+
         def escape_label(label):
             return label.replace('_', r'\_')
 
@@ -1068,7 +1002,8 @@ def save_stats(data_typ, ref_x, output_name="stats"):
         writer = csv.writer(csvfile)
 
         if write_header:
-            writer.writerow(['Variable', 'Data_Type', 'Resolution', 'R2', 'N', 'RMSE', 'MBE', 'STD_X', 'STD_Y', 'KL_BITS'])
+            writer.writerow(['Variable', 'Data_Type', 'Resolution',
+                            'R2', 'N', 'RMSE', 'MBE', 'STD_X', 'STD_Y', 'KL_BITS'])
 
         for tr, stats in inpt.extr[inpt.var][data_typ]['data_stats'].items():
             try:
@@ -1089,9 +1024,7 @@ def save_stats(data_typ, ref_x, output_name="stats"):
             except KeyError as e:
                 print(f"⚠️ Missing data for {data_typ}, {tr}: {e}")
 
-    
-    
-    
+
 def format_ax(ax, xlabel='', ylabel='', title=None, letter=None,
               xlim=None, ylim=None, identity_line=False,
               fontweight='bold', fontsize='medium', binsize=None):

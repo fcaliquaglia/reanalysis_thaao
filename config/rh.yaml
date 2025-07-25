@@ -1,6 +1,6 @@
 name: rh
 ref_x: t
-min: 0
+min: 20
 max: 100
 res_min: -10
 res_max: 10
