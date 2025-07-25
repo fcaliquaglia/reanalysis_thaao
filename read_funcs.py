@@ -678,8 +678,7 @@ def read_sw_lw_net():
     var_dict = inpt.extr[vr]
     rd_frea.read_rean(vr, "e")
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
-    sw_net_e = var_dict["e"]["data"][vr]
-    sw_net_e /= var_dict["e"]["data"][vr] / pd.Timedelta('1h').total_seconds()
+    sw_net_e = var_dict["e"]["data"][vr] / pd.Timedelta('1h').total_seconds()
     var_dict["e"]["data"][vr] = sw_net_e
 
     # --- ERA5 LW_NET ---
@@ -746,9 +745,6 @@ def read_sw_lw_net():
     # SW_LW_NET
     vr = "sw_lw_net"
     var_dict = inpt.extr[vr]
-    var_dict["t"]["data"], _ = tls.check_empty_df(
-        var_dict["t"]["data"], vr)
-
     var_dict["c"]["data"] = {}
     var_dict["e"]["data"] = {}
     var_dict["t"]["data"] = {}
