@@ -1192,7 +1192,7 @@ def read():
         "rh": read_rh,
         "surf_pres": read_surf_pres,
         "sw_down": read_sw_down,
-        "sw_lw_net": sw_lw_net,
+        "sw_lw_net": read_sw_lw_net,
         "sw_net": read_sw_net,
         "sw_up": read_sw_up,
         "tcc": read_tcc,
