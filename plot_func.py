@@ -670,8 +670,16 @@ def plot_scatter_cum():
 
 
 def get_color_by_resolution(base_color, resolution):
-    blues = ['navy', 'mediumblue', 'royalblue', 'dodgerblue', 'lightblue']
-    reds = ['darkred', 'firebrick', 'crimson', 'red', 'salmon']
+    blues = ['#0000FF',  # Blue
+               '#1E90FF',  # Dodger Blue
+               '#00BFFF',  # Deep Sky Blue
+               '#87CEFA',  # Light Sky Blue
+               '#ADD8E6']  # Light Blue
+    reds = ['#FF0000',   # Red
+                  '#FF4500',   # Orange Red
+                  '#FF6347',   # Tomato
+                  '#F08080',   # Light Coral
+                  '#FFE4E1']   # Misty Rose
     res_order = ['original', '6h', '12h', '24h']
 
     try:
