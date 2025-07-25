@@ -672,7 +672,7 @@ def plot_scatter_cum():
 def get_color_by_resolution(base_color, resolution):
     blues = ['navy', 'mediumblue', 'royalblue', 'dodgerblue', 'lightblue']
     reds = ['darkred', 'firebrick', 'crimson', 'red', 'salmon']
-    res_order = ['original', '1h', '2h', '3h', '6h']
+    res_order = ['original', '6h', '12h', '24h']
 
     try:
         idx = res_order.index(resolution)
