@@ -172,9 +172,7 @@ def get_tres(data_typ, tres=None):
     if tres != 'original':
         return tres, tres
 
-    _vars = {'lw_net', 'sw_net', 'sw_up',
-             'sw_down', 'lw_up', 'lw_down', 'precip'}
-    freq_str = '1h' if inpt.var in _vars else (
+    freq_str = '1h' if inpt.var in inpt._vars else (
         '3h' if data_typ == 'c' else '1h')
 
     freq = pd.Timedelta(freq_str)

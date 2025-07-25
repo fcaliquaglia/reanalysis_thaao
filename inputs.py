@@ -78,6 +78,10 @@ cloud_vars = ['cbh', 'lwp', 'tcc']
 technical_vars = ['windu', 'windv', 'dewpt', 'sw_net', 'lw_net']
 extra_vars = ['orog']
 
+# vars cumulated which requires a specific setup when resampling
+_vars = {'lw_net', 'sw_net', 'sw_up',
+         'sw_down', 'lw_up', 'lw_down', 'sw_lw_net', 'precip'}
+
 # met_vars + rad_vars  # you can add + cloud_vars if needed
 list_var = met_vars + rad_vars  # ['orog'] #
 tres_list = ['original', '6h', '12h', '24h']
