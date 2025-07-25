@@ -701,10 +701,11 @@ def plot_taylor(var_list):
     if var_list[0] in inpt.met_vars:
         plot_name = 'Weather variables'
         var_list = inpt.met_vars
+        inpt.met_vars = var_list.remove('surf_pres')
         available_markers = ['o', 's', '^', 'D', 'v', 'P', '*']
     elif var_list[0] in inpt.rad_vars:
         plot_name = 'Radiation variables'
-        available_markers = ['X', 'H', '>', '<', '8', 'd']
+        available_markers = ['X', 'H', '>', '<', '8', 'd', 's']
     else:
         raise ValueError("Unknown variable category.")
 
