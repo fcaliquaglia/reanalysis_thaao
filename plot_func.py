@@ -703,11 +703,9 @@ def plot_taylor(var_list):
         var_list = inpt.met_vars
         inpt.met_vars = var_list.remove('surf_pres')
         available_markers = ['o', 's', '^', 'D', 'v', 'P', '*']
-    elif var_list[0] in inpt.rad_vars:
+    if var_list[0] in inpt.rad_vars:
         plot_name = 'Radiation variables'
         available_markers = ['X', 'H', '>', '<', '8', 'd', 's']
-    else:
-        raise ValueError("Unknown variable category.")
 
     print(f"Taylor Diagram {plot_name}")
     str_name = f"Taylor Diagram {plot_name} {inpt.years[0]}-{inpt.years[-1]}"
