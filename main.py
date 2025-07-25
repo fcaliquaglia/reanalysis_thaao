@@ -3,15 +3,12 @@
 """
 Main script for reading, processing, and plotting climate reanalysis data.
 
-Authors:
+Author:
     Filippo Cali' Quaglia (filippo.caliquaglia@ingv.it)
-
 Affiliation:
     INGV
-
 License:
     GPL
-
 Version:
     0.1
 """
@@ -30,41 +27,46 @@ import read_funcs as rd_funcs
 import res_func as rs_f
 
 
+def process_variable(var, tres):
+    """Reads, processes, and plots data for a single variable at a given time resolution."""
+    inpt.var = var
+
+    print("\n----------------------------")
+    print(f"Variable:        {var}")
+    print(f"Time Resolution: {tres}")
+    print("----------------------------")
+
+    rd_funcs.read()
+    rs_f.data_resampling(var)
+
+    # Always plot cumulative scatter
+    plt_f.plot_scatter_cum()
+
+    # Additional plots if dropsondes are OFF
+    if not inpt.datasets.get('dropsondes', {}).get('switch', False):
+        plt_f.plot_ts('all')
+        plt_f.plot_residuals('all')
+        plt_f.plot_ba('all')
+        plt_f.plot_scatter_all('all')
+        for season in inpt.seasons:
+            plt_f.plot_scatter_seasonal(season)
+
+
 def main():
-    print(inpt.location, end="\n\n")
+    print(f"\n=== Location: {inpt.location} ===\n")
+
     for tres in inpt.tres_list:
         inpt.tres = tres
-        print("**************")
-        print(f"Processing time resolution: {tres}\n")
-        print("**************")
+        print(f"\n=== Processing Time Resolution: {tres} ===\n")
 
         for var in inpt.list_var:
-            inpt.var = var
-            print("**************")
-            print(f"************** Processing variable: {var}\n")
-            print(f"************** Processing time resolution: {tres}")
-            print("**************")
+            process_variable(var, tres)
 
-            # Read data
-            rd_funcs.read()
-
-            # Resample data (special handling for wind and precipitation)
-            rs_f.data_resampling(inpt.var)
-
-            # Plotting
-            if not inpt.datasets['dropsondes']['switch']:
-                # plt_f.plot_ts('all')
-                # plt_f.plot_residuals('all')
-                # plt_f.plot_ba('all')
-                plt_f.plot_scatter_all('all')
-            #     for season in inpt.seasons:
-            #         plt_f.plot_scatter_seasonal(season)
-
-            # plt_f.plot_scatter_cum()
-
-    # Plotting Taylor Diagrams
-    plt_f.plot_taylor(inpt.met_vars)
-    plt_f.plot_taylor(inpt.rad_vars)
+    # Final Taylor Diagrams
+    if inpt.met_vars:
+        plt_f.plot_taylor(inpt.met_vars)
+    if inpt.rad_vars:
+        plt_f.plot_taylor(inpt.rad_vars)
 
 
 if __name__ == "__main__":
