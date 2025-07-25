@@ -920,8 +920,9 @@ def calc_draw_fit(axs, i, xxx, yyy, tr, col, data_typ, print_stats=True):
     axs[i].plot([var_min, var_max], [var_min, var_max],
                 color='black', lw=1.5, ls='-')
 
+    fn=f"{data_typ}_{output_name}_{inpt.var}.csv"
     if print_stats:
-        calc_stats(xx, yy, data_typ, tr)
+        calc_stats(xx, yy, data_typ, tr, fn)
         r2 = inpt.extr[inpt.var][data_typ]['data_stats'][tr]['r2']
         N = inpt.extr[inpt.var][data_typ]['data_stats'][tr]['N']
         rmse = inpt.extr[inpt.var][data_typ]['data_stats'][tr]['rmse']
@@ -956,7 +957,7 @@ def calc_draw_fit(axs, i, xxx, yyy, tr, col, data_typ, print_stats=True):
                     bbox=dict(facecolor='white', edgecolor='white'))
 
 
-def calc_stats(x, y, data_typ, tr):
+def calc_stats(x, y, data_typ, tr, fn):
     ref_x = inpt.extr[inpt.var]['ref_x']
     corcoeff = np.corrcoef(x, y)[0, 1]
     diff = y-x
@@ -988,14 +989,21 @@ def calc_stats(x, y, data_typ, tr):
     # Compute KL divergences
     var_data[data_typ]['data_stats'][tr]['kl_bits'] = kl_divergence(
         P, Q)/np.log(2)
-
+    save_stats(fn=fn, data_typ, ref_x)
     return
 
+fn=f"{data_typ}_{output_name}_{inpt.var}.csv"
+if os.exists(fn):
+    pass
+    # TODO read_csv
+else:
+    calc_stats(x, y, data_typ, tr, fn)
 
-def save_stats(data_typ, ref_x, output_name="stats"):
+
+def save_stats(fn, data_typ, ref_x):
     out_dir = os.path.join(inpt.basefol['out']['base'], 'scatter_stats')
     os.makedirs(out_dir, exist_ok=True)
-    stats_file = os.path.join(out_dir, f"{output_name}_{inpt.var}.csv")
+    stats_file = os.path.join(out_dir, f"{fn}")
     write_header = not os.path.exists(stats_file)
 
     with open(stats_file, mode='a', newline='') as csvfile:
