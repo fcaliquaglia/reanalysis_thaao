@@ -17,6 +17,35 @@ import inputs as inpt
 import re
 import metpy.calc as mpcalc
 from metpy.units import units
+import yaml
+
+
+def replace_none_with_nan(obj):
+    if isinstance(obj, dict):
+        return {k: replace_none_with_nan(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [replace_none_with_nan(v) for v in obj]
+    return np.nan if obj is None else obj
+
+
+def load_and_process_yaml(path: Path):
+    if not path.exists():
+        print(f'⚠️ Config file not found for variable: {path.stem}')
+        return None
+
+    with open(path, 'r') as f:
+        cfg = yaml.safe_load(f)
+    cfg = replace_none_with_nan(cfg)
+
+    # Replace placeholders in filenames for keys 'c' and 'e'
+    for key in ('c', 'e'):
+        if key in cfg and 'fn' in cfg[key]:
+            cfg[key]['fn'] = (
+                cfg[key]['fn']
+                .replace('thaao_c', 'carra1')
+                .replace('thaao_e', 'era5_NG')
+            )
+    return cfg
 
 
 def check_empty_df(data, vr):
@@ -143,7 +172,8 @@ def get_tres(data_typ, tres=None):
     if tres != 'original':
         return tres, tres
 
-    _vars = {'lw_net', 'sw_net', 'sw_up', 'sw_down', 'lw_up', 'lw_down', 'precip'}
+    _vars = {'lw_net', 'sw_net', 'sw_up',
+             'sw_down', 'lw_up', 'lw_down', 'precip'}
     freq_str = '1h' if inpt.var in _vars else (
         '3h' if data_typ == 'c' else '1h')
 
@@ -151,7 +181,6 @@ def get_tres(data_typ, tres=None):
     tolerance = pd.tseries.frequencies.to_offset(freq / 6).freqstr
 
     return freq_str, tolerance
-
 
 
 def get_common_paths(vr, y, prefix):
@@ -220,7 +249,6 @@ def mask_low_count_intervals(df, data_typ, min_frac):
     df_masked = df.copy()
     df_masked[~group_labels.isin(valid)] = np.nan
     return df_masked
-
 
 
 def process_rean(vr, data_typ, y):

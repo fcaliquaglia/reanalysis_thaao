@@ -39,7 +39,7 @@ from metpy.constants import g
 
 # def read_alb():
 #     """
-#     Reads and processes the input variable data from multiple sources including CARRA, ERA5,
+#     Reads and processes the input variable data from multiple sources including CARRA1, ERA5,
 #     and THAAO. Adjusts the datasets by scaling and cleaning data points
 #     as per defined conditions.
 
@@ -50,7 +50,7 @@ from metpy.constants import g
 #     vr = inpt.var
 #     var_dict = inpt.extr[vr]
 
-#     # --- CARRA ---
+#     # --- CARRA1 ---
 #     rd_frea.read_rean(vr, "c")
 #     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
 #     var_dict["c"]["data"][vr] /= 100.
@@ -100,7 +100,7 @@ from metpy.constants import g
 def read_cbh():
     """
     Reads cloud base height (CBH) data from multiple sources and processes it
-    based on the specified input variable. Supports data from CARRA, ERA5, and THAAO ceilometer.
+    based on the specified input variable. Supports data from CARRA1, ERA5, and THAAO ceilometer.
 
     :raises ValueError: If the specified input variable is invalid or unsupported.
     :return: None
@@ -108,7 +108,7 @@ def read_cbh():
     vr = inpt.var
     var_dict = inpt.extr[vr]
 
-    # --- CARRA ---
+    # --- CARRA1---
     rd_frea.read_rean(vr, "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
 
@@ -128,17 +128,17 @@ def read_cbh():
 def read_iwv():
     """
     Reads integrated water vapor (IWV) data from multiple sources including:
-    CARRA, ERA5, THAAO (VESPA and HATPRO), and radiosonde measurements.
+    CARRA1, ERA5, THAAO (VESPA and HATPRO), and radiosonde measurements.
 
     Each dataset is loaded, cleaned, and converted into a standardized
     pandas DataFrame. Returns data from each source as a list.
 
-    :return: [CARRA, ERA5, VESPA (t), HATPRO (t1), Radiosondes (t2)]
+    :return: [CARRA1, ERA5, VESPA (t), HATPRO (t1), Radiosondes (t2)]
     """
     vr = inpt.var
     var_dict = inpt.extr[vr]
 
-    # --- CARRA ---
+    # --- CARRA1---
     rd_frea.read_rean(vr, "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
 
@@ -168,13 +168,13 @@ def read_iwv():
 
 def read_lwp():
     """
-    Reads cloud liquid water path (LWP) data from CARRA, ERA5, and THAAO1,
+    Reads cloud liquid water path (LWP) data from CARRA1, ERA5, and THAAO1,
     applies cleaning conditions (setting values < 0.01 to NaN), and updates datasets.
     """
     vr = inpt.var
     var_dict = inpt.extr[vr]
 
-    # --- CARRA ---
+    # --- CARRA1---
     rd_frea.read_rean(vr, "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
     var_dict["c"]["data"][vr] *= 1000.
@@ -207,11 +207,11 @@ def read_lwp():
 
 def read_lw_down():
     """
-    Reads and processes longwave downward radiation ("lw_down") data from CARRA, ERA5, and THAAO.
+    Reads and processes longwave downward radiation ("lw_down") data from CARRA1, ERA5, and THAAO.
     Filters out negative values by setting them to NaN, then applies radiation conversion factors.
     """
 
-    # --- CARRA ---
+    # --- CARRA1---
     vr = "lw_down"
     var_dict = inpt.extr[vr]
     rd_frea.read_rean(vr, "c")
@@ -250,13 +250,13 @@ def read_lw_down():
 
 def read_lw_net():
     """
-    Reads and processes longwave upwelling radiation data from multiple sources (CARRA, ERA5, THAAO).
+    Reads and processes longwave upwelling radiation data from multiple sources (CARRA1, ERA5, THAAO).
     Performs unit conversions, calculates upward LW radiation from net/downward components,
     and handles invalid values.
     """
 
-    # both CARRA AND ERA5
-    # --- CARRA ---
+    # both CARRA1 AND ERA5
+    # --- CARRA1 ---
     vr = "lw_net"
     var_dict = inpt.extr[vr]
     rd_frea.read_rean(vr, "c")
@@ -294,26 +294,26 @@ def read_lw_net():
     var_dict = inpt.extr[vr]
     var_dict["t"]["data"], _ = tls.check_empty_df(
         var_dict["t"]["data"], vr)
-    var_dict["t"]["data"][vr] = lw_down-lw_up
+    var_dict["t"]["data"][vr] = lw_down - lw_up
 
     return
 
 
 def read_lw_up():
     """
-    Reads and processes longwave upwelling radiation data from multiple sources (CARRA, ERA5, THAAO).
+    Reads and processes longwave upwelling radiation data from multiple sources (CARRA1, ERA5, THAAO).
     Performs unit conversions, calculates upward LW radiation from net/downward components,
     and handles invalid values.
     """
 
-    # both CARRA AND ERA5
+    # both CARRA1 AND ERA5
     vr = 'lw_down'
     var_dict = inpt.extr[vr]
     read_lw_down()
     lw_down_c = var_dict["c"]["data"][vr]
     lw_down_e = var_dict["e"]["data"][vr]
 
-    # --- CARRA ---
+    # --- CARRA1 ---
     vr = "lw_net"
     var_dict = inpt.extr[vr]
     rd_frea.read_rean(vr, "c")
@@ -377,7 +377,7 @@ def read_orog():
     vr = inpt.var
     var_dict = inpt.extr[vr]
 
-    # --- CARRA ---
+    # --- CARRA1 ---
     rd_frea.read_rean(vr, "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
 
@@ -391,13 +391,13 @@ def read_orog():
 
 def read_precip():
     """
-    Reads and processes precipitation data from CARRA, ERA5, and THAAO2 datasets.
+    Reads and processes precipitation data from CARRA1, ERA5, and THAAO2 datasets.
     Scales ERA5 precipitation from meters to millimeters. Modifies `inpt` in place.
     """
     vr = inpt.var
     var_dict = inpt.extr[vr]
 
-    # --- CARRA ---
+    # --- CARRA1 ---
     rd_frea.read_rean(vr, "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
     var_dict["c"]["data"][vr] = var_dict["c"]["data"][vr].mask(
@@ -422,7 +422,7 @@ def read_precip():
 
 def read_rh():
     """
-    Reads and processes relative humidity data from CARRA, ERA5, and THAAO2 datasets.
+    Reads and processes relative humidity data from CARRA1, ERA5, and THAAO2 datasets.
     If RH is not directly available, it is calculated from temperature and dew point.
 
     :raises KeyError: if data keys are missing.
@@ -431,7 +431,7 @@ def read_rh():
     vr = inpt.var
     var_dict = inpt.extr[vr]
 
-    # --- CARRA ---
+    # --- CARRA1 ---
     rd_frea.read_rean(vr, "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
 
@@ -486,14 +486,14 @@ def read_rh():
 
 def read_surf_pres():
     """
-    Reads surface pressure data from CARRA, ERA5, THAAO, and THAAO2.
+    Reads surface pressure data from CARRA1, ERA5, THAAO, and THAAO2.
     Converts units, filters out invalid data, and handles known corrupted periods.
     Modifies `inpt` in-place.
     """
     vr = inpt.var
     var_dict = inpt.extr[vr]
 
-    # --- CARRA ---
+    # --- CARRA1 ---
     rd_frea.read_rean(vr, "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
     var_dict["c"]["data"][vr] /= 100.
@@ -569,11 +569,11 @@ def read_surf_pres():
 
 def read_sw_down():
     """
-    Reads and processes shortwave downward radiation data from CARRA, ERA5, ERA5-LAND, and THAAO.
+    Reads and processes shortwave downward radiation data from CARRA1, ERA5, ERA5-LAND, and THAAO.
     Negative values are set to NaN, and values are scaled using radiation conversion factors.
     """
 
-    # --- CARRA ---
+    # --- CARRA1 ---
     vr = "sw_down"
     var_dict = inpt.extr[vr]
     rd_frea.read_rean(vr, "c")
@@ -650,15 +650,116 @@ def read_sw_down():
     return
 
 
-def read_sw_net():
+def read_sw_lw_net():
     """
-    Reads and processes shortwave upward radiation data from CARRA, ERA5, ERA5-LAND, and THAAO.
+    Reads and processes shortwave upward radiation data from CARRA1, ERA5, ERA5-LAND, and THAAO.
     Applies unit conversions, calculates upwelling radiation, and filters invalid values.
     Modifies `inpt` in-place.
     """
 
-    # both CARRA AND ERA5
-    # --- CARRA ---
+    # --- CARRA1 SW_NET ---
+    vr = "sw_net"
+    var_dict = inpt.extr[vr]
+    rd_frea.read_rean(vr, "c")
+    var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
+    sw_net_c = var_dict["c"]["data"][vr]
+    sw_net_c /= pd.Timedelta('1h').total_seconds()
+
+    # --- CARRA1 LW_NET ---
+    vr = "lw_net"
+    var_dict = inpt.extr[vr]
+    rd_frea.read_rean(vr, "c")
+    var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
+    lw_net_c = var_dict["c"]["data"][vr]
+    lw_net_c /= pd.Timedelta('1h').total_seconds()
+
+    # --- ERA5 SW_NET ---
+    vr = "sw_net"
+    var_dict = inpt.extr[vr]
+    rd_frea.read_rean(vr, "e")
+    var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
+    sw_net_e = var_dict["e"]["data"][vr]
+    sw_net_e /= pd.Timedelta('1h').total_seconds()
+
+    # --- ERA5 LW_ NET ---
+    vr = "lw_net"
+    var_dict = inpt.extr[vr]
+    rd_frea.read_rean(vr, "e")
+    var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
+    lw_net_e = var_dict["e"]["data"][vr]
+    lw_net_e /= pd.Timedelta('1h').total_seconds()
+
+    # --- THAAO SW_NET ---
+    vr = "sw_up"
+    var_dict = inpt.extr[vr]
+    if inpt.datasets['THAAO']['switch']:
+        rd_ft.read_rad(vr)
+        var_dict["t"]["data"], _ = tls.check_empty_df(
+            var_dict["t"]["data"], vr)
+        sw_up_t = var_dict["t"]["data"][vr].mask(
+            var_dict["t"]["data"][vr] < inpt.rad_low_thresh, np.nan)
+        var_dict["t"]["data"][vr] = sw_up_t
+
+    vr = "sw_down"
+    var_dict = inpt.extr[vr]
+    if inpt.datasets['THAAO']['switch']:
+        rd_ft.read_rad(vr)
+        var_dict["t"]["data"], _ = tls.check_empty_df(
+            var_dict["t"]["data"], vr)
+        sw_down_t = var_dict["t"]["data"][vr].mask(
+            var_dict["t"]["data"][vr] < inpt.rad_low_thresh, np.nan)
+        var_dict["t"]["data"][vr] = sw_down_t
+
+    vr = "sw_net"
+    var_dict = inpt.extr[vr]
+    var_dict["t"]["data"], _ = tls.check_empty_df(
+        var_dict["t"]["data"], vr)
+    sw_net_t = sw_down_t - sw_up_t
+    var_dict["t"]["data"][vr] = sw_net_t
+
+    # --- THAAO LW_NET ---
+    vr = "lw_up"
+    var_dict = inpt.extr[vr]
+    if inpt.datasets['THAAO']['switch']:
+        rd_ft.read_rad(vr)
+        var_dict["t"]["data"], _ = tls.check_empty_df(
+            var_dict["t"]["data"], vr)
+        lw_up_t = var_dict["t"]["data"][vr]
+        var_dict["t"]["data"][vr] = lw_up_t
+
+    vr = "lw_down"
+    var_dict = inpt.extr[vr]
+    if inpt.datasets['THAAO']['switch']:
+        rd_ft.read_rad(vr)
+        var_dict["t"]["data"], _ = tls.check_empty_df(
+            var_dict["t"]["data"], vr)
+        lw_down_t = var_dict["t"]["data"][vr]
+
+    vr = "lw_net"
+    var_dict = inpt.extr[vr]
+    var_dict["t"]["data"], _ = tls.check_empty_df(
+        var_dict["t"]["data"], vr)
+    lw_net_t = lw_down_t - lw_up_t
+    var_dict["t"]["data"][vr] = lw_net_t
+
+    # SW_LW_NET
+    vr = inpt.var
+    var_dict["c"]["data"][vr] = sw_net_c + lw_net_c
+    var_dict["e"]["data"][vr] = sw_net_e + lw_net_e
+    var_dict["t"]["data"][vr] = sw_net_t + lw_net_t
+
+    return
+
+
+def read_sw_net():
+    """
+    Reads and processes shortwave upward radiation data from CARRA1, ERA5, ERA5-LAND, and THAAO.
+    Applies unit conversions, calculates upwelling radiation, and filters invalid values.
+    Modifies `inpt` in-place.
+    """
+
+    # both CARRA1 AND ERA5
+    # --- CARRA1 ---
     vr = "sw_net"
     var_dict = inpt.extr[vr]
     rd_frea.read_rean(vr, "c")
@@ -699,7 +800,8 @@ def read_sw_net():
     var_dict = inpt.extr[vr]
     var_dict["t"]["data"], _ = tls.check_empty_df(
         var_dict["t"]["data"], vr)
-    var_dict["t"]["data"][vr] = sw_down_t-sw_up_t
+    sw_net_t = sw_down_t - sw_up_t
+    var_dict["t"]["data"][vr] = sw_net_t
 
     # # --- Sigma-A ---
     # if inpt.datasets['Sigma-A']['switch']:
@@ -733,19 +835,19 @@ def read_sw_net():
 
 def read_sw_up():
     """
-    Reads and processes shortwave upward radiation data from CARRA, ERA5, ERA5-LAND, and THAAO.
+    Reads and processes shortwave upward radiation data from CARRA1, ERA5, ERA5-LAND, and THAAO.
     Applies unit conversions, calculates upwelling radiation, and filters invalid values.
     Modifies `inpt` in-place.
     """
 
-    # both CARRA AND ERA5
+    # both CARRA1 AND ERA5
     vr = 'sw_down'
     var_dict = inpt.extr[vr]
     read_sw_down()
     sw_down_c = var_dict["c"]["data"][vr]
     sw_down_e = var_dict["e"]["data"][vr]
 
-    # --- CARRA ---
+    # --- CARRA1 ---
     vr = "sw_net"
     var_dict = inpt.extr[vr]
     rd_frea.read_rean(vr, "c")
@@ -820,10 +922,10 @@ def read_sw_up():
 
 def read_tcc():
     """
-    Reads data from multiple sources (CARRA, ERA5, and THAAO ceilometer) and processes them accordingly.
+    Reads data from multiple sources (CARRA1, ERA5, and THAAO ceilometer) and processes them accordingly.
 
     This function performs the following:
-    - Reads data from the CARRA dataset.
+    - Reads data from the CARRA1 dataset.
     - Reads data from the ERA5 dataset and processes this data by scaling certain values.
     - Reads data from the THAAO ceilometer dataset.
     Finally, the function does not return any data as it modifies `inpt` directly.
@@ -833,7 +935,7 @@ def read_tcc():
     vr = inpt.var
     var_dict = inpt.extr[vr]
 
-    # --- CARRA ---
+    # --- CARRA1 ---
     rd_frea.read_rean(vr, "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"])
 
@@ -855,7 +957,7 @@ def read_temp():
     """
     Transforms temperature data from various datasets to Celsius and retrieves
     reformatted sources into a structured container. The function processes data
-    from the CARRA, ERA5, ERA5-LAND, THAAO, and THAAO2 datasets, converting values
+    from the CARRA1, ERA5, ERA5-LAND, THAAO, and THAAO2 datasets, converting values
     from Kelvin to Celsius for consistency.
 
     :return: None
@@ -863,7 +965,7 @@ def read_temp():
     vr = inpt.var
     var_dict = inpt.extr[vr]
 
-    # --- CARRA ---
+    # --- CARRA1 ---
     rd_frea.read_rean(vr, "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
     var_dict["c"]["data"][vr] -= 273.15
@@ -950,7 +1052,7 @@ def read_temp():
 def read_wind():
     """
     Calculates and populates wind speed and direction data from different
-    data sources, including CARRA, ERA5, ERA5-LAND (currently deactivated),
+    data sources, including CARRA1, ERA5, ERA5-LAND (currently deactivated),
     and AWS ECAPAC. The method reads data, computes wind speed and direction,
     and stores the processed results back into the `inpt` structure.
 
@@ -972,7 +1074,7 @@ def read_wind():
     :rtype: None
     """
 
-    # --- CARRA ---
+    # --- CARRA1 ---
     vr = "winds"
     var_dict = inpt.extr[vr]
     rd_frea.read_rean(vr, "c")
@@ -1090,6 +1192,7 @@ def read():
         "rh": read_rh,
         "surf_pres": read_surf_pres,
         "sw_down": read_sw_down,
+        "sw_lw_net": sw_lw_net,
         "sw_net": read_sw_net,
         "sw_up": read_sw_up,
         "tcc": read_tcc,

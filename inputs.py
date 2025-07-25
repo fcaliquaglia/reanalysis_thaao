@@ -18,35 +18,7 @@ from pathlib import Path
 import matplotlib.dates as mdates
 import numpy as np
 import pandas as pd
-import yaml
-
-
-def replace_none_with_nan(obj):
-    if isinstance(obj, dict):
-        return {k: replace_none_with_nan(v) for k, v in obj.items()}
-    if isinstance(obj, list):
-        return [replace_none_with_nan(v) for v in obj]
-    return np.nan if obj is None else obj
-
-
-def load_and_process_yaml(path: Path):
-    if not path.exists():
-        print(f'⚠️ Config file not found for variable: {path.stem}')
-        return None
-
-    with open(path, 'r') as f:
-        cfg = yaml.safe_load(f)
-    cfg = replace_none_with_nan(cfg)
-
-    # Replace placeholders in filenames for keys 'c' and 'e'
-    for key in ('c', 'e'):
-        if key in cfg and 'fn' in cfg[key]:
-            cfg[key]['fn'] = (
-                cfg[key]['fn']
-                .replace('thaao_c', 'carra1')
-                .replace('thaao_e', 'era5_NG')
-            )
-    return cfg
+import tools as tls
 
 
 # ========== CONFIGURATION ==========
@@ -101,20 +73,20 @@ location = next((info['fn']
 thaao_c, thaao_e, thaao_t = 'carra1', 'era5_NG', 'thaao'
 
 met_vars = ['temp', 'surf_pres', 'rh', 'iwv', 'windd', 'winds', 'precip']
-rad_vars = ['sw_net', 'lw_net', 'sw_up', 'lw_up', 'lw_down', 'sw_down']
+rad_vars = ['sw_lw_net', 'sw_net', 'lw_net', 'sw_up', 'lw_up', 'lw_down', 'sw_down']
 cloud_vars = ['cbh', 'lwp', 'tcc']
 technical_vars = ['windu', 'windv', 'dewpt', 'sw_net', 'lw_net']
 extra_vars = ['orog']
 
 # met_vars + rad_vars  # you can add + cloud_vars if needed
-list_var = met_vars  + rad_vars #  ['orog'] # 
+list_var = met_vars + rad_vars  # ['orog'] #
 tres_list = ['original', '6h', '12h', '24h']
 tres = var = ''
 
 years = np.arange(2016, 2025)
 
 # ========== RESAMPLING THRESHOLD ==========
-# we require at least 75% of the values at the native resolution 
+# we require at least 75% of the values at the native resolution
 # (1h ERA5, 3h CARRA, 1min ECAPAC, 15min HATPRO, 20 min fro meteo VESPA)
 # in the resampling interval to be valid for avaraging.
 
@@ -136,7 +108,7 @@ dateranges = {
 }
 
 # ========== SEASONAL SETTINGS ==========
-all_seasons={'all': {'months': list(range(1, 13)), 'col': 'pink'}}
+all_seasons = {'all': {'months': list(range(1, 13)), 'col': 'pink'}}
 seasons = {
     'DJF': {'months': [12, 1, 2], 'col': 'blue'},
     'MAM': {'months': [3, 4, 5], 'col': 'green'},
@@ -164,6 +136,6 @@ config_dir = Path('config')
 extr = {}
 
 for var_name in met_vars + rad_vars + cloud_vars + technical_vars + extra_vars:
-    cfg = load_and_process_yaml(config_dir / f'{var_name}.yaml')
+    cfg = tls.load_and_process_yaml(config_dir / f'{var_name}.yaml')
     if cfg is not None:
         extr[var_name] = cfg
