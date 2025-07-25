@@ -700,8 +700,7 @@ def get_color_by_resolution(base_color, resolution):
 def plot_taylor(var_list):
     if var_list[0] in inpt.met_vars:
         plot_name = 'Weather variables'
-        var_list = inpt.met_vars
-        inpt.met_vars = var_list.remove('surf_pres')
+        inpt.met_vars.remove('surf_pres')
         available_markers = ['o', 's', '^', 'D', 'v', 'P', '*']
     if var_list[0] in inpt.rad_vars:
         plot_name = 'Radiation variables'
