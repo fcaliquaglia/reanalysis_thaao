@@ -83,7 +83,7 @@ _vars = {'lw_net', 'sw_net', 'sw_up',
          'sw_down', 'lw_up', 'lw_down', 'sw_lw_net', 'precip'}
 
 # met_vars + rad_vars  # you can add + cloud_vars if needed
-list_var = met_vars + rad_vars  # ['orog'] #
+list_var = rad_vars + met_vars  # ['orog'] #
 tres_list = ['original', '6h', '12h', '24h']
 tres = var = ''
 

@@ -743,7 +743,8 @@ def read_sw_lw_net():
     var_dict["t"]["data"][vr] = lw_net_t
 
     # SW_LW_NET
-    vr = inpt.var
+    vr = "sw_lw_net"
+    var_dict = inpt.extr[vr]
     var_dict["c"]["data"][vr] = sw_net_c + lw_net_c
     var_dict["e"]["data"][vr] = sw_net_e + lw_net_e
     var_dict["t"]["data"][vr] = sw_net_t + lw_net_t
