@@ -925,7 +925,16 @@ def calc_draw_fit(axs, i, xxx, yyy, tr, col, data_typ, print_stats=True):
     if print_stats:
         if os.exists(fn):
             pass
-            # TODO read_csv
+            read_stats_from_csv(fn, data_typ, ref_x)
+            stats = inpt.extr[inpt.var][data_typ]['data_stats'][tr]
+            ref_stats = inpt.extr[inpt.var][ref_x]['data_stats'][tr]
+            r2 = stats['r2']
+            N = stats['N']
+            rmse = stats['rmse']
+            mbe = stats['mbe']
+            std_x = ref_stats['std_x']
+            std_y = stats['std_y']
+            KL_bits = stats['kl_bits']
         else:
             r2, N, rmse, mbe, std_x, std_y, KL_bits = calc_stats(
                 xx, yy, data_typ, tr, fn)
@@ -949,6 +958,38 @@ def calc_draw_fit(axs, i, xxx, yyy, tr, col, data_typ, print_stats=True):
                     fontsize=10, color='black',
                     ha='left', va='center',
                     bbox=dict(facecolor='white', edgecolor='white'))
+
+def read_stats_from_csv(fn, data_typ, ref_x):
+    stats_path = os.path.join(inpt.basefol['out']['base'], 'scatter_stats', fn)
+
+    if not os.path.exists(stats_path):
+        print(f"⚠️ Stats file not found: {stats_path}")
+        return
+
+    with open(stats_path, mode='r', newline='') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            var = row['Variable']
+            tr = row['Resolution']
+
+            # Initialize nested structure if it doesn't exist
+            for key in [data_typ, ref_x]:
+                if 'data_stats' not in inpt.extr[var][key]:
+                    inpt.extr[var][key]['data_stats'] = {}
+                if tr not in inpt.extr[var][key]['data_stats']:
+                    inpt.extr[var][key]['data_stats'][tr] = {}
+
+            # Assign stats
+            inpt.extr[var][data_typ]['data_stats'][tr]['r2'] = float(row['r2'])
+            inpt.extr[var][data_typ]['data_stats'][tr]['N'] = int(row['N'])
+            inpt.extr[var][data_typ]['data_stats'][tr]['rmse'] = float(row['rmse'])
+            inpt.extr[var][data_typ]['data_stats'][tr]['mbe'] = float(row['mbe'])
+            inpt.extr[var][data_typ]['data_stats'][tr]['std_y'] = float(row['std_y'])
+            inpt.extr[var][data_typ]['data_stats'][tr]['kl_bits'] = float(row['KL_bits'])
+
+            inpt.extr[var][ref_x]['data_stats'][tr]['std_x'] = float(row['std_x'])
+
+    print(f"✅ Stats loaded from {stats_path}")
 
 
 def calc_stats(x, y, data_typ, tr, fn):
@@ -999,7 +1040,7 @@ def save_stats(fn, data_typ, ref_x):
 
         if write_header:
             writer.writerow(['Variable', 'Data_Type', 'Resolution',
-                            'R2', 'N', 'RMSE', 'MBE', 'STD_X', 'STD_Y', 'KL_BITS'])
+                            'r2', 'N', 'rmse', 'mbe', 'std_x', 'std_y', 'KL_bits'])
 
         for tr, stats in inpt.extr[inpt.var][data_typ]['data_stats'].items():
             try:
