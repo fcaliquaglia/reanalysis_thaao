@@ -644,7 +644,6 @@ def plot_scatter_cum():
     plt.close('all')
 
 
-
 # def get_shaded_color(base_color, resolution):
 #     """
 #     Returns a shaded version of the base color depending on resolution.
@@ -667,19 +666,19 @@ def plot_scatter_cum():
 
 #     norm = res_to_norm(resolution)
 #     shaded = cmap(norm)
-#     return shaded[:3]  
+#     return shaded[:3]
 
 
 def get_color_by_resolution(base_color, resolution):
     blues = ['navy', 'mediumblue', 'royalblue', 'dodgerblue', 'lightblue']
     reds = ['darkred', 'firebrick', 'crimson', 'red', 'salmon']
     res_order = ['original', '1h', '2h', '3h', '6h']
-    
+
     try:
         idx = res_order.index(resolution)
     except ValueError:
         idx = -1
-    
+
     base_color = base_color.lower() if isinstance(base_color, str) else 'gray'
 
     if base_color == 'blue':
@@ -688,6 +687,7 @@ def get_color_by_resolution(base_color, resolution):
         return reds[idx] if idx >= 0 else 'salmon'
     else:
         return 'gray'
+
 
 def plot_taylor(var_list):
     if var_list[0] in inpt.met_vars:
@@ -782,7 +782,8 @@ def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
 
     ax.set_rlabel_position(135)
     radial_ticks = np.arange(0, rmax + 0.2, 0.2)
-    radial_labels = [ref_label if r == 1.0 else f"{r:.2f}" for r in radial_ticks]
+    radial_labels = [ref_label if r ==
+                     1.0 else f"{r:.2f}" for r in radial_ticks]
     ax.set_yticks(radial_ticks)
     ax.set_yticklabels(radial_labels, fontsize=10, color='black')
 
@@ -920,21 +921,14 @@ def calc_draw_fit(axs, i, xxx, yyy, tr, col, data_typ, print_stats=True):
     axs[i].plot([var_min, var_max], [var_min, var_max],
                 color='black', lw=1.5, ls='-')
 
-    fn=f"{data_typ}_{output_name}_{inpt.var}.csv"
+    fn = f"{data_typ}_stats_{inpt.var}.csv"
     if print_stats:
-        calc_stats(xx, yy, data_typ, tr, fn)
-        r2 = inpt.extr[inpt.var][data_typ]['data_stats'][tr]['r2']
-        N = inpt.extr[inpt.var][data_typ]['data_stats'][tr]['N']
-        rmse = inpt.extr[inpt.var][data_typ]['data_stats'][tr]['rmse']
-        mbe = inpt.extr[inpt.var][data_typ]['data_stats'][tr]['mbe']
-        std_x = inpt.extr[inpt.var][ref_x]['data_stats'][tr]['std_x']
-        std_y = inpt.extr[inpt.var][data_typ]['data_stats'][tr]['std_y']
-
-        # How much extra information (in nats) you'd need if you use Q instead of P when P is the truth
-        # KL divergence is zero only when P and Q are identical.
-        KL_bits = inpt.extr[inpt.var][data_typ]['data_stats'][tr]['kl_bits']
-
-        # save_stats(data_typ, ref_x)
+        if os.exists(fn):
+            pass
+            # TODO read_csv
+        else:
+            r2, N, rmse, mbe, std_x, std_y, KL_bits = calc_stats(
+                xx, yy, data_typ, tr, fn)
 
         def escape_label(label):
             return label.replace('_', r'\_')
@@ -989,15 +983,9 @@ def calc_stats(x, y, data_typ, tr, fn):
     # Compute KL divergences
     var_data[data_typ]['data_stats'][tr]['kl_bits'] = kl_divergence(
         P, Q)/np.log(2)
-    save_stats(fn=fn, data_typ, ref_x)
-    return
+    save_stats(fn, data_typ, ref_x)
 
-fn=f"{data_typ}_{output_name}_{inpt.var}.csv"
-if os.exists(fn):
-    pass
-    # TODO read_csv
-else:
-    calc_stats(x, y, data_typ, tr, fn)
+    return (inpt.extr[inpt.var][data_typ]['data_stats'][tr]['r2'], inpt.extr[inpt.var][data_typ]['data_stats'][tr]['N'], inpt.extr[inpt.var][data_typ]['data_stats'][tr]['rmse'], inpt.extr[inpt.var][data_typ]['data_stats'][tr]['mbe'], inpt.extr[inpt.var][ref_x]['data_stats'][tr]['std_x'],  inpt.extr[inpt.var][data_typ]['data_stats'][tr]['std_y'], inpt.extr[inpt.var][data_typ]['data_stats'][tr]['kl_bits'])
 
 
 def save_stats(fn, data_typ, ref_x):
