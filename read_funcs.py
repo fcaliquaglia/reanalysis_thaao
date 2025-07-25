@@ -662,16 +662,16 @@ def read_sw_lw_net():
     var_dict = inpt.extr[vr]
     rd_frea.read_rean(vr, "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
-    sw_net_c = var_dict["c"]["data"][vr]
-    sw_net_c /= pd.Timedelta('1h').total_seconds()
+    sw_net_c = var_dict["c"]["data"][vr] / pd.Timedelta('1h').total_seconds()
+    var_dict["c"]["data"][vr] = sw_net_c
 
     # --- CARRA1 LW_NET ---
     vr = "lw_net"
     var_dict = inpt.extr[vr]
     rd_frea.read_rean(vr, "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
-    lw_net_c = var_dict["c"]["data"][vr]
-    lw_net_c /= pd.Timedelta('1h').total_seconds()
+    lw_net_c = var_dict["c"]["data"][vr] / pd.Timedelta('1h').total_seconds()
+    var_dict["c"]["data"][vr] = lw_net_c
 
     # --- ERA5 SW_NET ---
     vr = "sw_net"
@@ -679,15 +679,16 @@ def read_sw_lw_net():
     rd_frea.read_rean(vr, "e")
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
     sw_net_e = var_dict["e"]["data"][vr]
-    sw_net_e /= pd.Timedelta('1h').total_seconds()
+    sw_net_e /= var_dict["e"]["data"][vr] / pd.Timedelta('1h').total_seconds()
+    var_dict["e"]["data"][vr] = sw_net_e
 
-    # --- ERA5 LW_ NET ---
+    # --- ERA5 LW_NET ---
     vr = "lw_net"
     var_dict = inpt.extr[vr]
     rd_frea.read_rean(vr, "e")
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
-    lw_net_e = var_dict["e"]["data"][vr]
-    lw_net_e /= pd.Timedelta('1h').total_seconds()
+    lw_net_e = var_dict["e"]["data"][vr] / pd.Timedelta('1h').total_seconds()
+    var_dict["e"]["data"][vr] = lw_net_e
 
     # --- THAAO SW_NET ---
     vr = "sw_up"
@@ -747,8 +748,13 @@ def read_sw_lw_net():
     var_dict = inpt.extr[vr]
     var_dict["t"]["data"], _ = tls.check_empty_df(
         var_dict["t"]["data"], vr)
-    var_dict["t"]["data"][vr] = sw_net_c + lw_net_c
-    var_dict["t"]["data"][vr] = sw_net_e + lw_net_e
+
+    var_dict["c"]["data"] = {}
+    var_dict["e"]["data"] = {}
+    var_dict["t"]["data"] = {}
+
+    var_dict["c"]["data"][vr] = sw_net_c + lw_net_c
+    var_dict["e"]["data"][vr] = sw_net_e + lw_net_e
     var_dict["t"]["data"][vr] = sw_net_t + lw_net_t
 
     return
