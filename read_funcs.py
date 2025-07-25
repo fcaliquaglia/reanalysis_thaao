@@ -663,6 +663,7 @@ def read_sw_lw_net():
     rd_frea.read_rean(vr, "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
     sw_net_c = var_dict["c"]["data"][vr] / pd.Timedelta('1h').total_seconds()
+    sw_net_c = sw_net_c.mask(sw_net_c < inpt.rad_low_thresh, np.nan)
     var_dict["c"]["data"][vr] = sw_net_c
 
     # --- CARRA1 LW_NET ---
@@ -679,6 +680,7 @@ def read_sw_lw_net():
     rd_frea.read_rean(vr, "e")
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
     sw_net_e = var_dict["e"]["data"][vr] / pd.Timedelta('1h').total_seconds()
+    sw_net_e = sw_net_e.mask(sw_net_e < inpt.rad_low_thresh, np.nan)
     var_dict["e"]["data"][vr] = sw_net_e
 
     # --- ERA5 LW_NET ---
@@ -749,6 +751,12 @@ def read_sw_lw_net():
     var_dict["e"]["data"] = {}
     var_dict["t"]["data"] = {}
 
+    sw_net_c = sw_net_c.fillna(0)    
+    lw_net_c = lw_net_c.fillna(0) 
+    sw_net_e = sw_net_e.fillna(0) 
+    lw_net_e = lw_net_e.fillna(0) 
+    sw_net_t = sw_net_t.fillna(0) 
+    lw_net_t = lw_net_t.fillna(0) 
     var_dict["c"]["data"][vr] = sw_net_c + lw_net_c
     var_dict["e"]["data"][vr] = sw_net_e + lw_net_e
     var_dict["t"]["data"][vr] = sw_net_t + lw_net_t
