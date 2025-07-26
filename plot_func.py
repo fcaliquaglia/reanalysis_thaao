@@ -28,7 +28,7 @@ import numpy as np
 import pandas as pd
 
 import inputs as inpt
-import plot_tools as plt_tools
+import plot_tools as plt_tls
 import tools as tls
 from matplotlib.gridspec import GridSpec
 from matplotlib.ticker import MaxNLocator
@@ -103,7 +103,7 @@ def plot_ts(period_label):
                            label=inpt.var_dict[data_typ]['label'], **kwargs_res)
 
         # Format the subplot axes (assuming this function is defined elsewhere)
-        tls.format_ts(ax, year, i)
+        plt_tls.format_ts(ax, year, i)
 
     plt.xlabel('Time')
     plt.legend(ncol=2)
@@ -177,7 +177,7 @@ def plot_residuals(period_label):
                 markerline.set_markersize(1)
 
         # Format axis
-        plt_tools.format_ts(ax, year, i, residuals=True)
+        plt_tls.format_ts(ax, year, i, residuals=True)
 
     plt.xlabel('Time')
     plt.legend(ncols=2)
@@ -208,7 +208,7 @@ def plot_ba(period_label):
     fig.suptitle(str_name, fontweight='bold')
     fig.subplots_adjust(top=0.93)
 
-    plt_tools.frame_and_axis_removal(axs, len(comps))
+    plt_tls.frame_and_axis_removal(axs, len(comps))
 
     for i, data_typ in enumerate(plot_vars):
         tres, tres_tol = tls.get_tres(data_typ)
@@ -242,7 +242,7 @@ def plot_ba(period_label):
             confidenceIntervalMethod='approximate', detrend=None,
             percentage=perc, pointColour='blue')
 
-        plt_tools.format_ba(axs, data_typ, i)
+        plt_tls.format_ba(axs, data_typ, i)
 
     if perc:
         save_path = os.path.join(
@@ -415,7 +415,7 @@ def plot_scatter_all(period_label):
             cbar.ax.xaxis.set_ticks_position('bottom')
             cbar.ax.xaxis.set_label_position('bottom')
 
-            plt_tools.format_hist2d(
+            plt_tls.format_hist2d(
                 ax_joint,
                 xlabel=inpt.var_dict[ref_x]['label'],
                 ylabel=inpt.var_dict[data_typ]['label'],
@@ -427,10 +427,10 @@ def plot_scatter_all(period_label):
 
             # Fit
             if valid_idx.sum() >= 2:
-                plt_tools.calc_draw_fit(joint_axes, i, x_valid, y_valid, inpt.tres,
+                plt_tls.calc_draw_fit(joint_axes, i, x_valid, y_valid, inpt.tres,
                               inpt.all_seasons['all']['col'], data_typ, print_stats=True)
             else:
-                plt_tools.calc_draw_fit(joint_axes, i, x_valid, y_valid, inpt.tres,
+                plt_tls.calc_draw_fit(joint_axes, i, x_valid, y_valid, inpt.tres,
                               inpt.all_seasons['all']['col'], data_typ, print_stats=True)
                 print("ERROR: Not enough data points for fit.")
 
@@ -456,7 +456,7 @@ def plot_scatter_seasonal(period_label):
     fig.suptitle(str_name, fontweight='bold')
     fig.subplots_adjust(top=0.93)
 
-    plt_tools.frame_and_axis_removal(axs, len(comps))
+    plt_tls.frame_and_axis_removal(axs, len(comps))
 
     for i, data_typ in enumerate(plot_vars):
         tres, tres_tol = tls.get_tres(data_typ)
@@ -492,14 +492,14 @@ def plot_scatter_seasonal(period_label):
         )
 
         if valid_idx.sum() >= 2:
-            plt_tools.calc_draw_fit(axs, i, x_valid, y_valid, inpt.tres,
+            plt_tls.calc_draw_fit(axs, i, x_valid, y_valid, inpt.tres,
                           inpt.seasons[period_label]['col'], data_typ, print_stats=True)
         else:
-            plt_tools.calc_draw_fit(axs, i, x_valid, y_valid, inpt.tres,
+            plt_tls.calc_draw_fit(axs, i, x_valid, y_valid, inpt.tres,
                           inpt.seasons[period_label]['col'], data_typ, print_stats=False)
             print("ERROR: Not enough data points for fit.")
 
-        plt_tools.format_scatterplot(axs, data_typ, i)
+        plt_tls.format_scatterplot(axs, data_typ, i)
 
     save_path = os.path.join(
         inpt.basefol['out']['base'], inpt.tres,
@@ -531,7 +531,7 @@ def plot_scatter_cum():
     fig.suptitle(str_name, fontweight='bold')
     fig.subplots_adjust(top=0.93)
 
-    plt_tools.frame_and_axis_removal(axs, len(comps))
+    plt_tls.frame_and_axis_removal(axs, len(comps))
 
     if inpt.datasets['dropsondes']['switch']:
         period_label = 'all'
@@ -576,11 +576,11 @@ def plot_scatter_cum():
                 s=5, color='blue', edgecolors='none', alpha=0.5, label=period_label
             )
 
-            plt_tools.calc_draw_fit(axs, i,  merged['x'],  merged['y'], inpt.tres,
+            plt_tls.calc_draw_fit(axs, i,  merged['x'],  merged['y'], inpt.tres,
                           inpt.seasons[period_label]['col'], data_typ, print_stats=True)
 
             axs[i].legend()
-            plt_tools.format_scatterplot(axs, data_typ, i)
+            plt_tls.format_scatterplot(axs, data_typ, i)
     else:
         for period_label, season in inpt.seasons_subset.items():
             print(f"SCATTERPLOTS CUMULATIVE {period_label}")
@@ -614,11 +614,11 @@ def plot_scatter_cum():
                     # Optionally raise ValueError here if needed
                     # raise ValueError("Insufficient data for fitting.")
                 else:
-                    plt_tools.calc_draw_fit(axs, i, x_valid, y_valid, inpt.tres,
+                    plt_tls.calc_draw_fit(axs, i, x_valid, y_valid, inpt.tres,
                                   inpt.seasons[period_label]['col'], data_typ, print_stats=False)
 
                     axs[i].legend()
-                plt_tools.format_scatterplot(axs, data_typ, i)
+                plt_tls.format_scatterplot(axs, data_typ, i)
 
     save_path = os.path.join(
         inpt.basefol['out']['base'], inpt.tres, f"{str_name.replace(' ', '_')}.png")

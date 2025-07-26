@@ -47,6 +47,12 @@ def load_and_process_yaml(path: Path):
             )
     return cfg
 
+def get_common_paths(vr, y, prefix):
+
+    base_out = Path(inpt.basefol['out']['parquets'])
+    base_input = Path(inpt.basefol['t']['arcsix'])
+    filename = f"{inpt.location}_{prefix}_{vr}_{y}.parquet"
+    return base_out / filename, base_input
 
 def check_empty_df(data, vr):
     try:
