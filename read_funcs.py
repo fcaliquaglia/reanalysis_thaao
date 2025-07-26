@@ -1,18 +1,9 @@
 #!/usr/local/bin/python3
 # -*- coding: utf-8 -*-
-# -------------------------------------------------------------------------------
-#
 """
 Brief description
 """
 
-# =============================================================
-# CREATED:
-# AFFILIATION: INGV
-# AUTHORS: Filippo Cali' Quaglia, Monica Tosco
-# =============================================================
-#
-# -------------------------------------------------------------------------------
 __author__ = "Filippo Cali' Quaglia"
 __credits__ = ["??????"]
 __license__ = "GPL"
@@ -22,79 +13,22 @@ __status__ = "Research"
 __lastupdate__ = ""
 
 import os
-
 import numpy as np
 import pandas as pd
+
 import read_func_rean as rd_frea
 import read_func_thaao as rd_ft
 import read_func_villum as rd_fv
 import read_func_sigmaa as rd_fsa
 import read_func_sigmab as rd_fsb
+
 from metpy.calc import wind_direction, wind_speed
 from metpy.units import units
-import inputs as inpt
-import tools as tls
 from metpy.constants import g
 
+import inputs as inpt
+import tools as tls
 
-# def read_alb():
-#     """
-#     Reads and processes the input variable data from multiple sources including CARRA1, ERA5,
-#     and THAAO. Adjusts the datasets by scaling and cleaning data points
-#     as per defined conditions.
-
-#     :raises KeyError: If required keys are missing in the input dictionary for any source.
-#     :raises TypeError: If data type mismatches occur when processing datasets within sources.
-#     :raises ValueError: If data contains invalid values not conforming to the expected range.
-#     """
-#     vr = inpt.var
-#     var_dict = inpt.extr[vr]
-
-#     # --- CARRA1 ---
-#     rd_frea.read_rean(vr, "c")
-#     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
-#     var_dict["c"]["data"][vr] /= 100.
-#     # var_dict["c"]["data"].loc[var_dict["c"]["data"][vr] <= 0., vr] = np.nan
-
-#     # --- ERA5 ---
-#     rd_frea.read_rean(vr, "e")
-#     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
-#     # var_dict["e"]["data"].loc[var_dict["e"]["data"][vr] <= 0., vr] = np.nan
-
-#     # --- THAAO ---
-#     if inpt.datasets['THAAO']['switch']:
-#         rd_ft.read_rad(vr)
-#         var_dict["t"]["data"], _ = tls.check_empty_df(
-#             var_dict["t"]["data"], vr)
-
-#     # --- Buoys ---
-#     if inpt.datasets['buoys']['switch']:
-#         data_all = pd.DataFrame()
-#         for y in inpt.years:
-#             path = os.path.join('txt_locations', f"{inpt.location}_loc.txt")
-#             data_tmp = pd.read_csv(path)
-#             data_all = pd.concat([data_all, data_tmp])
-#         data_all['time'] = pd.to_datetime(data_all['time'], errors='coerce')
-#         data_all = data_all.set_index('time')
-#         var_dict["t"]["data"] = data_all
-#         var_dict["t"]["data"][inpt.var] = var_dict["t"]["data"][inpt.var].mask(
-#             var_dict["t"]["data"][inpt.var] == 0.0, np.nan)
-#         var_dict["t"]["data"], _ = tls.check_empty_df(
-#             var_dict["t"]["data"], vr)
-
-#     # --- Sigma-A ---
-#     if inpt.datasets['Sigma-A']['switch']:
-#         rd_fsa.read_weather(vr)
-#         var_dict["t"]["data"], _ = tls.check_empty_df(
-#             var_dict["t"]["data"], vr)
-
-#     # --- Sigma-B ---
-#     if inpt.datasets['Sigma-B']['switch']:
-#         rd_fsb.read_weather(vr)
-#         var_dict["t"]["data"], _ = tls.check_empty_df(
-#             var_dict["t"]["data"], vr)
-
-#     return
 
 
 def read_cbh():
@@ -1155,39 +1089,9 @@ def read_wind():
     return
 
 
-# def calc_rad_acc_era5_land(vr):
-#     """
-#     Calculates instantaneous radiation accumulation from daily accumulated ERA5-LAND data.
-
-#     This function processes the daily-accumulated radiation data for ERA5-LAND by
-#     calculating the difference between consecutive timesteps. It also handles specific
-#     timesteps (e.g., at 0100 hours), ensuring the data integrity for further analysis.
-
-#     :param vr: The key or identifier in the `inpt.extr` data dictionary used to locate
-#         the radiation dataset for processing.
-#     :type vr: str
-#     :return: None
-#     """
-#     # calculating instantaneous as difference with previous timestep
-#     inpt.extr[vr]["l"]["data_diff"] = inpt.extr[vr]["l"]["data"][vr].diff()
-#     # dropping value at 0100 which does not need any subtraction (it is the first of the day)
-#     inpt.extr[vr]["l"]["data_diff"] = inpt.extr[vr]["l"]["data_diff"][inpt.extr[vr]
-#                                                                       ["l"]["data_diff"].index.hour != 1]
-#     # selecting original value at 0100
-#     orig_filtered_data = inpt.extr[vr]["l"]["data"][inpt.extr[vr]
-#                                                     ["l"]["data"].index.hour == 1]
-#     # appending original value at 0100
-#     inpt.extr[vr]["l"]["data_diff"] = pd.concat(
-#         [inpt.extr[vr]["l"]["data_diff"], orig_filtered_data]).sort_index()
-#     inpt.extr[vr]["l"]["data"] = inpt.extr[vr]["l"]["data_diff"]
-
-#     print("ERA5-LAND data for radiation corrected because they are values daily-accumulated!")
-#     return
-
-
 def read():
+    # Map variable names to reader functions
     readers = {
-        # "alb": read_alb,
         "cbh": read_cbh,
         "iwv": read_iwv,
         "lwp": read_lwp,
@@ -1207,8 +1111,8 @@ def read():
         "winds": read_wind,
         "windd": read_wind,
     }
+
     reader_func = readers.get(inpt.var)
     if reader_func is None:
-        raise ValueError(
-            f"No reader function defined for variable '{inpt.var}'")
+        raise ValueError(f"No reader function defined for variable '{inpt.var}'")
     return reader_func()

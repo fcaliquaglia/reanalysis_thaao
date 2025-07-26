@@ -111,8 +111,9 @@ def read_ceilometer(vr):
     df_all, count = load_per_year_parquets(vr, "CEIL")
 
     # If not all years were loaded, parse original .txt files
+
     if count < len(inpt.years):
-        t_all = []
+        t_all = [] 
         for i in inpt.dateranges["ceilometer"][inpt.dateranges["ceilometer"].year.isin(inpt.years)]:
             date_str = i.strftime("%Y%m%d")
             file = Path(inpt.basefol["t"]["base"]) / "thaao_ceilometer" / \
@@ -153,14 +154,14 @@ def read_ceilometer(vr):
             except (FileNotFoundError, pd.errors.EmptyDataError, ValueError) as e:
                 print(f"NOT FOUND or EMPTY or FORMAT ERROR: {file.name} - {e}")
 
-    # concatenate all loaded dataframes
-    if t_all:
-        df_all = pd.concat(t_all)
-    else:
-        df_all = pd.DataFrame()
+        # concatenate all loaded dataframes
+        if t_all:
+            df_all = pd.concat(t_all)
+        else:
+            df_all = pd.DataFrame()
 
-    # Save per-year data
-    save_per_year_parquets(vr, df_all, 'CEIL')
+        # Save per-year data
+        save_per_year_parquets(vr, df_all, 'CEIL')
 
     # Final assignment
     inpt.extr[vr]["t"]["data"] = df_all
@@ -295,6 +296,7 @@ def read_iwv_vespa(vr):
             df.index.name = 'datetime'
             df.columns = [vr]
             df_all = df
+            df_all.index = pd.to_datetime(df_all.index)
             print(f'OK: {file}')
         except FileNotFoundError:
             print(f'NOT FOUND: {file}.txt')

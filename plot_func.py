@@ -21,7 +21,6 @@ __email__ = "filippo.caliquaglia@ingv.it"
 __status__ = "Research"
 __lastupdate__ = ""
 
-import datetime as dt
 import os
 
 import matplotlib.pyplot as plt
@@ -29,6 +28,7 @@ import numpy as np
 import pandas as pd
 
 import inputs as inpt
+import plot_tools as plt_tools
 import tools as tls
 from matplotlib.gridspec import GridSpec
 from matplotlib.ticker import MaxNLocator
@@ -36,9 +36,7 @@ from matplotlib.ticker import FormatStrFormatter
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from pyCompare import blandAltman
 from matplotlib.lines import Line2D
-from matplotlib import cm
-from matplotlib import colors as mcolors
-import csv
+
 
 
 def plot_ts(period_label):
@@ -105,7 +103,7 @@ def plot_ts(period_label):
                            label=inpt.var_dict[data_typ]['label'], **kwargs_res)
 
         # Format the subplot axes (assuming this function is defined elsewhere)
-        format_ts(ax, year, i)
+        tls.format_ts(ax, year, i)
 
     plt.xlabel('Time')
     plt.legend(ncol=2)
@@ -179,7 +177,7 @@ def plot_residuals(period_label):
                 markerline.set_markersize(1)
 
         # Format axis
-        format_ts(ax, year, i, residuals=True)
+        plt_tools.format_ts(ax, year, i, residuals=True)
 
     plt.xlabel('Time')
     plt.legend(ncols=2)
@@ -210,7 +208,7 @@ def plot_ba(period_label):
     fig.suptitle(str_name, fontweight='bold')
     fig.subplots_adjust(top=0.93)
 
-    frame_and_axis_removal(axs, len(comps))
+    plt_tools.frame_and_axis_removal(axs, len(comps))
 
     for i, data_typ in enumerate(plot_vars):
         tres, tres_tol = tls.get_tres(data_typ)
@@ -244,7 +242,7 @@ def plot_ba(period_label):
             confidenceIntervalMethod='approximate', detrend=None,
             percentage=perc, pointColour='blue')
 
-        format_ba(axs, data_typ, i)
+        plt_tools.format_ba(axs, data_typ, i)
 
     if perc:
         save_path = os.path.join(
@@ -417,7 +415,7 @@ def plot_scatter_all(period_label):
             cbar.ax.xaxis.set_ticks_position('bottom')
             cbar.ax.xaxis.set_label_position('bottom')
 
-            format_hist2d(
+            plt_tools.format_hist2d(
                 ax_joint,
                 xlabel=inpt.var_dict[ref_x]['label'],
                 ylabel=inpt.var_dict[data_typ]['label'],
@@ -429,10 +427,10 @@ def plot_scatter_all(period_label):
 
             # Fit
             if valid_idx.sum() >= 2:
-                calc_draw_fit(joint_axes, i, x_valid, y_valid, inpt.tres,
+                plt_tools.calc_draw_fit(joint_axes, i, x_valid, y_valid, inpt.tres,
                               inpt.all_seasons['all']['col'], data_typ, print_stats=True)
             else:
-                calc_draw_fit(joint_axes, i, x_valid, y_valid, inpt.tres,
+                plt_tools.calc_draw_fit(joint_axes, i, x_valid, y_valid, inpt.tres,
                               inpt.all_seasons['all']['col'], data_typ, print_stats=True)
                 print("ERROR: Not enough data points for fit.")
 
@@ -441,22 +439,6 @@ def plot_scatter_all(period_label):
     plt.savefig(save_path, bbox_inches='tight')
     plt.close(fig)
 
-
-def kl_divergence(P, Q, eps=1e-12):
-    """
-    Compute the KL divergence D(P || Q) for discrete probability distributions.
-
-    Parameters:
-        P (list or np.array): True distribution
-        Q (list or np.array): Approximate distribution
-        eps (float): Small constant to avoid log(0)
-
-    Returns:
-        float: KL divergence value
-    """
-    P = np.asarray(P, dtype=np.float64) + eps
-    Q = np.asarray(Q, dtype=np.float64) + eps
-    return np.sum(P * np.log(P / Q))
 
 
 def plot_scatter_seasonal(period_label):
@@ -474,7 +456,7 @@ def plot_scatter_seasonal(period_label):
     fig.suptitle(str_name, fontweight='bold')
     fig.subplots_adjust(top=0.93)
 
-    frame_and_axis_removal(axs, len(comps))
+    plt_tools.frame_and_axis_removal(axs, len(comps))
 
     for i, data_typ in enumerate(plot_vars):
         tres, tres_tol = tls.get_tres(data_typ)
@@ -510,14 +492,14 @@ def plot_scatter_seasonal(period_label):
         )
 
         if valid_idx.sum() >= 2:
-            calc_draw_fit(axs, i, x_valid, y_valid, inpt.tres,
+            plt_tools.calc_draw_fit(axs, i, x_valid, y_valid, inpt.tres,
                           inpt.seasons[period_label]['col'], data_typ, print_stats=True)
         else:
-            calc_draw_fit(axs, i, x_valid, y_valid, inpt.tres,
+            plt_tools.calc_draw_fit(axs, i, x_valid, y_valid, inpt.tres,
                           inpt.seasons[period_label]['col'], data_typ, print_stats=False)
             print("ERROR: Not enough data points for fit.")
 
-        format_scatterplot(axs, data_typ, i)
+        plt_tools.format_scatterplot(axs, data_typ, i)
 
     save_path = os.path.join(
         inpt.basefol['out']['base'], inpt.tres,
@@ -549,7 +531,7 @@ def plot_scatter_cum():
     fig.suptitle(str_name, fontweight='bold')
     fig.subplots_adjust(top=0.93)
 
-    frame_and_axis_removal(axs, len(comps))
+    plt_tools.frame_and_axis_removal(axs, len(comps))
 
     if inpt.datasets['dropsondes']['switch']:
         period_label = 'all'
@@ -594,11 +576,11 @@ def plot_scatter_cum():
                 s=5, color='blue', edgecolors='none', alpha=0.5, label=period_label
             )
 
-            calc_draw_fit(axs, i,  merged['x'],  merged['y'], inpt.tres,
+            plt_tools.calc_draw_fit(axs, i,  merged['x'],  merged['y'], inpt.tres,
                           inpt.seasons[period_label]['col'], data_typ, print_stats=True)
 
             axs[i].legend()
-            format_scatterplot(axs, data_typ, i)
+            plt_tools.format_scatterplot(axs, data_typ, i)
     else:
         for period_label, season in inpt.seasons_subset.items():
             print(f"SCATTERPLOTS CUMULATIVE {period_label}")
@@ -632,69 +614,16 @@ def plot_scatter_cum():
                     # Optionally raise ValueError here if needed
                     # raise ValueError("Insufficient data for fitting.")
                 else:
-                    calc_draw_fit(axs, i, x_valid, y_valid, inpt.tres,
+                    plt_tools.calc_draw_fit(axs, i, x_valid, y_valid, inpt.tres,
                                   inpt.seasons[period_label]['col'], data_typ, print_stats=False)
 
                     axs[i].legend()
-                format_scatterplot(axs, data_typ, i)
+                plt_tools.format_scatterplot(axs, data_typ, i)
 
     save_path = os.path.join(
         inpt.basefol['out']['base'], inpt.tres, f"{str_name.replace(' ', '_')}.png")
     plt.savefig(save_path, bbox_inches='tight')
     plt.close('all')
-
-
-# def get_shaded_color(base_color, resolution):
-#     """
-#     Returns a shaded version of the base color depending on resolution.
-#     Higher temporal resolution (smaller steps like 1h) → darker.
-#     Coarser resolution (like 6h, 12h) → lighter.
-#     'original' is darkest to highlight it.
-#     """
-#     cmap = cm.get_cmap('Blues') if base_color == 'blue' else cm.get_cmap('Reds')
-
-#     def res_to_norm(res):
-#         if res == 'original':
-#             return 0.0  # darkest
-#         try:
-#             res_hour = int(res.replace('h', ''))
-#             # 1h → 0.2 (dark), 12h → 0.95 (light)
-#             norm_val = max(0.2, min(0.95, 0.2 + (res_hour - 1) / 15))
-#             return norm_val
-#         except:
-#             return 0.5  # fallback gray
-
-#     norm = res_to_norm(resolution)
-#     shaded = cmap(norm)
-#     return shaded[:3]
-
-
-def get_color_by_resolution(base_color, resolution):
-    blues = ['#0000FF',  # Blue
-               '#1E90FF',  # Dodger Blue
-               '#00BFFF',  # Deep Sky Blue
-               '#87CEFA',  # Light Sky Blue
-               '#ADD8E6']  # Light Blue
-    reds = ['#FF0000',   # Red
-                  '#FF4500',   # Orange Red
-                  '#FF6347',   # Tomato
-                  '#F08080',   # Light Coral
-                  '#FFE4E1']   # Misty Rose
-    res_order = ['original', '6h', '12h', '24h']
-
-    try:
-        idx = res_order.index(resolution)
-    except ValueError:
-        idx = -1
-
-    base_color = base_color.lower() if isinstance(base_color, str) else 'gray'
-
-    if base_color == 'blue':
-        return blues[idx] if idx >= 0 else 'lightblue'
-    elif base_color == 'red':
-        return reds[idx] if idx >= 0 else 'salmon'
-    else:
-        return 'gray'
 
 
 def plot_taylor(var_list):
@@ -834,7 +763,7 @@ def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
         key = (var_name, data_typ)
         color_base = colors[i]
         marker = markers[i]
-        color = get_color_by_resolution(color_base, resolution)
+        color = tls.get_color_by_resolution(color_base, resolution)
 
         if key not in point_map:
             point_map[key] = {'original': None, 'others': []}
@@ -856,13 +785,6 @@ def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
         if pts['original']:
             all_pts.append(pts['original'])
         all_pts.extend(pts['others'])
-        # sorted_pts = sorted(all_pts, key=lambda x: x[2])
-        # for i in range(len(sorted_pts) - 1):
-        #     ax.annotate("",
-        #                 xy=(sorted_pts[i+1][0], sorted_pts[i+1][1]),
-        #                 xytext=(sorted_pts[i][0], sorted_pts[i][1]),
-        #                 arrowprops=dict(arrowstyle='->', color='gray', lw=1),
-        #                 annotation_clip=False)
 
     # Create first legend handles (variables)
     legend_elements = [
@@ -889,278 +811,3 @@ def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
     ax.legend(all_handles, all_labels, loc='upper right',
               fontsize='small', title_fontsize='medium', title='Legend')
 
-
-def calc_draw_fit(axs, i, xxx, yyy, tr, col, data_typ, print_stats=True):
-    """
-    Performs linear regression on data (xxx, yyy), plots the fit line and 1:1 line,
-    and optionally annotates stats (R, N, MBE, RMSE) on subplot axs[i].
-
-    :param axs: Matplotlib axes array.
-    :param i: Index of subplot to plot on.
-    :param xxx: x-data (pd.Series or np.array).
-    :param yyy: y-data (pd.Series or np.array).
-    :param per_lab: Key for color in inpt.seasons.
-    :param print_stats: Whether to display stats text.
-    """
-    var = inpt.var
-    var_dict = inpt.var_dict
-    ref_x = inpt.extr[var]['ref_x']
-
-    xx = xxx.values.flatten()
-    yy = yyy.values.flatten()
-    # Make sure xx and yy are numpy arrays
-    xx_all = np.asarray(xx)
-    yy_all = np.asarray(yy)
-
-    # Mask out non-finite values
-    mask = np.isfinite(xx_all) & np.isfinite(yy_all)
-    xx = xx_all[mask]
-    yy = yy_all[mask]
-    b, a = np.polyfit(xx, yy, 1)  # slope, intercept
-    var_min = inpt.extr[inpt.var]['min']
-    var_max = inpt.extr[inpt.var]['max']
-    xseq = np.linspace(var_min, var_max, 1000)
-
-    axs[i].plot(xseq, a + b * xseq,
-                color=col,
-                lw=2.5, ls='--', alpha=0.5)
-    axs[i].plot([var_min, var_max], [var_min, var_max],
-                color='black', lw=1.5, ls='-')
-
-    fn = f"{data_typ}_stats_{inpt.var}.csv"
-    if print_stats:
-        if os.path.exists(fn):
-            pass
-            read_stats_from_csv(fn, data_typ, ref_x)
-            stats = inpt.extr[inpt.var][data_typ]['data_stats'][tr]
-            ref_stats = inpt.extr[inpt.var][ref_x]['data_stats'][tr]
-            r2 = stats['r2']
-            N = stats['N']
-            rmse = stats['rmse']
-            mbe = stats['mbe']
-            std_x = ref_stats['std_x']
-            std_y = stats['std_y']
-            KL_bits = stats['kl_bits']
-        else:
-            r2, N, rmse, mbe, std_x, std_y, KL_bits = calc_stats(
-                xx, yy, data_typ, tr, fn)
-
-        def escape_label(label):
-            return label.replace('_', r'\_')
-
-        stats_text = (
-            f"R² = {r2:.2f}\n"
-            f"N = {N}\n"
-            f"y = {b:+.2f}x {a:+.2f}\n"
-            f"MBE = {mbe:.2f}\n"
-            f"RMSE = {rmse:.2f}\n"
-            f"$\\sigma_{{{escape_label(var_dict[ref_x]['label'])}}} = {std_x:.2f}$\n"
-            f"$\\sigma_{{{escape_label(var_dict[data_typ]['label'])}}} = {std_y:.2f}$\n"
-            f"$KL = {KL_bits:.3f}$ bits"
-        )
-
-        axs[i].text(0.57, 0.20, stats_text,
-                    transform=axs[i].transAxes,
-                    fontsize=10, color='black',
-                    ha='left', va='center',
-                    bbox=dict(facecolor='white', edgecolor='white'))
-
-def read_stats_from_csv(fn, data_typ, ref_x):
-    stats_path = os.path.join(inpt.basefol['out']['base'], 'scatter_stats', fn)
-
-    if not os.path.exists(stats_path):
-        print(f"⚠️ Stats file not found: {stats_path}")
-        return
-
-    with open(stats_path, mode='r', newline='') as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            var = row['Variable']
-            tr = row['Resolution']
-
-            # Initialize nested structure if it doesn't exist
-            for key in [data_typ, ref_x]:
-                if 'data_stats' not in inpt.extr[var][key]:
-                    inpt.extr[var][key]['data_stats'] = {}
-                if tr not in inpt.extr[var][key]['data_stats']:
-                    inpt.extr[var][key]['data_stats'][tr] = {}
-
-            # Assign stats
-            inpt.extr[var][data_typ]['data_stats'][tr]['r2'] = float(row['r2'])
-            inpt.extr[var][data_typ]['data_stats'][tr]['N'] = int(row['N'])
-            inpt.extr[var][data_typ]['data_stats'][tr]['rmse'] = float(row['rmse'])
-            inpt.extr[var][data_typ]['data_stats'][tr]['mbe'] = float(row['mbe'])
-            inpt.extr[var][data_typ]['data_stats'][tr]['std_y'] = float(row['std_y'])
-            inpt.extr[var][data_typ]['data_stats'][tr]['kl_bits'] = float(row['KL_bits'])
-
-            inpt.extr[var][ref_x]['data_stats'][tr]['std_x'] = float(row['std_x'])
-
-    print(f"✅ Stats loaded from {stats_path}")
-
-
-def calc_stats(x, y, data_typ, tr, fn):
-    ref_x = inpt.extr[inpt.var]['ref_x']
-    corcoeff = np.corrcoef(x, y)[0, 1]
-    diff = y-x
-    if 'data_stats' not in inpt.extr[inpt.var][data_typ]:
-        inpt.extr[inpt.var][data_typ]['data_stats'] = {}
-    if 'data_stats' not in inpt.extr[inpt.var][ref_x]:
-        inpt.extr[inpt.var][ref_x]['data_stats'] = {}
-
-    var_data = inpt.extr[inpt.var]
-    var_data[data_typ]['data_stats'][tr] = {}
-    var_data[ref_x]['data_stats'][tr] = {}
-    var_data[data_typ]['data_stats'][tr]['r2'] = corcoeff*corcoeff
-
-    var_data[data_typ]['data_stats'][tr]['N'] = len(y)
-
-    var_data[data_typ]['data_stats'][tr]['rmse'] = np.sqrt(
-        np.nanmean(diff ** 2))
-    var_data[data_typ]['data_stats'][tr]['mbe'] = np.nanmean(diff)
-    var_data[ref_x]['data_stats'][tr]['std_x'] = np.std(x)
-    var_data[data_typ]['data_stats'][tr]['std_y'] = np.std(y)
-
-    tres_ref_x = var_data[ref_x]['data_marg_distr']['tres']
-    tres = var_data[data_typ]['data_marg_distr']['tres']
-    P = np.array(var_data[ref_x]['data_marg_distr']
-                 [tres_ref_x][inpt.var]*var_data['bin_size'])
-    Q = np.array(var_data[data_typ]['data_marg_distr']
-                 [tres][inpt.var]*var_data['bin_size'])
-
-    # Compute KL divergences
-    var_data[data_typ]['data_stats'][tr]['kl_bits'] = kl_divergence(
-        P, Q)/np.log(2)
-    save_stats(fn, data_typ, ref_x)
-
-    return (inpt.extr[inpt.var][data_typ]['data_stats'][tr]['r2'], inpt.extr[inpt.var][data_typ]['data_stats'][tr]['N'], inpt.extr[inpt.var][data_typ]['data_stats'][tr]['rmse'], inpt.extr[inpt.var][data_typ]['data_stats'][tr]['mbe'], inpt.extr[inpt.var][ref_x]['data_stats'][tr]['std_x'],  inpt.extr[inpt.var][data_typ]['data_stats'][tr]['std_y'], inpt.extr[inpt.var][data_typ]['data_stats'][tr]['kl_bits'])
-
-
-def save_stats(fn, data_typ, ref_x):
-    out_dir = os.path.join(inpt.basefol['out']['base'], 'scatter_stats')
-    os.makedirs(out_dir, exist_ok=True)
-    stats_file = os.path.join(out_dir, f"{fn}")
-    write_header = not os.path.exists(stats_file)
-
-    with open(stats_file, mode='a', newline='') as csvfile:
-        writer = csv.writer(csvfile)
-
-        if write_header:
-            writer.writerow(['Variable', 'Data_Type', 'Resolution',
-                            'r2', 'N', 'rmse', 'mbe', 'std_x', 'std_y', 'KL_bits'])
-
-        for tr, stats in inpt.extr[inpt.var][data_typ]['data_stats'].items():
-            try:
-                ref_stats = inpt.extr[inpt.var][ref_x]['data_stats'][tr]
-
-                writer.writerow([
-                    inpt.var,
-                    data_typ,
-                    tr,
-                    stats['r2'],
-                    stats['N'],
-                    stats['rmse'],
-                    stats['mbe'],
-                    ref_stats['std_x'],
-                    stats['std_y'],
-                    stats['kl_bits']
-                ])
-            except KeyError as e:
-                print(f"⚠️ Missing data for {data_typ}, {tr}: {e}")
-
-
-def format_ax(ax, xlabel='', ylabel='', title=None, letter=None,
-              xlim=None, ylim=None, identity_line=False,
-              fontweight='bold', fontsize='medium', binsize=None):
-    """
-    Generic axis formatting helper.
-
-    :param ax: Matplotlib Axes object.
-    :param xlabel: Label for x-axis.
-    :param ylabel: Label for y-axis.
-    :param title: Optional title.
-    :param letter: Optional subplot label (e.g. 'a)').
-    :param xlim: Tuple for x-axis limits.
-    :param ylim: Tuple for y-axis limits.
-    :param identity_line: If True, draw a y=x identity line.
-    :param fontweight: Font weight for annotation letter.
-    :param fontsize: Font size for annotation letter.
-    """
-    if title:
-        ax.set_title(title)
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel(ylabel)
-
-    if xlim:
-        ax.set_xlim(xlim)
-    if ylim:
-        ax.set_ylim(ylim)
-
-    if letter:
-        ax.text(0.01, 0.95, letter, transform=ax.transAxes,
-                fontsize=fontsize, fontweight=fontweight,
-                verticalalignment='top')
-
-    if identity_line and xlim and ylim:
-        min_val = min(xlim[0], ylim[0])
-        max_val = max(xlim[1], ylim[1])
-        ax.plot([min_val, max_val], [min_val, max_val],
-                color='black', lw=1.5, ls='-')
-
-
-def format_ts(ax, year, yy, residuals=False):
-    ax[yy].xaxis.set_major_formatter(inpt.myFmt)
-    ax[yy].set_xlim(dt.datetime(year, 1, 1), dt.datetime(year, 12, 31))
-    ylim = (inpt.extr[inpt.var]['res_min'], inpt.extr[inpt.var]['res_max']) if residuals \
-        else (inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'])
-
-    format_ax(ax[yy],
-              ylim=ylim,
-              letter=f"{inpt.letters[yy]})    {year}")
-
-
-def format_ba(axs, data_typ, i):
-    var = inpt.var
-    var_dict = inpt.var_dict
-    ref_x = inpt.extr[var]['ref_x']
-
-    format_ax(axs[i],
-              xlabel=f"mean({var_dict[ref_x]['label']}, {var_dict[data_typ]['label']})",
-              ylabel=f"{var_dict[data_typ]['label']} - {var_dict[ref_x]['label']}",
-              title=var_dict[data_typ]['label'],
-              letter=inpt.letters[i] + ')')
-
-
-def format_hist2d(ax, xlabel, ylabel, letter, xlim=None, ylim=None, binsize=None):
-    format_ax(ax,
-              xlabel=xlabel,
-              ylabel=ylabel,
-              xlim=xlim,
-              ylim=ylim,
-              letter=f"{letter}    bin size={binsize:.2f}")
-
-
-def format_scatterplot(axs, data_typ, i):
-    var = inpt.var
-    var_dict = inpt.var_dict
-    vmin = inpt.extr[var]['min']
-    vmax = inpt.extr[var]['max']
-    ref_x = inpt.extr[var]['ref_x']
-
-    format_ax(axs[i],
-              xlabel=var_dict[ref_x]['label'],
-              ylabel=var_dict[data_typ]['label'],
-              title=var_dict[data_typ]['label'],
-              xlim=(vmin, vmax), ylim=(vmin, vmax),
-              letter=inpt.letters[i] + ')',
-              identity_line=True)
-
-
-def frame_and_axis_removal(axs, n_plots):
-    """
-    Hide extra axes beyond the number of plots needed.
-
-    :param axs: Flattened array of matplotlib axes.
-    :param n_plots: Number of actual plots to show.
-    """
-    for i in range(n_plots, len(axs)):
-        axs[i].set_visible(False)

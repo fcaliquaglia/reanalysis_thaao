@@ -172,21 +172,13 @@ def get_tres(data_typ, tres=None):
     if tres != 'original':
         return tres, tres
 
-    freq_str = '1h' if inpt.var in inpt._vars else (
+    freq_str = '1h' if inpt.var in inpt.cumulative_vars else (
         '3h' if data_typ == 'c' else '1h')
 
     freq = pd.Timedelta(freq_str)
     tolerance = pd.tseries.frequencies.to_offset(freq / 6).freqstr
 
     return freq_str, tolerance
-
-
-def get_common_paths(vr, y, prefix):
-
-    base_out = Path(inpt.basefol['out']['parquets'])
-    base_input = Path(inpt.basefol['t']['arcsix'])
-    filename = f"{inpt.location}_{prefix}_{vr}_{y}.parquet"
-    return base_out / filename, base_input
 
 
 def wait_for_complete_download(file_path, timeout=600, interval=5):
