@@ -2,13 +2,13 @@ name: cbh
 ref_x: t
 min: 0
 max: 10000
-res_min: -1500
-res_max: 1500
+res_min: -2000
+res_max: 2000
 uom: "[m]"
 comps: 
   - c
   - e
-bin_size: 0.05
+bin_size: 500
 c:
   fn: "thaao_c_cloud_base_"
   column: 2
