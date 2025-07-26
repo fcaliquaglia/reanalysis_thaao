@@ -51,7 +51,7 @@ def read_cbh():
     # --- ERA5 ---
     rd_frea.read_rean(vr, "e")
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
-    var_dict["c"]["data"][vr] += inpt.era5_ground_elev
+    var_dict["e"]["data"][vr] += inpt.era5_ground_elev
     var_dict["e"]["data"][vr] = var_dict["e"]["data"][vr].mask(var_dict["e"]["data"][vr] < inpt.cbh_low_thresh, np.nan)
 
 
@@ -60,7 +60,7 @@ def read_cbh():
         rd_ft.read_ceilometer(vr)
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
-        var_dict["c"]["data"][vr] += inpt.thaao_ground_elev
+        var_dict["t"]["data"][vr] += inpt.thaao_ground_elev
         var_dict["t"]["data"][vr] = var_dict["t"]["data"][vr].mask(
             var_dict["t"]["data"][vr] < inpt.cbh_low_thresh, np.nan)
 
@@ -115,8 +115,8 @@ def read_lwp():
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
     var_dict["c"]["data"][vr] *= 1000.
     lwp_c = var_dict["c"]["data"][vr]
-    lwp_c[lwp_c < 5] = np.nan
-    lwp_c[lwp_c > 1000] = np.nan
+    # lwp_c[lwp_c < 5] = np.nan
+    # lwp_c[lwp_c > 1000] = np.nan
     var_dict["c"]["data"][vr] = lwp_c
 
     # --- ERA5 ---
@@ -124,8 +124,8 @@ def read_lwp():
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
     var_dict["e"]["data"][vr] *= 1000.
     lwp_e = var_dict["e"]["data"][vr]
-    lwp_e[lwp_e < 5] = np.nan
-    lwp_e[lwp_e > 1000] = np.nan
+    # lwp_e[lwp_e < 5] = np.nan
+    # lwp_e[lwp_e > 1000] = np.nan
     var_dict["e"]["data"][vr] = lwp_e
 
     # --- THAAO (HATPRO) ---
@@ -134,8 +134,8 @@ def read_lwp():
         var_dict["t1"]["data"], _ = tls.check_empty_df(
             var_dict["t1"]["data"], vr)
         lwp_t1 = var_dict["t1"]["data"][vr]
-        lwp_t1[lwp_t1 < 5] = np.nan
-        lwp_t1[lwp_t1 > 1000] = np.nan
+        # lwp_t1[lwp_t1 < 5] = np.nan
+        # lwp_t1[lwp_t1 > 1000] = np.nan
         var_dict["t1"]["data"][vr] = lwp_t1
 
     return

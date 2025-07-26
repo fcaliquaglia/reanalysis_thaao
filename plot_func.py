@@ -38,21 +38,14 @@ from pyCompare import blandAltman
 from matplotlib.lines import Line2D
 
 
-
 def plot_ts(period_label):
     """
-    Plots time series data for each year in the provided dataset.
+    Generate a time series plot for each year, overlaying original and resampled datasets.
 
-    This function generates a multi-panel plot with each panel corresponding to one year
-    of data. It plots the original and resampled resolutions for various variables and
-    optionally overlays vertical lines to indicate specific periods. The resulting plot
-    is saved as an image in the output directory specified in `inpt`.
-
-    :param period_label: A string used in the filename to describe the period of the data.
+    :param period_label: Descriptive label for the period being analyzed.
     :type period_label: str
-    :return: None
     """
-    print('TIMESERIES')
+    print(f"[INFO] Plotting time series for period: {period_label}")
     plt.ioff()
     n_years = len(inpt.years)
     fig, ax = plt.subplots(n_years, 1, figsize=(12, 17), dpi=inpt.dpi)
@@ -75,7 +68,7 @@ def plot_ts(period_label):
     # Cache frequently used variables
 
     for i, year in enumerate(inpt.years):
-        print(f"plotting {year}")
+        print(f"===={year}")
 
         # Boolean mask for original and resampled data for this year
         for data_typ in plot_vars:
@@ -115,14 +108,13 @@ def plot_ts(period_label):
 
 def plot_residuals(period_label):
     """
-    Plots residuals for each year in the dataset, comparing components against the reference data.
-    Adds visual guides such as zero lines and seasonal vertical ranges for specific variables.
+    Plot the residuals (differences) between model/component outputs and reference data
+    over the specified time period.
 
-    :param period_label: Label identifying the specific period for the residual plots
+    :param period_label: Label describing the period for which residuals are plotted.
     :type period_label: str
-    :return: None
     """
-    print('RESIDUALS')
+    print(f"[INFO] Plotting residuals for period: {period_label}")
     plt.ioff()
     n_years = len(inpt.years)
     fig, ax = plt.subplots(n_years, 1, figsize=(12, 17), dpi=inpt.dpi)
@@ -138,7 +130,7 @@ def plot_residuals(period_label):
     fig.subplots_adjust(top=0.93)
 
     for i, year in enumerate(inpt.years):
-        print(f"plotting {year}")
+        print(f"===={year}")
 
         # Plot horizontal zero line for residual reference
         daterange = pd.date_range(start=pd.Timestamp(
@@ -189,12 +181,13 @@ def plot_residuals(period_label):
 
 def plot_ba(period_label):
     """
+    Generate Bland-Altman plots to assess agreement between component datasets
+    and reference data over the specified time period.
 
-    :param vr:
-    :param period_label:
-    :return:
+    :param period_label: Label describing the period being evaluated.
+    :type period_label: str
     """
-    print('BLAND-ALTMAN')
+    print(f"[INFO] Generating Bland-Altman plots for period: {period_label}")
     plt.ioff()
     fig, ax = plt.subplots(2, 2, figsize=(12, 12), dpi=inpt.dpi)
     axs = ax.ravel()
@@ -256,11 +249,13 @@ def plot_ba(period_label):
 
 def plot_scatter_all(period_label):
     """
-    Plots a 2x2 grid of scatter plots or 2D histograms by season or full period.
-    Applies polynomial fitting, formatting, and saves the figure.
-    """
+    Plot a 2x2 grid of scatter plots or 2D histograms by season or for the full period.
+    Applies polynomial fitting to the data, formats the plots, and saves the figure.
 
-    print(f"SCATTERPLOTS {period_label}")
+    :param period_label: Label indicating the time period or season for the plots.
+    :type period_label: str
+    """
+    print(f"[INFO] Generating scatter plots for period: {period_label}")
     plt.ioff()
     fig = plt.figure(figsize=(12, 12), dpi=inpt.dpi)
     var_data = inpt.extr[inpt.var]
@@ -340,7 +335,7 @@ def plot_scatter_all(period_label):
         x_valid, y_valid = x_season[valid_idx], y_season[valid_idx]
 
         print(
-            f"Plotting scatter {inpt.var_dict[ref_x]['label']} - {inpt.var_dict[data_typ]['label']}")
+            f"===={inpt.var_dict[ref_x]['label']} - {inpt.var_dict[data_typ]['label']}")
 
         vmin, vmax = var_data['min'], var_data['max']
         if vmin >= vmax or not (np.isfinite(vmin) and np.isfinite(vmax)):
@@ -428,10 +423,10 @@ def plot_scatter_all(period_label):
             # Fit
             if valid_idx.sum() >= 2:
                 plt_tls.calc_draw_fit(joint_axes, i, x_valid, y_valid, inpt.tres,
-                              inpt.all_seasons['all']['col'], data_typ, print_stats=True)
+                                      inpt.all_seasons['all']['col'], data_typ, print_stats=True)
             else:
                 plt_tls.calc_draw_fit(joint_axes, i, x_valid, y_valid, inpt.tres,
-                              inpt.all_seasons['all']['col'], data_typ, print_stats=True)
+                                      inpt.all_seasons['all']['col'], data_typ, print_stats=True)
                 print("ERROR: Not enough data points for fit.")
 
     save_path = os.path.join(
@@ -440,9 +435,15 @@ def plot_scatter_all(period_label):
     plt.close(fig)
 
 
-
 def plot_scatter_seasonal(period_label):
-    print(f"SCATTERPLOTS {period_label}")
+    """
+    Plot scatter plots separated by season.
+    Applies polynomial fitting to seasonal data, formats the plots, and saves the figure.
+
+    :param period_label: Label indicating the time period or season for the plots.
+    :type period_label: str
+    """
+    print(f"[INFO] Generating seasonal scatter plots for period: {period_label}")
     plt.ioff()
 
     fig, ax = plt.subplots(2, 2, figsize=(12, 12), dpi=inpt.dpi)
@@ -482,7 +483,7 @@ def plot_scatter_seasonal(period_label):
         x_valid, y_valid = x_season[valid_idx], y_season[valid_idx]
 
         print(
-            f"Plotting scatter {inpt.var_dict[ref_x]['label']} - {inpt.var_dict[data_typ]['label']}")
+            f"===={inpt.var_dict[ref_x]['label']} - {inpt.var_dict[data_typ]['label']}")
 
         axs[i].scatter(
             x_valid, y_valid,
@@ -493,10 +494,10 @@ def plot_scatter_seasonal(period_label):
 
         if valid_idx.sum() >= 2:
             plt_tls.calc_draw_fit(axs, i, x_valid, y_valid, inpt.tres,
-                          inpt.seasons[period_label]['col'], data_typ, print_stats=True)
+                                  inpt.seasons[period_label]['col'], data_typ, print_stats=True)
         else:
             plt_tls.calc_draw_fit(axs, i, x_valid, y_valid, inpt.tres,
-                          inpt.seasons[period_label]['col'], data_typ, print_stats=False)
+                                  inpt.seasons[period_label]['col'], data_typ, print_stats=False)
             print("ERROR: Not enough data points for fit.")
 
         plt_tls.format_scatterplot(axs, data_typ, i)
@@ -511,14 +512,14 @@ def plot_scatter_seasonal(period_label):
 
 def plot_scatter_cum():
     """
-    Plots cumulative scatter plots for each season (excluding 'all'), comparing components
-    against reference data with fits, customized appearance, and saves the resulting figure.
+    Plot cumulative scatter plots for each season (excluding 'all'), comparing components
+    against reference data with polynomial fits, customized appearance, and saving the figure.
 
     :raises ValueError: If insufficient data points are available for fitting.
 
     :return: None
     """
-    print("SCATTERPLOTS cumulative")
+    print("[INFO] Generating cumulative scatter plots")
     plt.ioff()
     fig, ax = plt.subplots(2, 2, figsize=(12, 12), dpi=inpt.dpi)
     axs = ax.ravel()
@@ -535,7 +536,7 @@ def plot_scatter_cum():
 
     if inpt.datasets['dropsondes']['switch']:
         period_label = 'all'
-        print(f"SCATTERPLOTS CUMULATIVE {period_label}")
+        print(f"===={period_label}")
 
         for i, data_typ in enumerate(plot_vars):
             tres, tres_tol = tls.get_tres(data_typ)
@@ -577,13 +578,13 @@ def plot_scatter_cum():
             )
 
             plt_tls.calc_draw_fit(axs, i,  merged['x'],  merged['y'], inpt.tres,
-                          inpt.seasons[period_label]['col'], data_typ, print_stats=True)
+                                  inpt.seasons[period_label]['col'], data_typ, print_stats=True)
 
             axs[i].legend()
             plt_tls.format_scatterplot(axs, data_typ, i)
     else:
         for period_label, season in inpt.seasons_subset.items():
-            print(f"SCATTERPLOTS CUMULATIVE {period_label}")
+            print(f"===={period_label}")
             for i, data_typ in enumerate(plot_vars):
                 tres, tres_tol = tls.get_tres(data_typ)
                 x = var_data[ref_x]['data_res'][tres][inpt.var]
@@ -615,7 +616,7 @@ def plot_scatter_cum():
                     # raise ValueError("Insufficient data for fitting.")
                 else:
                     plt_tls.calc_draw_fit(axs, i, x_valid, y_valid, inpt.tres,
-                                  inpt.seasons[period_label]['col'], data_typ, print_stats=False)
+                                          inpt.seasons[period_label]['col'], data_typ, print_stats=False)
 
                     axs[i].legend()
                 plt_tls.format_scatterplot(axs, data_typ, i)
@@ -627,6 +628,14 @@ def plot_scatter_cum():
 
 
 def plot_taylor(var_list):
+    """
+    Generate a Taylor diagram for a list of variables to assess statistical agreement
+    (correlation, standard deviation) between models/components and reference data.
+
+    :param var_list: List of variable names to include in the Taylor diagram.
+    :type var_list: list
+    """
+
     if var_list[0] in inpt.met_vars:
         plot_name = 'Weather variables'
         inpt.met_vars.remove('surf_pres')
@@ -634,8 +643,12 @@ def plot_taylor(var_list):
     if var_list[0] in inpt.rad_vars:
         plot_name = 'Radiation variables'
         available_markers = ['X', 'H', '>', '<', '8', 'd', 's']
-
-    print(f"Taylor Diagram {plot_name}")
+    if var_list[0] in inpt.cloud_vars:
+        plot_name = 'Cloud variables'
+        available_markers = ['X', 'H', '>', '<', '8', 'd', 's']
+    # Initialize figure and axis, etc.
+    plot_name = var_list[0] if var_list else "Variables"
+    print(f"[INFO] Taylor Diagram for {plot_name}")
     str_name = f"Taylor Diagram {plot_name} {inpt.years[0]}-{inpt.years[-1]}"
 
     combined_stdrefs = []
@@ -696,6 +709,21 @@ def plot_taylor(var_list):
 def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
                     ref_label='REF', colors=None, markers=None,
                     var_marker_map=None, inpt=None):
+    """
+    Draw a Taylor diagram on a polar axis.
+
+    :param ax: Matplotlib axis object to plot on.
+    :param std_ref: Reference standard deviation.
+    :param std_models: List of standard deviations of the models.
+    :param corr_coeffs: List of correlation coefficients.
+    :param model_labels: List of labels for the model points.
+    :param ref_label: Label for the reference circle.
+    :param colors: List of colors for each model point.
+    :param markers: List of marker styles for each model point.
+    :param var_marker_map: Dictionary mapping variable names to markers.
+    :param inpt: Input configuration module (used for labels and colors).
+    """
+    print(f"[INFO] Drawing Taylor diagram with reference label '{ref_label}'")
 
     std_models = np.array(std_models)
     corr_coeffs = np.array(corr_coeffs)
@@ -810,4 +838,3 @@ def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
 
     ax.legend(all_handles, all_labels, loc='upper right',
               fontsize='small', title_fontsize='medium', title='Legend')
-

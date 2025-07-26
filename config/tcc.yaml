@@ -14,25 +14,28 @@ c:
   column: 2
   data: ""
   data_res: ""
-  var_name: ""
+  var_name: "tcc"
 e:
   fn: "thaao_e_total_cloud_cover_"
   column: 2
   data: ""
   data_res: ""
-  var_name: ""
+  var_name: "tcc"
 t:
   fn: "_Thule_CHM190147_000_0060cloud"
   column: "TCC[okt]"
   data: ""
   data_res: ""
+  var_name: "tcc"
 t1:
   fn: ""
   column: ""
   data: ""
   data_res: ""
+  var_name: ""
 t2:
   fn: ""
   column: ""
   data: ""
   data_res: ""
+  var_name: ""

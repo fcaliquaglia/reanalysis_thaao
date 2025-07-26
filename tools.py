@@ -232,6 +232,7 @@ def mask_low_count_intervals(df, data_typ, min_frac):
         '3h': {'c': 1, 'e': 2, 't': 2, 't2': 2},
         '6h': {'c': 2, 't': 3},
         '12h': {'c': 4, 't': 5},
+        '18h': {'c': 5, 't': 8},
         '24h': {'t': 10}
     }
 
