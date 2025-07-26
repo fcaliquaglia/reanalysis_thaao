@@ -45,16 +45,25 @@ def read_cbh():
     # --- CARRA1---
     rd_frea.read_rean(vr, "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
+    var_dict["c"]["data"][vr] += inpt.carra1_ground_elev
+    var_dict["c"]["data"][vr] = var_dict["c"]["data"][vr].mask(var_dict["c"]["data"][vr] < inpt.cbh_low_thresh, np.nan)
 
     # --- ERA5 ---
     rd_frea.read_rean(vr, "e")
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
+    var_dict["c"]["data"][vr] += inpt.era5_ground_elev
+    var_dict["e"]["data"][vr] = var_dict["e"]["data"][vr].mask(var_dict["e"]["data"][vr] < inpt.cbh_low_thresh, np.nan)
+
 
     # --- THAAO ---
     if inpt.datasets['THAAO']['switch']:
         rd_ft.read_ceilometer(vr)
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
+        var_dict["c"]["data"][vr] += inpt.thaao_ground_elev
+        var_dict["t"]["data"][vr] = var_dict["t"]["data"][vr].mask(
+            var_dict["t"]["data"][vr] < inpt.cbh_low_thresh, np.nan)
+
 
     return
 
@@ -91,13 +100,6 @@ def read_iwv():
         rd_ft.read_hatpro(vr)
         var_dict["t1"]["data"], _ = tls.check_empty_df(
             var_dict["t1"]["data"], vr)
-
-    # --- Radiosondes ---
-    # TODO
-    # if inpt.datasets['THAAO']['switch']:
-    #     rd_ft.read_iwv_rs(vr)
-    #     var_dict["t2"]["data"], _ = tls.check_empty_df(
-    #         var_dict["t2"]["data"], vr)
 
 
 def read_lwp():
