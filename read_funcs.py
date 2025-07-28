@@ -97,10 +97,26 @@ def read_alb():
             var_dict["t"]["data"][vr] < inpt.rad_low_thresh, np.nan)
         var_dict["t"]["data"][vr] = sw_down_t
 
-    #ALB 
-    var_dict["c"]["data"][vr] = var_dict["c"]["data"]["sw_down"]/var_dict["c"]["data"]["sw_up"]
-    var_dict["e"]["data"][vr] = var_dict["e"]["data"]["sw_down"]/var_dict["e"]["data"]["sw_up"]
-    var_dict["t"]["data"][vr] = var_dict["t"]["data"]["sw_down"]/var_dict["t"]["data"]["sw_up"]
+    # ALB 
+    vr = "alb"
+    var_dict = inpt.extr[vr]
+    
+    alb_c = sw_down_c/sw_up_c
+    alb_c.name = vr
+    alb_e = sw_down_e/sw_up_e
+    alb_e.name = vr
+    alb_t = sw_down_t/sw_up_t
+    alb_t.name = vr
+
+    var_dict["c"]["data"] = pd.DataFrame({vr: alb_c})
+    var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
+
+    var_dict["e"]["data"] = pd.DataFrame({vr: alb_e})
+    var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
+
+    var_dict["t"]["data"] = pd.DataFrame({vr: alb_t})
+    var_dict["t"]["data"], _ = tls.check_empty_df(var_dict["t"]["data"], vr)
+
     
     return
 

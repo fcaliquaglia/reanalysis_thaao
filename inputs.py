@@ -11,7 +11,6 @@ __version__ = "0.1"
 __email__ = "filippo.caliquaglia@ingv.it"
 __status__ = "Research"
 
-import datetime as dt
 import string
 from pathlib import Path
 
@@ -67,20 +66,23 @@ datasets = {
 }
 
 # Active dataset location
-location = next((info['fn'] for info in datasets.values() if info.get('switch')), None)
+location = next((info['fn']
+                for info in datasets.values() if info.get('switch')), None)
 
 # ========== VARIABLE GROUPS ==========
 met_vars = ['temp', 'surf_pres', 'rh', 'iwv', 'windd', 'winds', 'precip']
-rad_vars = ['sw_lw_net', 'sw_net', 'lw_net', 'sw_up', 'lw_up', 'lw_down', 'sw_down']
-cloud_vars = ['tcc', 'cbh'] # lwp
+rad_vars = ['alb', 'sw_lw_net', 'sw_net', 'lw_net',
+            'sw_up', 'lw_up', 'lw_down', 'sw_down']
+cloud_vars = ['tcc', 'cbh']  # lwp
 technical_vars = ['windu', 'windv', 'dewpt', 'sw_net', 'lw_net']
 extra_vars = ['orog']
 
 # Variables requiring custom handling during resampling
-cumulative_vars = {'lw_net', 'sw_net', 'sw_up', 'sw_down', 'lw_up', 'lw_down', 'sw_lw_net', 'precip'}
+cumulative_vars = {'alb', 'lw_net', 'sw_net', 'sw_up',
+                   'sw_down', 'lw_up', 'lw_down', 'sw_lw_net', 'precip'}
 
 # Primary list of variables to analyze
-list_var = cloud_vars + rad_vars + met_vars
+list_var = rad_vars + cloud_vars + met_vars
 tres_list = ['original', '6h', '12h', '24h']
 tres = var = ''
 
