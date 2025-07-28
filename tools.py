@@ -47,12 +47,14 @@ def load_and_process_yaml(path: Path):
             )
     return cfg
 
+
 def get_common_paths(vr, y, prefix):
 
     base_out = Path(inpt.basefol['out']['parquets'])
     base_input = Path(inpt.basefol['t']['arcsix'])
     filename = f"{inpt.location}_{prefix}_{vr}_{y}.parquet"
     return base_out / filename, base_input
+
 
 def check_empty_df(data, vr):
     try:
@@ -129,6 +131,31 @@ def calc_rh_from_tdp():
     return
 
 
+def percentage_to_okta(percent):
+    if pd.isna(percent):
+        return 9  # optional: treat NaN as sky obscured
+    elif percent == 0:
+        return 0
+    elif percent < 12.5:
+        return 1
+    elif percent < 25:
+        return 2
+    elif percent < 37.5:
+        return 3
+    elif percent < 50:
+        return 4
+    elif percent < 62.5:
+        return 5
+    elif percent < 75:
+        return 6
+    elif percent < 87.5:
+        return 7
+    elif percent <= 100:
+        return 8
+    else:
+        return 9
+
+
 def okta_to_percentage(okta_value):
     okta_percent_map = {
         0: 0.0,
@@ -142,7 +169,8 @@ def okta_to_percentage(okta_value):
         8: 100.0,
         9: np.nan
     }
-    return okta_percent_map.get(okta_value, None)  
+    return okta_percent_map.get(okta_value, None)
+
 
 def convert_rs_to_iwv(df, tp):
     """

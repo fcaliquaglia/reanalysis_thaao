@@ -80,11 +80,11 @@ def plot_ts(period_label):
                 continue
             if chck:
                 continue
-            y_ori = var_data[data_typ]['data_res']['original'][inpt.var]
-            y_ori_mask = y_ori.index.year == year
+            y_ori_ = var_data[data_typ]['data_res']['original'][inpt.var]
+            y_ori_mask = y_ori_.index.year == year
             if y_ori_mask.any():
-                y_ori_ = y_ori.loc[y_ori_mask].dropna()
-                ax[i].plot(y_ori_,
+                y_ori = y_ori_.loc[y_ori_mask].dropna()
+                ax[i].plot(y_ori,
                            color=inpt.var_dict[data_typ]['col_ori'], **kwargs_ori)
 
             # Resampled data for the year

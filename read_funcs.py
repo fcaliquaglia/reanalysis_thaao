@@ -881,16 +881,20 @@ def read_tcc():
     # --- CARRA1 ---
     rd_frea.read_rean(vr, "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
+    var_dict["c"]["data"]['tcc'] = var_dict["c"]["data"]['tcc'].apply(tls.percentage_to_okta)
+
 
     # --- ERA5 ---
     rd_frea.read_rean(vr, "e")
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
     var_dict["e"]["data"][vr] *= 100.0
+    var_dict["e"]["data"]['tcc'] = var_dict["e"]["data"]['tcc'].apply(tls.percentage_to_okta)
+
 
     # --- THAAO ---
     if inpt.datasets['THAAO']['switch']:
         rd_ft.read_ceilometer(vr)
-        var_dict["t"]["data"]['tcc'] = var_dict["t"]["data"]['tcc'].apply(tls.okta_to_percentage)
+        # var_dict["t"]["data"]['tcc'] = var_dict["t"]["data"]['tcc'].apply(tls.okta_to_percentage)
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
 

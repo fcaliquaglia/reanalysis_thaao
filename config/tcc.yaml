@@ -1,14 +1,14 @@
 name: tcc
 ref_x: t
 min: 0
-max: 100
-res_min: -50
-res_max: 50
+max: 9
+res_min: -9
+res_max: 9
 uom: "[%]"
 comps:
   - c
   - e
-bin_size: 5
+bin_size: 1
 c:
   fn: "thaao_c_total_cloud_cover_"
   column: 2

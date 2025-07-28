@@ -54,7 +54,14 @@ def get_closest_subset_with_tolerance(df, freq, tol_minutes):
 
     # Build output using masked assignment
     result = pd.DataFrame(index=target_times, columns=df.columns)
-    result = result.astype(df.dtypes.to_dict())
+    dtype_dict = {}
+    for col, dtype in df.dtypes.items():
+        if pd.api.types.is_integer_dtype(dtype):
+            dtype_dict[col] = 'Int64'
+        else:
+            dtype_dict[col] = dtype
+    
+    result = result.astype(dtype_dict)
 
     valid_rows = final_indexer != -1
     if valid_rows.any():
