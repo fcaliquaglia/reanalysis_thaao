@@ -101,11 +101,11 @@ def read_alb():
     vr = "alb"
     var_dict = inpt.extr[vr]
     
-    alb_c = sw_down_c/sw_up_c
+    alb_c = sw_up_c/sw_down_c
     alb_c.name = vr
-    alb_e = sw_down_e/sw_up_e
+    alb_e = sw_up_e/sw_down_e
     alb_e.name = vr
-    alb_t = sw_down_t/sw_up_t
+    alb_t = sw_up_t/sw_down_t
     alb_t.name = vr
 
     var_dict["c"]["data"] = pd.DataFrame({vr: alb_c})

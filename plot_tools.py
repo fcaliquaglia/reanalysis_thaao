@@ -140,8 +140,9 @@ def calc_draw_fit(axs, i, xxx, yyy, tr, col, data_typ, print_stats=True):
     fn = f"{data_typ}_stats_{inpt.var}.csv"
     if print_stats:
         if os.path.exists(fn):
-            pass
-            read_stats_from_csv(fn, data_typ, ref_x)
+            # TODO: implement automtic stats reading from csv instead of calculating
+            # pass
+            # read_stats_from_csv(fn, data_typ, ref_x)
             stats = inpt.extr[inpt.var][data_typ]['data_stats'][tr]
             ref_stats = inpt.extr[inpt.var][ref_x]['data_stats'][tr]
             r2 = stats['r2']
