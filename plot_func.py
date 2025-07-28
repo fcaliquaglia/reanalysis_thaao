@@ -386,13 +386,13 @@ def plot_scatter_all(period_label):
             ax_marg_x.set_xlim(ax_joint.get_xlim())
             ax_marg_x.yaxis.set_major_locator(
                 MaxNLocator(nbins=3, prune='both'))
-            ax_marg_x.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+            ax_marg_x.yaxis.set_major_formatter(FormatStrFormatter('%.3f'))
 
             ax_marg_y.set_xlim(0, max_density)
             ax_marg_y.set_ylim(ax_joint.get_ylim())
             ax_marg_y.xaxis.set_major_locator(
                 MaxNLocator(nbins=3, prune='both'))
-            ax_marg_y.xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+            ax_marg_y.xaxis.set_major_formatter(FormatStrFormatter('%.3f'))
 
             # Colorbar (linked to QuadMesh, not x-axis)
             cax = inset_axes(ax_joint,
