@@ -129,6 +129,21 @@ def calc_rh_from_tdp():
     return
 
 
+def okta_to_percentage(okta_value):
+    okta_percent_map = {
+        0: 0.0,
+        1: 12.5,
+        2: 25.0,
+        3: 37.5,
+        4: 50.0,
+        5: 62.5,
+        6: 75.0,
+        7: 87.5,
+        8: 100.0,
+        9: np.nan
+    }
+    return okta_percent_map.get(okta_value, None)  
+
 def convert_rs_to_iwv(df, tp):
     """
     Convertito concettualmente in python da codice di Giovanni: PWV_Gio.m
