@@ -29,6 +29,80 @@ from metpy.constants import g
 import inputs as inpt
 import tools as tls
 
+def read_alb():
+    """
+    Reads and processes shortwave upward radiation data from CARRA1, ERA5, ERA5-LAND, and THAAO.
+    Applies unit conversions, calculates upwelling radiation, and filters invalid values.
+    Modifies `inpt` in-place.
+    """
+
+    # both CARRA1 AND ERA5
+    vr = 'sw_down'
+    var_dict = inpt.extr[vr]
+    read_sw_down()
+    sw_down_c = var_dict["c"]["data"][vr]
+    
+    sw_down_e = var_dict["e"]["data"][vr]
+
+    # --- CARRA1 ALB ---
+    vr = "sw_net"
+    var_dict = inpt.extr[vr]
+    rd_frea.read_rean(vr, "c")
+    var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
+    sw_net_c = var_dict["c"]["data"][vr]
+    sw_net_c /= pd.Timedelta('1h').total_seconds()
+
+    vr = "sw_up"
+    var_dict = inpt.extr[vr]
+    sw_up_c = sw_down_c - sw_net_c
+    sw_up_c = sw_up_c.mask(sw_up_c < inpt.rad_low_thresh, np.nan)
+    sw_up_c.name = vr
+    var_dict["c"]["data"] = pd.DataFrame({vr: sw_up_c})
+    var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
+
+    # --- ERA5 ALB ---
+    vr = "sw_net"
+    var_dict = inpt.extr[vr]
+    rd_frea.read_rean(vr, "e")
+    var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
+    sw_net_e = var_dict["e"]["data"][vr]
+    sw_net_e /= pd.Timedelta('1h').total_seconds()
+
+    vr = "sw_up"
+    var_dict = inpt.extr[vr]
+    sw_up_e = sw_down_e - sw_net_e
+    sw_up_e = sw_up_e.mask(sw_up_e < inpt.rad_low_thresh, np.nan)
+    sw_up_e.name = vr
+    var_dict["e"]["data"] = pd.DataFrame({vr: sw_up_e})
+    var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
+
+    # --- THAAO ALB ---
+    vr = "sw_up"
+    var_dict = inpt.extr[vr]
+    if inpt.datasets['THAAO']['switch']:
+        rd_ft.read_rad(vr)
+        var_dict["t"]["data"], _ = tls.check_empty_df(
+            var_dict["t"]["data"], vr)
+        sw_up_t = var_dict["t"]["data"][vr].mask(
+            var_dict["t"]["data"][vr] < inpt.rad_low_thresh, np.nan)
+        var_dict["t"]["data"][vr] = sw_up_t
+
+    vr = "sw_down"
+    var_dict = inpt.extr[vr]
+    if inpt.datasets['THAAO']['switch']:
+        rd_ft.read_rad(vr)
+        var_dict["t"]["data"], _ = tls.check_empty_df(
+            var_dict["t"]["data"], vr)
+        sw_down_t = var_dict["t"]["data"][vr].mask(
+            var_dict["t"]["data"][vr] < inpt.rad_low_thresh, np.nan)
+        var_dict["t"]["data"][vr] = sw_down_t
+
+    #ALB 
+    var_dict["c"]["data"][vr] = var_dict["c"]["data"]["sw_down"]/var_dict["c"]["data"]["sw_up"]
+    var_dict["e"]["data"][vr] = var_dict["e"]["data"]["sw_down"]/var_dict["e"]["data"]["sw_up"]
+    var_dict["t"]["data"][vr] = var_dict["t"]["data"]["sw_down"]/var_dict["t"]["data"]["sw_up"]
+    
+    return
 
 
 def read_cbh():
@@ -700,8 +774,7 @@ def read_sw_net():
     Applies unit conversions, calculates upwelling radiation, and filters invalid values.
     Modifies `inpt` in-place.
     """
-
-    # both CARRA1 AND ERA5
+    
     # --- CARRA1 ---
     vr = "sw_net"
     var_dict = inpt.extr[vr]
@@ -1101,6 +1174,7 @@ def read_wind():
 def read():
     # Map variable names to reader functions
     readers = {
+        "alb": read_alb,
         "cbh": read_cbh,
         "iwv": read_iwv,
         "lwp": read_lwp,

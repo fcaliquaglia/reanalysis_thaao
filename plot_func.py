@@ -791,7 +791,7 @@ def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
         key = (var_name, data_typ)
         color_base = colors[i]
         marker = markers[i]
-        color = tls.get_color_by_resolution(color_base, resolution)
+        color = plt_tls.get_color_by_resolution(color_base, resolution)
 
         if key not in point_map:
             point_map[key] = {'original': None, 'others': []}
