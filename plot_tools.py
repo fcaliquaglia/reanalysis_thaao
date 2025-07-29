@@ -137,24 +137,23 @@ def calc_draw_fit(axs, i, xxx, yyy, tr, col, data_typ, print_stats=True):
     axs[i].plot([var_min, var_max], [var_min, var_max],
                 color='black', lw=1.5, ls='-')
 
-    fn = f"{data_typ}_stats_{inpt.var}.csv"
+    fn = f"{tr}_{data_typ}_stats_{inpt.var}.csv"
     if print_stats:
-        if os.path.exists(fn):
-            # TODO: implement automtic stats reading from csv instead of calculating
-            # pass
-            # read_stats_from_csv(fn, data_typ, ref_x)
-            stats = inpt.extr[inpt.var][data_typ]['data_stats'][tr]
-            ref_stats = inpt.extr[inpt.var][ref_x]['data_stats'][tr]
-            r2 = stats['r2']
-            N = stats['N']
-            rmse = stats['rmse']
-            mbe = stats['mbe']
-            std_x = ref_stats['std_x']
-            std_y = stats['std_y']
-            KL_bits = stats['kl_bits']
+        stats_path = os.path.join(inpt.basefol['out']['base'], 'stats', tr, fn)
+        if os.path.exists(stats_path):
+            read_stats_from_csv(fn, data_typ, tr, ref_x)
         else:
-            r2, N, rmse, mbe, std_x, std_y, KL_bits = calc_stats(
-                xx, yy, data_typ, tr, fn)
+            calc_stats(xx, yy, data_typ, tr, fn)
+
+        stats = inpt.extr[inpt.var][data_typ]['data_stats'][tr]
+        ref_stats = inpt.extr[inpt.var][ref_x]['data_stats'][tr]
+        r2 = stats['r2']
+        N = stats['N']
+        rmse = stats['rmse']
+        mbe = stats['mbe']
+        std_x = ref_stats['std_x']
+        std_y = stats['std_y']
+        KL_bits = stats['kl_bits']
 
         def escape_label(label):
             return label.replace('_', r'\_')
@@ -177,18 +176,14 @@ def calc_draw_fit(axs, i, xxx, yyy, tr, col, data_typ, print_stats=True):
                     bbox=dict(facecolor='white', edgecolor='white'))
 
 
-def read_stats_from_csv(fn, data_typ, ref_x):
-    stats_path = os.path.join(inpt.basefol['out']['base'], 'scatter_stats', fn)
-
-    if not os.path.exists(stats_path):
-        print(f"⚠️ Stats file not found: {stats_path}")
-        return
+def read_stats_from_csv(fn, data_typ, tr, ref_x):
+    stats_path = os.path.join(inpt.basefol['out']['base'], 'stats', tr, fn)
 
     with open(stats_path, mode='r', newline='') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             var = row['Variable']
-            tr = row['Resolution']
+            tr = row['T_Res']
 
             # Initialize nested structure if it doesn't exist
             for key in [data_typ, ref_x]:
@@ -239,50 +234,46 @@ def calc_stats(x, y, data_typ, tr, fn):
 
     tres_ref_x = var_data[ref_x]['data_marg_distr']['tres']
     tres = var_data[data_typ]['data_marg_distr']['tres']
+    # Compute KL divergences
     P = np.array(var_data[ref_x]['data_marg_distr']
                  [tres_ref_x][inpt.var]*var_data['bin_size'])
     Q = np.array(var_data[data_typ]['data_marg_distr']
                  [tres][inpt.var]*var_data['bin_size'])
 
-    # Compute KL divergences
     var_data[data_typ]['data_stats'][tr]['kl_bits'] = kl_divergence(
         P, Q)/np.log(2)
-    save_stats(fn, data_typ, ref_x)
+    save_stats(fn, data_typ, tr, ref_x)
 
     return (inpt.extr[inpt.var][data_typ]['data_stats'][tr]['r2'], inpt.extr[inpt.var][data_typ]['data_stats'][tr]['N'], inpt.extr[inpt.var][data_typ]['data_stats'][tr]['rmse'], inpt.extr[inpt.var][data_typ]['data_stats'][tr]['mbe'], inpt.extr[inpt.var][ref_x]['data_stats'][tr]['std_x'],  inpt.extr[inpt.var][data_typ]['data_stats'][tr]['std_y'], inpt.extr[inpt.var][data_typ]['data_stats'][tr]['kl_bits'])
 
 
-def save_stats(fn, data_typ, ref_x):
-    out_dir = os.path.join(inpt.basefol['out']['base'], 'scatter_stats')
+def save_stats(fn, data_typ, tr, ref_x):
+    out_dir = os.path.join(inpt.basefol['out']['base'], 'stats', tr)
     os.makedirs(out_dir, exist_ok=True)
     stats_file = os.path.join(out_dir, f"{fn}")
-    write_header = not os.path.exists(stats_file)
 
-    with open(stats_file, mode='a', newline='') as csvfile:
+    with open(stats_file, mode='w', newline='') as csvfile:
         writer = csv.writer(csvfile)
 
-        if write_header:
-            writer.writerow(['Variable', 'Data_Type', 'Resolution',
-                            'r2', 'N', 'rmse', 'mbe', 'std_x', 'std_y', 'KL_bits'])
+        writer.writerow(['Variable', 'Model_Obs', 'T_Res',
+                         'r2', 'N', 'rmse', 'mbe', 'std_x', 'std_y', 'KL_bits'])
 
-        for tr, stats in inpt.extr[inpt.var][data_typ]['data_stats'].items():
-            try:
-                ref_stats = inpt.extr[inpt.var][ref_x]['data_stats'][tr]
+        ref_stats = inpt.extr[inpt.var][ref_x]['data_stats'][tr]
+        var_stats = inpt.extr[inpt.var][data_typ]['data_stats'][tr]
+        writer.writerow([
+            inpt.var,
+            inpt.var_dict[data_typ]['label'],
+            tr,
+            f"{var_stats['r2']:.4f}",
+            f"{var_stats['N']}",
+            f"{var_stats['rmse']:.4f}",
+            f"{var_stats['mbe']:.4f}",
+            f"{ref_stats['std_x']:.4f}",
+            f"{var_stats['std_y']:.4f}",
+            f"{var_stats['kl_bits']:.4f}"
+        ])
 
-                writer.writerow([
-                    inpt.var,
-                    data_typ,
-                    tr,
-                    stats['r2'],
-                    stats['N'],
-                    stats['rmse'],
-                    stats['mbe'],
-                    ref_stats['std_x'],
-                    stats['std_y'],
-                    stats['kl_bits']
-                ])
-            except KeyError as e:
-                print(f"⚠️ Missing data for {data_typ}, {tr}: {e}")
+        print(f"✅ Stats saved to {stats_file}")
 
 
 def format_ax(ax, xlabel='', ylabel='', title=None, letter=None,

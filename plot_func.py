@@ -646,8 +646,6 @@ def plot_taylor(var_list):
     if var_list[0] in inpt.cloud_vars:
         plot_name = 'Cloud variables'
         available_markers = ['X', 'H', '>', '<', '8', 'd', 's']
-    # Initialize figure and axis, etc.
-    plot_name = var_list[0] if var_list else "Variables"
     print(f"[INFO] Taylor Diagram for {plot_name}")
     str_name = f"Taylor Diagram {plot_name} {inpt.years[0]}-{inpt.years[-1]}"
 
@@ -723,7 +721,6 @@ def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
     :param var_marker_map: Dictionary mapping variable names to markers.
     :param inpt: Input configuration module (used for labels and colors).
     """
-    print(f"[INFO] Drawing Taylor diagram with reference label '{ref_label}'")
 
     std_models = np.array(std_models)
     corr_coeffs = np.array(corr_coeffs)
