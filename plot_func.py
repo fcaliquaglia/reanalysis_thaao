@@ -381,7 +381,7 @@ def plot_scatter_all(period_label):
             # Marginal histograms
             var_data[ref_x]['data_marg_distr'][tres][inpt.var], _, _ = \
                 ax_marg_x.hist(x_valid, bins=bin_edges,
-                               color=inpt.var_dict[data_typ]['col_distr'], 
+                               color=inpt.var_dict[ref_x]['col_distr'], 
                                alpha=0.5, density=True)
             var_data[data_typ]['data_marg_distr'][tres][inpt.var], _, _ = \
                 ax_marg_y.hist(y_valid, bins=bin_edges, orientation='horizontal', 
