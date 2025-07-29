@@ -173,7 +173,7 @@ var_dict = {
 config_dir = Path('config')
 extr = {}
 
-for var_name in met_vars + rad_vars + cloud_vars + technical_vars + extra_vars:
+for var_name in met_vars + rad_flux_vars + rad_comps_vars + cloud_vars + technical_vars + extra_vars:
     cfg_path = config_dir / f'{var_name}.yaml'
     cfg = tls.load_and_process_yaml(cfg_path)
     if cfg is not None:
