@@ -71,8 +71,8 @@ location = next((info['fn']
 
 # ========== VARIABLE GROUPS ==========
 met_vars = ['temp', 'surf_pres', 'rh', 'iwv', 'windd', 'winds', 'precip']
-rad_vars = ['alb', 'sw_lw_net', 'sw_net', 'lw_net',
-            'sw_up', 'lw_up', 'lw_down', 'sw_down']
+rad_comps_vars = ['sw_up', 'lw_up', 'lw_down', 'sw_down']
+rad_flux_vars = ['alb', 'sw_lw_net', 'sw_net', 'lw_net']
 cloud_vars = ['tcc', 'cbh']  # lwp
 technical_vars = ['windu', 'windv', 'dewpt', 'sw_net', 'lw_net']
 extra_vars = ['orog']
@@ -82,8 +82,8 @@ cumulative_vars = {'alb', 'lw_net', 'sw_net', 'sw_up',
                    'sw_down', 'lw_up', 'lw_down', 'sw_lw_net', 'precip'}
 
 # Primary list of variables to analyze
-list_var = met_vars + cloud_vars + rad_vars
-tres_list = ['original', '6h', '12h', '24h']
+list_var = met_vars + cloud_vars + rad_comps_vars + rad_flux_vars
+tres_list = ['original', '6h', '12h', '18h', '24h']
 tres = var = ''
 
 years = np.arange(2016, 2025)
@@ -141,7 +141,7 @@ var_dict = {
         'nanval': -9999.9,
         'col': 'black',
         'col_ori': 'dimgray',
-        'col_distr': 'lightgray',
+        'col_distr': 'slategray',
         'label': location,                    
         'cmap': 'Greys',
         'cmap_pos': (0.2, 0.05, 0.6, 0.1),

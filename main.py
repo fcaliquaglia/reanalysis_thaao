@@ -66,7 +66,9 @@ def main():
     if inpt.met_vars:
         plt_f.plot_taylor(inpt.met_vars)
     if inpt.rad_vars:
-        plt_f.plot_taylor(inpt.rad_vars)
+        plt_f.plot_taylor(inpt.rad_comps_vars)
+    if inpt.rad_vars:
+        plt_f.plot_taylor(inpt.rad_flux_vars)
     if inpt.rad_vars:
         plt_f.plot_taylor(inpt.cloud_vars)
 

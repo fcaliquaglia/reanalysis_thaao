@@ -659,8 +659,11 @@ def plot_taylor(var_list):
         plot_name = 'Weather variables'
         inpt.met_vars.remove('surf_pres')
         available_markers = ['o', 's', '^', 'D', 'v', 'P', '*']
-    if var_list[0] in inpt.rad_vars:
-        plot_name = 'Radiation variables'
+    if var_list[0] in inpt.rad_comps_vars:
+        plot_name = 'Radiation components variables'
+        available_markers = ['X', 'H', '>', '<', '8', 'd', 's']
+    if var_list[0] in inpt.rad_flux_vars:
+        plot_name = 'Radiation fluxes variables'
         available_markers = ['X', 'H', '>', '<', '8', 'd', 's']
     if var_list[0] in inpt.cloud_vars:
         plot_name = 'Cloud variables'
