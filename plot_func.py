@@ -297,8 +297,8 @@ def plot_scatter_all(period_label):
             figure=fig
         )
 
-        ax_joint = fig.add_subplot(gs[1, 0], sharex=ax_marg_x)
         ax_marg_x = fig.add_subplot(gs[0, 0])
+        ax_joint = fig.add_subplot(gs[1, 0], sharex=ax_marg_x)
         ax_marg_y = fig.add_subplot(gs[1, 1], sharey=ax_joint)
 
         joint_axes.append(ax_joint)
