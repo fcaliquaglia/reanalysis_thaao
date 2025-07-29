@@ -273,7 +273,9 @@ def plot_scatter_all(period_label):
     width_ratios = [4, 1]
     height_ratios = [1, 4]
 
-    joint_axes = []
+    joint_axes = []    
+    marg_x_axes = []
+    marg_y_axes = []
 
     for i, data_typ in enumerate(plot_vars):
 
@@ -295,10 +297,13 @@ def plot_scatter_all(period_label):
             figure=fig
         )
 
-        ax_marg_x = fig.add_subplot(gs[0, 0])
         ax_joint = fig.add_subplot(gs[1, 0], sharex=ax_marg_x)
-        joint_axes.append(ax_joint)
+        ax_marg_x = fig.add_subplot(gs[0, 0])
         ax_marg_y = fig.add_subplot(gs[1, 1], sharey=ax_joint)
+
+        joint_axes.append(ax_joint)
+        marg_x_axes.append(ax_marg_x)
+        marg_y_axes.append(ax_marg_y)
 
         # Hide inner tick labels for marginal plots
         plt.setp(ax_marg_x.get_xticklabels(), visible=False)
@@ -378,24 +383,6 @@ def plot_scatter_all(period_label):
                                                                                       color='orange', alpha=0.5, density=True)
             var_data[data_typ]['data_marg_distr'][tres][inpt.var], _, _ = ax_marg_y.hist(y_valid, bins=bin_edges,
                                                                                          orientation='horizontal', color='blue', alpha=0.5, density=True)
-
-            # Sync the density axes (max of both histograms)
-            max_density = max(np.max(var_data[ref_x]['data_marg_distr'][tres][inpt.var]), np.max(
-                var_data[data_typ]['data_marg_distr'][tres][inpt.var]))
-
-            ax_marg_x.set_ylim(0, max_density)
-            ax_marg_x.set_xlim(ax_joint.get_xlim())
-            ax_marg_x.yaxis.set_major_locator(
-                MaxNLocator(nbins=3, prune='both'))
-            ax_marg_x.yaxis.set_major_formatter(FuncFormatter(plt_tls.smart_formatter))
-
-            ax_marg_y.set_xlim(0, max_density)
-            ax_marg_y.set_ylim(ax_joint.get_ylim())
-            ax_marg_y.xaxis.set_major_locator(
-                MaxNLocator(nbins=3, prune='both'))
-            ax_marg_y.xaxis.set_major_formatter(FuncFormatter(plt_tls.smart_formatter))
-
-
             # Colorbar (linked to QuadMesh, not x-axis)
             cax = inset_axes(ax_joint,
                              width="80%", height="25%", loc='lower center',
@@ -426,10 +413,34 @@ def plot_scatter_all(period_label):
             if valid_idx.sum() >= 2:
                 plt_tls.calc_draw_fit(joint_axes, i, x_valid, y_valid, inpt.tres,
                                       inpt.all_seasons['all']['col'], data_typ, print_stats=True)
-            else:
-                plt_tls.calc_draw_fit(joint_axes, i, x_valid, y_valid, inpt.tres,
-                                      inpt.all_seasons['all']['col'], data_typ, print_stats=True)
-                print("ERROR: Not enough data points for fit.")
+
+    # same axis for marginal distroibutions
+    all_data_typs = var_data['comps'] + [var_data['ref_x']]
+    
+    global_max_density = 0
+    
+    for data_typ in all_data_typs:
+        tres, tres_tol = tls.get_tres(data_typ)
+        try:
+            data_distr = var_data[data_typ]['data_marg_distr'][tres][inpt.var]
+            max_val = np.max(data_distr)
+            if max_val > global_max_density:
+                global_max_density = max_val
+        except KeyError:
+            continue
+
+    for ax_marg_x, ax_joint in zip(marg_x_axes, joint_axes):
+        ax_marg_x.set_ylim(0, global_max_density)
+        ax_marg_x.set_xlim(ax_joint.get_xlim())
+        ax_marg_x.yaxis.set_major_locator(MaxNLocator(nbins=3, prune='both'))
+        ax_marg_x.yaxis.set_major_formatter(FuncFormatter(plt_tls.smart_formatter))
+    
+    for ax_marg_y, ax_joint in zip(marg_y_axes, joint_axes):
+        ax_marg_y.set_xlim(0, global_max_density)
+        ax_marg_y.set_ylim(ax_joint.get_ylim())
+        ax_marg_y.xaxis.set_major_locator(MaxNLocator(nbins=3, prune='both'))
+        ax_marg_y.xaxis.set_major_formatter(FuncFormatter(plt_tls.smart_formatter))
+
 
     save_path = os.path.join(
         inpt.basefol['out']['base'], inpt.tres, f"{str_name.replace(' ', '_')}.png")
