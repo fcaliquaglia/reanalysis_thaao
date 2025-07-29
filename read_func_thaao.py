@@ -338,7 +338,7 @@ def load_per_year_parquets(vr, source):
                     print(f"⚠️ Loaded EMPTY {path_out}!")
                 else:
                     df_all = pd.concat([df_all, df_tmp])
-                    print(f"✅ Loaded {path_out}")
+                    print(f"📥 Loaded {path_out}")
             except Exception as e:
                 print(f"⚠️ Failed to load {path_out}: {e}")
         else:

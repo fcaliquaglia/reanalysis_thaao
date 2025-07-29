@@ -693,10 +693,10 @@ def plot_taylor(var_list):
     fig.suptitle(str_name, fontweight='bold')
     fig.subplots_adjust(top=0.93, bottom=0.15)
 
-    std_ref = 1.0
-    plot_taylor_dia(ax, std_ref, combined_stds, combined_cors, combined_labels,
+    ref_std = 1.0
+    plot_taylor_dia(ax, ref_std, combined_stds, combined_cors, combined_labels,
                     colors=combined_colors, markers=combined_markers,
-                    var_marker_map=var_marker_map, inpt=inpt)
+                    var_marker_map=var_marker_map)
 
     save_path = os.path.join(
         inpt.basefol['out']['base'], f"{str_name.replace(' ', '_')}.png")
@@ -704,9 +704,8 @@ def plot_taylor(var_list):
     plt.close(fig)
 
 
-def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
-                    ref_label='REF', colors=None, markers=None,
-                    var_marker_map=None, inpt=None):
+def plot_taylor_dia(ax, std_ref, std_models, corrs, labels,
+                    colors, markers, var_marker_map):
     """
     Draw a Taylor diagram on a polar axis.
 
@@ -723,7 +722,7 @@ def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
     """
 
     std_models = np.array(std_models)
-    corr_coeffs = np.array(corr_coeffs)
+    corrs = np.array(corrs)
     rmax = 2
 
     ax.set_ylim(0, rmax)
@@ -742,7 +741,7 @@ def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
 
     ax.set_rlabel_position(135)
     radial_ticks = np.arange(0, rmax + 0.2, 0.2)
-    radial_labels = [ref_label if r ==
+    radial_labels = ['REF' if r ==
                      1.0 else f"{r:.2f}" for r in radial_ticks]
     ax.set_yticks(radial_ticks)
     ax.set_yticklabels(radial_labels, fontsize=10, color='black')
@@ -774,7 +773,7 @@ def plot_taylor_dia(ax, std_ref, std_models, corr_coeffs, model_labels,
     def parse_res(res):
         return 0 if res == 'original' else int(res.strip('h'))
 
-    for i, (std, corr, label) in enumerate(zip(std_models, corr_coeffs, model_labels)):
+    for i, (std, corr, label) in enumerate(zip(std_models, corrs, labels)):
         theta = np.arccos(corr)
         try:
             data_typ, meta = label.split('(')
