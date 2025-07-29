@@ -34,13 +34,30 @@ def read_weather(vr):
 
 
 def read_rad(vr):
-    # Try loading from per-year parquet files
-    df_all, count = load_per_year_parquets(vr, "RAD")
+    df_all = pd.DataFrame()
+    missing_years = []
 
-    # Step 2: If some files are missing, process .dat files
-    if count < len(inpt.years):
-        t_all = []
-        for year in inpt.years:
+    # Check which years have existing parquet files
+    for year in inpt.years:
+        path_out, _ = tls.get_common_paths(vr, year, "RAD")
+        if os.path.exists(path_out):
+            try:
+                df_tmp = pd.read_parquet(path_out)
+                if not df_tmp.empty:
+                    df_all = pd.concat([df_all, df_tmp])
+                    print(f"📥 Loaded {path_out}")
+                else:
+                    print(f"⚠️ Loaded EMPTY {path_out}")
+            except Exception as e:
+                print(f"⚠️ Failed to load {path_out}: {e}")
+                missing_years.append(year)
+        else:
+            print(f"⚠️ File not found: {path_out}")
+            missing_years.append(year)
+
+    # Process only missing years
+    if missing_years:
+        for year in missing_years:
             file = Path(inpt.basefol["t"]['base']) / "thaao_rad" / \
                 f"{inpt.extr[vr]['t']['fn']}{year}_5MIN.dat"
             try:
@@ -53,21 +70,22 @@ def read_rad(vr):
                 ]
                 df.index = pd.DatetimeIndex(times)
                 df = df[[inpt.extr[vr]["t"]["column"]]].rename(
-                    columns={inpt.extr[vr]["t"]["column"]: vr})
-                t_all.append(df)
+                    columns={inpt.extr[vr]["t"]["column"]: vr}
+                )
                 print(f"OK: {file.name}")
+
+                # Save to parquet
+                df_year = df[df.index.year == year]
+                path_out, _ = tls.get_common_paths(vr, year, "RAD")
+                df_year.to_parquet(path_out)
+                print(f"✅ Saved data for year {year} to {path_out}")
+
+                # Add to overall df_all
+                df_all = pd.concat([df_all, df])
             except FileNotFoundError:
                 print(f"NOT FOUND: {file.name}")
 
-        if t_all:
-            df_all = pd.concat(t_all)
-        else:
-            df_all = pd.DataFrame()
-
-    # Save per-year data
-    save_per_year_parquets(vr, df_all, 'RAD')
-
-    # Step 4: Store final result
+    # Final assignment
     inpt.extr[vr]["t"]["data"] = df_all
 
 
@@ -113,7 +131,7 @@ def read_ceilometer(vr):
     # If not all years were loaded, parse original .txt files
 
     if count < len(inpt.years):
-        t_all = [] 
+        t_all = []
         for i in inpt.dateranges["ceilometer"][inpt.dateranges["ceilometer"].year.isin(inpt.years)]:
             date_str = i.strftime("%Y%m%d")
             file = Path(inpt.basefol["t"]["base"]) / "thaao_ceilometer" / \

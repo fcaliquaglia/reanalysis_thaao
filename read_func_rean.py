@@ -56,9 +56,14 @@ def read_rean(vr, data_typ):
             parquet_paths.append(output_path)
 
     # 🔍 Check if all parquet files exist
-    all_exist = all(os.path.exists(pq) for pq in parquet_paths)
+    missing_years = []
+    for year in inpt.years:
+        file_name = f"{inpt.extr[vr][data_typ]['fn']}{inpt.location}_{year}.parquet"
+        parquet_path = os.path.join(inpt.basefol[data_typ]['parquets'], file_name)
+        if not os.path.exists(parquet_path):
+            missing_years.append(year)
 
-    if not all_exist:
+    if not missing_years==[]:
         print("⚙️  Missing parquet files detected. Running processing...")
         if inpt.datasets['dropsondes']['switch']:
             for file_path in drop_files:
@@ -66,7 +71,7 @@ def read_rean(vr, data_typ):
                 inpt.location = file_name.replace('_loc.txt', '')
                 tls.process_rean(vr, data_typ, year=2024)
         else:
-            for year in inpt.years:
+            for year in missing_years:
                 tls.process_rean(vr, data_typ, year)
 
     # ✅ Now read all parquet files

@@ -82,7 +82,7 @@ cumulative_vars = {'alb', 'lw_net', 'sw_net', 'sw_up',
                    'sw_down', 'lw_up', 'lw_down', 'sw_lw_net', 'precip'}
 
 # Primary list of variables to analyze
-list_var = rad_vars + cloud_vars + met_vars
+list_var = met_vars + cloud_vars + rad_vars
 tres_list = ['original', '6h', '12h', '24h']
 tres = var = ''
 

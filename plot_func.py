@@ -33,6 +33,7 @@ import tools as tls
 from matplotlib.gridspec import GridSpec
 from matplotlib.ticker import MaxNLocator
 from matplotlib.ticker import FormatStrFormatter
+from matplotlib.ticker import FuncFormatter
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from pyCompare import blandAltman
 from matplotlib.lines import Line2D
@@ -386,13 +387,14 @@ def plot_scatter_all(period_label):
             ax_marg_x.set_xlim(ax_joint.get_xlim())
             ax_marg_x.yaxis.set_major_locator(
                 MaxNLocator(nbins=3, prune='both'))
-            ax_marg_x.yaxis.set_major_formatter(FormatStrFormatter('%.3f'))
+            ax_marg_x.yaxis.set_major_formatter(FuncFormatter(plt_tls.smart_formatter))
 
             ax_marg_y.set_xlim(0, max_density)
             ax_marg_y.set_ylim(ax_joint.get_ylim())
             ax_marg_y.xaxis.set_major_locator(
                 MaxNLocator(nbins=3, prune='both'))
-            ax_marg_y.xaxis.set_major_formatter(FormatStrFormatter('%.3f'))
+            ax_marg_y.xaxis.set_major_formatter(FuncFormatter(plt_tls.smart_formatter))
+
 
             # Colorbar (linked to QuadMesh, not x-axis)
             cax = inset_axes(ax_joint,

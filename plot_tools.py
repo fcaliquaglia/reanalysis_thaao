@@ -61,6 +61,15 @@ def format_scatterplot(axs, data_typ, i):
               identity_line=True)
 
 
+def smart_formatter(x,_):
+    if x == 0:
+        return "0"
+    elif abs(x) >= 1:
+        return f"{x:.0f}"
+    else:
+        return f"{x:.{abs(int(np.floor(np.log10(abs(x)))))}f}"
+
+
 def frame_and_axis_removal(axs, n_plots):
     """
     Hide extra axes beyond the number of plots needed.
