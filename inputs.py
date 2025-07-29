@@ -118,24 +118,54 @@ seasons_subset = {k: v for k, v in seasons.items() if k != 'all'}
 # ========== VARIABLE METADATA ==========
 var_dict = {
     'c': {
-        'nanval': np.nan, 'col': 'red', 'col_ori': 'orange',
-        'label': 'CARRA1', 'cmap': 'jet', 'cmap_pos': (0.2, 0.85, 0.6, 0.1), 'label_uom': ''
+        'nanval': np.nan,
+        'col': 'red',
+        'col_ori': 'indianred',
+        'col_distr': 'salmon',                
+        'label': 'CARRA1',
+        'cmap': 'jet',
+        'cmap_pos': (0.2, 0.85, 0.6, 0.1),
+        'label_uom': ''
     },
     'e': {
-        'nanval': -32767.0, 'col': 'blue', 'col_ori': 'cyan',
-        'label': 'ERA5', 'cmap': 'viridis', 'cmap_pos': (0.2, 0.65, 0.6, 0.1), 'label_uom': ''
+        'nanval': -32767.0,
+        'col': 'blue',
+        'col_ori': 'dodgerblue',
+        'col_distr': 'skyblue',               
+        'label': 'ERA5',
+        'cmap': 'viridis',
+        'cmap_pos': (0.2, 0.65, 0.6, 0.1),
+        'label_uom': ''
     },
     't': {
-        'nanval': -9999.9, 'col': 'black', 'col_ori': 'grey',
-        'label': location, 'label_uom': ''
+        'nanval': -9999.9,
+        'col': 'black',
+        'col_ori': 'dimgray',
+        'col_distr': 'lightgray',
+        'label': location,                    
+        'cmap': 'Greys',
+        'cmap_pos': (0.2, 0.05, 0.6, 0.1),
+        'label_uom': ''
     },
     't1': {
-        'nanval': np.nan, 'col': 'green', 'col_ori': 'lightgreen',
-        'label': 'HATPRO', 'cmap': 'plasma', 'cmap_pos': (0.2, 0.45, 0.6, 0.1), 'label_uom': ''
+        'nanval': np.nan,
+        'col': 'green',
+        'col_ori': 'seagreen',
+        'col_distr': 'mediumseagreen',        
+        'label': 'HATPRO',
+        'cmap': 'plasma',
+        'cmap_pos': (0.2, 0.45, 0.6, 0.1),
+        'label_uom': ''
     },
     't2': {
-        'nanval': np.nan, 'col': 'purple', 'col_ori': 'violet',
-        'label': 'AWS_ECAPAC', 'cmap': 'cividis', 'cmap_pos': (0.2, 0.25, 0.6, 0.1), 'label_uom': ''
+        'nanval': np.nan,
+        'col': 'purple',
+        'col_ori': 'darkorchid',
+        'col_distr': 'orchid',                
+        'label': 'AWS_ECAPAC',
+        'cmap': 'cividis',
+        'cmap_pos': (0.2, 0.25, 0.6, 0.1),
+        'label_uom': ''
     }
 }
 

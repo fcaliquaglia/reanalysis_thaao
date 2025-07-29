@@ -273,7 +273,7 @@ def plot_scatter_all(period_label):
     width_ratios = [4, 1]
     height_ratios = [1, 4]
 
-    joint_axes = []    
+    joint_axes = []
     marg_x_axes = []
     marg_y_axes = []
 
@@ -379,10 +379,14 @@ def plot_scatter_all(period_label):
             quadmesh = h[-1]  # Correct QuadMesh for colorbar
 
             # Marginal histograms
-            var_data[ref_x]['data_marg_distr'][tres][inpt.var], _, _ = ax_marg_x.hist(x_valid, bins=bin_edges,
-                                                                                      color='orange', alpha=0.5, density=True)
-            var_data[data_typ]['data_marg_distr'][tres][inpt.var], _, _ = ax_marg_y.hist(y_valid, bins=bin_edges,
-                                                                                         orientation='horizontal', color='blue', alpha=0.5, density=True)
+            var_data[ref_x]['data_marg_distr'][tres][inpt.var], _, _ = \
+                ax_marg_x.hist(x_valid, bins=bin_edges,
+                               color=inpt.var_dict[data_typ]['col_distr'], 
+                               alpha=0.5, density=True)
+            var_data[data_typ]['data_marg_distr'][tres][inpt.var], _, _ = \
+                ax_marg_y.hist(y_valid, bins=bin_edges, orientation='horizontal', 
+                               color=inpt.var_dict[data_typ]['col_distr'], 
+                               alpha=0.5, density=True)
             # Colorbar (linked to QuadMesh, not x-axis)
             cax = inset_axes(ax_joint,
                              width="80%", height="25%", loc='lower center',
@@ -416,9 +420,9 @@ def plot_scatter_all(period_label):
 
     # same axis for marginal distroibutions
     all_data_typs = var_data['comps'] + [var_data['ref_x']]
-    
+
     global_max_density = 0
-    
+
     for data_typ in all_data_typs:
         tres, tres_tol = tls.get_tres(data_typ)
         try:
@@ -433,14 +437,15 @@ def plot_scatter_all(period_label):
         ax_marg_x.set_ylim(0, global_max_density)
         ax_marg_x.set_xlim(ax_joint.get_xlim())
         ax_marg_x.yaxis.set_major_locator(MaxNLocator(nbins=3, prune='both'))
-        ax_marg_x.yaxis.set_major_formatter(FuncFormatter(plt_tls.smart_formatter))
-    
+        ax_marg_x.yaxis.set_major_formatter(
+            FuncFormatter(plt_tls.smart_formatter))
+
     for ax_marg_y, ax_joint in zip(marg_y_axes, joint_axes):
         ax_marg_y.set_xlim(0, global_max_density)
         ax_marg_y.set_ylim(ax_joint.get_ylim())
         ax_marg_y.xaxis.set_major_locator(MaxNLocator(nbins=3, prune='both'))
-        ax_marg_y.xaxis.set_major_formatter(FuncFormatter(plt_tls.smart_formatter))
-
+        ax_marg_y.xaxis.set_major_formatter(
+            FuncFormatter(plt_tls.smart_formatter))
 
     save_path = os.path.join(
         inpt.basefol['out']['base'], inpt.tres, f"{str_name.replace(' ', '_')}.png")
@@ -456,7 +461,8 @@ def plot_scatter_seasonal(period_label):
     :param period_label: Label indicating the time period or season for the plots.
     :type period_label: str
     """
-    print(f"[INFO] Generating seasonal scatter plots for period: {period_label}")
+    print(
+        f"[INFO] Generating seasonal scatter plots for period: {period_label}")
     plt.ioff()
 
     fig, ax = plt.subplots(2, 2, figsize=(12, 12), dpi=inpt.dpi)
