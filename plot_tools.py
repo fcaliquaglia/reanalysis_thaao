@@ -10,6 +10,7 @@ import os
 import numpy as np
 import inputs as inpt
 import datetime as dt
+import matplotlib.cm as cm
 import csv
 
 
@@ -81,29 +82,26 @@ def frame_and_axis_removal(axs, n_plots):
         axs[i].set_visible(False)
 
 
-def get_color_by_resolution(base_color, resolution):
-    blues = ['#0000FF',  # Blue
-             '#1E90FF',  # Dodger Blue
-             '#00BFFF',  # Deep Sky Blue
-             '#87CEFA',  # Light Sky Blue
-             '#ADD8E6']  # Light Blue
-    reds = ['#FF0000',   # Red
-            '#FF4500',   # Orange Red
-            '#FF6347',   # Tomato
-            '#F08080',   # Light Coral
-            '#FFE4E1']   # Misty Rose
+def get_colormap_colors(cmap_name, n):
+    cmap = cm.get_cmap(cmap_name, n)
+    return [cmap(i) for i in range(n)]
 
-    try:
-        idx = inpt.tres_list.index(resolution)
-    except ValueError:
-        idx = -1
 
-    base_color = base_color.lower() if isinstance(base_color, str) else 'gray'
+def get_color_by_resolution(data_typ, resolution):
 
-    if base_color == 'blue':
-        return blues[idx] if idx > 0 else 'blue'
-    elif base_color == 'red':
-        return reds[idx] if idx > 0 else 'red'
+    n_levels = len(inpt.tres_list)
+
+    cold_colors = get_colormap_colors("winter", n_levels)  # or "cool", "Blues"
+    warm_colors = get_colormap_colors("autumn", n_levels)  # or "hot", "OrRd"
+    res_index = inpt.tres_list.index(resolution)
+    if data_typ == 'c':
+        color = warm_colors[res_index]
+    elif data_typ == 'e':
+        color = cold_colors[res_index]
+    else:
+        color = 'gray'  # fallback
+
+    return color
 
 
 def calc_draw_fit(axs, i, xxx, yyy, tr, col, data_typ, print_stats=True):

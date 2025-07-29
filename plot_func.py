@@ -381,11 +381,11 @@ def plot_scatter_all(period_label):
             # Marginal histograms
             var_data[ref_x]['data_marg_distr'][tres][inpt.var], _, _ = \
                 ax_marg_x.hist(x_valid, bins=bin_edges,
-                               color=inpt.var_dict[ref_x]['col_distr'], 
+                               color=inpt.var_dict[ref_x]['col_distr'],
                                alpha=0.5, density=True)
             var_data[data_typ]['data_marg_distr'][tres][inpt.var], _, _ = \
-                ax_marg_y.hist(y_valid, bins=bin_edges, orientation='horizontal', 
-                               color=inpt.var_dict[data_typ]['col_distr'], 
+                ax_marg_y.hist(y_valid, bins=bin_edges, orientation='horizontal',
+                               color=inpt.var_dict[data_typ]['col_distr'],
                                alpha=0.5, density=True)
             # Colorbar (linked to QuadMesh, not x-axis)
             cax = inset_axes(ax_joint,
@@ -809,7 +809,7 @@ def plot_taylor_dia(ax, std_ref, std_models, corrs, labels,
         key = (var_name, data_typ)
         color_base = colors[i]
         marker = markers[i]
-        color = plt_tls.get_color_by_resolution(color_base, resolution)
+        color = plt_tls.get_color_by_resolution(data_typ, resolution)
 
         if key not in point_map:
             point_map[key] = {'original': None, 'others': []}

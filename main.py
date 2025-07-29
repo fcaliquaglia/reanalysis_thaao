@@ -39,25 +39,23 @@ def process_variable(var, tres):
     rd_funcs.read()
     rs_f.data_resampling(var)
 
-    # Always plot cumulative scatter
-    # plt_f.plot_scatter_cum()
+    plt_f.plot_scatter_cum()
 
-    # Additional plots if dropsondes are OFF
     if not inpt.datasets.get('dropsondes', {}).get('switch', False):
-        # plt_f.plot_ts('all')
-        # plt_f.plot_residuals('all')
-        # plt_f.plot_ba('all')
+        plt_f.plot_ts('all')
+        plt_f.plot_residuals('all')
+        plt_f.plot_ba('all')
         plt_f.plot_scatter_all('all')
-        # for season in inpt.seasons:
-        #     plt_f.plot_scatter_seasonal(season)
+        for season in inpt.seasons:
+            plt_f.plot_scatter_seasonal(season)
 
 
 def main():
-    print(f"\n=== Location: {inpt.location} ===\n")
+    print(f"\n\n=== Location: {inpt.location} ===\n")
 
     for tres in inpt.tres_list:
         inpt.tres = tres
-        print(f"\n=== Processing Time Resolution: {tres} ===\n")
+        print(f"\n=== Processing Time Resolution: {tres} ===\n\n")
 
         for var in inpt.list_var:
             process_variable(var, tres)

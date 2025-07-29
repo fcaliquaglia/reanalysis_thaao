@@ -85,7 +85,7 @@ cumulative_vars = {'alb', 'lw_net', 'sw_net', 'sw_up',
 list_var = met_vars + cloud_vars + rad_comps_vars + rad_flux_vars
 
 # keep time resolution in order for taylor diagrams!
-tres_list = ['original', '6h', '12h', '18h', '24h']
+tres_list = ['original', '6h', '12h',  '24h']
 tres = var = ''
 
 years = np.arange(2016, 2025)
