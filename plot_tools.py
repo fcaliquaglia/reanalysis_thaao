@@ -61,7 +61,7 @@ def format_scatterplot(axs, data_typ, i):
               identity_line=True)
 
 
-def smart_formatter(x,_):
+def smart_formatter(x, _):
     if x == 0:
         return "0"
     elif abs(x) >= 1:
@@ -104,7 +104,6 @@ def get_color_by_resolution(base_color, resolution):
         return blues[idx] if idx > 0 else 'blue'
     elif base_color == 'red':
         return reds[idx] if idx > 0 else 'red'
-
 
 
 def calc_draw_fit(axs, i, xxx, yyy, tr, col, data_typ, print_stats=True):

@@ -42,28 +42,32 @@ def read_rean(vr, data_typ):
     parquet_paths = []
 
     if inpt.datasets['dropsondes']['switch']:
-        drop_files = sorted(glob.glob(os.path.join('txt_locations', "ARCSIX-AVAPS-netCDF_G3*.txt")))
+        drop_files = sorted(glob.glob(os.path.join(
+            'txt_locations', "ARCSIX-AVAPS-netCDF_G3*.txt")))
         for file_path in drop_files:
             file_name = os.path.basename(file_path)
             year = 2024  # fixed year for dropsondes
             output_file = f"{inpt.extr[vr][data_typ]['fn']}{file_name.replace('_loc.txt', '')}_{year}.parquet"
-            output_path = os.path.join(inpt.basefol[data_typ]['parquets'], output_file)
+            output_path = os.path.join(
+                inpt.basefol[data_typ]['parquets'], output_file)
             parquet_paths.append(output_path)
     else:
         for year in inpt.years:
             output_file = f"{inpt.extr[vr][data_typ]['fn']}{inpt.location}_{year}.parquet"
-            output_path = os.path.join(inpt.basefol[data_typ]['parquets'], output_file)
+            output_path = os.path.join(
+                inpt.basefol[data_typ]['parquets'], output_file)
             parquet_paths.append(output_path)
 
     # 🔍 Check if all parquet files exist
     missing_years = []
     for year in inpt.years:
         file_name = f"{inpt.extr[vr][data_typ]['fn']}{inpt.location}_{year}.parquet"
-        parquet_path = os.path.join(inpt.basefol[data_typ]['parquets'], file_name)
+        parquet_path = os.path.join(
+            inpt.basefol[data_typ]['parquets'], file_name)
         if not os.path.exists(parquet_path):
             missing_years.append(year)
 
-    if not missing_years==[]:
+    if not missing_years == []:
         print("⚙️  Missing parquet files detected. Running processing...")
         if inpt.datasets['dropsondes']['switch']:
             for file_path in drop_files:
@@ -85,8 +89,8 @@ def read_rean(vr, data_typ):
         except Exception as e:
             print(f"⚠️  Could not read {pq}: {e}")
 
-    inpt.extr[vr][data_typ]["data"] = pd.concat(data_all) if data_all else pd.DataFrame()
-
+    inpt.extr[vr][data_typ]["data"] = pd.concat(
+        data_all) if data_all else pd.DataFrame()
 
 
 def read():
