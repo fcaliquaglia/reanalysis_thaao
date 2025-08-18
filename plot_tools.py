@@ -130,18 +130,22 @@ def calc_draw_fit(axs, i, xxx, yyy, tr, col, data_typ, print_stats=True):
     mask = np.isfinite(xx_all) & np.isfinite(yy_all)
     xx = xx_all[mask]
     yy = yy_all[mask]
-    b, a = np.polyfit(xx, yy, 1)  # slope, intercept
-    var_min = inpt.extr[inpt.var]['min']
-    var_max = inpt.extr[inpt.var]['max']
-    xseq = np.linspace(var_min, var_max, 1000)
+    if len(xx) > 1 and len(yy) > 1:
+        b, a = np.polyfit(xx, yy, 1)
+        var_min = inpt.extr[inpt.var]['min']
+        var_max = inpt.extr[inpt.var]['max']
+        xseq = np.linspace(var_min, var_max, 1000)
 
-    axs[i].plot(xseq, a + b * xseq,
-                color=col,
-                lw=2.5, ls='--', alpha=0.5)
-    axs[i].plot([var_min, var_max], [var_min, var_max],
-                color='black', lw=1.5, ls='-')
+        axs[i].plot(xseq, a + b * xseq,
+                    color=col,
+                    lw=2.5, ls='--', alpha=0.5)
+        axs[i].plot([var_min, var_max], [var_min, var_max],
+                    color='black', lw=1.5, ls='-')
+    else:
+        print(f"[WARN] Not enough data points for regression fit (len={len(xx)})")
+        return
 
-    fn = f"{tr}_{data_typ}_stats_{inpt.var}.csv"
+    fn = f"{tr}_{data_typ}_stats_{inpt.var}_{inpt.location}.csv"
     if print_stats:
         stats_path = os.path.join(inpt.basefol['out']['base'], 'stats', tr, fn)
         if os.path.exists(stats_path):
@@ -228,7 +232,7 @@ def calc_stats(x, y, data_typ, tr, fn):
     var_data[ref_x]['data_stats'][tr] = {}
     var_data[data_typ]['data_stats'][tr]['r2'] = corcoeff*corcoeff
 
-    var_data[data_typ]['data_stats'][tr]['N'] = len(y)
+    var_data[data_typ]['data_stats'][tr]['N'] = len(x)
 
     var_data[data_typ]['data_stats'][tr]['rmse'] = np.sqrt(
         np.nanmean(diff ** 2))

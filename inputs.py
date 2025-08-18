@@ -82,7 +82,10 @@ cumulative_vars = {'alb', 'lw_net', 'sw_net', 'sw_up',
                    'sw_down', 'lw_up', 'lw_down', 'sw_lw_net', 'precip'}
 
 # Primary list of variables to analyze
-list_var = met_vars + cloud_vars + rad_comps_vars + rad_flux_vars
+if datasets['buoys']['switch'] == True:
+    list_var = met_vars + rad_comps_vars
+else:
+    list_var = met_vars + cloud_vars + rad_comps_vars + rad_flux_vars
 
 # keep time resolution in order for taylor diagrams!
 tres_list = ['original', '6h', '12h',  '24h']
