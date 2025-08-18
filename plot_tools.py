@@ -104,7 +104,7 @@ def get_color_by_resolution(data_typ, resolution):
     return color
 
 
-def calc_draw_fit(axs, i, xxx, yyy, tr, col, data_typ, print_stats=True):
+def calc_draw_fit(axs, i, xxx, yyy, tr, per_lab, data_typ, print_stats=True):
     """
     Performs linear regression on data (xxx, yyy), plots the fit line and 1:1 line,
     and optionally annotates stats (R, N, MBE, RMSE) on subplot axs[i].
@@ -116,6 +116,10 @@ def calc_draw_fit(axs, i, xxx, yyy, tr, col, data_typ, print_stats=True):
     :param per_lab: Key for color in inpt.seasons.
     :param print_stats: Whether to display stats text.
     """
+    if per_lab=='all':
+        col=inpt.all_seasons[per_lab]['col']
+    else:
+        col=inpt.seasons[per_lab]['col']
     var = inpt.var
     var_dict = inpt.var_dict
     ref_x = inpt.extr[var]['ref_x']
@@ -145,7 +149,7 @@ def calc_draw_fit(axs, i, xxx, yyy, tr, col, data_typ, print_stats=True):
         print(f"[WARN] Not enough data points for regression fit (len={len(xx)})")
         return
 
-    fn = f"{tr}_{data_typ}_stats_{inpt.var}_{inpt.location}.csv"
+    fn = f"{tr}_{data_typ}_stats_{inpt.var}_{per_lab}_{inpt.location}.csv"
     if print_stats:
         stats_path = os.path.join(inpt.basefol['out']['base'], 'stats', tr, fn)
         if os.path.exists(stats_path):

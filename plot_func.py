@@ -416,7 +416,10 @@ def plot_scatter_all(period_label):
             # Fit
             if valid_idx.sum() >= 2:
                 plt_tls.calc_draw_fit(joint_axes, i, x_valid, y_valid, inpt.tres,
-                                      inpt.all_seasons['all']['col'], data_typ, print_stats=True)
+                                      'all', data_typ, print_stats=True)
+            else:
+                print(
+                    '[WARN]: Not enough data points for proper fit (need at least 2).')
 
     # same axis for marginal distroibutions
     all_data_typs = var_data['comps'] + [var_data['ref_x']]
@@ -513,11 +516,10 @@ def plot_scatter_seasonal(period_label):
 
         if valid_idx.sum() >= 2:
             plt_tls.calc_draw_fit(axs, i, x_valid, y_valid, inpt.tres,
-                                  inpt.seasons[period_label]['col'], data_typ, print_stats=True)
+                                  period_label, data_typ, print_stats=True)
         else:
-            plt_tls.calc_draw_fit(axs, i, x_valid, y_valid, inpt.tres,
-                                  inpt.seasons[period_label]['col'], data_typ, print_stats=False)
-            print("ERROR: Not enough data points for fit.")
+            print(
+                '[WARN]: Not enough data points for proper fit (need at least 2).')
 
         plt_tls.format_scatterplot(axs, data_typ, i)
 
@@ -596,8 +598,12 @@ def plot_scatter_cum():
                 s=5, color='blue', edgecolors='none', alpha=0.5, label=period_label
             )
 
-            plt_tls.calc_draw_fit(axs, i,  merged['x'],  merged['y'], inpt.tres,
-                                  inpt.seasons[period_label]['col'], data_typ, print_stats=True)
+            if len(merged['x']) >= 2:
+                plt_tls.calc_draw_fit(axs, i,  merged['x'],  merged['y'], inpt.tres,
+                                      period_label, data_typ, print_stats=True)
+            else:
+                print(
+                    '[WARN]: Not enough data points for proper fit (need at least 2).')
 
             axs[i].legend()
             plt_tls.format_scatterplot(axs, data_typ, i)
@@ -628,14 +634,12 @@ def plot_scatter_cum():
                     s=5, color=season['col'], edgecolors='none', alpha=0.5, label=period_label
                 )
 
-                if valid_idx.sum() < 2:
-                    print(
-                        'ERROR: Not enough data points for proper fit (need at least 2).')
-                    # Optionally raise ValueError here if needed
-                    # raise ValueError("Insufficient data for fitting.")
-                else:
+                if valid_idx.sum() >= 2:
                     plt_tls.calc_draw_fit(axs, i, x_valid, y_valid, inpt.tres,
-                                          inpt.seasons[period_label]['col'], data_typ, print_stats=False)
+                                          period_label, data_typ, print_stats=False)
+                else:
+                    print(
+                        '[WARN]: Not enough data points for proper fit (need at least 2).')
 
                     axs[i].legend()
                 plt_tls.format_scatterplot(axs, data_typ, i)
