@@ -60,15 +60,16 @@ def main():
         for var in inpt.list_var:
             process_variable(var, tres)
 
-    # Final Taylor Diagrams
-    if inpt.met_vars:
-        plt_f.plot_taylor(inpt.met_vars)
-    if inpt.rad_comps_vars:
-        plt_f.plot_taylor(inpt.rad_comps_vars)
-    if inpt.rad_flux_vars:
-        plt_f.plot_taylor(inpt.rad_flux_vars)
-    if inpt.cloud_vars:
-        plt_f.plot_taylor(inpt.cloud_vars)
+    # Taylor Diagrams
+    if inpt.datasets.get('THAAO', {}).get('switch', True):
+        if inpt.met_vars:
+            plt_f.plot_taylor(inpt.met_vars)
+        if inpt.rad_comps_vars:
+            plt_f.plot_taylor(inpt.rad_comps_vars)
+        if inpt.rad_flux_vars:
+            plt_f.plot_taylor(inpt.rad_flux_vars)
+        if inpt.cloud_vars:
+            plt_f.plot_taylor(inpt.cloud_vars)
 
 
 if __name__ == "__main__":

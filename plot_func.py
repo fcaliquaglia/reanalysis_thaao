@@ -641,7 +641,7 @@ def plot_scatter_cum():
                     print(
                         '[WARN]: Not enough data points for proper fit (need at least 2).')
 
-                    axs[i].legend()
+                axs[i].legend()
                 plt_tls.format_scatterplot(axs, data_typ, i)
 
     save_path = os.path.join(

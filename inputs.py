@@ -83,7 +83,8 @@ cumulative_vars = {'alb', 'lw_net', 'sw_net', 'sw_up',
 
 # Primary list of variables to analyze
 if datasets['buoys']['switch'] == True:
-    list_var = ['sw_up', 'sw_down', 'temp', 'surf_pres', 'rh', 'windd', 'winds',]
+    list_var = ['sw_up', 'sw_down', 'temp',
+                'surf_pres', 'rh', 'windd', 'winds', 'orog']
 else:
     list_var = met_vars + cloud_vars + rad_comps_vars + rad_flux_vars
 
@@ -126,7 +127,7 @@ var_dict = {
         'nanval': np.nan,
         'col': 'red',
         'col_ori': 'indianred',
-        'col_distr': 'salmon',                
+        'col_distr': 'salmon',
         'label': 'CARRA1',
         'cmap': 'jet',
         'cmap_pos': (0.2, 0.85, 0.6, 0.1),
@@ -136,7 +137,7 @@ var_dict = {
         'nanval': -32767.0,
         'col': 'blue',
         'col_ori': 'dodgerblue',
-        'col_distr': 'skyblue',               
+        'col_distr': 'skyblue',
         'label': 'ERA5',
         'cmap': 'viridis',
         'cmap_pos': (0.2, 0.65, 0.6, 0.1),
@@ -147,7 +148,7 @@ var_dict = {
         'col': 'black',
         'col_ori': 'dimgray',
         'col_distr': 'slategray',
-        'label': location,                    
+        'label': location,
         'cmap': 'Greys',
         'cmap_pos': (0.2, 0.05, 0.6, 0.1),
         'label_uom': ''
@@ -156,7 +157,7 @@ var_dict = {
         'nanval': np.nan,
         'col': 'green',
         'col_ori': 'seagreen',
-        'col_distr': 'mediumseagreen',        
+        'col_distr': 'mediumseagreen',
         'label': 'HATPRO',
         'cmap': 'plasma',
         'cmap_pos': (0.2, 0.45, 0.6, 0.1),
@@ -166,7 +167,7 @@ var_dict = {
         'nanval': np.nan,
         'col': 'purple',
         'col_ori': 'darkorchid',
-        'col_distr': 'orchid',                
+        'col_distr': 'orchid',
         'label': 'AWS_ECAPAC',
         'cmap': 'cividis',
         'cmap_pos': (0.2, 0.25, 0.6, 0.1),
