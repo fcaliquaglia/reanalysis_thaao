@@ -155,7 +155,7 @@ def calc_draw_fit(axs, i, xxx, yyy, tr, per_lab, data_typ, print_stats=True):
         if os.path.exists(stats_path):
             read_stats_from_csv(fn, data_typ, tr, ref_x)
         else:
-            calc_stats(xx, yy, data_typ, tr, fn)
+            calc_stats(xx, yy, data_typ, tr, fn, per_lab)
 
         stats = inpt.extr[inpt.var][data_typ]['data_stats'][tr]
         ref_stats = inpt.extr[inpt.var][ref_x]['data_stats'][tr]
@@ -222,7 +222,7 @@ def read_stats_from_csv(fn, data_typ, tr, ref_x):
     print(f"✅ Stats loaded from {stats_path}")
 
 
-def calc_stats(x, y, data_typ, tr, fn):
+def calc_stats(x, y, data_typ, tr, fn, per_lab):
     ref_x = inpt.extr[inpt.var]['ref_x']
     corcoeff = np.corrcoef(x, y)[0, 1]
     diff = y-x
@@ -244,16 +244,19 @@ def calc_stats(x, y, data_typ, tr, fn):
     var_data[ref_x]['data_stats'][tr]['std_x'] = np.std(x)
     var_data[data_typ]['data_stats'][tr]['std_y'] = np.std(y)
 
-    tres_ref_x = var_data[ref_x]['data_marg_distr']['tres']
-    tres = var_data[data_typ]['data_marg_distr']['tres']
-    # Compute KL divergences
-    P = np.array(var_data[ref_x]['data_marg_distr']
-                 [tres_ref_x][inpt.var]*var_data['bin_size'])
-    Q = np.array(var_data[data_typ]['data_marg_distr']
-                 [tres][inpt.var]*var_data['bin_size'])
-
-    var_data[data_typ]['data_stats'][tr]['kl_bits'] = kl_divergence(
-        P, Q)/np.log(2)
+    if not per_lab == 'all':
+        var_data[data_typ]['data_stats'][tr]['kl_bits'] = np.nan
+    else:
+        tres_ref_x = var_data[ref_x]['data_marg_distr']['tres']
+        tres = var_data[data_typ]['data_marg_distr']['tres']
+        # Compute KL divergences
+        P = np.array(var_data[ref_x]['data_marg_distr']
+                     [tres_ref_x][inpt.var]*var_data['bin_size'])
+        Q = np.array(var_data[data_typ]['data_marg_distr']
+                     [tres][inpt.var]*var_data['bin_size'])
+    
+        var_data[data_typ]['data_stats'][tr]['kl_bits'] = kl_divergence(
+            P, Q)/np.log(2)
     save_stats(fn, data_typ, tr, ref_x)
 
     return (inpt.extr[inpt.var][data_typ]['data_stats'][tr]['r2'], inpt.extr[inpt.var][data_typ]['data_stats'][tr]['N'], inpt.extr[inpt.var][data_typ]['data_stats'][tr]['rmse'], inpt.extr[inpt.var][data_typ]['data_stats'][tr]['mbe'], inpt.extr[inpt.var][ref_x]['data_stats'][tr]['std_x'],  inpt.extr[inpt.var][data_typ]['data_stats'][tr]['std_y'], inpt.extr[inpt.var][data_typ]['data_stats'][tr]['kl_bits'])

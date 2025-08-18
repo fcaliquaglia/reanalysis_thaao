@@ -83,7 +83,7 @@ cumulative_vars = {'alb', 'lw_net', 'sw_net', 'sw_up',
 
 # Primary list of variables to analyze
 if datasets['buoys']['switch'] == True:
-    list_var = met_vars + rad_comps_vars
+    list_var = ['sw_up', 'sw_down', 'temp', 'surf_pres', 'rh', 'windd', 'winds',]
 else:
     list_var = met_vars + cloud_vars + rad_comps_vars + rad_flux_vars
 

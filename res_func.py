@@ -219,8 +219,8 @@ def data_resampling(vr):
 
     for data_typ in inpt.extr[vr]['comps'] + [inpt.extr[vr]['ref_x']]:
         data = inpt.extr[vr][data_typ]['data']
-        data = data[~data.index.duplicated(keep="first")]
         data, chk = tls.check_empty_df(data, vr)
+        data = data[~data.index.duplicated(keep="first")]
 
         if inpt.datasets['dropsondes']['switch']:
             print('NO TIME RESAMPLING FOR DROPSONDES')
