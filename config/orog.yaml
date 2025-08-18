@@ -1,9 +1,9 @@
 name: orog
 ref_x: c
 min: 0
-max: 300
-res_min: -500
-res_max: 500
+max: 25
+res_min: -25
+res_max: 25
 uom: "[m]"
 comps: 
   - c
