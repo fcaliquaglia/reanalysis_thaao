@@ -4,7 +4,7 @@ min: 0
 max: 300
 res_min: -500
 res_max: 500
-uom: "[mm]"
+uom: "[m]"
 comps: 
   - c
   - e

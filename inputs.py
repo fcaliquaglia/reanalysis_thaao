@@ -58,7 +58,7 @@ datasets = {
     'Sigma-A': {'switch': False, 'fn': 'Sigma-A'},
     'Sigma-B': {'switch': False, 'fn': 'Sigma-B'},
     'Summit': {'switch': False, 'fn': 'Summit'},
-    'buoys': {'switch': True, 'fn': '2024Rprocessed'},
+    'buoys': {'switch': True, 'fn': '2024Nprocessed'},
     'dropsondes': {'switch': False, 'fn': ''},
     'p3_tracks': {'switch': False, 'fn': ''},
     'g3_tracks': {'switch': False, 'fn': ''},
@@ -84,7 +84,7 @@ cumulative_vars = {'alb', 'lw_net', 'sw_net', 'sw_up',
 # Primary list of variables to analyze
 if datasets['buoys']['switch'] == True:
     list_var = ['sw_up', 'sw_down', 'temp',
-                'surf_pres', 'rh', 'windd', 'winds', 'orog']
+                'surf_pres', 'orog', 'rh']
 else:
     list_var = met_vars + cloud_vars + rad_comps_vars + rad_flux_vars
 
@@ -92,7 +92,10 @@ else:
 tres_list = ['original', '6h', '12h',  '24h']
 tres = var = ''
 
-years = np.arange(2016, 2025)
+if datasets['buoys']['switch'] == True:
+    years = [2024]
+else:
+    years = np.arange(2016, 2025)
 
 # ========== RESAMPLING THRESHOLDS ==========
 min_frac = 0.75             # Required fraction of native data per resample window
