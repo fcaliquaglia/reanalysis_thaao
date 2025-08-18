@@ -341,10 +341,10 @@ def generate_status_string(flags):
         lines.append("Buoys         N={:<4}".format(len(buoy_data)))
 
     if flags.get("p3_tracks"):
-        lines.append("P-3 tracks    N={:<4}".format(len(p3_data)))
+        lines.append("P3 tracks    N={:<4}".format(len(p3_data)))
 
     if flags.get("g3_tracks"):
-        lines.append("G-III tracks  N={:<4}".format(len(g3_data)))
+        lines.append("G III tracks  N={:<4}".format(len(g3_data)))
 
     return "\n".join(lines)
 
@@ -919,7 +919,7 @@ if __name__ == "__main__":
 
     # G3 tracks
     if plot_flags["g3_tracks"]:
-        g3_files = glob.glob(os.path.join(folders["g3"], "*R0*.ict"))
+        g3_files = glob.glob(os.path.join(folders["g3"], "ARCSIX-MetNav_G3_*R0*.ict"))
         g3_data = []
         for gf in g3_files:
             print(gf)
@@ -955,7 +955,7 @@ if __name__ == "__main__":
 
     # P3 tracks
     if plot_flags["p3_tracks"]:
-        p3_files = glob.glob(os.path.join(folders["p3"], "*R0*.ict"))
+        p3_files = glob.glob(os.path.join(folders["p3"], "ARCSIX-MetNav_P3B_*R0*.ict"))
         p3_data = []
         for pf in p3_files:
             print(pf)

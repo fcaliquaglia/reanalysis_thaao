@@ -52,13 +52,13 @@ basefol = {
 
 # ========== DATASET CONFIGURATION ==========
 datasets = {
-    'THAAO': {'switch': True, 'fn': 'THAAO'},
+    'THAAO': {'switch': False, 'fn': 'THAAO'},
     'Alert': {'switch': False, 'fn': 'Alert'},
     'Villum': {'switch': False, 'fn': 'Villum'},
     'Sigma-A': {'switch': False, 'fn': 'Sigma-A'},
     'Sigma-B': {'switch': False, 'fn': 'Sigma-B'},
     'Summit': {'switch': False, 'fn': 'Summit'},
-    'buoys': {'switch': False, 'fn': '2024Rprocessed'},
+    'buoys': {'switch': True, 'fn': '2024Rprocessed'},
     'dropsondes': {'switch': False, 'fn': ''},
     'p3_tracks': {'switch': False, 'fn': ''},
     'g3_tracks': {'switch': False, 'fn': ''},
