@@ -56,10 +56,10 @@ datasets = {
     'Alert': {'switch': False, 'fn': 'Alert'},
     'Villum': {'switch': False, 'fn': 'Villum'},
     'Sigma-A': {'switch': False, 'fn': 'Sigma-A'},
-    'Sigma-B': {'switch': False, 'fn': 'Sigma-B'},
+    'Sigma-B': {'switch': True, 'fn': 'Sigma-B'},
     'Summit': {'switch': False, 'fn': 'Summit'},
-    'buoys': {'switch': True, 'fn': '2024Rprocessed'}, # 
-    'dropsondes': {'switch': False, 'fn': ''},
+    'buoys': {'switch': False, 'fn': '2024Rprocessed'},
+    'dropsondes': {'switch': True, 'fn': ''},
     'p3_tracks': {'switch': False, 'fn': ''},
     'g3_tracks': {'switch': False, 'fn': ''},
     'radiosondes': {'switch': False, 'fn': ''}
@@ -92,10 +92,10 @@ else:
 tres_list = ['original', '6h', '12h',  '24h']
 tres = var = ''
 
-if datasets['buoys']['switch'] == True:
-    years = [2024]
-else:
+if datasets['THAAO']['switch'] == True:
     years = np.arange(2016, 2025)
+else:
+    years = [2024]
 
 # ========== RESAMPLING THRESHOLDS ==========
 min_frac = 0.75             # Required fraction of native data per resample window

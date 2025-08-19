@@ -20,9 +20,9 @@ plot = True
 plot_flags = dict(
     ground_sites=True,
     buoys=True,
-    dropsondes=False,
-    p3_tracks=False,
-    g3_tracks=False,
+    dropsondes=True,
+    p3_tracks=True,
+    g3_tracks=True,
     radiosondes=False,
     ships=False
 )
@@ -341,10 +341,10 @@ def generate_status_string(flags):
         lines.append("Buoys         N={:<4}".format(len(buoy_data)))
 
     if flags.get("p3_tracks"):
-        lines.append("P3 tracks    N={:<4}".format(len(p3_data)))
+        lines.append("P3 tracks    N={:<4}".format(len(p3_tr)))
 
     if flags.get("g3_tracks"):
-        lines.append("G III tracks  N={:<4}".format(len(g3_data)))
+        lines.append("G III tracks  N={:<4}".format(len(g3_tr)))
 
     return "\n".join(lines)
 
@@ -404,6 +404,7 @@ def plot_trajectories(seq, plot_flags=plot_flags):
 
     # --- G3 Aircraft Tracks ---
     if plot_flags["g3_tracks"]:
+        g3_tr = 0
         for i, d in enumerate(g3_data):
             is_first = (i == 0)
             ax.plot(
@@ -413,9 +414,11 @@ def plot_trajectories(seq, plot_flags=plot_flags):
                 color="purple", transform=transform_pc,
                 label="G-3" if is_first else None
             )
+            g3_tr += 1
 
     # --- P3 Aircraft Tracks ---
     if plot_flags["p3_tracks"]:
+        p3_tr = 0
         for i, d in enumerate(p3_data):
             is_first = (i == 0)
             ax.plot(
@@ -425,6 +428,7 @@ def plot_trajectories(seq, plot_flags=plot_flags):
                 color="orange", transform=transform_pc,
                 label="P-3" if is_first else None
             )
+            p3_tr += 1
 
     # --- Ground Sites ---
     if plot_flags["ground_sites"]:
@@ -601,20 +605,21 @@ def write_dict_to_file(d, output_dir):
                 for k, val in zip(keys, row):
                     if k == "time":
                         try:
-                            val = pd.to_datetime(val).strftime('%Y-%m-%dT%H:%M:%S')
+                            val = pd.to_datetime(val).strftime(
+                                '%Y-%m-%dT%H:%M:%S')
                         except Exception:
                             val = np.nan
                     elif isinstance(val, float):
-                        val = f"{val:.6f}" if k in ["lat", "lon"] else f"{val:.2f}"
+                        val = f"{val:.6f}" if k in [
+                            "lat", "lon"] else f"{val:.2f}"
                     formatted_row.append(str(val))
                 f.write(",".join(formatted_row) + "\n")
 
         print(f"Wrote {filepath}")
     else:
         print(f"{filepath} ALREADY calculated.")
-    
-    return filename
 
+    return filename
 
 
 def plot_surf_date(seq, plot_flags=plot_flags):
@@ -848,19 +853,20 @@ if __name__ == "__main__":
                         grid_sel[data_typ], folders["txt_location"], filenam_grid)
 
         # Step 1: List all TXT files previously saved
-        txt_files = sorted(glob.glob(os.path.join(folders["txt_location"], "ARCSIX-AVAPS-netCDF_G3*.txt")))
-        
+        txt_files = sorted(glob.glob(os.path.join(
+            folders["txt_location"], "ARCSIX-AVAPS-netCDF_G3*.txt")))
+
         # Step 2: Create list to hold the highest-pressure rows
         highest_pres_rows = []
-        
+
         # Step 3: Read each file individually
         for txt_file in txt_files:
             try:
                 df = pd.read_csv(txt_file)
-        
+
                 # Step 4: Replace -999 or similar no-data flags with NaN
                 df.replace(-999.0, np.nan, inplace=True)
-        
+
                 # Step 5: Find the index of highest pressure (non-NaN)
                 if df["pres"].notna().any():
                     max_idx = df["pres"].idxmax()
@@ -868,16 +874,16 @@ if __name__ == "__main__":
                     highest_pres_rows.append(highest_row)
                 else:
                     print(f"Skipped {txt_file} – all NaNs in pressure.")
-        
+
             except Exception as e:
                 print(f"Error reading {txt_file}: {e}")
-        
+
         # Step 6: Combine all selected rows into a DataFrame
         final_df = pd.DataFrame(highest_pres_rows)
-    
+
         # Step 7: Save to a final TXT file
         final_df.to_parquet(os.path.join(folders["txt_location"], "dropsondes_surface_level_temp.parquet"),
-                        index="time")
+                            index="time")
 
         print("Saved final TXT with highest pressure rows.")
 
@@ -902,7 +908,8 @@ if __name__ == "__main__":
             pres = ds["air_pressure"].isel(trajectory=0).values[msk]
             dsi = ds["incident"].isel(trajectory=0).values[msk]
             usi = ds["reflected"].isel(trajectory=0).values[msk]
-            alb = ds["reflected"].isel(trajectory=0).values[msk]/ds["incident"].isel(trajectory=0).values[msk]
+            alb = ds["reflected"].isel(
+                trajectory=0).values[msk]/ds["incident"].isel(trajectory=0).values[msk]
             time = ds["time"].isel(trajectory=0).values[msk]
             elem = {"filename": os.path.basename(bf),
                     "lat": lat, "lon": lon, "temp": temp, "time": time,
@@ -919,7 +926,8 @@ if __name__ == "__main__":
 
     # G3 tracks
     if plot_flags["g3_tracks"]:
-        g3_files = glob.glob(os.path.join(folders["g3"], "ARCSIX-MetNav_G3_*R0*.ict"))
+        g3_files = glob.glob(os.path.join(
+            folders["g3"], "ARCSIX-MetNav_G3_*R0*.ict"))
         g3_data = []
         for gf in g3_files:
             print(gf)
@@ -955,7 +963,8 @@ if __name__ == "__main__":
 
     # P3 tracks
     if plot_flags["p3_tracks"]:
-        p3_files = glob.glob(os.path.join(folders["p3"], "ARCSIX-MetNav_P3B_*R0*.ict"))
+        p3_files = glob.glob(os.path.join(
+            folders["p3"], "ARCSIX-MetNav_P3B_*R0*.ict"))
         p3_data = []
         for pf in p3_files:
             print(pf)
@@ -978,7 +987,7 @@ if __name__ == "__main__":
                             "lat": lat,
                             "lon": lon,
                             "temp": temp,
-                            "time": time,                               
+                            "time": time,
                             "elev": elev
                             }
                 p3_data.append(elem)
@@ -1009,7 +1018,7 @@ if __name__ == "__main__":
             ds["lon"] = ds_gdp.geometry.x
             ds["lat"] = ds_gdp.geometry.y
             ds = ds[["time", "lat", "lon"]]
-            #ds.set_index('time', inplace=True)
+            # ds.set_index('time', inplace=True)
             lat = ds["lat"].values
             lon = ds["lon"].values
             msk, lat, lon = filter_coords(lat, lon, bounds=bounds)

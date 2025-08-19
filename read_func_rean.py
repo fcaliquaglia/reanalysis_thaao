@@ -46,8 +46,7 @@ def read_rean(vr, data_typ):
             'txt_locations', "ARCSIX-AVAPS-netCDF_G3*.txt")))
         for file_path in drop_files:
             file_name = os.path.basename(file_path)
-            year = 2024  # fixed year for dropsondes
-            output_file = f"{inpt.extr[vr][data_typ]['fn']}{file_name.replace('_loc.txt', '')}_{year}.parquet"
+            output_file = f"{inpt.extr[vr][data_typ]['fn']}{file_name.replace('_loc.txt', '')}_{inpt.year[0]}.parquet"
             output_path = os.path.join(
                 inpt.basefol[data_typ]['parquets'], output_file)
             parquet_paths.append(output_path)
