@@ -1,38 +1,46 @@
-# THAAO comparison with reanalysis
+# THAAO Comparison with Reanalysis
 
-> [!IMPORTANT]  
+> \[!IMPORTANT\]\
 > This is a preliminary analysis.
 
-### TODO
+------------------------------------------------------------------------
 
-- [ ] recuperare da Giovanni gli rs che io non ho e devo aggiungere in archivio per l'analisi
-- [ ] controllare i nan value per ogni serie e la pulizia (dati negativi, outliers?, etc)
+## TODO
 
-## Environment packages needed
+-   [ ] (to be filled)
 
-- python3
-- scipy
-- netcdf4
-- matplotlib
-- julian
-- pandas
-- xarray
-- metpy
-- pyarrow
-- pyCompare
-- skillmetrics
-- (spyder-kernels=3.0)
+------------------------------------------------------------------------
 
-## Reanalysis considered
+## Environment Packages Needed
+
+-   python3\
+-   scipy\
+-   netcdf4\
+-   matplotlib\
+-   julian\
+-   pandas\
+-   xarray\
+-   metpy\
+-   pyarrow\
+-   pyCompare\
+-   skillmetrics\
+-   (spyder-kernels=3.0)
+
+------------------------------------------------------------------------
+
+## Reanalysis Considered
 
 ### CARRA (Copernicus Arctic Regional Reanalysis)
 
-- 3h resolution at 2.5 km
-- 10.24381/cds.713858f6
-- Ridal, Martin, et al. "CERRA, the Copernicus European Regional Reanalysis system." Quarterly Journal of the Royal
-  Meteorological Society (2024).
-- [cds.climate.copernicus.eu/datasets/reanalysis-carra-single-levels](https://cds.climate.copernicus.eu/datasets/reanalysis-carra-single-levels?tab=overview)
-
+-   Resolution: 3h at 2.5 km\
+-   DOI: 10.24381/cds.713858f6\
+-   Model: HARMONIE-AROME (non-hydrostatic)\
+-   Features:
+    -   3-hourly analyses & 1-hour forecasts (up to 30h, initialized at
+        00 & 12 UTC)\
+    -   High-resolution physiography & satellite data\
+    -   Assimilation of local Nordic & Greenland observations\
+    -   Focused on Arctic climate variability
 > [!NOTE]
 > (from the official website) The C3S Arctic Regional Reanalysis (CARRA) dataset contains 3-hourly analyses and hourly
 > short term forecasts of
@@ -55,12 +63,45 @@
 > about their quality are used together to constrain the reanalysis where observations are available and provide
 > information for the data assimilation system in areas in where less observations are available.
 
+> [!NOTE]
+> All cloud and water vapour variables are instantaneous, 
+> i.e. they are given for the time step at which they are output. 
+> Vertically integrated water vapour is given in units of kg/m2. 
+> It is vertically integrated from the surface to the top of the atmosphere. 
+> In practice it is computed from the specific water vapour on the 65 model levels 
+> (see section 4.4). Likewise, integrated cloud liquid water, integrated cloud ice water, 
+> and integrated graupel are computed from the specific cloud liquid water, 
+> cloud ice and graupel on the 65 model levels.
+> 
+> Total cloud cover, as given in the output, is computed from model level cloud cover 
+> with the nearly maximum-random cloud overlap assumption with a scaling 
+> coefficient of 0.8. If this had been 0.0 random cloud overlap would be assumed, 
+> which means that the cloud covers at the model levels are assumed to be independent. 
+> If the scaling coefficient had been 1.0 maximum-random cloud overlap is assumed, 
+> which means that all vertically connected cloud layers are assumed to overlap 
+> perfectly. Note that this definition of cloud cover is not consistent 
+> with maximum-random cloud cover used within the model for computing radiative 
+> fluxes! The same nearly maximum-random cloud overlap assumption is used to 
+> compute high, medium and low cloud covers. Following the WMO definitions 
+> high cloud cover is above 5 km height, while low cloud cover is below or at 
+> 2 km height. Medium cloud cover is in between. Note that height here is 
+> considered relative to the surface! Fog is the cloud cover at the lowest 
+> model level that has a thickness of approximately 20 m. The unit for all cloud 
+> cover and fog output is % in the range from 0% to 100%.
+
+------------------------------------------------------------------------
+
 ### ERA5
 
-- 1 h resolution at 0.25° x 0.25°
-- 10.24381/cds.143582cf
-- [cds.climate.copernicus.eu/datasets/reanalysis-era5-complete](https://cds.climate.copernicus.eu/datasets/reanalysis-era5-complete?tab=overview)
-
+-   Resolution: 1h at 0.25° × 0.25° (\~31 km)\
+-   DOI: 10.24381/cds.143582cf\
+-   Model: ECMWF IFS (137 vertical levels, up to 80 km)\
+-   Features:
+    -   Global reanalysis from 1940--present\
+    -   Hourly atmospheric, land, and ocean variables\
+    -   Includes ensemble at half resolution\
+    -   Assimilates satellite + ground-based observations
+    
 > [!NOTE]
 > (from the official website) ERA5 is the fifth generation ECMWF atmospheric reanalysis of the global climate covering
 > the
@@ -74,9 +115,142 @@
 > atmosphere. These products are widely used by researchers and practitioners in various fields, including climate
 > science, weather forecasting, energy production and machine learning among others, to understand and analyse past and
 > current weather and climate conditions.
+------------------------------------------------------------------------
+
+## THAAO Reference Instruments
+
+-   **HATPRO** → LWP\
+-   **AWS_ECAPAC** → T, P, RH, wind direction, wind speed\
+-   **AWS_vespa** → T, P, RH, wind direction, wind speed\
+-   **Radiometers** → SW/LW irradiance (up & down)
+
+> \[!IMPORTANT\]\
+> Reference values are from THAAO, except:\
+> - IWV → VESPA\
+> - LWP → HATPRO
+
+> \[!TIP\]\
+> MetPy used for conversions (e.g., dewpoint → RH, wind components).
+
+------------------------------------------------------------------------
+
+## Statistics
+
+### Time Series
+
+Standard analysis.
+
+### Scatterplots
+
+-   Seasonal scatterplots → plotted as points.\
+-   Full dataset scatterplots → 2D density histograms (colorbar =
+    density).
+
+### Bland-Altman Plots
+
+Reference: *Validation of the Cloud_CCI cloud products in the Arctic
+(2023)*.
+
+### Metrics
+
+-   **N** → number of points used.\
+-   **MAE** → `np.nanmean(np.abs(y - x))`\
+-   **R** → Pearson correlation coefficient.\
+-   **RMSE** → `np.sqrt(np.nanmean((y - x) ** 2))`
+
+------------------------------------------------------------------------
+
+## Variables
+
+### WEATHER
+
+-   **Surface Pressure (`surf_pres`)**
+    -   Masked for \<900 hPa (unrealistic).\
+    -   CARRA: `surface_pressure`\
+    -   ERA5: `surface_pressure`\
+    -   THAAO (vespa): excluded 2021-10-11 → 2021-10-19, 2024-04-28 →
+        2024-05-04\
+    -   THAAO (aws_ECAPAC): available
+-   **Surface Temperature (`temp`)**
+    -   CARRA: `2m_temperature`\
+    -   ERA5: `2m_temperature`\
+    -   THAAO (vespa, aws_ECAPAC)
+-   **Relative Humidity (`rh`)**
+    -   CARRA: `2m_relative_humidity`\
+    -   ERA5: from `2m_temperature` + `2m_dewpoint_temperature`\
+    -   THAAO (vespa, aws_ECAPAC)
+-   **Wind Direction (`windd`)**
+    -   CARRA: `10m_wind_direction`\
+    -   ERA5: computed from `u10` + `v10`\
+    -   THAAO (aws_ECAPAC)
+-   **Wind Speed (`winds`)**
+    -   CARRA: `10m_wind_speed`\
+    -   ERA5: computed from `u10` + `v10`\
+    -   THAAO (aws_ECAPAC)
+
+------------------------------------------------------------------------
+
+### RADIATION
+
+> \[!WARNING\]\
+> CARRA radiation → forecast variables, only leadtime=1 considered.\
+> Effective resolution: hourly values every 3 hours.\
+> All values \<0 removed.
+
+-   **Downward SW (`sw_down`)**
+    -   CARRA: `ssrd` + `ssr`\
+    -   ERA5: `ssrd` + `ssr`\
+    -   THAAO: pyrgeometers (`DSI`)
+-   **Upward SW (`sw_up`)**
+    -   CARRA: `ssrd` + `ssr`\
+    -   ERA5: `ssrd` + `ssr`\
+    -   THAAO: pyrgeometers (`USI`)
+-   **Downward LW (`lw_down`)**
+    -   CARRA: `strd` + `str`\
+    -   ERA5: `strd` + `str`\
+    -   THAAO: pyranometers (`DLI`)
+-   **Upward LW (`lw_up`)**
+    -   CARRA: `strd` + `str`\
+    -   ERA5: `strd` + `str`\
+    -   THAAO: pyranometers (`ULI`)
+
+------------------------------------------------------------------------
+
+### CLOUDS & ATMOSPHERE
+
+-   Cloud variables (CARRA):
+    -   Instantaneous, vertically integrated from 65 model levels.\
+    -   Cloud cover computed with **nearly max-random overlap
+        (scaling=0.8)**.
+-   **Precipitation (`precip`)**
+    -   CARRA: `total_precipitation`\
+    -   ERA5: `total_precipitation`\
+    -   THAAO: rain gauge (cumulative over resampling time)
+-   **Cloud Base Height (`cbh`)**
+    -   CARRA: `cloud_base`\
+    -   ERA5: `cloud_base_height`\
+    -   THAAO: ceilometer (`median 1h from 15s data`)
+-   **Total Cloud Cover (`tcc`)**
+    -   CARRA: `total_cloud_cover`\
+    -   ERA5: `total_cloud_cover`\
+    -   THAAO: ceilometer (lowermost layer)
+-   **Liquid Water Path (`lwp`)**\
+    \> \[!CAUTION\] Possible issues in either CARRA or ERA5 values.
+    -   CARRA: `tclw`\
+    -   ERA5: `tclw`\
+    -   THAAO: HATPRO
+-   **Integrated Water Vapour (`iwv`)**\
+    \> \[!WARNING\]\
+    \> CARRA IWV missing values in Dec 2023 (all NaN). Re-download
+    didn't fix.
+    -   CARRA: `tcwv`\
+    -   ERA5: `tcwv`\
+    -   THAAO:
+        -   VESPA: available\
+        -   HATPRO: available (⚠️ flagged)
 
 
-# Useful bibliography
+## Useful bibliography
 
 - CARRA Documentation: https://confluence.ecmwf.int/pages/viewpage.action?pageId=272321315 
 - [] Batrak, Yurii, Bin Cheng, and Viivi Kallio-Myers. "Sea ice cover in the Copernicus Arctic Regional Reanalysis." The
@@ -118,201 +292,3 @@
   ‘Spatiotemporal Variability of Air Temperature Biases in Regional Climate Models over the Greenland Ice Sheet’.
   Journal of Glaciology 71:e64. https://doi.org/10.1017/jog.2025.38.
 - [CARRA PWV] https://doi.org/10.1016/j.jastp.2025.106431
-
-# THAAO reference instruments
-
-Instrument involved are HATPRO (LWP), aws_ECAPAC (temp, press, rh, windd, winds), aws_vespa (temp, press, rh,
-windd, winds), sw radiometers (up and down),
-The reference values are always from THAAO measurements, except for IWV (ref: VESPA) and LWP (ref:HATPRO)
-
-> [!IMPORTANT]
-> The code can be run at whichever time resolution.
-
-> [!IMPORTANT]
-> The pixel extraction is done before running this code using ``cdo remapnn`` for pixel 76.5, -68.8 which has a few
-> hundreds meters offset from the exact location.
-
-> [!TIP]
-> wind component combination, conversion from dewpoint temperature to rh and similar, have been performed using the
-``metpy`` package.
-
-# Statistics
-
-## Time series
-
-## Scatterplots
-
-> [!WARNING]
-> The scatterplots containing all season data is a 2D density histogram, meaning that not all data are
-> plotted (there are too many, and they would result overlaid), therefore the colorbar towards the warm color indicates
-> higher density of values in that bin. For scatterplots with a limited number of data the result is a few number of
-> points compared to the variable N (printed). Seasonal scatterplots are standard.
-
-### Bland-Altman plot
-
-A reference for this type of plots used for atmospheric analysis can be found
-here: [Validation of the Cloud_CCI (Cloud Climate Change Initiative) cloud products in the Arctic](https://amt.copernicus.org/articles/16/2903/2023/).
-
-### N
-
-Total number of points analysed.
-
-### MAE
-
-> mae = np.nanmean(np.abs(y - x))
-
-Excluding nan values. x(t): reference value, usually THAAO, see above; y(t): reanalysis or other
-
-### R
-
-Pearson correlation coefficient
-
-### RMSE
-
-> rmse = np.sqrt(np.nanmean((y - x) ** 2)
-
-Excluding nan values. x(t): reference value; y(t): reanalysis or other
-
-# Variables
-
-## WEATHER
-
-### Surface Pressure (``surf_pres``)
-
-> [!WARNING]
-> Values masked to nan for surf_pres<900, since they are unrealistic.
-
-- CARRA: ``surface_pressure``
-- ERA-5: ``surface_pressure``
-- THAAO (vespa): values in these periods have been excluded: 2021-10-11 --> 2021-10-19 and 2024-4-28 --> 2024-5-4
-- THAAO (aws_ECAPAC):
-
-### Surface temperature (``temp``)
-
-- CARRA: ``2m_temperature``
-- ERA-5: ``2m_temperature``
-- THAAO (vespa):
-- THAAO (aws_ECAPAC):
-
-### Relative Humidity (``rh``)
-
-- CARRA: ``2m_relative_humidity``
-- ERA-5: ``2m_dewpoint_temperature`` + ``2m_temperature`` (descrivere processo per ottenere rh)
-- THAAO (vespa):
-- THAAO (aws_ECAPAC):
-
-### Wind Direction (``windd``)
-
-- CARRA:``10m_wind_direction``
-- ERA-5: ``10m_u_component_of_wind`` + ``10m_v_component_of_wind`` (descrivere processo per ottenere velocità e
-  direzione)
-- THAAO (aws_ECAPAC):
-
-### Wind Speed (``winds``)
-
-- CARRA: ``10m_wind_speed``
-- ERA-5: ``10m_u_component_of_wind`` + ``10m_v_component_of_wind`` (descrivere processo per ottenere velocità e
-  direzione)
-- THAAO (aws_ECAPAC):
-
-## RADIATION
-
-> [!WARNING]
-> For CARRA radiation values. These forecast variables are released t different leadtimes, with 1-hour frequency.
-> Therefore, we consider only leadtime 1, obtaining every three hours, hourly forecast valued for the following hour
-> w.r.t the chosen timeframe. For example, we choose April 1, 2023 at 6:00 UTC, we analyze forecast values on April 1,
-> 2023 at 7:00 UTC. All the radiation dataset have been cleaned for values <0.
-> Therefore, radiation values are provided at 1hour resolution BUT every 3-hour interval!
-
-### Downward shortwave irradiance - DSI (``sw_down``)
-
-- CARRA: ``surface_solar_radiation_downwards`` (forecast) + ``surface_net_solar_radiation`` (forecast).
-- ERA-5: ``surface_net_solar_radiation`` + ``surface_solar_radiation_downwards``
-- THAAO (pyrgeometers): ``DSI``
-
-### Upward shortwave irradiance - USI (``sw_up``)
-
-- CARRA: ``surface_solar_radiation_downwards`` (forecast) + ``surface_net_solar_radiation`` (forecast).
-- ERA-5: ``surface_net_solar_radiation`` + ``surface_solar_radiation_downwards``
-- THAAO (pyrgeometers): ``USI``
-
-### Downward longwave irradiance - DLI (``lw_down``)
-
-- CARRA: ``thermal_surface_radiation_downwards`` (forecast) + ``surface_net_thermal_radiation`` (forecast).
-- ERA-5: ``surface_net_thermal_radiation`` + ``surface_thermal_radiation_downwards``
-- THAAO (pyranometers): ``DLI``
-
-### Upward longwave irradiance - ULI (``lw_up``)
-
-- CARRA: ``thermal_surface_radiation_downwards`` (forecast) + ``surface_net_thermal_radiation`` (forecast).
-- ERA-5: ``surface_net_thermal_radiation`` + ``surface_thermal_radiation_downwards``
-- THAAO (pyranometers): ``ULI``
-
-## CLOUDS & ATMOSPHERE
-CARRA:
-All cloud and water vapour variables are instantaneous, 
-i.e. they are given for the time step at which they are output. 
-Vertically integrated water vapour is given in units of kg/m2. 
-It is vertically integrated from the surface to the top of the atmosphere. 
-In practice it is computed from the specific water vapour on the 65 model levels 
-(see section 4.4). Likewise, integrated cloud liquid water, integrated cloud ice water, 
-and integrated graupel are computed from the specific cloud liquid water, 
-cloud ice and graupel on the 65 model levels.
-
-Total cloud cover, as given in the output, is computed from model level cloud cover 
-with the nearly maximum-random cloud overlap assumption with a scaling 
-coefficient of 0.8. If this had been 0.0 random cloud overlap would be assumed, 
-which means that the cloud covers at the model levels are assumed to be independent. 
-If the scaling coefficient had been 1.0 maximum-random cloud overlap is assumed, 
-which means that all vertically connected cloud layers are assumed to overlap 
-perfectly. Note that this definition of cloud cover is not consistent 
-with maximum-random cloud cover used within the model for computing radiative 
-fluxes! The same nearly maximum-random cloud overlap assumption is used to 
-compute high, medium and low cloud covers. Following the WMO definitions 
-high cloud cover is above 5 km height, while low cloud cover is below or at 
-2 km height. Medium cloud cover is in between. Note that height here is 
-considered relative to the surface! Fog is the cloud cover at the lowest 
-model level that has a thickness of approximately 20 m. The unit for all cloud 
-cover and fog output is % in the range from 0% to 100%.
-
-### Precipitation (``precip``)
-
-- CARRA: ``total_precipitation``
-- ERA-5: ``total_precipitation``
-- THAAO (rain gauge): It is calculated as cumulative value over the resampling time.
-
-### Cloud Base Height (``cbh``)
-
-- CARRA: ``cloud_base``
-- ERA-5: ``cloud_base_height``
-- THAAO (ceilometer): ``tcc`` CBH is calculated as the median value over 1 h form the original 15 s time resolution,
-  then averaged for the comparison.
-
-### Total Cloud Cover (``tcc``)
-
-- CARRA: ``total_cloud_cover``
-- ERA-5: ``total_cloud_cover``
-- THAAO (ceilometer): ``cbh`` (lowermost level)
-
-### Liquid Water Path - LWP (``lwp``)
-
-> [!CAUTION]
-> CARRA LWP values have issues or ERA5?
-
-- CARRA: ``total_column_cloud_liquid_water``
-- ERA-5: ``total_column_cloud_liquid_water``
-- THAAO (hatpro): LWP
-
-## Integrated water vapour - IWV (``iwv``)
-
-> [!WARNING]
-- CARRA: ``total_column_integrated_water_vapour``
-> C'è un problema per CARRA iwv nel dicembre 2023. i valori sono
-> tutti nulli. Ho provato a riscaricare a fine 2024 ma non cambia. 
-
-- ERA-5: ``total_column_water_vapour``
-- THAAO (rs): The vertical integration for rs is **missing**.
-- THAAO (vespa):
-
-> [!WARNING]
-- THAAO (hatpro):

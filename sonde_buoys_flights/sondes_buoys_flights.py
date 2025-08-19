@@ -1052,8 +1052,6 @@ if __name__ == "__main__":
 
     # ---------------------------- EXECUTION ---------------------------- #
     if plot:
-        plot_flags = {k: True for k in plot_flags}
-        plot_trajectories("all", plot_flags)
         plot_flags = {k: False for k in plot_flags}
         keys = list(plot_flags.keys())
         for i, key in enumerate(keys, start=1):
@@ -1075,3 +1073,6 @@ if __name__ == "__main__":
         plot_surf_date("2", current_flags)
         current_flags["dropsondes"] = True
         plot_surf_date("3", current_flags)
+        
+        plot_flags = {k: True for k in plot_flags}
+        plot_trajectories("all", plot_flags)
