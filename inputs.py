@@ -52,14 +52,14 @@ basefol = {
 
 # ========== DATASET CONFIGURATION ==========
 datasets = {
-    'THAAO': {'switch': False, 'fn': 'THAAO'},
+    'THAAO': {'switch': True, 'fn': 'THAAO'},
     'Alert': {'switch': False, 'fn': 'Alert'},
     'Villum': {'switch': False, 'fn': 'Villum'},
     'Sigma-A': {'switch': False, 'fn': 'Sigma-A'},
-    'Sigma-B': {'switch': True, 'fn': 'Sigma-B'},
+    'Sigma-B': {'switch': False, 'fn': 'Sigma-B'},
     'Summit': {'switch': False, 'fn': 'Summit'},
     'buoys': {'switch': False, 'fn': '2024Rprocessed'},
-    'dropsondes': {'switch': True, 'fn': ''},
+    'dropsondes': {'switch': False, 'fn': ''},
     'p3_tracks': {'switch': False, 'fn': ''},
     'g3_tracks': {'switch': False, 'fn': ''},
     'radiosondes': {'switch': False, 'fn': ''}
@@ -89,7 +89,7 @@ else:
     list_var = met_vars + cloud_vars + rad_comps_vars + rad_flux_vars
 
 # keep time resolution in order for taylor diagrams!
-tres_list = ['original', '6h', '12h',  '24h']
+tres_list = ['1ME'] # ['original', '6h', '12h',  '24h']
 tres = var = ''
 
 if datasets['THAAO']['switch'] == True:
