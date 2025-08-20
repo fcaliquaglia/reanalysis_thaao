@@ -147,11 +147,12 @@ def data_resampling(vr):
                 }
 
                 if inpt.tres != 'original':
-                    uv_masked = tls.mask_low_count_intervals(
-                        uv_df, data_typ, min_frac=inpt.min_frac)
-                    if inpt.tres == 'M':
+                    if inpt.tres == '1ME':
                         resampled_uv[inpt.tres] = uv_df.resample(inpt.tres).mean()
+                        resampled_data[inpt.tres].index = resampled_data[inpt.tres].index.to_period('M').to_timestamp(how='start') + pd.Timedelta(days=14)
                     else:
+                        uv_masked = tls.mask_low_count_intervals(
+                            uv_df, data_typ, min_frac=inpt.min_frac)
                         resampled_uv[inpt.tres] = uv_masked.resample(
                         inpt.tres).mean()
                 else:
@@ -184,20 +185,24 @@ def data_resampling(vr):
 
                 
             if inpt.tres != 'original':
-                masked = tls.mask_low_count_intervals(
-                    data, data_typ, min_frac=inpt.min_frac)
                 if vr != 'precip':
-                    if inpt.tres == 'M':
+                    if inpt.tres == '1ME':
                         resampled_data[inpt.tres] = data.resample(
                         inpt.tres).mean()
+                        resampled_data[inpt.tres].index = resampled_data[inpt.tres].index.to_period('M').to_timestamp(how='start') + pd.Timedelta(days=14)
                     else:
+                        masked = tls.mask_low_count_intervals(
+                            data, data_typ, min_frac=inpt.min_frac)
                         resampled_data[inpt.tres] = masked.resample(
                         inpt.tres).mean()
                 else:
-                    if inpt.tres == 'M':
+                    if inpt.tres == '1ME':
                         resampled_data[inpt.tres] = data.resample(
                         inpt.tres).sum()
+                        resampled_data[inpt.tres].index = resampled_data[inpt.tres].index.to_period('M').to_timestamp(how='start') + pd.Timedelta(days=14)
                     else:
+                        masked = tls.mask_low_count_intervals(
+                            data, data_typ, min_frac=inpt.min_frac)
                         resampled_data[inpt.tres] = masked.resample(inpt.tres).apply(
                         lambda x: x.sum() if x.notna().any() else np.nan)
             else:

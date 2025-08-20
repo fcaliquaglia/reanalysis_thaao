@@ -73,21 +73,22 @@ def plot_ts(period_label):
 
         # Boolean mask for original and resampled data for this year
         for data_typ in plot_vars:
-            # Original data for the year
-            if not isinstance(var_data[data_typ]['data'], str):
-                null, chck = tls.check_empty_df(
-                    var_data[data_typ]['data'][inpt.var], inpt.var)
-            else:
-                continue
-            if chck:
-                continue
-            y_ori_ = var_data[data_typ]['data_res']['original'][inpt.var]
-            y_ori_mask = y_ori_.index.year == year
-            if y_ori_mask.any():
-                y_ori = y_ori_.loc[y_ori_mask].dropna()
-                ax[i].plot(y_ori,
-                           color=inpt.var_dict[data_typ]['col_ori'], **kwargs_ori)
-
+            if inpt.tres != '1ME':
+                # Original data for the year
+                if not isinstance(var_data[data_typ]['data'], str):
+                    null, chck = tls.check_empty_df(
+                        var_data[data_typ]['data'][inpt.var], inpt.var)
+                else:
+                    continue
+                if chck:
+                    continue
+                y_ori_ = var_data[data_typ]['data_res']['original'][inpt.var]
+                y_ori_mask = y_ori_.index.year == year
+                if y_ori_mask.any():
+                    y_ori = y_ori_.loc[y_ori_mask].dropna()
+                    ax[i].plot(y_ori,
+                               color=inpt.var_dict[data_typ]['col_ori'], **kwargs_ori)
+    
             # Resampled data for the year
             y_res = var_data[data_typ]['data_res'][inpt.tres][inpt.var]
             y_res_mask = y_res.index.year == year
@@ -189,6 +190,7 @@ def plot_ba(period_label):
     :type period_label: str
     """
     print(f"[INFO] Generating Bland-Altman plots for period: {period_label}")
+
     plt.ioff()
     fig, ax = plt.subplots(2, 2, figsize=(12, 12), dpi=inpt.dpi)
     axs = ax.ravel()
@@ -231,6 +233,10 @@ def plot_ba(period_label):
             x_valid, y_valid = x_valid[valid_mask], y_valid[valid_mask]
             x_valid, y_valid = np.log1p(x_valid), np.log1p(y_valid)
 
+        if len(x_valid) < 2 or len(y_valid) <2:
+            print("[WARN]: no valid data points for Bland-Altman plot")
+            continue
+        
         blandAltman(
             y_valid, x_valid, ax=axs[i], limitOfAgreement=1.96, confidenceInterval=95,
             confidenceIntervalMethod='approximate', detrend=None,

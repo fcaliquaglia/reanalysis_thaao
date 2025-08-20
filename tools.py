@@ -215,19 +215,56 @@ def recompose_wind(u_series, v_series):
 
 
 def get_tres(data_typ, tres=None):
+    """
+    Return a valid frequency string and a tolerance string for resampling.
+    
+    Parameters:
+    -----------
+    data_typ : str
+        Data component type ('c', 't', etc.)
+    tres : str, optional
+        Desired time resolution (default: inpt.tres)
+
+    Returns:
+    --------
+    freq_str : str
+        Resampling frequency (pandas offset alias)
+    tolerance : str
+        Maximum tolerance for nearest-neighbor matching (for pd.Timedelta)
+    """
     if tres is None:
         tres = inpt.tres
 
+    # If not original and a fixed resampling frequency
     if tres != 'original':
-        return tres, tres
+        # Handle monthly end/start frequencies like '1ME'
+        if 'ME' in tres.upper() or 'MS' in tres.upper():
+            freq_str = tres.upper()
+            # Tolerance: roughly half a month
+            tolerance = '15d'
+        # Hourly or 3-hourly
+        elif tres in ['1h', '3h']:
+            freq_str = tres
+            tolerance = '10min' if tres == '1h' else '30min'
+        else:
+            freq_str = tres
+            # Fallback: 1/6 of the frequency
+            try:
+                td = pd.Timedelta(freq_str)
+                tolerance = pd.tseries.frequencies.to_offset(td / 6).freqstr
+            except ValueError:
+                # For unknown freq strings, default 1h
+                freq_str = '1h'
+                tolerance = '10min'
+        return freq_str, tolerance
 
-    freq_str = '1h' if inpt.var in inpt.cumulative_vars else (
-        '3h' if data_typ == 'c' else '1h')
-
-    freq = pd.Timedelta(freq_str)
-    tolerance = pd.tseries.frequencies.to_offset(freq / 6).freqstr
+    # If 'original', pick default based on variable and data type
+    freq_str = '1h' if inpt.var in inpt.cumulative_vars else ('3h' if data_typ == 'c' else '1h')
+    td = pd.Timedelta(freq_str)
+    tolerance = pd.tseries.frequencies.to_offset(td / 6).freqstr
 
     return freq_str, tolerance
+
 
 
 def wait_for_complete_download(file_path, timeout=600, interval=5):
