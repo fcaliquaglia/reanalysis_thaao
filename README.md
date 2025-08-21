@@ -154,7 +154,7 @@ Reference: *Validation of the Cloud_CCI cloud products in the Arctic
 ### Metrics
 
 -   **N** → number of points used.\
--   **MAE** → `np.nanmean(np.abs(y - x))`\
+-   **bias** → `np.nanmean(y - x)`\
 -   **R** → Pearson correlation coefficient.\
 -   **RMSE** → `np.sqrt(np.nanmean((y - x) ** 2))`
 

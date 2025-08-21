@@ -149,7 +149,7 @@ def data_resampling(vr):
                 if inpt.tres != 'original':
                     if inpt.tres == '1ME':
                         resampled_uv[inpt.tres] = uv_df.resample(inpt.tres).mean()
-                        resampled_data[inpt.tres].index = resampled_data[inpt.tres].index.to_period('M').to_timestamp(how='start') + pd.Timedelta(days=14)
+                        resampled_uv[inpt.tres].index = resampled_uv[inpt.tres].index.to_period('M').to_timestamp(how='start') + pd.Timedelta(days=14)
                     else:
                         uv_masked = tls.mask_low_count_intervals(
                             uv_df, data_typ, min_frac=inpt.min_frac)

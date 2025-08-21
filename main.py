@@ -39,15 +39,20 @@ def process_variable(var, tres):
     rd_funcs.read()
     rs_f.data_resampling(var)
 
-    plt_f.plot_scatter_cum()
-
-    if not inpt.datasets.get('dropsondes', {}).get('switch', False):
+    if inpt.tres == '1ME':
         plt_f.plot_ts('all')
         plt_f.plot_residuals('all')
-        plt_f.plot_ba('all')
-        plt_f.plot_scatter_all('all')
-        for season in inpt.seasons:
-            plt_f.plot_scatter_seasonal(season)
+
+    else:
+        plt_f.plot_scatter_cum()
+
+        if not inpt.datasets.get('dropsondes', {}).get('switch', False):
+            plt_f.plot_ts('all')
+            plt_f.plot_residuals('all')
+            plt_f.plot_ba('all')
+            plt_f.plot_scatter_all('all')
+            for season in inpt.seasons:
+                plt_f.plot_scatter_seasonal(season)
 
 
 def main():
@@ -61,7 +66,7 @@ def main():
             process_variable(var, tres)
 
     # Taylor Diagrams
-    if inpt.datasets.get('THAAO', {}).get('switch', True):
+    if inpt.datasets.get('THAAO', {}).get('switch', True) and inpt.tres != '1ME':
         if inpt.met_vars:
             plt_f.plot_taylor(inpt.met_vars)
         if inpt.rad_comps_vars:
