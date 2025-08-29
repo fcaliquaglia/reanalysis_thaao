@@ -144,23 +144,7 @@ def read_ceilometer(vr):
                 # Replace NaN values coded as specific "nanval"
                 df.replace(inpt.var_dict["t"]["nanval"], np.nan, inplace=True)
 
-                # Combine the two datetime columns into a single datetime index
-                # The file may use column names like '#', or 'date[y-m-d]time[h:m:s]' or 'date[Y-M-D] time[h:m:s]'
-                # So we try a flexible approach:
-
-                if "#" in df.columns and "date[y-m-d]time[h:m:s]" in df.columns:
-                    datetime_str = df["#"] + " " + df["date[y-m-d]time[h:m:s]"]
-                elif "date[y-m-d]time[h:m:s]" in df.columns:
-                    datetime_str = df["date[y-m-d]time[h:m:s]"]
-                elif "date[Y-M-D]" in df.columns and "time[h:m:s]" in df.columns:
-                    datetime_str = df["date[Y-M-D]"].astype(
-                        str) + " " + df["time[h:m:s]"].astype(str)
-                else:
-                    raise ValueError(
-                        f"Unexpected datetime columns in {file.name}")
-
-                df.index = pd.to_datetime(
-                    datetime_str, errors='raise', format='mixed')
+                df.index = tls.parse_datetime_columns(df, file)
                 df.index.name = 'datetime'
 
                 # Select relevant variable column and rename to vr

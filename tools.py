@@ -47,6 +47,35 @@ def load_and_process_yaml(path: Path):
             )
     return cfg
 
+def parse_datetime_columns(df, file):
+    """
+    Detect datetime columns in ceilometer files and return a datetime index.
+    Handles:
+      - '# date[y-m-d]time[h:m:s]'   (combined)
+      - 'date[y-m-d]time[h:m:s]'     (combined)
+      - '# date[Y-M-D] time[h:m:s]'  (separate)
+      - 'date[Y-M-D]' + 'time[h:m:s]' (separate)
+    """
+    # Clean up column names (strip whitespace and leading "#")
+    df.columns = [c.strip().lstrip("#") for c in df.columns]
+
+    cols = list(df.columns)
+
+    # Case 1: Combined datetime column
+    combined = [c for c in cols if re.search(r"date.*time", c, re.IGNORECASE)]
+    if combined:
+        datetime_str = df[combined[0]].astype(str)
+        return pd.to_datetime(datetime_str, errors="raise", format="mixed")
+
+    # Case 2: Separate date and time columns
+    date_col = next((c for c in cols if re.search(r"date", c, re.IGNORECASE)), None)
+    time_col = next((c for c in cols if re.search(r"time", c, re.IGNORECASE)), None)
+
+    if date_col and time_col:
+        datetime_str = df[date_col].astype(str) + " " + df[time_col].astype(str)
+        return pd.to_datetime(datetime_str, errors="raise", format="mixed")
+
+    raise ValueError(f"Unexpected datetime columns in {file.name}")
 
 def get_common_paths(vr, y, prefix):
 

@@ -86,10 +86,10 @@ if datasets['buoys']['switch'] == True:
     list_var = ['orog'] # , 'sw_up', 'sw_down', 'temp',
                 #'surf_pres', 'rh']
 else:
-    list_var = met_vars + cloud_vars + rad_comps_vars + rad_flux_vars
+    list_var = ['cbh'] # met_vars + cloud_vars + rad_comps_vars + rad_flux_vars
 
 # keep time resolution in order for taylor diagrams!
-tres_list = ['1ME'] # ['original', '6h', '12h',  '24h']
+tres_list = ['original', '6h', '12h',  '24h']
 tres = var = ''
 
 if datasets['THAAO']['switch'] == True:
@@ -101,7 +101,7 @@ else:
 min_frac = 0.75             # Required fraction of native data per resample window
 rad_low_thresh = 1e0        # Minimum valid radiation threshold
 precip_low_thresh = 1e-3    # Minimum valid precipitation threshold
-cbh_low_thresh = 250        # Minimum valid cloud base height threshold
+cbh_low_thresh = 320        # Minimum valid cloud base height threshold
 carra1_ground_elev = 150
 era5_ground_elev = 181
 thaao_ground_elev = 220
