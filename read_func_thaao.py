@@ -135,7 +135,7 @@ def read_ceilometer(vr):
         for i in inpt.dateranges["ceilometer"][inpt.dateranges["ceilometer"].year.isin(inpt.years)]:
             date_str = i.strftime("%Y%m%d")
             file = Path(inpt.basefol["t"]["base"]) / "thaao_ceilometer" / \
-                "medie_tat_rianalisi" / \
+                "medie_tat_rianalisi" / "2019_2024_Thule_CHM190147_000_0010_0060cloud" / \
                 f"{date_str}{inpt.extr[vr]['t']['fn']}.txt"
             try:
                 df = pd.read_table(

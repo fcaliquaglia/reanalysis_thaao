@@ -22,7 +22,7 @@ e:
   data_res: ""
   var_name: "cbh"
 t:
-  fn: "_Thule_CHM190147_000_0060cloud"
+  fn: "_Thule_CHM190147_000_0010_0060cloud"
   column: "CBH_L1[m]"
   data: ""
   data_res: ""
