@@ -139,13 +139,19 @@ def read_ceilometer(vr):
                 f"{date_str}{inpt.extr[vr]['t']['fn']}.txt"
             try:
                 df = pd.read_table(
-                    file, sep=r"\s+", engine="python", header=0, skiprows=9)
+                    file, sep=r"\s+", engine="python",skiprows=10)
 
                 # Replace NaN values coded as specific "nanval"
                 df.replace(inpt.var_dict["t"]["nanval"], np.nan, inplace=True)
 
-                df.index = tls.parse_datetime_columns(df, file)
-                df.index.name = 'datetime'
+                df.columns = ['date[Y-M-D]', 'time[h:m:s]', 'TCC[okt]', 'flag', 'CBH_L1[m]',
+                       'CPD_L1[m]', 'CBH_L2[m]', 'CPD_L2[m]', 'CBH_L3[m]', 'CPD_L3[m]',
+                       'dev_CBH_L1[m]', 'dev_CPD_L1[m]', 'dev_CBH_L2[m]', 'dev_CPD_L2[m]',
+                       'dev_CBH_L3[m]', 'dev_CPD_L3[m]']
+                df['datetime'] = pd.to_datetime(
+                    df['date[Y-M-D]'].astype(str) + ' ' + df['time[h:m:s]'].astype(str))
+                df.set_index('datetime', inplace=True)
+                df.drop(columns=['date[Y-M-D]', 'time[h:m:s]'], inplace=True)
 
                 # Select relevant variable column and rename to vr
                 df = df[[inpt.extr[vr]["t"]["column"]]].astype(
