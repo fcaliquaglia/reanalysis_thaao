@@ -61,15 +61,9 @@ def parse_datetime_columns(df, file):
 
     cols = list(df.columns)
 
-    # Case 1: Combined datetime column
-    combined = [c for c in cols if re.search(r"date.*time", c, re.IGNORECASE)]
-    if combined:
-        datetime_str = df[combined[0]].astype(str)
-        return pd.to_datetime(datetime_str, errors="raise", format="mixed")
-
     # Case 2: Separate date and time columns
-    date_col = next((c for c in cols if re.search(r"date", c, re.IGNORECASE)), None)
-    time_col = next((c for c in cols if re.search(r"time", c, re.IGNORECASE)), None)
+    date_col = "date[Y-M-D]"
+    time_col = "time[h:m:s]"
 
     if date_col and time_col:
         datetime_str = df[date_col].astype(str) + " " + df[time_col].astype(str)
