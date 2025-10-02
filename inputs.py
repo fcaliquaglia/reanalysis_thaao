@@ -86,10 +86,10 @@ if datasets['buoys']['switch'] == True:
     list_var = ['orog'] # , 'sw_up', 'sw_down', 'temp',
                 #'surf_pres', 'rh']
 else:
-    list_var = ['lw_net'] # met_vars + cloud_vars + rad_comps_vars + rad_flux_vars
+    list_var = met_vars + cloud_vars + rad_comps_vars + rad_flux_vars
 
 # keep time resolution in order for taylor diagrams!
-tres_list = ['1ME', 'original', '12h',  '24h']
+tres_list = ['original', '12h',  '24h','1ME',]
 tres = var = ''
 
 if datasets['THAAO']['switch'] == True:
