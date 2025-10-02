@@ -9,9 +9,31 @@ Created on Thu Jun 12 08:50:17 2025
 import os
 import numpy as np
 import inputs as inpt
+import pandas as pd
 import datetime as dt
 import matplotlib.cm as cm
 import csv
+
+def make_time_range(start_year, end_year, tres):
+    tres_up = tres.upper()
+    
+    # Monthly, want 15th
+    if tres_up == "1ME":
+        # Generate month starts then shift to 15th
+        time_range = pd.date_range(
+            start=pd.Timestamp(start_year, 1, 1),
+            end=pd.Timestamp(end_year, 12, 31),
+            freq='MS'
+        ) + pd.Timedelta(days=14)
+    else:
+        # Regular frequency
+        time_range = pd.date_range(
+            start=pd.Timestamp(start_year, 1, 1),
+            end=pd.Timestamp(end_year, 12, 31, 23, 59),
+            freq=tres
+        )
+    
+    return time_range
 
 
 def format_ts(ax, year, yy, residuals=False):

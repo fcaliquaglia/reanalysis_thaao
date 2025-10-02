@@ -209,11 +209,7 @@ def plot_ba(period_label):
     for i, data_typ in enumerate(plot_vars):
         tres, tres_tol = tls.get_tres(data_typ)
         x = var_data[ref_x]['data_res'][tres][inpt.var]
-        time_range = pd.date_range(
-            start=pd.Timestamp(inpt.years[0], 1, 1),
-            end=pd.Timestamp(inpt.years[-1], 12, 31, 23, 59),
-            freq=tres
-        )
+        time_range = plt_tls.make_time_range(inpt.years[0], inpt.years[-1], tres)
         x_all = x.reindex(time_range, method='nearest',
                           tolerance=pd.Timedelta(tres_tol)).astype(float)
         y_all = var_data[data_typ]['data_res'][tres][inpt.var].reindex(
@@ -330,11 +326,7 @@ def plot_scatter_all(period_label):
         var_data[data_typ]['data_marg_distr']['tres_tol'] = tres_tol
 
         x = var_data[ref_x]['data_res'][tres][inpt.var]
-        time_range = pd.date_range(
-            start=pd.Timestamp(inpt.years[0], 1, 1),
-            end=pd.Timestamp(inpt.years[-1], 12, 31, 23, 59),
-            freq=tres
-        )
+        time_range = plt_tls.make_time_range(inpt.years[0], inpt.years[-1], tres)
         x_all = x.reindex(time_range, method='nearest',
                           tolerance=pd.Timedelta(tres_tol)).astype(float)
         season_months = inpt.all_seasons['all']['months']
@@ -492,12 +484,7 @@ def plot_scatter_seasonal(period_label):
 
         x = var_data[ref_x]['data_res'][tres][inpt.var]
         y = var_data[data_typ]['data_res'][tres][inpt.var]
-
-        time_range = pd.date_range(
-            start=pd.Timestamp(inpt.years[0], 1, 1),
-            end=pd.Timestamp(inpt.years[-1], 12, 31, 23, 59),
-            freq=tres
-        )
+        time_range = plt_tls.make_time_range(inpt.years[0], inpt.years[-1], tres)
 
         x_all = x.reindex(time_range, method='nearest',
                           tolerance=pd.Timedelta(tres_tol)).astype(float)
@@ -569,11 +556,7 @@ def plot_scatter_cum():
             tres, tres_tol = tls.get_tres(data_typ)
             x = var_data[ref_x]['data_res'][tres][inpt.var]
             # Prepare full time range for reindexing once
-            time_range = pd.date_range(
-                start=pd.Timestamp(inpt.years[0], 1, 1),
-                end=pd.Timestamp(inpt.years[-1], 12, 31, 23, 59),
-                freq=tres
-            )
+            time_range = plt_tls.make_time_range(inpt.years[0], inpt.years[-1], tres)
             x_all = x.reindex(time_range, method='nearest',
                               tolerance=pd.Timedelta(tres_tol)).astype(float)
             y = var_data[data_typ]['data_res'][inpt.tres][inpt.var]
@@ -619,11 +602,7 @@ def plot_scatter_cum():
             for i, data_typ in enumerate(plot_vars):
                 tres, tres_tol = tls.get_tres(data_typ)
                 x = var_data[ref_x]['data_res'][tres][inpt.var]
-                time_range = pd.date_range(
-                    start=pd.Timestamp(inpt.years[0], 1, 1),
-                    end=pd.Timestamp(inpt.years[-1], 12, 31, 23, 59),
-                    freq=tres
-                )
+                time_range = plt_tls.make_time_range(inpt.years[0], inpt.years[-1], tres)
                 x_all = x.reindex(time_range, method='nearest',
                                   tolerance=pd.Timedelta(tres_tol)).astype(float)
                 season_months = inpt.seasons[period_label]['months']
