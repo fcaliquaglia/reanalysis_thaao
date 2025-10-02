@@ -42,8 +42,6 @@ def process_variable(var, tres):
     if inpt.tres == '1ME':
         plt_f.plot_ts('all')
         plt_f.plot_residuals('all')
-
-    else:
         plt_f.plot_scatter_cum()
 
         if not inpt.datasets.get('dropsondes', {}).get('switch', False):
