@@ -237,6 +237,9 @@ def recompose_wind(u_series, v_series):
     )
 
 
+import pandas as pd
+import warnings
+
 def get_tres(data_typ, tres=None):
     """
     Return a valid frequency string and a tolerance string for resampling.
@@ -258,30 +261,44 @@ def get_tres(data_typ, tres=None):
     if tres is None:
         tres = inpt.tres
 
-    # If not original and a fixed resampling frequency
     if tres != 'original':
-        # Handle monthly end/start frequencies like '1ME'
-        if 'ME' in tres.upper() or 'MS' in tres.upper():
-            freq_str = tres.upper()
-            # Tolerance: roughly half a month
-            tolerance = '15d'
-        # Hourly or 3-hourly
+        tres_up = tres.upper()
+
+        # --- Monthly (month-end/start) ---
+        if tres in ['1ME']:
+            freq_str = tres_up   # '1ME' or '1MS' is fine for date_range
+            tolerance = '15d'    # Timedelta-safe (~half a month)
+
+        # --- Hourly / 3-hourly ---
         elif tres in ['1h', '3h']:
             freq_str = tres
             tolerance = '10min' if tres == '1h' else '30min'
+
+        # --- Other frequencies ---
         else:
             freq_str = tres
-            # Fallback: 1/6 of the frequency
             try:
                 td = pd.Timedelta(freq_str)
                 tolerance = pd.tseries.frequencies.to_offset(td / 6).freqstr
             except ValueError:
-                # For unknown freq strings, default 1h
+                warnings.warn(
+                    f"[WARN] Unknown frequency '{tres}', falling back to 1h/10min."
+                )
                 freq_str = '1h'
                 tolerance = '10min'
+
+        # ✅ Final safety: make sure tolerance is valid
+        try:
+            pd.Timedelta(tolerance)
+        except Exception:
+            warnings.warn(
+                f"[WARN] Invalid tolerance '{tolerance}', replaced with '1h'."
+            )
+            tolerance = '1h'
+
         return freq_str, tolerance
 
-    # If 'original', pick default based on variable and data type
+    # --- 'original' case ---
     freq_str = '1h' if inpt.var in inpt.cumulative_vars else ('3h' if data_typ == 'c' else '1h')
     td = pd.Timedelta(freq_str)
     tolerance = pd.tseries.frequencies.to_offset(td / 6).freqstr
