@@ -1,6 +1,6 @@
 name: windv
 ref_x: t2
-min: 0
+min: -25
 max: 25
 res_min: -15
 res_max: 15

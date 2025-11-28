@@ -1,6 +1,6 @@
 name: windu
 ref_x: t2
-min: 0
+min: -10
 max: 10
 res_min: -15
 res_max: 15
