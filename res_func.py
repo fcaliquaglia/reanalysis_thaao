@@ -125,54 +125,6 @@ def data_resampling(vr):
             inpt.extr[vr][data_typ]['data_res'] = {inpt.tres: data}
             return
 
-        if vr in ['winds', 'windd']:
-            resampled_data = {'original': data}
-            wspd = inpt.extr['winds'][data_typ]['data']['winds']
-            wdir = inpt.extr['windd'][data_typ]['data']['windd']
-            wspd, chk1 = tls.check_empty_df(wspd, 'winds')
-            wdir, chk2 = tls.check_empty_df(wdir, 'windd')
-
-            if not chk1 and not chk2:
-                common_index = wspd.index.intersection(wdir.index)
-                wspd = wspd.loc[common_index]
-                wdir = wdir.loc[common_index]
-
-                u, v = tls.decompose_wind(wspd, wdir)
-                uv_df = pd.DataFrame({'u': u, 'v': v}, index=wspd.index)
-
-                resampled_uv = {
-                    'original': uv_df,
-                    '1h': get_closest_subset_with_tolerance(uv_df, '1h', tol_minutes=10),
-                    '3h': get_closest_subset_with_tolerance(uv_df, '3h', tol_minutes=30),
-                }
-
-                if inpt.tres != 'original':
-                    if inpt.tres == '1ME':
-                        resampled_uv[inpt.tres] = uv_df.resample(inpt.tres).mean()
-                        resampled_uv[inpt.tres].index = resampled_uv[inpt.tres].index.to_period('M').to_timestamp(how='start') + pd.Timedelta(days=14)
-                    else:
-                        uv_masked = tls.mask_low_count_intervals(
-                            uv_df, data_typ, min_frac=inpt.min_frac)
-                        resampled_uv[inpt.tres] = uv_masked.resample(
-                        inpt.tres).mean()
-                else:
-                    resampled_uv[inpt.tres] = uv_df
-
-                winds_resampled = {}
-                windd_resampled = {}
-                for key, df in resampled_uv.items():
-                    spd, dire = tls.recompose_wind(df['u'], df['v'])
-                    winds_resampled[key] = pd.DataFrame(spd, columns=['winds'])
-                    windd_resampled[key] = pd.DataFrame(
-                        dire, columns=['windd'])
-
-                inpt.extr['winds'][data_typ]['data_res'] = winds_resampled
-                inpt.extr['windd'][data_typ]['data_res'] = windd_resampled
-
-                print(
-                    f"Wind resampled via MetPy and recomposed for {data_typ}")
-                continue
-
         if not chk:
 
             resampled_data = {'original': data}
