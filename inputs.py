@@ -93,7 +93,7 @@ tres_list = ['original', '12h', '24h', '1ME']
 tres = var = ''
 
 if datasets['THAAO']['switch'] == True:
-    years = np.arange(2016, 2025)
+    years = np.arange(2017, 2025)
 else:
     years = [2024]
 

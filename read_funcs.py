@@ -1124,7 +1124,9 @@ def read_wind():
     rd_frea.read_rean(vr, "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
 
-    inpt.extr["windu"]["e"]["data"], inpt.extr["windv"]["e"]["data"] = wind_components(inpt.extr["winds"]["e"]["data"].values * units("m/s"), inpt.extr["windd"]["e"]["data"])
+    windu, windv=wind_components(inpt.extr["winds"]["c"]["data"]["winds"].values * units("m/s"), inpt.extr["windd"]["c"]["data"]["windd"].values * units("degrees"))
+    inpt.extr["windu"]["c"]["data"] = pd.DataFrame(index=inpt.extr["winds"]["c"]["data"]["winds"].index, data=windu.magnitude, columns=["windu"])
+    inpt.extr["windv"]["c"]["data"] = pd.DataFrame(index=inpt.extr["winds"]["c"]["data"]["winds"].index, data=windv.magnitude, columns=["windv"])
 
     # --- ERA5 ---
     vr = "windu"
@@ -1152,11 +1154,13 @@ def read_wind():
     # --- THAAO ---
     if inpt.datasets['THAAO']['switch']:
         rd_ft.read_aws_ecapac("winds")
-        var_dict["t2"]["data"], _ = tls.check_empty_df(
-            var_dict["t2"]["data"], vr)
+        var_dict["t2"]["data"], _ = tls.check_empty_df(var_dict["t2"]["data"], vr)
         rd_ft.read_aws_ecapac("windd")
-        var_dict["t2"]["data"], _ = tls.check_empty_df(
-            var_dict["t2"]["data"], vr)
+        var_dict["t2"]["data"], _ = tls.check_empty_df(var_dict["t2"]["data"], vr)
+
+        windu, windv=wind_components(inpt.extr["winds"]["t2"]["data"]["winds"].values * units("m/s"), inpt.extr["windd"]["t2"]["data"]["windd"].values * units("degrees"))
+        inpt.extr["windu"]["t2"]["data"] = pd.DataFrame(index=inpt.extr["winds"]["t2"]["data"]["winds"].index, data=windu.magnitude, columns=["windu"])
+        inpt.extr["windv"]["t2"]["data"] = pd.DataFrame(index=inpt.extr["winds"]["t2"]["data"]["winds"].index, data=windv.magnitude, columns=["windv"])
 
     # --- Villum ---
     if inpt.datasets['Villum']['switch']:
