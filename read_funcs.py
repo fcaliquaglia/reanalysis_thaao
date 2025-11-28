@@ -1215,8 +1215,8 @@ def read():
         "sw_up": read_sw_up,
         "tcc": read_tcc,
         "temp": read_temp,
-        "winds": read_wind,
-        "windd": read_wind,
+        "windu": read_wind,
+        "windv": read_wind,
     }
 
     reader_func = readers.get(inpt.var)

@@ -106,8 +106,8 @@ def read():
         "sw_up": rd_funcs.read_sw_up,
         "tcc": rd_funcs.read_tcc,
         "temp": rd_funcs.read_temp,
-        "winds": rd_funcs.read_wind,
-        "windd": rd_funcs.read_wind,
+        "windu": rd_funcs.read_wind,
+        "windv": rd_funcs.read_wind,
     }
     reader_func = readers.get(inpt.var)
     if reader_func is None:
