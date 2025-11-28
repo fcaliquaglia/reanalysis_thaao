@@ -22,7 +22,7 @@ import read_func_villum as rd_fv
 import read_func_sigmaa as rd_fsa
 import read_func_sigmab as rd_fsb
 
-from metpy.calc import wind_direction, wind_speed
+from metpy.calc import wind_components
 from metpy.units import units
 from metpy.constants import g
 
@@ -1124,6 +1124,8 @@ def read_wind():
     rd_frea.read_rean(vr, "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
 
+    inpt.extr["windu"]["e"]["data"], inpt.extr["windv"]["e"]["data"] = wind_components(inpt.extr["winds"]["e"]["data"].values * units("m/s"), inpt.extr["windd"]["e"]["data"])
+
     # --- ERA5 ---
     vr = "windu"
     var_dict = inpt.extr[vr]
@@ -1134,17 +1136,18 @@ def read_wind():
     var_dict = inpt.extr[vr]
     rd_frea.read_rean(vr, "e")
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
-    e_ws = wind_speed(
-        inpt.extr["windu"]["e"]["data"]["windu"].values * units("m/s"),
-        inpt.extr["windv"]["e"]["data"]["windv"].values * units("m/s"))
-    inpt.extr["winds"]["e"]["data"] = pd.DataFrame(
-        index=inpt.extr["windu"]["e"]["data"]["windu"].index, data=e_ws.magnitude, columns=["winds"])
 
-    e_wd = wind_direction(
-        inpt.extr["windu"]["e"]["data"]["windu"].values * units("m/s"),
-        inpt.extr["windv"]["e"]["data"]["windv"].values * units("m/s"))
-    inpt.extr["windd"]["e"]["data"] = pd.DataFrame(
-        index=inpt.extr["windu"]["e"]["data"]["windu"].index, data=e_wd.magnitude, columns=["windd"])
+    # e_ws = wind_speed(
+    #     inpt.extr["windu"]["e"]["data"]["windu"].values * units("m/s"),
+    #     inpt.extr["windv"]["e"]["data"]["windv"].values * units("m/s"))
+    # inpt.extr["winds"]["e"]["data"] = pd.DataFrame(
+    #     index=inpt.extr["windu"]["e"]["data"]["windu"].index, data=e_ws.magnitude, columns=["winds"])
+
+    # e_wd = wind_direction(
+    #     inpt.extr["windu"]["e"]["data"]["windu"].values * units("m/s"),
+    #     inpt.extr["windv"]["e"]["data"]["windv"].values * units("m/s"))
+    # inpt.extr["windd"]["e"]["data"] = pd.DataFrame(
+    #     index=inpt.extr["windu"]["e"]["data"]["windu"].index, data=e_wd.magnitude, columns=["windd"])
 
     # --- THAAO ---
     if inpt.datasets['THAAO']['switch']:
