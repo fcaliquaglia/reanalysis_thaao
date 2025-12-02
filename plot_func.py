@@ -635,7 +635,7 @@ def plot_scatter_cum():
     plt.close('all')
 
 
-def plot_taylor(var_list):
+def plot_taylor():
     """
     Generate a Taylor diagram for a list of variables to assess statistical agreement
     (correlation, standard deviation) between models/components and reference data.
@@ -643,24 +643,26 @@ def plot_taylor(var_list):
     :param var_list: List of variable names to include in the Taylor diagram.
     :type var_list: list
     """
-
-    if var_list[0] in inpt.met_vars:
+    if inpt.met_vars:
+        var_list=inpt.met_vars
         plot_name = 'Weather variables'
-        inpt.met_vars.remove('surf_pres')
         available_markers = ['o', 's', '^', 'D', 'v', 'P', '*']
-    if var_list[0] in inpt.rad_comps_vars:
+    if inpt.rad_comps_vars:
+        var_list=inpt.rad_comps_vars
         plot_name = 'Radiation components variables'
         available_markers = ['X', 'H', '>', '<', '8', 'd', 's']
-    if var_list[0] in inpt.rad_flux_vars:
+    if inpt.rad_flux_vars:
+        var_list=inpt.rad_flux_vars
         plot_name = 'Radiation fluxes variables'
-        available_markers = ['X', 'H', '>', '<', '8', 'd', 's']
-    if var_list[0] in inpt.cloud_vars:
+        available_markers = ['p', 'h', '>', '<', '8', 'd', 's']
+    if inpt.cloud_vars:
+        var_list=inpt.cloud_vars
         plot_name = 'Cloud variables'
-        available_markers = ['X', 'H', '>', '<', '8', 'd', 's']
+        available_markers = ['1', '2', '3', '4', '.', ',', '+']
+
     print(f"[INFO] Taylor Diagram for {plot_name}")
     str_name = f"Taylor Diagram {plot_name} {inpt.years[0]}-{inpt.years[-1]}"
 
-    combined_stdrefs = []
     combined_stds = []
     combined_cors = []
     combined_labels = []
@@ -683,7 +685,6 @@ def plot_taylor(var_list):
                 std_y = var_data[data_typ]['data_stats'][tres]['std_y']
                 std_x = var_data[ref_x]['data_stats'][tres]['std_x']
                 r2 = var_data[data_typ]['data_stats'][tres]['r2']
-                combined_stdrefs.append(1)
                 combined_stds.append(std_y / std_x)
                 combined_cors.append(np.sqrt(r2))
                 combined_labels.append(f"{data_typ} ({var}, {tres})")

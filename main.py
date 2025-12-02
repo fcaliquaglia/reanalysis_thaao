@@ -64,14 +64,7 @@ def main():
 
     # Taylor Diagrams
     if inpt.datasets.get('THAAO', {}).get('switch', True) and inpt.tres != '1ME':
-        if inpt.met_vars:
-            plt_f.plot_taylor(inpt.met_vars)
-        if inpt.rad_comps_vars:
-            plt_f.plot_taylor(inpt.rad_comps_vars)
-        if inpt.rad_flux_vars:
-            plt_f.plot_taylor(inpt.rad_flux_vars)
-        if inpt.cloud_vars:
-            plt_f.plot_taylor(inpt.cloud_vars)
+        plt_f.plot_taylor
 
 
 if __name__ == "__main__":
