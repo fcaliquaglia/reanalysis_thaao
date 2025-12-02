@@ -269,10 +269,15 @@ def get_tres(data_typ, tres=None):
             freq_str = tres_up   # '1ME' or '1MS' is fine for date_range
             tolerance = '15d'    # Timedelta-safe (~half a month)
 
-        # --- Hourly / 3-hourly ---
-        elif tres in ['1h', '3h']:
+        # --- Hourly / 3-hourly / 6-hourly ---
+        elif tres in ['1h', '3h', '6h']:
             freq_str = tres
-            tolerance = '10min' if tres == '1h' else '30min'
+            if tres == '1h':
+                tolerance = '10min'
+            elif tres == '3h':
+                tolerance = '30min'
+            elif tres == '6h':
+                tolerance = '1h'
 
         # --- Other frequencies ---
         else:
