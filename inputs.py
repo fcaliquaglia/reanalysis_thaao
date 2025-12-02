@@ -89,11 +89,11 @@ else:
     list_var = met_vars + cloud_vars + rad_comps_vars + rad_flux_vars
 
 # keep time resolution in order for taylor diagrams!
-tres_list = ['original', '12h', '24h', '1ME']
+tres_list = ['original', '6h', '12h', '24h']
 tres = var = ''
 
 if datasets['THAAO']['switch'] == True:
-    years = np.arange(2017, 2025)
+    years = np.arange(2016, 2025)
 else:
     years = [2024]
 
