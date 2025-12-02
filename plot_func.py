@@ -635,30 +635,26 @@ def plot_scatter_cum():
     plt.close('all')
 
 
-def plot_taylor():
-    """
-    Generate a Taylor diagram for a list of variables to assess statistical agreement
-    (correlation, standard deviation) between models/components and reference data.
-
-    :param var_list: List of variable names to include in the Taylor diagram.
-    :type var_list: list
-    """
-    if inpt.met_vars:
+def plot_taylor(vr_class):
+    if vr_class == 'met':
         var_list=inpt.met_vars
         plot_name = 'Weather variables'
         available_markers = ['o', 's', '^', 'D', 'v', 'P', '*']
-    if inpt.rad_comps_vars:
+    elif vr_class == 'rad_comps':
         var_list=inpt.rad_comps_vars
         plot_name = 'Radiation components variables'
         available_markers = ['X', 'H', '>', '<', '8', 'd', 's']
-    if inpt.rad_flux_vars:
+    elif vr_class == 'rad_flux':
         var_list=inpt.rad_flux_vars
         plot_name = 'Radiation fluxes variables'
         available_markers = ['p', 'h', '>', '<', '8', 'd', 's']
-    if inpt.cloud_vars:
+    elif vr_class == 'cloud':
         var_list=inpt.cloud_vars
         plot_name = 'Cloud variables'
         available_markers = ['1', '2', '3', '4', '.', ',', '+']
+    else:
+        print("[WARNING] No variable lists found in input.")
+        return
 
     print(f"[INFO] Taylor Diagram for {plot_name}")
     str_name = f"Taylor Diagram {plot_name} {inpt.years[0]}-{inpt.years[-1]}"
