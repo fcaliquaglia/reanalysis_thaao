@@ -1113,15 +1113,17 @@ def read_wind():
         ("winds") and wind direction ("windd") for available datasets.
     :rtype: None
     """
-
+    start_date = '2023-01-01'
     # --- CARRA1 ---
     vr = "winds"
     var_dict = inpt.extr[vr]
     rd_frea.read_rean(vr, "c")
+    var_dict["c"]["data"] = var_dict["c"]["data"][var_dict["c"]["data"].index >= start_date]
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
     vr = "windd"
     var_dict = inpt.extr[vr]
     rd_frea.read_rean(vr, "c")
+    var_dict["c"]["data"] = var_dict["c"]["data"][var_dict["c"]["data"].index >= start_date]
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
 
     windu, windv=wind_components(inpt.extr["winds"]["c"]["data"]["winds"].values * units("m/s"), inpt.extr["windd"]["c"]["data"]["windd"].values * units("degrees"))
@@ -1132,24 +1134,14 @@ def read_wind():
     vr = "windu"
     var_dict = inpt.extr[vr]
     rd_frea.read_rean(vr, "e")
+    var_dict["e"]["data"] = var_dict["e"]["data"][var_dict["e"]["data"].index >= start_date]
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
 
     vr = "windv"
     var_dict = inpt.extr[vr]
     rd_frea.read_rean(vr, "e")
+    var_dict["e"]["data"] = var_dict["e"]["data"][var_dict["e"]["data"].index >= start_date]
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
-
-    # e_ws = wind_speed(
-    #     inpt.extr["windu"]["e"]["data"]["windu"].values * units("m/s"),
-    #     inpt.extr["windv"]["e"]["data"]["windv"].values * units("m/s"))
-    # inpt.extr["winds"]["e"]["data"] = pd.DataFrame(
-    #     index=inpt.extr["windu"]["e"]["data"]["windu"].index, data=e_ws.magnitude, columns=["winds"])
-
-    # e_wd = wind_direction(
-    #     inpt.extr["windu"]["e"]["data"]["windu"].values * units("m/s"),
-    #     inpt.extr["windv"]["e"]["data"]["windv"].values * units("m/s"))
-    # inpt.extr["windd"]["e"]["data"] = pd.DataFrame(
-    #     index=inpt.extr["windu"]["e"]["data"]["windu"].index, data=e_wd.magnitude, columns=["windd"])
 
     # --- THAAO ---
     if inpt.datasets['THAAO']['switch']:

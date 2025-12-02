@@ -63,12 +63,11 @@ def main():
             process_variable(var, tres)
 
     # Taylor Diagrams
-    if inpt.datasets.get('THAAO', {}).get('switch', True) and inpt.tres != '1ME':
+    if inpt.datasets.get('THAAO', {}).get('switch', True):
         plt_f.plot_taylor('met')
         plt_f.plot_taylor('rad_var')
         plt_f.plot_taylor('rad_flux')    
         plt_f.plot_taylor('cloud')  
-
 
 
 if __name__ == "__main__":
