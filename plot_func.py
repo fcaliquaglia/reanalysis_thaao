@@ -644,6 +644,14 @@ def plot_taylor(vr_class):
         var_list=inpt.rad_comps_vars+inpt.rad_flux_vars
         plot_name = 'Radiation components variables'
         available_markers = ['o', 's', '^', 'D', 'v', 'P', '*', '+', 'X']
+#    elif vr_class == 'rad_flux':
+#        var_list=inpt.rad_flux_vars
+#        plot_name = 'Radiation fluxes variables'
+#        available_markers = ['p', 'h', '>', '<', '8', 'd', 's']
+#    elif vr_class == 'cloud':
+#        var_list=inpt.cloud_vars
+#        plot_name = 'Cloud variables'
+#        available_markers = ['1', '2', '3', '4', '.', ',', '+']
     else:
         print("[WARNING] No variable lists found in input.")
         return
@@ -657,6 +665,7 @@ def plot_taylor(vr_class):
     combined_colors = []
     combined_markers = []
     var_marker_map = {}
+    point_trajectories = {}  # Track points by (var, data_typ)
 
     for var_idx, var in enumerate(var_list):
         print(var)
@@ -679,7 +688,16 @@ def plot_taylor(vr_class):
                 combined_stds.append(std_y / std_x)
                 combined_cors.append(np.sqrt(r2))
                 combined_labels.append(f"{data_typ} ({var}, {tres})")
-                combined_colors.append(inpt.var_dict.get(data_typ, {}).get('col', 'purple'))
+
+                if data_typ == 'c':
+                    color = 'red'
+                elif data_typ == 'e':
+                    color = 'blue'
+                else:
+                    color = inpt.var_dict.get(
+                        data_typ, {}).get('col', 'purple')
+
+                combined_colors.append(color)
                 combined_markers.append(var_marker_map[var])
 
     fig = plt.figure(figsize=(12, 10), dpi=inpt.dpi)
@@ -723,7 +741,8 @@ def plot_taylor_dia(ax, std_ref, std_models, corrs, labels,
     ax.set_thetamin(0)
     ax.set_thetamax(90)
 
-    corr_values = [1.0, 0.99, 0.95, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0]
+    corr_values = [1.0, 0.99, 0.95, 0.9, 0.8, 0.7,
+                   0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0]
     theta_degrees = np.degrees(np.arccos(corr_values))
     ticks, label_texts = ax.set_thetagrids(
         theta_degrees, labels=[f"{c:.2f}" for c in corr_values])
@@ -732,11 +751,13 @@ def plot_taylor_dia(ax, std_ref, std_models, corrs, labels,
 
     ax.set_rlabel_position(135)
     radial_ticks = np.arange(0, rmax + 0.2, 0.2)
-    radial_labels = ['REF' if r == 1.0 else f"{r:.2f}" for r in radial_ticks]
+    radial_labels = ['REF' if r ==
+                     1.0 else f"{r:.2f}" for r in radial_ticks]
     ax.set_yticks(radial_ticks)
     ax.set_yticklabels(radial_labels, fontsize=10, color='black')
 
-    ax.yaxis.grid(True, color='darksalmon', linestyle='-', linewidth=1., alpha=0.3)
+    ax.yaxis.grid(True, color='darksalmon',
+                  linestyle='-', linewidth=1., alpha=0.3)
 
     ax.text(-0.10, 1.0, "Normalized Standard Deviations",
             ha='center', va='top', fontsize='medium')
@@ -757,22 +778,69 @@ def plot_taylor_dia(ax, std_ref, std_models, corrs, labels,
     ax.add_artist(plt.Circle((0, 0), std_ref, transform=ax.transData._b,
                              color='black', fill=False, linestyle='--', linewidth=3))
 
-    for std, corr, label, color, marker in zip(std_models, corrs, labels, colors, markers):
-        theta = np.arccos(corr)
-        ax.plot(theta, std, marker=marker, markerfacecolor=color,
-                linestyle='None', markersize=8, markeredgecolor='black', markeredgewidth=0.5)
+    point_map = {}
 
-    # Create legend handles
+    def parse_res(res):
+        return 0 if res == 'original' else int(res.strip('h'))
+
+    for i, (std, corr, label) in enumerate(zip(std_models, corrs, labels)):
+        theta = np.arccos(corr)
+        try:
+            data_typ, meta = label.split('(')
+            var_name, resolution = [x.strip(' )') for x in meta.split(',')]
+            data_typ = data_typ.strip()
+        except Exception:
+            var_name = label
+            data_typ = 'unknown'
+            resolution = 'original'
+
+        key = (var_name, data_typ)
+        color_base = colors[i]
+        marker = markers[i]
+        color = plt_tls.get_color_by_resolution(data_typ, resolution)
+
+        if key not in point_map:
+            point_map[key] = {'original': None, 'others': []}
+
+        res_hour = parse_res(resolution)
+        if resolution == 'original':
+            ax.plot(theta, std, marker='o', color='black', markersize=10,
+                    linestyle='None', markerfacecolor='none')
+            ax.plot(theta, std, marker=marker, markerfacecolor=color,
+                    linestyle='None', markersize=6, markeredgecolor='none')
+            point_map[key]['original'] = (theta, std, res_hour)
+        else:
+            ax.plot(theta, std, marker=marker, markerfacecolor=color,
+                    linestyle='None', markeredgecolor='none')
+            point_map[key]['others'].append((theta, std, res_hour))
+
+    for key, pts in point_map.items():
+        all_pts = []
+        if pts['original']:
+            all_pts.append(pts['original'])
+        all_pts.extend(pts['others'])
+
+    # Create first legend handles (variables)
     legend_elements = [
-        Line2D([], [], color='black', marker=mark, linestyle='None', label=var, markersize=8)
+        Line2D([], [], color='black', marker=mark,
+               linestyle='None', label=var)
         for var, mark in var_marker_map.items()
     ]
-    
-    model_legend = [
-        Line2D([], [], color=inpt.var_dict[k]['col'], marker='o', linestyle='None',
-               label=inpt.var_dict[k]['label'], markersize=8, markeredgecolor='black', markeredgewidth=0.5)
-        for k in ['c', 'e'] if k in inpt.var_dict
-    ]
 
+    # Create second legend handles (models)
+    model_keys = ['c', 'e']
+    model_legend = [
+        Line2D([], [], color=inpt.var_dict[k]['col'], marker='o',
+               linestyle='None', label=inpt.var_dict[k]['label'])
+        for k in model_keys if k in inpt.var_dict
+    ]
+    model_legend.append(Line2D([], [], color='black', marker='o',
+                               linestyle='None', markerfacecolor='none',
+                               markersize=10, label='Original resolution'))
+
+    # Combine handles and labels
     all_handles = legend_elements + model_legend
-    ax.legend(all_handles, loc='upper right', fontsize='small', title_fontsize='medium', title='Variables & Models')
+    all_labels = [h.get_label() for h in all_handles]
+
+    ax.legend(all_handles, all_labels, loc='upper right',
+              fontsize='small', title_fontsize='medium', title='Legend')
