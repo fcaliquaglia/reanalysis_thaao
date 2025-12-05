@@ -72,8 +72,8 @@ location = next((info['fn']
 # ========== VARIABLE GROUPS ==========
 met_vars = ['temp', 'surf_pres', 'windu', 'windv', 'rh', 'iwv', 'precip']
 rad_comps_vars = ['sw_up', 'lw_up', 'lw_down', 'sw_down']
-rad_flux_vars = ['alb', 'sw_lw_net', 'sw_net', 'lw_net']
-cloud_vars = ['tcc', 'cbh']  # lwp
+rad_flux_vars = ['alb', 'sw_net', 'lw_net']
+cloud_vars = ['cbh']  # lwp
 technical_vars = ['winds', 'windd', 'dewpt', 'sw_net', 'lw_net']
 extra_vars = ['orog']
 
@@ -99,7 +99,7 @@ else:
 
 # ========== RESAMPLING THRESHOLDS ==========
 min_frac = 0.75             # Required fraction of native data per resample window
-rad_low_thresh = 1e0        # Minimum valid radiation threshold
+rad_low_thresh = 1e-1        # Minimum valid radiation threshold
 precip_low_thresh = 1e-3    # Minimum valid precipitation threshold
 cbh_low_thresh = 320        # Minimum valid cloud base height threshold
 carra1_ground_elev = 150

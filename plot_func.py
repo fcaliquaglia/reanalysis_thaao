@@ -637,21 +637,21 @@ def plot_scatter_cum():
 
 def plot_taylor(vr_class):
     if vr_class == 'met':
-        var_list=inpt.met_vars
+        var_list=inpt.met_vars+inpt.cloud_vars
         plot_name = 'Weather variables'
         available_markers = ['o', 's', '^', 'D', 'v', 'P', '*']
     elif vr_class == 'rad_comps':
-        var_list=inpt.rad_comps_vars
+        var_list=inpt.rad_comps_vars+inpt.rad_flux_vars
         plot_name = 'Radiation components variables'
         available_markers = ['X', 'H', '>', '<', '8', 'd', 's']
-    elif vr_class == 'rad_flux':
-        var_list=inpt.rad_flux_vars
-        plot_name = 'Radiation fluxes variables'
-        available_markers = ['p', 'h', '>', '<', '8', 'd', 's']
-    elif vr_class == 'cloud':
-        var_list=inpt.cloud_vars
-        plot_name = 'Cloud variables'
-        available_markers = ['1', '2', '3', '4', '.', ',', '+']
+#    elif vr_class == 'rad_flux':
+#        var_list=inpt.rad_flux_vars
+#        plot_name = 'Radiation fluxes variables'
+#        available_markers = ['p', 'h', '>', '<', '8', 'd', 's']
+#    elif vr_class == 'cloud':
+#        var_list=inpt.cloud_vars
+#        plot_name = 'Cloud variables'
+#        available_markers = ['1', '2', '3', '4', '.', ',', '+']
     else:
         print("[WARNING] No variable lists found in input.")
         return
