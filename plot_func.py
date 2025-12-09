@@ -838,6 +838,16 @@ def plot_taylor_dia(ax, std_ref, std_models, corrs, labels,
             all_pts.append(pts['original'])
         all_pts.extend(pts['others'])
 
+        # Must have at least two points to draw a trajectory
+        if len(all_pts) < 2:
+            continue
+        # Sort by resolution hour (3rd element)
+        all_pts_sorted = sorted(all_pts, key=lambda x: int(x[2]))
+        thetas = [pt[0] for pt in all_pts_sorted]
+        stds = [pt[1] for pt in all_pts_sorted]
+
+        ax.plot(thetas, stds, color='gray', linestyle='-', linewidth=0.8, alpha=0.5)
+    
     # Create first legend handles (variables)
     legend_elements = [
         Line2D([], [], color='black', marker=mark,
