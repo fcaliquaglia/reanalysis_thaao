@@ -793,7 +793,13 @@ def plot_taylor_dia(ax, std_ref, std_models, corrs, labels,
     point_map = {}
 
     def parse_res(res):
-        return 0 if res == 'original' else int(res.strip('h'))
+        if res == 'original':
+            return 0
+        elif res == '1ME':
+            return '999'
+        else:
+            return int(res.strip('h'))
+
 
     for i, (std, corr, label) in enumerate(zip(std_models, corrs, labels)):
         theta = np.arccos(corr)

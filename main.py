@@ -55,12 +55,12 @@ def process_variable(var, tres):
 def main():
     print(f"\n\n=== Location: {inpt.location} ===\n")
 
-    for tres in inpt.tres_list:
-        inpt.tres = tres
-        print(f"\n=== Processing Time Resolution: {tres} ===\n\n")
+    # for tres in inpt.tres_list:
+    #     inpt.tres = tres
+    #     print(f"\n=== Processing Time Resolution: {tres} ===\n\n")
 
-        for var in inpt.list_var:
-            process_variable(var, tres)
+    #     for var in inpt.list_var:
+    #         process_variable(var, tres)
 
     # Taylor Diagrams
     if inpt.datasets.get('THAAO', {}).get('switch', True):
