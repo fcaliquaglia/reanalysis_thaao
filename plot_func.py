@@ -639,11 +639,9 @@ def plot_taylor(vr_class):
     if vr_class == 'met':
         var_list=inpt.met_vars+inpt.cloud_vars
         plot_name = 'Weather variables'
-        available_markers = ['o', 's', '^', 'D', 'v', 'P', '*', '+', 'X']
     elif vr_class == 'rad_comps':
         var_list=inpt.rad_comps_vars+inpt.rad_flux_vars
         plot_name = 'Radiation components variables'
-        available_markers = ['o', 's', '^', 'D', 'v', 'P', '*', '+', 'X']
 #    elif vr_class == 'rad_flux':
 #        var_list=inpt.rad_flux_vars
 #        plot_name = 'Radiation fluxes variables'
@@ -658,57 +656,85 @@ def plot_taylor(vr_class):
 
     print(f"[INFO] Taylor Diagram for {plot_name}")
     str_name = f"Taylor Diagram {plot_name} {inpt.years[0]}-{inpt.years[-1]}"
-
-    combined_stds = []
-    combined_cors = []
-    combined_labels = []
-    combined_colors = []
-    combined_markers = []
+    # Dictionary to store all information cleanly
+    data_dict = {}
     var_marker_map = {}
-    point_trajectories = {}  # Track points by (var, data_typ)
+    available_markers = ['o', 's', '^', 'D', 'v', 'P', '*', '+', 'X']
+
 
     for var_idx, var in enumerate(var_list):
         print(var)
         marker = available_markers[var_idx % len(available_markers)]
         var_marker_map[var] = marker
-        inpt.var = var
-        var_data = inpt.extr[var]
-        comps = ['c', 'e']
-        ref_x = var_data['ref_x']
-        plot_vars = tls.plot_vars_cleanup(comps, var_data)
 
-        for tres in inpt.tres_list:
-            for data_typ in plot_vars:
-                std_y = var_data[data_typ]['data_stats'][tres]['std_y']
-                std_x = var_data[ref_x]['data_stats'][tres]['std_x']
-                r2 = var_data[data_typ]['data_stats'][tres]['r2']
-                if std_x == 0:
-                    print(f"[WARN] std_x is zero for {data_typ}, {var}, {tres}. Skipping this entry to avoid division by zero.")
-                    continue
-                combined_stds.append(std_y / std_x)
-                combined_cors.append(np.sqrt(r2))
-                combined_labels.append(f"{data_typ} ({var}, {tres})")
 
-                if data_typ == 'c':
-                    color = 'red'
-                elif data_typ == 'e':
-                    color = 'blue'
-                else:
-                    color = inpt.var_dict.get(
-                        data_typ, {}).get('col', 'purple')
+    inpt.var = var
+    var_data = inpt.extr[var]
+    comps = ['c', 'e']
+    ref_x = var_data['ref_x']
+    plot_vars = tls.plot_vars_cleanup(comps, var_data)
 
-                combined_colors.append(color)
-                combined_markers.append(var_marker_map[var])
 
+    for tres in inpt.tres_list:
+        for data_typ in plot_vars:
+            std_y = var_data[data_typ]['data_stats'][tres]['std_y']
+            std_x = var_data[ref_x]['data_stats'][tres]['std_x']
+            r2 = var_data[data_typ]['data_stats'][tres]['r2']
+
+
+            if std_x == 0:
+                print(f"[WARN] Zero std_x for {data_typ}, {var}, {tres}. Skipping.")
+                continue
+
+
+            std_norm = std_y / std_x
+            corr = np.sqrt(r2)
+            label = f"{data_typ} ({var}, {tres})"
+
+
+            color = (
+            'red' if data_typ == 'c'
+            else 'blue' if data_typ == 'e'
+            else inpt.var_dict.get(data_typ, {}).get('col', 'purple')
+            )
+
+
+            entry_key = f"{var}_{data_typ}_{tres}"
+            data_dict[entry_key] = {
+            "std": std_norm,
+            "corr": corr,
+            "label": label,
+            "color": color,
+            "var": var,
+            "data_typ": data_typ,
+            "tres": tres,
+            }
+
+
+    # Create Taylor diagram
     fig = plt.figure(figsize=(12, 10), dpi=inpt.dpi)
     ax = fig.add_subplot(111, polar=True)
     fig.suptitle(str_name, fontweight='bold')
     fig.subplots_adjust(top=0.93, bottom=0.15)
 
-    ref_std = 1.0
-    plot_taylor_dia(ax, ref_std, combined_stds, combined_cors, combined_labels,
-                    colors=combined_colors, markers=combined_markers,
-                    var_marker_map=var_marker_map)
+
+    # Convert dict → arrays
+    stds = [d['std'] for d in data_dict.values()]
+    corrs = [d['corr'] for d in data_dict.values()]
+    labels = [d['label'] for d in data_dict.values()]
+    colors = [d['color'] for d in data_dict.values()]
+    vars_for_markers = [d['var'] for d in data_dict.values()]
+
+    plot_taylor_dia(
+    ax,
+    std_ref=1.0,
+    std_models=stds,
+    corrs=corrs,
+    labels=labels,
+    colors=colors,
+    var_marker_map=var_marker_map,
+    vars_for_markers=vars_for_markers,
+    )
 
     save_path = os.path.join(
         inpt.basefol['out']['base'], f"{str_name.replace(' ', '_')}.png")
@@ -716,24 +742,16 @@ def plot_taylor(vr_class):
     plt.close(fig)
 
 
-def plot_taylor_dia(ax, std_ref, std_models, corrs, labels,
-                    colors, markers, var_marker_map):
-    """
-    Draw a Taylor diagram on a polar axis.
+def plot_taylor_dia(ax, std_ref, std_models, corrs, labels, colors,
+var_marker_map, vars_for_markers):
 
-    :param ax: Matplotlib axis object to plot on.
-    :param std_ref: Reference standard deviation.
-    :param std_models: List of normalized standard deviations of the models.
-    :param corrs: List of correlation coefficients.
-    :param labels: List of labels for the model points.
-    :param colors: List of colors for each model point.
-    :param markers: List of marker styles for each model point.
-    :param var_marker_map: Dictionary mapping variable names to markers.
-    """
 
     std_models = np.array(std_models)
     corrs = np.array(corrs)
+
+
     rmax = 2
+
 
     ax.set_ylim(0, rmax)
     ax.set_theta_direction(1)
@@ -741,106 +759,44 @@ def plot_taylor_dia(ax, std_ref, std_models, corrs, labels,
     ax.set_thetamin(0)
     ax.set_thetamax(90)
 
-    corr_values = [1.0, 0.99, 0.95, 0.9, 0.8, 0.7,
-                   0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0]
+
+    corr_values = [1.0, 0.99, 0.95, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0]
     theta_degrees = np.degrees(np.arccos(corr_values))
-    ticks, label_texts = ax.set_thetagrids(
-        theta_degrees, labels=[f"{c:.2f}" for c in corr_values])
-    for label in label_texts:
-        label.set_color('darkgoldenrod')
+    ticks, label_texts = ax.set_thetagrids(theta_degrees,
+    labels=[f"{c:.2f}" for c in corr_values])
+    for lbl in label_texts:
+        lbl.set_color('darkgoldenrod')
+
 
     ax.set_rlabel_position(135)
     radial_ticks = np.arange(0, rmax + 0.2, 0.2)
-    radial_labels = ['REF' if r ==
-                     1.0 else f"{r:.2f}" for r in radial_ticks]
+    radial_labels = ['REF' if r == 1.0 else f"{r:.2f}" for r in radial_ticks]
     ax.set_yticks(radial_ticks)
     ax.set_yticklabels(radial_labels, fontsize=10, color='black')
 
-    ax.yaxis.grid(True, color='darksalmon',
-                  linestyle='-', linewidth=1., alpha=0.3)
 
-    ax.text(-0.10, 1.0, "Normalized Standard Deviations",
-            ha='center', va='top', fontsize='medium')
-    ax.text(np.radians(45), rmax + 0.15, "Correlation (R)",
-            rotation=-45, ha='center', va='center', fontsize='medium')
+    ax.yaxis.grid(True, color='darksalmon', linestyle='-', linewidth=1., alpha=0.3)
 
-    for theta in np.radians(theta_degrees):
-        ax.plot([theta, theta], [0, rmax], color='darkgoldenrod',
-                linestyle='--', linewidth=0.8, alpha=0.5)
 
-    for rtick in np.arange(0.2, rmax + 0.2, 0.2):
-        angles = np.linspace(-np.pi, np.pi, 300)
-        x_arc = std_ref + rtick * np.cos(angles)
-        y_arc = rtick * np.sin(angles)
-        ax.plot(np.arctan2(y_arc, x_arc), np.sqrt(x_arc**2 + y_arc**2),
-                color='darkgreen', linestyle='--', linewidth=0.7, alpha=0.6)
-
-    ax.add_artist(plt.Circle((0, 0), std_ref, transform=ax.transData._b,
-                             color='black', fill=False, linestyle='--', linewidth=3))
-
-    point_map = {}
-
-    def parse_res(res):
-        return 0 if res == 'original' else int(res.strip('h'))
-
+    # Plot each point
     for i, (std, corr, label) in enumerate(zip(std_models, corrs, labels)):
         theta = np.arccos(corr)
-        try:
-            data_typ, meta = label.split('(')
-            var_name, resolution = [x.strip(' )') for x in meta.split(',')]
-            data_typ = data_typ.strip()
-        except Exception:
-            var_name = label
-            data_typ = 'unknown'
-            resolution = 'original'
 
-        key = (var_name, data_typ)
-        color_base = colors[i]
-        marker = markers[i]
-        color = plt_tls.get_color_by_resolution(data_typ, resolution)
 
-        if key not in point_map:
-            point_map[key] = {'original': None, 'others': []}
+        var_name = vars_for_markers[i]
+        marker = var_marker_map.get(var_name, 'o')
+        color = colors[i]
 
-        res_hour = parse_res(resolution)
-        if resolution == 'original':
-            ax.plot(theta, std, marker='o', color='black', markersize=10,
-                    linestyle='None', markerfacecolor='none')
-            ax.plot(theta, std, marker=marker, markerfacecolor=color,
-                    linestyle='None', markersize=6, markeredgecolor='none')
-            point_map[key]['original'] = (theta, std, res_hour)
-        else:
-            ax.plot(theta, std, marker=marker, markerfacecolor=color,
-                    linestyle='None', markeredgecolor='none')
-            point_map[key]['others'].append((theta, std, res_hour))
 
-    for key, pts in point_map.items():
-        all_pts = []
-        if pts['original']:
-            all_pts.append(pts['original'])
-        all_pts.extend(pts['others'])
+    ax.plot(theta, std, marker=marker, linestyle='None', color=color, markersize=8)
 
-    # Create first legend handles (variables)
+
+    # Legend for variables
     legend_elements = [
-        Line2D([], [], color='black', marker=mark,
-               linestyle='None', label=var)
-        for var, mark in var_marker_map.items()
+    Line2D([], [], color='black', marker=mark, linestyle='None', label=var)
+    for var, mark in var_marker_map.items()
     ]
 
-    # Create second legend handles (models)
-    model_keys = ['c', 'e']
-    model_legend = [
-        Line2D([], [], color=inpt.var_dict[k]['col'], marker='o',
-               linestyle='None', label=inpt.var_dict[k]['label'])
-        for k in model_keys if k in inpt.var_dict
-    ]
-    model_legend.append(Line2D([], [], color='black', marker='o',
-                               linestyle='None', markerfacecolor='none',
-                               markersize=10, label='Original resolution'))
 
-    # Combine handles and labels
-    all_handles = legend_elements + model_legend
-    all_labels = [h.get_label() for h in all_handles]
-
-    ax.legend(all_handles, all_labels, loc='upper right',
-              fontsize='small', title_fontsize='medium', title='Legend')
+    ax.legend(legend_elements, [e.get_label() for e in legend_elements],
+    loc='upper right', fontsize='small', title='Variables', title_fontsize='medium')
