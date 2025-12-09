@@ -653,8 +653,11 @@ def plot_taylor(vr_class):
         var_list=inpt.met_vars+inpt.cloud_vars
         plot_name = 'Weather variables'
     elif vr_class == 'rad_comps':
-        var_list=inpt.rad_comps_vars+inpt.rad_flux_vars
+        var_list=inpt.rad_comps_vars
         plot_name = 'Radiation components variables'
+    elif vr_class == 'rad_flux':
+        var_list=inpt.rad_flux_vars
+        plot_name = 'Radiation fluxes variables'
 #    elif vr_class == 'rad_flux':
 #        var_list=inpt.rad_flux_vars
 #        plot_name = 'Radiation fluxes variables'
@@ -769,26 +772,26 @@ def plot_taylor_dia(ax, std_ref, std_models, corrs, labels,
     ax.set_yticklabels(radial_labels, fontsize=10, color='black')
 
     ax.yaxis.grid(True, color='darksalmon',
-                  linestyle='-', linewidth=1., alpha=0.3)
+                  linestyle='--', linewidth=1., alpha=0.2)
 
     ax.text(-0.10, 1.0, "Normalized Standard Deviations",
             ha='center', va='top', fontsize='medium')
     ax.text(np.radians(45), rmax + 0.15, "Correlation (R)",
             rotation=-45, ha='center', va='center', fontsize='medium')
 
-    for theta in np.radians(theta_degrees):
-        ax.plot([theta, theta], [0, rmax], color='darkgoldenrod',
-                linestyle='--', linewidth=0.8, alpha=0.5)
+    # for theta in np.radians(theta_degrees):
+    #     ax.plot([theta, theta], [0, rmax], color='darkgoldenrod',
+    #             linestyle='--', linewidth=0.7, alpha=0.2)
 
     for rtick in np.arange(0.2, rmax + 0.2, 0.2):
         angles = np.linspace(-np.pi, np.pi, 300)
         x_arc = std_ref + rtick * np.cos(angles)
         y_arc = rtick * np.sin(angles)
         ax.plot(np.arctan2(y_arc, x_arc), np.sqrt(x_arc**2 + y_arc**2),
-                color='darkgreen', linestyle='--', linewidth=0.7, alpha=0.6)
+                color='darkgreen', linestyle='--', linewidth=1, alpha=0.2)
 
     ax.add_artist(plt.Circle((0, 0), std_ref, transform=ax.transData._b,
-                             color='black', fill=False, linestyle='--', linewidth=3))
+                             color='black', fill=False, linestyle='--', linewidth=2))
 
     point_map = {}
 
@@ -822,8 +825,8 @@ def plot_taylor_dia(ax, std_ref, std_models, corrs, labels,
 
         res_hour = parse_res(resolution)
         if resolution == 'original':
-            ax.plot(theta, std, marker='o', color='black', markersize=10,
-                    linestyle='None', markerfacecolor='none')
+            # ax.plot(theta, std, marker='o', color='black', markersize=10,
+            #         linestyle='None', markerfacecolor='none')
             ax.plot(theta, std, marker=marker, markerfacecolor=color,
                     linestyle='None', markersize=6, markeredgecolor='none')
             point_map[key]['original'] = (theta, std, res_hour)
@@ -846,7 +849,7 @@ def plot_taylor_dia(ax, std_ref, std_models, corrs, labels,
         thetas = [pt[0] for pt in all_pts_sorted]
         stds = [pt[1] for pt in all_pts_sorted]
 
-        ax.plot(thetas, stds, color='gray', linestyle='-', linewidth=0.8, alpha=0.5)
+        ax.plot(thetas, stds, color='gray', linestyle='-', linewidth=0.8, alpha=0.9)
     
     # Create first legend handles (variables)
     legend_elements = [
@@ -862,9 +865,9 @@ def plot_taylor_dia(ax, std_ref, std_models, corrs, labels,
                linestyle='None', label=inpt.var_dict[k]['label'])
         for k in model_keys if k in inpt.var_dict
     ]
-    model_legend.append(Line2D([], [], color='black', marker='o',
-                               linestyle='None', markerfacecolor='none',
-                               markersize=10, label='Original resolution'))
+    # model_legend.append(Line2D([], [], color='black', marker='o',
+    #                            linestyle='None', markerfacecolor='none',
+    #                            markersize=10, label='Original resolution'))
 
     # Combine handles and labels
     all_handles = legend_elements + model_legend
