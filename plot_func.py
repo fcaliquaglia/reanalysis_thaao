@@ -653,19 +653,11 @@ def plot_taylor(vr_class):
         var_list=inpt.met_vars+inpt.cloud_vars
         plot_name = 'Weather variables'
     elif vr_class == 'rad_comps':
-        var_list=inpt.rad_comps_vars
+        var_list=inpt.rad_comps_vars+['alb']
         plot_name = 'Radiation components variables'
     elif vr_class == 'rad_flux':
-        var_list=inpt.rad_flux_vars
+        var_list = [v for v in inpt.rad_flux_vars if v != 'alb']
         plot_name = 'Radiation fluxes variables'
-#    elif vr_class == 'rad_flux':
-#        var_list=inpt.rad_flux_vars
-#        plot_name = 'Radiation fluxes variables'
-#        available_markers = ['p', 'h', '>', '<', '8', 'd', 's']
-#    elif vr_class == 'cloud':
-#        var_list=inpt.cloud_vars
-#        plot_name = 'Cloud variables'
-#        available_markers = ['1', '2', '3', '4', '.', ',', '+']
     else:
         print("[WARNING] No variable lists found in input.")
         return
@@ -779,9 +771,14 @@ def plot_taylor_dia(ax, std_ref, std_models, corrs, labels,
     ax.text(np.radians(45), rmax + 0.15, "Correlation (R)",
             rotation=-45, ha='center', va='center', fontsize='medium')
 
-    # for theta in np.radians(theta_degrees):
-    #     ax.plot([theta, theta], [0, rmax], color='darkgoldenrod',
-    #             linestyle='--', linewidth=0.7, alpha=0.2)
+    # --- Remove default theta-grid lines so they don't overwrite our custom spokes ---
+    ax.grid(False)               # disable all default gridlines
+    # re-enable only the circular radial grid if you like (optional)
+    ax.yaxis.grid(True, color='darksalmon', linestyle='--', linewidth=1., alpha=0.2)
+
+    for theta in np.radians(theta_degrees):
+        ax.plot([theta, theta], [0, rmax], color='darkgoldenrod',
+                linestyle='--', linewidth=0.7, alpha=0.2)
 
     for rtick in np.arange(0.2, rmax + 0.2, 0.2):
         angles = np.linspace(-np.pi, np.pi, 300)
