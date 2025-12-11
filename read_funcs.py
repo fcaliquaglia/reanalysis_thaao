@@ -113,7 +113,7 @@ def read_alb():
     alb_e = alb_e_tmp.where((alb_e_tmp >= 0) & (alb_e_tmp <= 1))
     alb_e.name = vr
     alb_t_tmp = sw_up_t/sw_down_t
-    alb_t = alb_t_tmp.where((alb_t_tmp >= 0.5) & (alb_t_tmp <= 1.))
+    alb_t = alb_t_tmp.where((alb_t_tmp >= 0.05) & (alb_t_tmp <= 1.))
     alb_t.name = vr
 
     var_dict["c"]["data"] = pd.DataFrame({vr: alb_c})
