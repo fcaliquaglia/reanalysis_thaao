@@ -559,6 +559,9 @@ def read_surf_pres():
         rd_ft.read_aws_ecapac(vr)
         var_dict["t2"]["data"], _ = tls.check_empty_df(
             var_dict["t2"]["data"], vr)
+        var_dict["t2"]["data"].loc[var_dict["t2"]["data"][vr] <= 900., vr] = np.nan
+        var_dict["t2"]["data"].loc[var_dict["t2"]["data"][vr] >= 1050., vr] = np.nan
+
 
     # --- Villum ---
     if inpt.datasets['Villum']['switch']:
