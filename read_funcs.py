@@ -55,7 +55,7 @@ def read_alb():
 
     vr = "sw_up"
     var_dict = inpt.extr[vr]
-    sw_up_c = sw_down_c - sw_net_c
+    sw_up_c = sw_down_c + sw_net_c
     sw_up_c = sw_up_c.mask(sw_up_c < inpt.rad_low_thresh, np.nan)
     sw_up_c.name = vr
     var_dict["c"]["data"] = pd.DataFrame({vr: sw_up_c})
@@ -71,7 +71,7 @@ def read_alb():
 
     vr = "sw_up"
     var_dict = inpt.extr[vr]
-    sw_up_e = sw_down_e - sw_net_e
+    sw_up_e = sw_down_e + sw_net_e
     sw_up_e = sw_up_e.mask(sw_up_e < inpt.rad_low_thresh, np.nan)
     sw_up_e.name = vr
     var_dict["e"]["data"] = pd.DataFrame({vr: sw_up_e})
@@ -349,7 +349,7 @@ def read_lw_up():
 
     vr = "lw_up"
     var_dict = inpt.extr[vr]
-    lw_up_c = lw_down_c - lw_net_c
+    lw_up_c = lw_down_c + lw_net_c
     lw_up_c = lw_up_c.mask(lw_up_c < inpt.rad_low_thresh, np.nan)
     lw_up_c.name = vr
     var_dict["c"]["data"] = pd.DataFrame({vr: lw_up_c})
@@ -365,7 +365,7 @@ def read_lw_up():
 
     vr = "lw_up"
     var_dict = inpt.extr[vr]
-    lw_up_e = lw_down_e - lw_net_e
+    lw_up_e = lw_down_e + lw_net_e
     lw_up_e = lw_up_e.mask(lw_up_e < inpt.rad_low_thresh, np.nan)
     lw_up_e.name = vr
     var_dict["e"]["data"] = pd.DataFrame({vr: lw_up_e})
@@ -892,7 +892,7 @@ def read_sw_up():
 
     vr = "sw_up"
     var_dict = inpt.extr[vr]
-    sw_up_c = sw_down_c - sw_net_c
+    sw_up_c = sw_down_c + sw_net_c
     sw_up_c = sw_up_c.mask(sw_up_c < inpt.rad_low_thresh, np.nan)
     sw_up_c.name = vr
     var_dict["c"]["data"] = pd.DataFrame({vr: sw_up_c})
@@ -908,7 +908,7 @@ def read_sw_up():
 
     vr = "sw_up"
     var_dict = inpt.extr[vr]
-    sw_up_e = sw_down_e - sw_net_e
+    sw_up_e = sw_down_e + sw_net_e
     sw_up_e = sw_up_e.mask(sw_up_e < inpt.rad_low_thresh, np.nan)
     sw_up_e.name = vr
     var_dict["e"]["data"] = pd.DataFrame({vr: sw_up_e})
@@ -1216,3 +1216,25 @@ def read():
         raise ValueError(
             f"No reader function defined for variable '{inpt.var}'")
     return reader_func()
+    def read_windd():
+        """
+        Reads and processes wind direction data from CARRA1, ERA5, and THAAO.
+        """
+        vr = inpt.var
+        var_dict = inpt.extr[vr]
+
+        # --- CARRA1 ---
+        rd_frea.read_rean(vr, "c")
+        var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
+
+        # --- ERA5 ---
+        rd_frea.read_rean(vr, "e")
+        var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
+
+        # --- THAAO ---
+        if inpt.datasets['THAAO']['switch']:
+            rd_ft.read_aws_ecapac(vr)
+            var_dict["t2"]["data"], _ = tls.check_empty_df(
+                var_dict["t2"]["data"], vr)
+
+        return
