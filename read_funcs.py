@@ -113,7 +113,7 @@ def read_alb():
     alb_e = alb_e_tmp.where((alb_e_tmp >= 0) & (alb_e_tmp <= 1))
     alb_e.name = vr
     alb_t_tmp = sw_up_t/sw_down_t
-    alb_t = alb_t_tmp.where((alb_t_tmp >= 0) & (alb_t_tmp <= 100))
+    alb_t = alb_t_tmp.where((alb_t_tmp >= 0.5) & (alb_t_tmp <= 1.))
     alb_t.name = vr
 
     var_dict["c"]["data"] = pd.DataFrame({vr: alb_c})
@@ -358,7 +358,7 @@ def read_lw_up():
     var_dict = inpt.extr[vr]
     # CARRA/ERA5: `lw_net` includes sign as net = up + down, therefore
     # up = net - down
-    lw_up_c = lw_net_c - lw_down_c
+    lw_up_c = lw_down_c - lw_net_c
     lw_up_c = lw_up_c.mask(lw_up_c < inpt.rad_low_thresh, np.nan)
     lw_up_c.name = vr
     var_dict["c"]["data"] = pd.DataFrame({vr: lw_up_c})
@@ -376,7 +376,7 @@ def read_lw_up():
     var_dict = inpt.extr[vr]
     # CARRA/ERA5: `lw_net` includes sign as net = up + down, therefore
     # up = net - down
-    lw_up_e = lw_net_e - lw_down_e
+    lw_up_e = lw_down_e - lw_net_e
     lw_up_e = lw_up_e.mask(lw_up_e < inpt.rad_low_thresh, np.nan)
     lw_up_e.name = vr
     var_dict["e"]["data"] = pd.DataFrame({vr: lw_up_e})
@@ -534,14 +534,14 @@ def read_surf_pres():
     rd_frea.read_rean(vr, "c")
     var_dict["c"]["data"], _ = tls.check_empty_df(var_dict["c"]["data"], vr)
     var_dict["c"]["data"][vr] /= 100.
-    var_dict["c"]["data"].loc[var_dict["c"]["data"][vr] <= 950., vr] = np.nan
+    var_dict["c"]["data"].loc[var_dict["c"]["data"][vr] <= 900., vr] = np.nan
     var_dict["c"]["data"].loc[var_dict["c"]["data"][vr] >= 1050., vr] = np.nan
 
     # --- ERA5 ---
     rd_frea.read_rean(vr, "e")
     var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
     var_dict["e"]["data"][vr] /= 100.
-    var_dict["e"]["data"].loc[var_dict["e"]["data"][vr] <= 950., vr] = np.nan
+    var_dict["e"]["data"].loc[var_dict["e"]["data"][vr] <= 900., vr] = np.nan
     var_dict["e"]["data"].loc[var_dict["e"]["data"][vr] >= 1050., vr] = np.nan
 
     # --- THAAO ---
@@ -550,7 +550,7 @@ def read_surf_pres():
         var_dict["t"]["data"], _ = tls.check_empty_df(
             var_dict["t"]["data"], vr)
         pres_t = var_dict["t"]["data"][vr]
-        pres_t[pres_t <= 950.] = np.nan
+        pres_t[pres_t <= 900.] = np.nan
         pres_t[pres_t >= 1050.] = np.nan
         pres_t.loc["2021-10-11 00:00:00":"2021-10-19 00:00:00"] = np.nan
         pres_t.loc["2024-04-26 00:00:00":"2024-05-04 00:00:00"] = np.nan

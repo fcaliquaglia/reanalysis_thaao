@@ -1,6 +1,6 @@
 name: surf_pres
 ref_x: t
-min: 950
+min: 900
 max: 1050
 res_min: -10
 res_max: 10

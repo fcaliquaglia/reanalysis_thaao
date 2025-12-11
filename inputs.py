@@ -70,7 +70,7 @@ location = next((info['fn']
                 for info in datasets.values() if info.get('switch')), None)
 
 # ========== VARIABLE GROUPS ==========
-met_vars = ['surf_pres'] # ['temp', 'windu', 'windv', 'rh', 'iwv'] # 'precip', 'surf_pres'
+met_vars = ['surf_pres', 'temp', 'windu', 'windv', 'rh', 'iwv'] # 'precip', 'surf_pres'
 rad_comps_vars = ['sw_up', 'sw_down', 'lw_up', 'lw_down']
 rad_flux_vars = ['alb' , 'sw_net', 'lw_net']
 cloud_vars = ['cbh']  # lwp
@@ -86,7 +86,7 @@ if datasets['buoys']['switch'] == True:
     list_var = ['orog'] # , 'sw_up', 'sw_down', 'temp',
                 #'surf_pres', 'rh']
 else:
-    list_var = met_vars + cloud_vars + rad_comps_vars + rad_flux_vars
+    list_var =['alb'] # met_vars + cloud_vars + rad_comps_vars + rad_flux_vars
 
 # keep time resolution in order for taylor diagrams!
 tres_list = ['original', '6h', '12h', '24h']
