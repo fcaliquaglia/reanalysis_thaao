@@ -258,8 +258,8 @@ def calc_stats(x, y, data_typ, tr, fn, per_lab):
     var_data[ref_x]['data_stats'][tr] = {}
     var_data[data_typ]['data_stats'][tr]['r2'] = corcoeff*corcoeff
 
-    valid_mask = ~(x.isna() | y.isna())  # True where both x and y are valid
-    var_data[data_typ]['data_stats'][tr]['N'] = valid_mask.sum()
+    valid_mask = ~(np.isnan(x) | np.isnan(y))
+    var_data[data_typ]['data_stats'][tr]['N'] = np.sum(valid_mask)
     # var_data[data_typ]['data_stats'][tr]['N'] = len(x)
 
     var_data[data_typ]['data_stats'][tr]['rmse'] = np.sqrt(
