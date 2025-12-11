@@ -107,13 +107,13 @@ def read_alb():
     var_dict = inpt.extr[vr]
 
     alb_c_tmp = sw_up_c/sw_down_c
-    alb_c = alb_c_tmp.where((alb_c_tmp >= 0) & (alb_c_tmp <= 1))
+    alb_c = alb_c_tmp.where((alb_c_tmp >= 0.01) & (alb_c_tmp <= .99))
     alb_c.name = vr
     alb_e_tmp = sw_up_e/sw_down_e
-    alb_e = alb_e_tmp.where((alb_e_tmp >= 0) & (alb_e_tmp <= 1))
+    alb_e = alb_e_tmp.where((alb_e_tmp >= 0.01) & (alb_e_tmp <= 0.99))
     alb_e.name = vr
     alb_t_tmp = sw_up_t/sw_down_t
-    alb_t = alb_t_tmp.where((alb_t_tmp >= 0.05) & (alb_t_tmp <= 1.))
+    alb_t = alb_t_tmp.where((alb_t_tmp >= 0.01) & (alb_t_tmp <= 0.99))
     alb_t.name = vr
 
     var_dict["c"]["data"] = pd.DataFrame({vr: alb_c})
