@@ -184,7 +184,7 @@ def calc_draw_fit(axs, i, xxx, yyy, tr, per_lab, data_typ, print_stats=True):
         r2 = stats['r2']
         N = stats['N']
         rmse = stats['rmse']
-        bias = stats['bias']
+        MB = stats['MB']
         std_x = ref_stats['std_x']
         std_y = stats['std_y']
         KL_bits = stats['kl_bits']
@@ -196,7 +196,7 @@ def calc_draw_fit(axs, i, xxx, yyy, tr, per_lab, data_typ, print_stats=True):
             f"R² = {r2:.2f}\n"
             f"N = {N}\n"
             f"y = {b:+.2f}x {a:+.2f}\n"
-            f"bias = {bias:.2f}\n"
+            f"MB = {MB:.2f}\n"
             f"RMSE = {rmse:.2f}\n"
             f"$\\sigma_{{{escape_label(var_dict[ref_x]['label'])}}} = {std_x:.2f}$\n"
             f"$\\sigma_{{{escape_label(var_dict[data_typ]['label'])}}} = {std_y:.2f}$\n"
@@ -231,8 +231,8 @@ def read_stats_from_csv(fn, data_typ, tr, ref_x):
             inpt.extr[var][data_typ]['data_stats'][tr]['N'] = int(row['N'])
             inpt.extr[var][data_typ]['data_stats'][tr]['rmse'] = float(
                 row['rmse'])
-            inpt.extr[var][data_typ]['data_stats'][tr]['bias'] = float(
-                row['bias'])
+            inpt.extr[var][data_typ]['data_stats'][tr]['MB'] = float(
+                row['MB'])
             inpt.extr[var][data_typ]['data_stats'][tr]['std_y'] = float(
                 row['std_y'])
             inpt.extr[var][data_typ]['data_stats'][tr]['kl_bits'] = float(
@@ -258,11 +258,13 @@ def calc_stats(x, y, data_typ, tr, fn, per_lab):
     var_data[ref_x]['data_stats'][tr] = {}
     var_data[data_typ]['data_stats'][tr]['r2'] = corcoeff*corcoeff
 
-    var_data[data_typ]['data_stats'][tr]['N'] = len(x)
+    valid_mask = ~(x.isna() | y.isna())  # True where both x and y are valid
+    var_data[data_typ]['data_stats'][tr]['N'] = valid_mask.sum()
+    # var_data[data_typ]['data_stats'][tr]['N'] = len(x)
 
     var_data[data_typ]['data_stats'][tr]['rmse'] = np.sqrt(
         np.nanmean(diff ** 2))
-    var_data[data_typ]['data_stats'][tr]['bias'] = np.nanmean(diff)
+    var_data[data_typ]['data_stats'][tr]['MB'] = np.nanmean(diff)
     var_data[ref_x]['data_stats'][tr]['std_x'] = np.std(x)
     var_data[data_typ]['data_stats'][tr]['std_y'] = np.std(y)
 
@@ -281,7 +283,7 @@ def calc_stats(x, y, data_typ, tr, fn, per_lab):
             P, Q)/np.log(2)
     save_stats(fn, data_typ, tr, ref_x)
 
-    return (inpt.extr[inpt.var][data_typ]['data_stats'][tr]['r2'], inpt.extr[inpt.var][data_typ]['data_stats'][tr]['N'], inpt.extr[inpt.var][data_typ]['data_stats'][tr]['rmse'], inpt.extr[inpt.var][data_typ]['data_stats'][tr]['bias'], inpt.extr[inpt.var][ref_x]['data_stats'][tr]['std_x'],  inpt.extr[inpt.var][data_typ]['data_stats'][tr]['std_y'], inpt.extr[inpt.var][data_typ]['data_stats'][tr]['kl_bits'])
+    return (inpt.extr[inpt.var][data_typ]['data_stats'][tr]['r2'], inpt.extr[inpt.var][data_typ]['data_stats'][tr]['N'], inpt.extr[inpt.var][data_typ]['data_stats'][tr]['rmse'], inpt.extr[inpt.var][data_typ]['data_stats'][tr]['MB'], inpt.extr[inpt.var][ref_x]['data_stats'][tr]['std_x'],  inpt.extr[inpt.var][data_typ]['data_stats'][tr]['std_y'], inpt.extr[inpt.var][data_typ]['data_stats'][tr]['kl_bits'])
 
 
 def save_stats(fn, data_typ, tr, ref_x):
@@ -293,7 +295,7 @@ def save_stats(fn, data_typ, tr, ref_x):
         writer = csv.writer(csvfile)
 
         writer.writerow(['Variable', 'Model_Obs', 'T_Res',
-                         'r2', 'N', 'rmse', 'bias', 'std_x', 'std_y', 'KL_bits'])
+                         'r2', 'N', 'rmse', 'MB', 'std_x', 'std_y', 'KL_bits'])
 
         ref_stats = inpt.extr[inpt.var][ref_x]['data_stats'][tr]
         var_stats = inpt.extr[inpt.var][data_typ]['data_stats'][tr]
@@ -304,7 +306,7 @@ def save_stats(fn, data_typ, tr, ref_x):
             f"{var_stats['r2']:.4f}",
             f"{var_stats['N']}",
             f"{var_stats['rmse']:.4f}",
-            f"{var_stats['bias']:.4f}",
+            f"{var_stats['MB']:.4f}",
             f"{ref_stats['std_x']:.4f}",
             f"{var_stats['std_y']:.4f}",
             f"{var_stats['kl_bits']:.4f}"
