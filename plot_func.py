@@ -205,7 +205,8 @@ def plot_ba(period_label):
     fig.subplots_adjust(top=0.93)
 
     plt_tls.frame_and_axis_removal(axs, len(comps))
-
+    
+    perc = False
     for i, data_typ in enumerate(plot_vars):
         tres, tres_tol = tls.get_tres(data_typ)
         x = var_data[ref_x]['data_res'][tres][inpt.var]
@@ -217,7 +218,7 @@ def plot_ba(period_label):
         valid_idx = ~(x_all.isna() | y_all.isna())
         x_valid, y_valid = x_all[valid_idx], y_all[valid_idx]
 
-        perc = False
+
         if inpt.var == 'windd':
             return
 
