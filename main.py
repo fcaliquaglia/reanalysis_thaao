@@ -62,11 +62,11 @@ def main():
         for var in inpt.list_var:
             process_variable(var, tres)
 
-    # # Taylor Diagrams
-    # if inpt.datasets.get('THAAO', {}).get('switch', True):
-    #     plt_f.plot_taylor('met')
-    #     plt_f.plot_taylor('rad_comps')
-    #     plt_f.plot_taylor('rad_flux')
+    # Taylor Diagrams
+    if inpt.datasets.get('THAAO', {}).get('switch', True):
+        plt_f.plot_taylor('met')
+        plt_f.plot_taylor('rad_comps')
+        plt_f.plot_taylor('rad_flux')
 
 
 if __name__ == "__main__":
