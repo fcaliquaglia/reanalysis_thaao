@@ -552,6 +552,7 @@ def read_surf_pres():
         pres_t = var_dict["t"]["data"][vr]
         pres_t[pres_t <= 900.] = np.nan
         pres_t[pres_t >= 1050.] = np.nan
+        pres_t.loc["2018-09-07 00:00:00":"2018-09-08 00:00:00"] = np.nan
         pres_t.loc["2021-10-11 00:00:00":"2021-10-19 00:00:00"] = np.nan
         pres_t.loc["2024-04-26 00:00:00":"2024-05-04 00:00:00"] = np.nan
         var_dict["t"]["data"][vr] = pres_t

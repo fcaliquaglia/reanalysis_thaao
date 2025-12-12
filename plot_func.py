@@ -347,6 +347,13 @@ def plot_scatter_all(period_label):
             ax_joint.text(0.1, 0.5, "Invalid histogram range",
                           transform=ax_joint.transAxes)
         else:
+            # Get the colormap object (copy it to avoid affecting other plots)
+            import copy
+            cmap = copy.copy(plt.get_cmap(inpt.var_dict[data_typ]['cmap']))
+            
+            # Set the color for values below vmin (i.e., 0) to white (or 'none' for transparent)
+            cmap.set_under('white')
+
             # Set up bin edges
             bin_edges = np.arange(
                 vmin, vmax+var_data['bin_size'], var_data['bin_size'])
@@ -363,14 +370,19 @@ def plot_scatter_all(period_label):
             else:
                 vmax_hist = np.percentile(filtered_counts, pctl)
             has_overflow = np.any(counts > vmax_hist)
-            extend_opt = 'max' if has_overflow else 'neither'
+            # We want 'min' (for 0) AND possibly 'max' (for the 99th percentile overflow)
+            has_overflow = np.any(counts > vmax_hist)
+            if has_overflow:
+                extend_opt = 'both'  # Arrows on top (overflow) and bottom (0 values)
+            else:
+                extend_opt = 'min'   # Arrow only on bottom 
 
             # Clear and re-plot for actual display
             ax_joint.cla()
             h = ax_joint.hist2d(
                 x_valid, y_valid,
                 bins=[bin_edges, bin_edges],
-                cmap=inpt.var_dict[data_typ]['cmap'],
+                cmap=cmap,
                 cmin=1,
                 vmin=1,
                 vmax=vmax_hist
