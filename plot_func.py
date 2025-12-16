@@ -83,7 +83,11 @@ def plot_ts(period_label):
                 if chck:
                     continue
                 y_ori_ = var_data[data_typ]['data_res']['original'][inpt.var]
-                y_ori_mask = y_ori_.index.year == year
+                if period_label == 'all':
+                    y_ori_mask = y_ori_.index.year == year
+                else:
+                    season_months = inpt.seasons[period_label]['months']
+                    y_ori_mask = (y_ori_.index.year == year) & (y_ori_.index.month.isin(season_months))
                 if y_ori_mask.any():
                     y_ori = y_ori_.loc[y_ori_mask].dropna()
                     ax[i].plot(y_ori,
@@ -91,7 +95,11 @@ def plot_ts(period_label):
     
             # Resampled data for the year
             y_res = var_data[data_typ]['data_res'][inpt.tres][inpt.var]
-            y_res_mask = y_res.index.year == year
+            if period_label == 'all':
+                y_res_mask = y_res.index.year == year
+            else:
+                season_months = inpt.seasons[period_label]['months']
+                y_res_mask = (y_res.index.year == year) & (y_res.index.month.isin(season_months))
             if y_res_mask.any():
                 y_res_ = y_res.loc[y_res_mask].dropna()
                 ax[i].plot(y_res_, color=inpt.var_dict[data_typ]['col'],
