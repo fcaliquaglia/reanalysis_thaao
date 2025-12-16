@@ -13,6 +13,7 @@ import pandas as pd
 import datetime as dt
 import matplotlib.cm as cm
 import csv
+import calendar
 
 def make_time_range(start_year, end_year, tres):
     tres_up = tres.upper()
@@ -36,9 +37,33 @@ def make_time_range(start_year, end_year, tres):
     return time_range
 
 
-def format_ts(ax, year, yy, residuals=False):
+def format_ts(ax, year, yy, period_label, residuals=False):
+
+    # full year / all
+    if period_label == 'all':
+        start_dt = dt.datetime(year, 1, 1)
+        end_dt = dt.datetime(year, 12, 31)
+    # use predefined seasons if available
+    elif period_label in inpt.seasons:
+        months = inpt.seasons[period_label]['months']
+        # handle wrap-around seasons like DJF (12,1,2)
+        if 12 in months and any(m < 12 for m in months):
+            start_dt = dt.datetime(year - 1, 12, 1)
+            end_month = max(m for m in months if m < 12)
+            last_day = calendar.monthrange(year, end_month)[1]
+            end_dt = dt.datetime(year, end_month, last_day)
+        else:
+            start_month = min(months)
+            end_month = max(months)
+            last_day = calendar.monthrange(year, end_month)[1]
+            start_dt = dt.datetime(year, start_month, 1)
+            end_dt = dt.datetime(year, end_month, last_day)
+    else:
+        # fallback to full year
+        start_dt = dt.datetime(year, 1, 1)
+        end_dt = dt.datetime(year, 12, 31)
+    ax[yy].set_xlim(start_dt, end_dt)
     ax[yy].xaxis.set_major_formatter(inpt.myFmt)
-    ax[yy].set_xlim(dt.datetime(year, 1, 1), dt.datetime(year, 12, 31))
     ylim = (inpt.extr[inpt.var]['res_min'], inpt.extr[inpt.var]['res_max']) if residuals \
         else (inpt.extr[inpt.var]['min'], inpt.extr[inpt.var]['max'])
 

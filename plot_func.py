@@ -106,7 +106,7 @@ def plot_ts(period_label):
                            label=inpt.var_dict[data_typ]['label'], **kwargs_res)
 
         # Format the subplot axes (assuming this function is defined elsewhere)
-        plt_tls.format_ts(ax, year, i)
+        plt_tls.format_ts(ax, year, i,period_label)
 
     plt.xlabel('Time')
     plt.legend(ncol=2)
@@ -159,8 +159,13 @@ def plot_residuals(period_label):
             null, chck = tls.check_empty_df(y, inpt.var)
             if chck:
                 continue
-            x_mask = x.index.year == year
-            y_mask = y.index.year == year
+            if period_label == 'all':
+                x_mask = x.index.year == year
+                y_mask = y.index.year == year
+            else:
+                season_months = inpt.seasons[period_label]['months']
+                x_mask = (x.index.year == year) & (x.index.month.isin(season_months))
+                y_mask = (y.index.year == year) & (y.index.month.isin(season_months))
             if y_mask.any() and x_mask.any():
                 residuals = y.loc[y_mask] - x.loc[x_mask]
                 residuals = residuals.dropna()
@@ -179,7 +184,7 @@ def plot_residuals(period_label):
                 markerline.set_markersize(1)
 
         # Format axis
-        plt_tls.format_ts(ax, year, i, residuals=True)
+        plt_tls.format_ts(ax, year, i, period_label, residuals=True)
 
     plt.xlabel('Time')
     plt.legend(ncols=2)

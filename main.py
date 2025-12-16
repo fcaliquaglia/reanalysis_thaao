@@ -39,18 +39,19 @@ def process_variable(var, tres):
     rd_funcs.read()
     rs_f.data_resampling(var)
 
-    plt_f.plot_ts('JJA')
-    # plt_f.plot_ts('all')
-    # plt_f.plot_residuals('all')
-    # plt_f.plot_scatter_cum()
+    plt_f.plot_ts('all')
+    plt_f.plot_residuals('all')
+    plt_f.plot_scatter_cum()
 
-    # if not inpt.datasets.get('dropsondes', {}).get('switch', False):
-    #     plt_f.plot_ts('all')
-    #     plt_f.plot_residuals('all')
-    #     plt_f.plot_ba('all')
-    #     plt_f.plot_scatter_all('all')
-    #     for season in inpt.seasons:
-    #         plt_f.plot_scatter_seasonal(season)
+    if not inpt.datasets.get('dropsondes', {}).get('switch', False):
+        plt_f.plot_ts('all')
+        plt_f.plot_residuals('all')
+        plt_f.plot_ba('all')
+        plt_f.plot_scatter_all('all')
+        for season in inpt.seasons:
+            plt_f.plot_scatter_seasonal(season)
+            plt_f.plot_ts(season)
+            plt_f.plot_residuals(season)
 
 
 def main():
@@ -63,11 +64,11 @@ def main():
         for var in inpt.list_var:
             process_variable(var, tres)
 
-    # # Taylor Diagrams
-    # if inpt.datasets.get('THAAO', {}).get('switch', True):
-    #     plt_f.plot_taylor('met')
-    #     plt_f.plot_taylor('rad_comps')
-    #     plt_f.plot_taylor('rad_flux')
+    # Taylor Diagrams
+    if inpt.datasets.get('THAAO', {}).get('switch', True):
+        plt_f.plot_taylor('met')
+        plt_f.plot_taylor('rad_comps')
+        plt_f.plot_taylor('rad_flux')
 
 
 if __name__ == "__main__":
