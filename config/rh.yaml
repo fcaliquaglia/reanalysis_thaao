@@ -7,11 +7,18 @@ res_max: 10
 uom: "[%]"
 comps:
   - c
+  - c2
   - e
   - t2
 bin_size: 0.5
 c:
   fn: "thaao_c_2m_relative_humidity_"
+  column: ""
+  data: ""
+  data_res: ""
+  var_name: "r2"
+c2:
+  fn: "thaao_c2_2m_relative_humidity_"
   column: ""
   data: ""
   data_res: ""

@@ -237,9 +237,8 @@ def plot_ba(period_label):
 
         if inpt.var == 'precip':
             perc = True
-            threshold = 1e-1
             mean = (x_valid + y_valid) / 2
-            valid_mask = mean > threshold
+            valid_mask = mean > inpt.precip_low_thresh
             x_valid, y_valid = x_valid[valid_mask], y_valid[valid_mask]
             x_valid, y_valid = np.log1p(x_valid), np.log1p(y_valid)
 
@@ -705,7 +704,7 @@ def plot_taylor(vr_class):
         var_marker_map[var] = marker
         inpt.var = var
         var_data = inpt.extr[var]
-        comps = ['c', 'e']
+        comps = ['c', 'c2', 'e']
         ref_x = var_data['ref_x']
         #plot_vars = tls.plot_vars_cleanup(comps, var_data)
 
@@ -722,6 +721,8 @@ def plot_taylor(vr_class):
 
                 if data_typ == 'c':
                     color = 'red'
+                if data_typ == 'c2':
+                    color = 'green'
                 elif data_typ == 'e':
                     color = 'blue'
                 else:
@@ -882,7 +883,7 @@ def plot_taylor_dia(ax, std_ref, std_models, corrs, labels,
     ]
 
     # Create second legend handles (models)
-    model_keys = ['c', 'e']
+    model_keys = ['c', 'c2', 'e']
     model_legend = [
         Line2D([], [], color=inpt.var_dict[k]['col'], marker='o',
                linestyle='None', label=inpt.var_dict[k]['label'])

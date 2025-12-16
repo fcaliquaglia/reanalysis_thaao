@@ -7,10 +7,17 @@ res_max: 5
 uom: "[mm]"
 comps:
   - c
+  - c2
   - e
 bin_size: 0.15
 c:
   fn: "thaao_c_total_precipitation_"
+  column: 2
+  data: ""
+  data_res: ""
+  var_name: "tp"
+c2:
+  fn: "thaao_c2_total_precipitation_"
   column: 2
   data: ""
   data_res: ""

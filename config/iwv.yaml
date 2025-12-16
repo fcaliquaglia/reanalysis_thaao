@@ -5,19 +5,27 @@ max: 20
 res_min: -5
 res_max: 5
 uom: "[mm]"
-comps: 
+comps:
   - c
+  - c2
   - e
   - t1
 bin_size: 0.1
 
 c:
-  fn: "thaao_c_total_column_integrated_water_vapour_"
+  fn: "thaao_c2_total_column_integrated_water_vapour_"
   column: 2
   data: ""
   data_res: ""
   var_name: "tciwv"
 
+c2:
+  fn: "thaao_c2_total_column_integrated_water_vapour_"
+  column: 2
+  data: ""
+  data_res: ""
+  var_name: "tciwv"
+  
 e:
   fn: "thaao_e_total_column_water_vapour_"
   column: 2

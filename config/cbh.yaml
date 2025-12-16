@@ -5,12 +5,19 @@ max: 10000
 res_min: -2000
 res_max: 2000
 uom: "[m]"
-comps: 
+comps:
   - c
+  - c2
   - e
 bin_size: 100
 c:
   fn: "thaao_c_cloud_base_"
+  column: 2
+  data: ""
+  data_res: ""
+  var_name: "cdcb"
+c2:
+  fn: "thaao_c2_cloud_base_"
   column: 2
   data: ""
   data_res: ""

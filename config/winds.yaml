@@ -7,10 +7,17 @@ res_max: 10
 uom: "[m/s]"
 comps:
   - c
+  - c2
   - e
 bin_size: 0.2
 c:
   fn: "thaao_c_10m_wind_speed_"
+  column: 2
+  data: ""
+  data_res: ""
+  var_name: "si10"
+c2:
+  fn: "thaao_c2_10m_wind_speed_"
   column: 2
   data: ""
   data_res: ""

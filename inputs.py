@@ -102,7 +102,10 @@ min_frac = 0.75             # Required fraction of native data per resample wind
 rad_low_thresh = 1e-1        # Minimum valid radiation threshold
 precip_low_thresh = 1e-3    # Minimum valid precipitation threshold
 cbh_low_thresh = 320        # Minimum valid cloud base height threshold
+pres_low_thresh = 900.0     # Minimum valid surface pressure threshold
+pres_high_thresh = 1050.0   # Maximum valid surface pressure threshold
 carra1_ground_elev = 150
+carra2_ground_elev = 
 era5_ground_elev = 181
 thaao_ground_elev = 220
 
@@ -127,6 +130,16 @@ seasons_subset = {k: v for k, v in seasons.items() if k != 'all'}
 # ========== VARIABLE METADATA ==========
 var_dict = {
     'c': {
+        'nanval': np.nan,
+        'col': 'red',
+        'col_ori': 'indianred',
+        'col_distr': 'salmon',
+        'label': 'CARRA1',
+        'cmap': 'jet',
+        'cmap_pos': (0.2, 0.85, 0.6, 0.1),
+        'label_uom': ''
+    },
+    'c2': {
         'nanval': np.nan,
         'col': 'red',
         'col_ori': 'indianred',

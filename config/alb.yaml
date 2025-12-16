@@ -5,11 +5,18 @@ max: 1
 res_min: -0.5
 res_max: 0.5
 uom: "[unitless]"
-comps: 
+comps:
   - c
+  - c2
   - e
 bin_size: 0.01
 c:
+  fn: ""
+  column: 2
+  data: ""
+  data_res: ""
+  var_name: ""
+c2:
   fn: ""
   column: 2
   data: ""

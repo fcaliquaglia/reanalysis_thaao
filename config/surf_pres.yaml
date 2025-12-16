@@ -7,11 +7,18 @@ res_max: 10
 uom: "[hPa]"
 comps:
   - c
+  - c2
   - e
   - t2
 bin_size: 0.5
 c:
   fn: "thaao_c_surface_pressure_"
+  column: 2
+  data: ""
+  data_res: ""
+  var_name: "sp"
+c2:
+  fn: "thaao_c2_surface_pressure_"
   column: 2
   data: ""
   data_res: ""

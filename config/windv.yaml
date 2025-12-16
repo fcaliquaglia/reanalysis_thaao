@@ -7,9 +7,16 @@ res_max: 15
 uom: "[m/s]"
 comps:
   - c
+  - c2
   - e
 bin_size: 0.2
 c:
+  fn: ""
+  column: ""
+  data: ""
+  data_res: ""
+  var_name: ""
+c2:
   fn: ""
   column: ""
   data: ""

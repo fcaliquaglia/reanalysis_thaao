@@ -13,6 +13,12 @@ c:
   data: ""
   data_res: ""
   var_name: ""
+c2:
+  fn: ""
+  column: ""
+  data: ""
+  data_res: ""
+  var_name: ""
 e:
   fn: "thaao_e_2m_dewpoint_temperature_"
   column: ""

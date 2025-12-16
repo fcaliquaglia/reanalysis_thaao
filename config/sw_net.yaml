@@ -7,10 +7,17 @@ res_max: 20
 uom: "[W/m2]"
 comps:
   - c
+  - c2
   - e
 bin_size: 2
 c:
   fn: "thaao_c_surface_net_solar_radiation_"
+  column: 4
+  data: ""
+  data_res: ""
+  var_name: "ssr"
+c2:
+  fn: "thaao_c2_surface_net_solar_radiation_"
   column: 4
   data: ""
   data_res: ""

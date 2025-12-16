@@ -5,11 +5,18 @@ max: 450
 res_min: -20
 res_max: 20
 uom: "[W/m2]"
-comps: 
+comps:
   - c
+  - c2
   - e
 bin_size: 2
 c:
+  fn: ""
+  column: ""
+  data: ""
+  data_res: ""
+  var_name: ""
+c2:
   fn: ""
   column: ""
   data: ""

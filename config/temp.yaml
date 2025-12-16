@@ -7,11 +7,18 @@ res_max: 15
 uom: "[deg]"
 comps:
   - c
+  - c2
   - e
   - t2
 bin_size: 0.3
 c:
   fn: "thaao_c_2m_temperature_"
+  column: 2
+  data: ""
+  data_res: ""
+  var_name: "t2m"
+c2:
+  fn: "thaao_c2_2m_temperature_"
   column: 2
   data: ""
   data_res: ""

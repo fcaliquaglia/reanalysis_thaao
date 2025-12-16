@@ -38,11 +38,12 @@ def load_and_process_yaml(path: Path):
     cfg = replace_none_with_nan(cfg)
 
     # Replace placeholders in filenames for keys 'c' and 'e'
-    for key in ('c', 'e'):
+    for key in ('c', 'c2', 'e'):
         if key in cfg and 'fn' in cfg[key]:
             cfg[key]['fn'] = (
                 cfg[key]['fn']
                 .replace('thaao_c', 'carra1')
+                .replace('thaao_c2', 'carra2')
                 .replace('thaao_e', 'era5_NG')
             )
     return cfg
@@ -304,7 +305,11 @@ def get_tres(data_typ, tres=None):
         return freq_str, tolerance
 
     # --- 'original' case ---
-    freq_str = '1h' if inpt.var in inpt.cumulative_vars else ('3h' if data_typ == 'c' else '1h')
+    freq_str = (
+        '1h'
+        if inpt.var in inpt.cumulative_vars
+        else ('3h' if data_typ in ('c', 'c2') else '1h')
+    )
     td = pd.Timedelta(freq_str)
     tolerance = pd.tseries.frequencies.to_offset(td / 6).freqstr
 
@@ -354,10 +359,10 @@ def mask_low_count_intervals(df, data_typ, min_frac):
     # Custom thresholds for 'iwv' var
     thresholds = {
         '1h': {'e': 1, 't': 1, 't2': 1},
-        '3h': {'c': 1, 'e': 2, 't': 2, 't2': 2},
-        '6h': {'c': 2, 't': 3},
-        '12h': {'c': 4, 't': 5},
-        '18h': {'c': 5, 't': 8},
+        '3h': {'c': 1, 'c2': 1, 'e': 2, 't': 2, 't2': 2},
+        '6h': {'c': 2, 'c2':2, 't': 3},
+        '12h': {'c': 4, 'c2': 4,'t': 5},
+        '18h': {'c': 5, 'c2': 5,'t': 8},
         '24h': {'t': 10}
     }
 
@@ -388,7 +393,7 @@ def process_rean(vr, data_typ, y):
         print(f'NOT FOUND: {ds_path}')
         return
 
-    if data_typ == "c":
+    if data_typ in ["c", 'c2']:
         ds["longitude"] = ds["longitude"] % 360
 
     filenam_grid = f"{data_typ}_grid_index_for_{inpt.location}_loc.txt"
@@ -409,7 +414,7 @@ def process_rean(vr, data_typ, y):
         y_idx = coords['y_idx'].to_numpy()
         x_idx = coords['x_idx'].to_numpy()
         time_dim = 'valid_time' if 'valid_time' in ds.dims else 'time'
-        if data_typ == "c":
+        if data_typ in['c', 'c2']:
             lat_vals = np.array([ds['latitude'].values[y, x]
                                 for y, x in zip(y_idx, x_idx)])
             lon_vals = np.array([ds['longitude'].values[y, x]
@@ -426,7 +431,7 @@ def process_rean(vr, data_typ, y):
         print(f"(First out of {len(lat_vals)}) Latitude = {lat_vals[0]:.4f}")
         print(
             f"(First out of {len(lon_vals)}) Longitude = {lon_vals[0]:.4f}", end="")
-        if data_typ == "c":
+        if data_typ in['c', 'c2']:
             print(f" (also {lon_vals[0]-360:.4f})")
         else:
             print()
@@ -458,7 +463,7 @@ def process_rean(vr, data_typ, y):
             t_idx = coords['t_idx'].to_numpy().astype(int)
 
         time_dim = 'valid_time' if 'valid_time' in ds.dims else 'time'
-        if data_typ == "c":
+        if data_typ in['c', 'c2']:
             lat_vals = np.array([ds['latitude'].values[y, x]
                                 for y, x in zip(y_idx, x_idx)])
             lon_vals = np.array([ds['longitude'].values[y, x]
@@ -481,7 +486,7 @@ def process_rean(vr, data_typ, y):
         print(
             f"(First out of {len(lon_vals)}) Longitude = {lon_vals[0]:.4f}", end="")
 
-        if data_typ == "c":
+        if data_typ in['c', 'c2']:
             print(f" (also {lon_vals[0]-360:.4f})")
         else:
             print()
@@ -519,7 +524,7 @@ def process_rean(vr, data_typ, y):
             t_idx = int(coords['t_idx'].to_numpy()[0])
 
         time_dim = 'valid_time' if 'valid_time' in ds.dims else 'time'
-        if data_typ == "c":
+        if data_typ in['c', 'c2']:
             lat_vals = ds['latitude'].values[y_idx, x_idx]
             lon_vals = ds['longitude'].values[y_idx, x_idx]
             time_vals = ds[time_dim].values[t_idx]
@@ -539,7 +544,7 @@ def process_rean(vr, data_typ, y):
         print(f"Latitude = {lat_vals:.4f}")
         print(f"Longitude = {lon_vals:.4f}", end="")
 
-        if data_typ == "c":
+        if data_typ in['c', 'c2']:
             print(f" (also {lon_vals-360:.4f})")
         else:
             print()

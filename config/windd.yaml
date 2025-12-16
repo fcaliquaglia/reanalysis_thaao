@@ -7,10 +7,17 @@ res_max: 90
 uom: "[deg]"
 comps:
   - c
+  - c2
   - e
 bin_size: 2
 c:
   fn: "thaao_c_10m_wind_direction_"
+  column: 2
+  data: ""
+  data_res: ""
+  var_name: "wdir10"
+c2:
+  fn: "thaao_c2_10m_wind_direction_"
   column: 2
   data: ""
   data_res: ""

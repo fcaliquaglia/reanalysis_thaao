@@ -5,13 +5,21 @@ max: 25
 res_min: -25
 res_max: 25
 uom: "[m]"
-comps: 
+comps:
   - c
+  - c2
   - e
 bin_size: 0.05
 
 c:
   fn: "thaao_c_orography_"
+  column: ""
+  data: ""
+  data_res: ""
+  var_name: "orog"
+
+c2:
+  fn: "thaao_c2_orography_"
   column: ""
   data: ""
   data_res: ""
