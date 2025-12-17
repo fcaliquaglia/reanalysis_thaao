@@ -209,14 +209,21 @@ ds_c1 = ds_c1_all.isel(time=0).compute()
 ds_c2 = ds_c2_all.isel(time=0).compute()
 ds_e = ds_e_all.isel(valid_time=0).compute()
 
-print(f"CARRA dataset dims: {ds_c.dims}")
+print(f"CARRA1 dataset dims: {ds_c1.dims}")
+print(f"CARRA2 dataset dims: {ds_c2.dims}")
 print(f"ERA5 dataset dims: {ds_e.dims}")
 
 # Prepare target grid for regridding: CARRA grid has 2D lat/lon arrays (y, x)
-carra_lat = ds_c["latitude"].values
-carra_lon = ds_c["longitude"].values
+carra1_lat = ds_c1["latitude"].values
+carra1_lon = ds_c1["longitude"].values
 target_grid = xr.Dataset(
-    {"lat": (["y", "x"], carra_lat), "lon": (["y", "x"], carra_lon)})
+    {"lat": (["y", "x"], carra1_lat), "lon": (["y", "x"], carra1_lon)})
+
+# Prepare target grid for regridding: CARRA2 grid has 2D lat/lon arrays (y, x)
+carra2_lat = ds_c2["latitude"].values
+carra2_lon = ds_c2["longitude"].values
+target_grid = xr.Dataset(
+    {"lat": (["y", "x"], carra2_lat), "lon": (["y", "x"], carra2_lon)})
 
 # Prepare ERA5 grid for regridding (ERA5 lat/lon 1D)
 era_lat = ds_e["latitude"].values
@@ -248,7 +255,8 @@ lat1 = np.array([76.5149, 76.52, 76.5])
 lon1 = np.array([-68.7477, -68.74, -68.8])
 
 print("Extracting pixel indices for time series ...")
-carra_indices = find_pixel_indices(ds_c_all, lat1, lon1)
+carra1_indices = find_pixel_indices(ds_c1_all, lat1, lon1)
+carra2_indices = find_pixel_indices(ds_c2_all, lat1, lon1)
 era5_indices = find_pixel_indices(ds_e_all, lat1, lon1)
 
 with rasterio.open(output_tif_path) as src:
@@ -258,7 +266,7 @@ with rasterio.open(output_tif_path) as src:
     ax.set_xlim(-68.9, -68.6)
     ax.set_ylim(76.45, 76.6)
     ax.set_title(
-        "Pituffik GeoTIFF (native res.) with ERA5 (blue) & CARRA (red) grids", fontsize=16)
+        "Pituffik GeoTIFF (native res.) with ERA5 (blue) & CARRA1 (red) grids", fontsize=16)
     ax.axis("on")
 
     # Plot ERA5 grid in blue (1D lat/lon)
@@ -269,22 +277,30 @@ with rasterio.open(output_tif_path) as src:
     for j in range(lon2d_e.shape[1]):
         ax.plot(lon2d_e[:, j], lat2d_e[:, j], "b-", linewidth=0.5)
 
-    # Plot CARRA grid in red (2D lat/lon)
-    carra_lat, carra_lon = ds_c["latitude"].values, ds_c["longitude"].values
-    for i in range(carra_lat.shape[0]):
-        ax.plot(carra_lon[i, :], carra_lat[i, :], "r-", linewidth=0.5)
-    for j in range(carra_lat.shape[1]):
-        ax.plot(carra_lon[:, j], carra_lat[:, j], "r-", linewidth=0.5)
+    # Plot CARRA1 grid in red (2D lat/lon)
+    carra1_lat, carra_lon = ds_c1["latitude"].values, ds_c1["longitude"].values
+    for i in range(carra1_lat.shape[0]):
+        ax.plot(carra_lon[i, :], carra1_lat[i, :], "r-", linewidth=0.5)
+    for j in range(carra1_lat.shape[1]):
+        ax.plot(carra_lon[:, j], carra1_lat[:, j], "r-", linewidth=0.5)
 
-    plot_closest(ds_c, lat1, lon1, ax)
+    # Plot CARRA2 grid in green (2D lat/lon)
+    carra2_lat, carra2_lon = ds_c2["latitude"].values, ds_c2["longitude"].values
+    for i in range(carra2_lat.shape[0]):
+        ax.plot(carra2_lon[i, :], carra2_lat[i, :], "g-", linewidth=0.5)
+    for j in range(carra2_lat.shape[1]):
+        ax.plot(carra2_lon[:, j], carra2_lat[:, j], "g-", linewidth=0.5)
+
+    plot_closest(ds_c1, lat1, lon1, ax)
+    plot_closest(ds_c2, lat1, lon1, ax)
     plot_closest(ds_e, lat1, lon1, ax)
 
     plt.legend()
     plt.show()
 
 print("Extracting time series from datasets at selected points...")
-ts_c1 = extract_time_series(ds_c1_all, carra_indices, varname="t2m")
-ts_c2 = extract_time_series(ds_c2_all, carra_indices, varname="t2m")
+ts_c1 = extract_time_series(ds_c1_all, carra1_indices, varname="t2m")
+ts_c2 = extract_time_series(ds_c2_all, carra2_indices, varname="t2m")
 ts_e = extract_time_series(ds_e_all, era5_indices, varname="t2m")
 
 print("Filtering time series for January 1-10, 2023 ...")
@@ -293,8 +309,8 @@ ds_c2_jan = filter_time(ds_c2_all, "2023-01-01", "2023-01-10")
 ds_e_jan = filter_time(ds_e_all, "2023-01-01", "2023-01-10")
 
 # Extract timeseries again for filtered time period
-ts_c1_jan = extract_time_series(ds_c1_jan, carra_indices, varname="t2m")
-ts_c2_jan = extract_time_series(ds_c2_jan, carra_indices, varname="t2m")
+ts_c1_jan = extract_time_series(ds_c1_jan, carra1_indices, varname="t2m")
+ts_c2_jan = extract_time_series(ds_c2_jan, carra2_indices, varname="t2m")
 ts_e_jan = extract_time_series(ds_e_jan, era5_indices, varname="t2m")
 
 print("Plotting time series ...")

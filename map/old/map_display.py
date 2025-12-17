@@ -217,10 +217,12 @@ with rasterio.open(output_path) as src:
     show(src, ax=ax)
     xmin, ymin, xmax, ymax = src.bounds
 
-    plot_grid(ds_c, "red", ax, xmin, xmax, ymin, ymax)
+    plot_grid(ds_c1, "red", ax, xmin, xmax, ymin, ymax)
+    plot_grid(ds_c2, "green", ax, xmin, xmax, ymin, ymax)
     plot_grid(ds_e, "blue", ax, xmin, xmax, ymin, ymax)
 
-    plot_closest(ds_c, lat1, lon1, ax)
+    plot_closest(ds_c1, lat1, lon1, ax)
+    plot_closest(ds_c2, lat1, lon1, ax)
     plot_closest(ds_e, lat1, lon1, ax)
 
     ax.set_xlim(xmin, xmax)
