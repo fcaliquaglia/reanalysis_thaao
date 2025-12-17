@@ -90,7 +90,7 @@ def data_resampling(vr):
         - Checks if the data DataFrame is empty via `tls.check_empty_df`.
         - If data is not empty:
             - If `inpt.tres` (time resolution) is 'original':
-                - For components 'c' or 'e', copies the data as is without resampling.
+                - For components 'c1', 'c2' or 'e', copies the data as is without resampling.
                 - For components 't', 't1', 't2', extracts data closest to every 3-hour and 1-hour timestamps,
                   within tolerances of ±30 minutes for 3-hour intervals and ±10 minutes for 1-hour intervals.
                   Also stores the native data without modification.

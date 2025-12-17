@@ -215,10 +215,14 @@ def reproj_carra_if_needed(ds_c_orig, output_path):
 
 
 carra_regrid_path = os.path.join(basefol, "carra_regridded.nc")
-ds_c_orig = xr.open_dataset(os.path.join(
+ds_c1_orig = xr.open_dataset(os.path.join(
     basefol, "carra\\raw", "carra_2m_temperature_2023.nc"), chunks={'time': 10}, decode_timedelta=True)
 
-ds_c = reproj_carra_if_needed(ds_c_orig, carra_regrid_path)
+ds_c1 = reproj_carra_if_needed(ds_c1_orig, carra_regrid_path)
+ds_c2_orig = xr.open_dataset(os.path.join(
+    basefol, "carra\\raw", "carra2_2m_temperature_2023.nc"), chunks={'time': 10}, decode_timedelta=True)
+
+ds_c2 = reproj_carra_if_needed(ds_c2_orig, carra_regrid_path)
 
 ds_e = xr.open_dataset(os.path.join(
     basefol, "era5\\raw", "era5_2m_temperature_2023.nc"), decode_timedelta=True)

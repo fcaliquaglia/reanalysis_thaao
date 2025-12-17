@@ -141,7 +141,7 @@ def get_color_by_resolution(data_typ, resolution):
     cold_colors = get_colormap_colors("winter", n_levels)  # or "cool", "Blues"
     warm_colors = get_colormap_colors("autumn", n_levels)  # or "hot", "OrRd"
     res_index = inpt.tres_list.index(resolution)
-    if data_typ == 'c':
+    if data_typ == 'c1':
         color = warm_colors[res_index]
     elif data_typ == 'e':
         color = cold_colors[res_index]

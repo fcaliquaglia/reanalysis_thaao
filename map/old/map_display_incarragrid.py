@@ -39,23 +39,30 @@ basefol = os.path.dirname(os.path.abspath(__file__))
 input_tif_path = os.path.join(basefol, "pituffik_big.tif")
 output_tif_path = os.path.join(basefol, "pituffik_big_reproj.tif")
 
-carra_nc_path = os.path.join(basefol, "carra_2m_temperature_2023.nc")
+carra1_nc_path = os.path.join(basefol, "carra1_2m_temperature_2023.nc")
+carra2_nc_path = os.path.join(basefol, "carra2_2m_temperature_2023.nc")
 era5_nc_path = os.path.join(basefol, "era5_2m_temperature_2023.nc")
 
 # Open datasets with chunking
-ds_c_all = xr.open_dataset(carra_nc_path, chunks={})
+ds_c1_all = xr.open_dataset(carra1_nc_path, chunks={})
+ds_c2_all = xr.open_dataset(carra2_nc_path, chunks={})
 ds_e_all = xr.open_dataset(era5_nc_path, chunks={})
 
 # Select one timestep for fast plotting of grids (optional)
-ds_c = ds_c_all.isel(time=0).compute()
-ds_c = ds_c.sortby("latitude", ascending=False)
+ds_c1 = ds_c1_all.isel(time=0).compute()
+ds_c1 = ds_c1.sortby("latitude", ascending=False)
+ds_c2 = ds_c2_all.isel(time=0).compute()
+ds_c2 = ds_c2.sortby("latitude", ascending=False)
 ds_e = ds_e_all.isel(valid_time=0).compute()
 
-print(f"CARRA dataset dims: {ds_c.dims}")
+print(f"CARRA1 dataset dims: {ds_c1.dims}")
+print(f"CARRA2 dataset dims: {ds_c2.dims}")
 print(f"ERA5 dataset dims: {ds_e.dims}")
 
-carra_lat = ds_c["latitude"].values
-carra_lon = ds_c["longitude"].values
+carra_lat = ds_c1["latitude"].values
+carra_lon = ds_c1["longitude"].values
+carra_lat = ds_c2["latitude"].values
+carra_lon = ds_c2["longitude"].values
 
 target_grid = xr.Dataset({
     "lat": (["y", "x"], carra_lat),

@@ -93,7 +93,7 @@ def grid_loading(dataset_type, file_sample):
 
     # Prepare grid
     time_dim = 'valid_time' if 'valid_time' in ds.dims else 'time'
-    if dataset_type == 'c':
+    if dataset_type == 'c1' or dataset_type == 'c2':
         lat_arr_c = ds['latitude'].values
         lon_arr_c = ds['longitude'].values % 360
         flat_lat_c = lat_arr_c.ravel()
@@ -189,7 +189,7 @@ def find_index_in_grid(grid_selection, fol_file, out_file):
                 # Filtering time differences below 3 tres
                 if out_file[0] == 'e':
                     thresh = 1
-                if out_file[0] == 'c':
+                if out_file[0] == 'c1' or out_file[0] == 'c2':
                     thresh = 3
                 threshold = pd.Timedelta(hours=thresh)
                 filtered_diffs = time_diffs.where(time_diffs <= threshold)
@@ -764,8 +764,8 @@ def plot_surf_date(seq, plot_flags=plot_flags):
 if __name__ == "__main__":
 
     print("Extracting CARRA and ERA5 grids for matching with observations")
-    grid_sel = {'e': grid_loading('e', 'era5_NG_2m_temperature_2023.nc'), 'c': grid_loading(
-        'c', 'carra1_2m_temperature_2023.nc'), 'c2': grid_loading(
+    grid_sel = {'e': grid_loading('e', 'era5_NG_2m_temperature_2023.nc'), 'c1': grid_loading(
+        'c1', 'carra1_2m_temperature_2023.nc'), 'c2': grid_loading(
         'c2', 'carra2_2m_temperature_2023.nc')}
 
     # Ground sites

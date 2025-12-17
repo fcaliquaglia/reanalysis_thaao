@@ -30,7 +30,7 @@ letters = list(string.ascii_lowercase)
 shared_drive = Path(r'H:\Shared drives')
 
 basefol = {
-    'c': {
+    'c1': {
         'base': shared_drive / 'Reanalysis' / 'carra1',
         'parquets': shared_drive / 'Reanalysis' / 'carra1' / 'parquets',
         'raw': shared_drive / 'Reanalysis' / 'carra1' / 'raw',
@@ -134,7 +134,7 @@ seasons_subset = {k: v for k, v in seasons.items() if k != 'all'}
 
 # ========== VARIABLE METADATA ==========
 var_dict = {
-    'c': {
+    'c1': {
         'nanval': np.nan,
         'col': 'red',
         'col_ori': 'indianred',

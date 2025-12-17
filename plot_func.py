@@ -704,7 +704,7 @@ def plot_taylor(vr_class):
         var_marker_map[var] = marker
         inpt.var = var
         var_data = inpt.extr[var]
-        comps = ['c', 'c2', 'e']
+        comps = ['c1', 'c2', 'e']
         ref_x = var_data['ref_x']
         #plot_vars = tls.plot_vars_cleanup(comps, var_data)
 
@@ -719,7 +719,7 @@ def plot_taylor(vr_class):
                 combined_cors.append(np.sqrt(r2))
                 combined_labels.append(f"{data_typ} ({var}, {tres})")
 
-                if data_typ == 'c':
+                if data_typ == 'c1':
                     color = 'red'
                 if data_typ == 'c2':
                     color = 'green'
@@ -883,7 +883,7 @@ def plot_taylor_dia(ax, std_ref, std_models, corrs, labels,
     ]
 
     # Create second legend handles (models)
-    model_keys = ['c', 'c2', 'e']
+    model_keys = ['c1', 'c2', 'e']
     model_legend = [
         Line2D([], [], color=inpt.var_dict[k]['col'], marker='o',
                linestyle='None', label=inpt.var_dict[k]['label'])

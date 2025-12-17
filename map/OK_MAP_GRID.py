@@ -191,18 +191,22 @@ basefol = os.getcwd()
 
 input_tif_path = os.path.join(basefol, "pituffik_big.tif")
 output_tif_path = os.path.join(basefol, "pituffik_big_reproj.tif")
-carra_nc_path = os.path.join(basefol, "carra_2m_temperature_2023.nc")
+carra1_nc_path = os.path.join(basefol, "carra1_2m_temperature_2023.nc")
+carra2_nc_path = os.path.join(basefol, "carra2_2m_temperature_2023.nc")
 era5_nc_path = os.path.join(basefol, "era5_2m_temperature_2023.nc")
 
 # Open datasets with appropriate chunking for performance
-ds_c_all = xr.open_dataset(carra_nc_path, chunks={"time": 100})
-ds_c_all = convert_dataset_lon_360_to_180(ds_c_all, lon_name="longitude")
+ds_c1_all = xr.open_dataset(carra1_nc_path, chunks={"time": 100})
+ds_c1_all = convert_dataset_lon_360_to_180(ds_c1_all, lon_name="longitude")
+ds_c2_all = xr.open_dataset(carra2_nc_path, chunks={"time": 100})
+ds_c2_all = convert_dataset_lon_360_to_180(ds_c2_all, lon_name="longitude")
 
 ds_e_all = xr.open_dataset(era5_nc_path, chunks={"valid_time": 100})
 # ERA5 longitudes already in -180..180, no conversion needed
 
 # Select first time step and load into memory
-ds_c = ds_c_all.isel(time=0).compute()
+ds_c1 = ds_c1_all.isel(time=0).compute()
+ds_c2 = ds_c2_all.isel(time=0).compute()
 ds_e = ds_e_all.isel(valid_time=0).compute()
 
 print(f"CARRA dataset dims: {ds_c.dims}")
@@ -279,26 +283,31 @@ with rasterio.open(output_tif_path) as src:
     plt.show()
 
 print("Extracting time series from datasets at selected points...")
-ts_c = extract_time_series(ds_c_all, carra_indices, varname="t2m")
+ts_c1 = extract_time_series(ds_c1_all, carra_indices, varname="t2m")
+ts_c2 = extract_time_series(ds_c2_all, carra_indices, varname="t2m")
 ts_e = extract_time_series(ds_e_all, era5_indices, varname="t2m")
 
 print("Filtering time series for January 1-10, 2023 ...")
-ds_c_jan = filter_time(ds_c_all, "2023-01-01", "2023-01-10")
+ds_c1_jan = filter_time(ds_c1_all, "2023-01-01", "2023-01-10")
+ds_c2_jan = filter_time(ds_c2_all, "2023-01-01", "2023-01-10")
 ds_e_jan = filter_time(ds_e_all, "2023-01-01", "2023-01-10")
 
 # Extract timeseries again for filtered time period
-ts_c_jan = extract_time_series(ds_c_jan, carra_indices, varname="t2m")
+ts_c1_jan = extract_time_series(ds_c1_jan, carra_indices, varname="t2m")
+ts_c2_jan = extract_time_series(ds_c2_jan, carra_indices, varname="t2m")
 ts_e_jan = extract_time_series(ds_e_jan, era5_indices, varname="t2m")
 
 print("Plotting time series ...")
 fig, ax = plt.subplots(figsize=(12, 6))
 colors = ["orange", "green", "purple"]
 
-for i in range(len(ts_c_jan)):
-    time_dim_c = get_time_dim(ts_c_jan[i])
-    ax.plot(ts_c_jan[i][time_dim_c], ts_c_jan[i].values, color=colors[i],
-            label=f"CARRA pt{i+1} ({lat1[i]:.4f}, {lon1[i]:.4f})")
-
+for i in range(len(ts_c1_jan)):
+    time_dim_c1 = get_time_dim(ts_c1_jan[i])
+    ax.plot(ts_c1_jan[i][time_dim_c1], ts_c1_jan[i].values, color=colors[i],
+            label=f"CARRA1 pt{i+1} ({lat1[i]:.4f}, {lon1[i]:.4f})")
+    time_dim_c2 = get_time_dim(ts_c2_jan[i])
+    ax.plot(ts_c2_jan[i][time_dim_c2], ts_c2_jan[i].values, color=colors[i],
+            label=f"CARRA2 pt{i+1} ({lat1[i]:.4f}, {lon1[i]:.4f})")
     time_dim_e = get_time_dim(ts_e_jan[i])
     ax.plot(ts_e_jan[i][time_dim_e], ts_e_jan[i].values, "b-", 
             label=f"ERA5 pt{i+1} ({lat1[i]:.4f}, {lon1[i]:.4f})")
