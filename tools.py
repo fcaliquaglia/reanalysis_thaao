@@ -45,7 +45,7 @@ def load_and_process_yaml(path: Path):
                 cfg[key]['fn']
                 .replace('thaao_c1', 'carra1')
                 .replace('thaao_c2', 'carra2')
-                .replace('thaao_e', 'era5_NG')
+                .replace('thaao_e5', 'era5_NG')
             )
     return cfg
 
