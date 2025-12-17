@@ -11,7 +11,7 @@ comps:
   - e
 bin_size: 2
 c1:
-  fn: "thaao_c_surface_solar_radiation_downwards_"
+  fn: "thaao_c1_surface_solar_radiation_downwards_"
   column: 4
   data: ""
   data_res: ""

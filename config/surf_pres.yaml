@@ -12,7 +12,7 @@ comps:
   - t2
 bin_size: 0.5
 c1:
-  fn: "thaao_c_surface_pressure_"
+  fn: "thaao_c1_surface_pressure_"
   column: 2
   data: ""
   data_res: ""

@@ -11,7 +11,7 @@ comps:
   - e
 bin_size: 2
 c1::
-  fn: "thaao_c_10m_wind_direction_"
+  fn: "thaao_c1_10m_wind_direction_"
   column: 2
   data: ""
   data_res: ""

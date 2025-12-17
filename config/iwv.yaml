@@ -13,7 +13,7 @@ comps:
 bin_size: 0.1
 
 c1:
-  fn: "thaao_c2_total_column_integrated_water_vapour_"
+  fn: "thaao_c1_total_column_integrated_water_vapour_"
   column: 2
   data: ""
   data_res: ""

@@ -12,7 +12,7 @@ comps:
   - t2
 bin_size: 0.3
 c1:
-  fn: "thaao_c_2m_temperature_"
+  fn: "thaao_c1_2m_temperature_"
   column: 2
   data: ""
   data_res: ""
