@@ -6,11 +6,11 @@ res_min: -20
 res_max: 20
 uom: "[kg/m2]"
 comps:
-  - c
+  - c1
   - c2
   - e
 bin_size: 2
-c:
+c1:
   fn: "thaao_c_total_column_cloud_liquid_water_"
   column: 2
   data: ""

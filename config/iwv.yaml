@@ -6,13 +6,13 @@ res_min: -5
 res_max: 5
 uom: "[mm]"
 comps:
-  - c
+  - c1
   - c2
   - e
   - t1
 bin_size: 0.1
 
-c:
+c1:
   fn: "thaao_c2_total_column_integrated_water_vapour_"
   column: 2
   data: ""

@@ -6,12 +6,12 @@ res_min: -25
 res_max: 25
 uom: "[m]"
 comps:
-  - c
+  - c1
   - c2
   - e
 bin_size: 0.05
 
-c:
+c1:
   fn: "thaao_c_orography_"
   column: ""
   data: ""

@@ -6,11 +6,11 @@ res_min: -15
 res_max: 15
 uom: "[m/s]"
 comps:
-  - c
+  - c1
   - c2
   - e
 bin_size: 0.2
-c:
+c1:
   fn: ""
   column: ""
   data: ""

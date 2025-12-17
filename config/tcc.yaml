@@ -6,11 +6,11 @@ res_min: -9
 res_max: 9
 uom: "[%]"
 comps:
-  - c
+  - c1
   - c2
   - e
 bin_size: 1
-c:
+c1:
   fn: "thaao_c_total_cloud_cover_"
   column: 2
   data: ""

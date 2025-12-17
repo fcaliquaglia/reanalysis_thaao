@@ -6,11 +6,11 @@ res_min: -2000
 res_max: 2000
 uom: "[m]"
 comps:
-  - c
-  - c2
+  - c1
+  - c12
   - e
 bin_size: 100
-c:
+c1:
   fn: "thaao_c_cloud_base_"
   column: 2
   data: ""

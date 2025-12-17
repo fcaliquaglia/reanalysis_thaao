@@ -6,11 +6,11 @@ res_min: -20
 res_max: 20
 uom: "[W/m2]"
 comps:
-  - c
+  - c1
   - c2
   - e
 bin_size: 2
-c:
+c1:
   fn: "thaao_c_surface_net_thermal_radiation_"
   column: 4
   data: ""
