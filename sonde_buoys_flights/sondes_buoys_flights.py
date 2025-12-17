@@ -30,12 +30,12 @@ plot_flags = dict(
 basefol = r"H:\Shared drives\Dati_THAAO"
 folders = {
     "dropsondes": os.path.join(basefol, r"thaao_arcsix\dropsondes"),
-    "radiosondes": os.path.join(basefol, r"thaao_rs_sondes\txt\2024"),
-    "buoys": os.path.join(basefol, r"thaao_arcsix\buoys\resource_map_doi_10_18739_A2T14TR46\data"),
-    "g3": os.path.join(basefol, r"thaao_arcsix\met_nav\G3"),
-    "p3": os.path.join(basefol, r"thaao_arcsix\met_nav\P3"),
+    "radiosondes": os.path.join(basefol, r"thaao_rs_sondes\\txt\\2024"),
+    "buoys": os.path.join(basefol, r"thaao_arcsix\buoys\\resource_map_doi_10_18739_A2T14TR46\data"),
+    "g3": os.path.join(basefol, r"thaao_arcsix\\met_nav\\G3"),
+    "p3": os.path.join(basefol, r"thaao_arcsix\\met_nav\\P3"),
     'ships': os.path.join(basefol, r"thaao_arcsix\ships"),
-    "txt_location": r"..\txt_locations"
+    "txt_location": r"txt_locations"
 }
 
 ground_sites = {
