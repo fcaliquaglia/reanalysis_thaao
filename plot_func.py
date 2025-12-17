@@ -111,7 +111,7 @@ def plot_ts(period_label):
         plt_tls.format_ts(ax, year, i, period_label)
 
     plt.xlabel('Time')
-    plt.legend(ncol=2)
+    plt.legend(ncol=3)
     save_path = os.path.join(
         inpt.basefol['out']['base'], inpt.tres, f"{str_name.replace(' ', '_')}.png")
     plt.savefig(save_path, bbox_inches='tight')
@@ -191,7 +191,7 @@ def plot_residuals(period_label):
         plt_tls.format_ts(ax, year, i, period_label, residuals=True)
 
     plt.xlabel('Time')
-    plt.legend(ncols=2)
+    plt.legend(ncols=3)
     save_path = os.path.join(
         inpt.basefol['out']['base'], inpt.tres, f"{str_name.replace(' ', '_')}.png")
     plt.savefig(save_path, bbox_inches='tight')

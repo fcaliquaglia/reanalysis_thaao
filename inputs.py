@@ -130,6 +130,21 @@ seasons = {
     'JJA': {'months': [6, 7, 8], 'col': 'orange'},
     'SON': {'months': [9, 10, 11], 'col': 'brown'}
 }
+seasons = {
+    'Jan': {'months': [1],  'col': '#00008B'},  # Dark Blue
+    'Feb': {'months': [2],  'col': '#1E90FF'},  # Dodger Blue
+    'Mar': {'months': [3],  'col': '#228B22'},  # Forest Green
+    'Apr': {'months': [4],  'col': '#32CD32'},  # Lime Green
+    'May': {'months': [5],  'col': '#9ACD32'},  # Yellow Green
+    'Jun': {'months': [6],  'col': '#FFD700'},  # Gold
+    'Jul': {'months': [7],  'col': '#FF8C00'},  # Dark Orange
+    'Aug': {'months': [8],  'col': '#FF4500'},  # Orange Red
+    'Sep': {'months': [9],  'col': '#A0522D'},  # Sienna
+    'Oct': {'months': [10], 'col': '#8B4513'},  # Saddle Brown
+    'Nov': {'months': [11], 'col': '#556B2F'},  # Dark Olive Green
+    'Dec': {'months': [12], 'col': '#4682B4'}  # Steel Blue
+}
+
 seasons_subset = {k: v for k, v in seasons.items() if k != 'all'}
 
 # ========== VARIABLE METADATA ==========
