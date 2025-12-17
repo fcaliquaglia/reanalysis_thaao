@@ -108,7 +108,7 @@ def grid_loading(dataset_type, file_sample):
         flat_lat_e5 = lat_arr_e5.ravel()
         flat_lon_e5 = lon_arr_e5.ravel()
         ds_times_e5 = pd.to_datetime(ds[time_dim].values)
-        return lat_arr_e5, lon_arr_e5, flat_lat_e5, flat_lon_e5, ds_times_e
+        return lat_arr_e5, lon_arr_e5, flat_lat_e5, flat_lon_e5, ds_times_e5
     else:
         raise ValueError(f"Unknown dataset type: {dataset_type}")
 
