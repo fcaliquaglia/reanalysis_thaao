@@ -8,7 +8,7 @@ uom: "[%]"
 comps:
   - c1
   - c2
-  - e
+  - e5
   - t2
 bin_size: 0.5
 c1:
@@ -23,7 +23,7 @@ c2:
   data: ""
   data_res: ""
   var_name: "r2"
-e:
+e5:
   fn: ""
   column: ""
   data: ""

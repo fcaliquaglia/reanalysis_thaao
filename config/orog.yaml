@@ -8,7 +8,7 @@ uom: "[m]"
 comps:
   - c1
   - c2
-  - e
+  - e5
 bin_size: 0.05
 
 c1:
@@ -25,8 +25,8 @@ c2:
   data_res: ""
   var_name: "orog"
 
-e:
-  fn: "thaao_e_geopotential_"
+e5:
+  fn: "thaao_e5_geopotential_"
   column: ""
   data: ""
   data_res: ""

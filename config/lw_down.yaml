@@ -7,8 +7,8 @@ res_max: 20
 uom: "[W/m2]"
 comps:
   - c1
-  - c12
-  - e
+  - c2
+  - e5
 bin_size: 2
 c1:
   fn: "thaao_c1_thermal_surface_radiation_downwards_"
@@ -22,8 +22,8 @@ c2:
   data: ""
   data_res: ""
   var_name: "strd"
-e:
-  fn: "thaao_e_surface_thermal_radiation_downwards_"
+e5:
+  fn: "thaao_e5_surface_thermal_radiation_downwards_"
   column: 2
   data: ""
   data_res: ""

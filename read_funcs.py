@@ -32,7 +32,7 @@ import tools as tls
 
 def read_alb():
     """
-    Reads and processes shortwave upward radiation data from CARRA1, ERA5, ERA5-LAND, and THAAO.
+    Reads and processes shortwave upward radiation data from CARRA1, CARRA2, ERA5 and THAAO.
     Applies unit conversions, calculates upwelling radiation, and filters invalid values.
     Modifies `inpt` in-place.
     """

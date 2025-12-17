@@ -7,8 +7,8 @@ res_max: 2000
 uom: "[m]"
 comps:
   - c1
-  - c12
-  - e
+  - c2
+  - e5
 bin_size: 100
 c1:
   fn: "thaao_c1_cloud_base_"
@@ -22,8 +22,8 @@ c2:
   data: ""
   data_res: ""
   var_name: "cdcb"
-e:
-  fn: "thaao_e_cloud_base_height_"
+e5:
+  fn: "thaao_e5_cloud_base_height_"
   column: 2
   data: ""
   data_res: ""

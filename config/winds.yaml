@@ -8,7 +8,7 @@ uom: "[m/s]"
 comps:
   - c1
   - c2
-  - e
+  - e5
 bin_size: 0.2
 c1:
   fn: "thaao_c1_10m_wind_speed_"
@@ -22,7 +22,7 @@ c2:
   data: ""
   data_res: ""
   var_name: "si10"
-e:
+e5:
   fn: ""
   column: ""
   data: ""

@@ -8,7 +8,7 @@ uom: "[kg/m2]"
 comps:
   - c1
   - c2
-  - e
+  - e5
 bin_size: 2
 c1:
   fn: "thaao_c1_total_column_cloud_liquid_water_"
@@ -22,8 +22,8 @@ c2:
   data: ""
   data_res: ""
   var_name: "tclw"
-e:
-  fn: "thaao_e_total_column_cloud_liquid_water_"
+e5:
+  fn: "thaao_e5_total_column_cloud_liquid_water_"
   column: 2
   data: ""
   data_res: ""

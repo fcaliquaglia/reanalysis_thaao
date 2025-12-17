@@ -8,7 +8,7 @@ uom: "[deg]"
 comps:
   - c1
   - c2
-  - e
+  - e5
   - t2
 bin_size: 0.3
 c1:
@@ -23,8 +23,8 @@ c2:
   data: ""
   data_res: ""
   var_name: "t2m"
-e:
-  fn: "thaao_e_2m_temperature_"
+e5:
+  fn: "thaao_e5_2m_temperature_"
   column: 2
   data: ""
   data_res: ""

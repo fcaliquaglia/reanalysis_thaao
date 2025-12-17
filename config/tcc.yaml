@@ -8,7 +8,7 @@ uom: "[%]"
 comps:
   - c1
   - c2
-  - e
+  - e5
 bin_size: 1
 c1:
   fn: "thaao_c1_total_cloud_cover_"
@@ -22,8 +22,8 @@ c2:
   data: ""
   data_res: ""
   var_name: "tcc"
-e:
-  fn: "thaao_e_total_cloud_cover_"
+e5:
+  fn: "thaao_e5_total_cloud_cover_"
   column: 2
   data: ""
   data_res: ""

@@ -8,7 +8,7 @@ uom: "[mm]"
 comps:
   - c1
   - c2
-  - e
+  - e5
 bin_size: 0.15
 c1:
   fn: "thaao_c1_total_precipitation_"
@@ -22,8 +22,8 @@ c2:
   data: ""
   data_res: ""
   var_name: "tp"
-e:
-  fn: "thaao_e_total_precipitation_"
+e5:
+  fn: "thaao_e5_total_precipitation_"
   column: 2
   data: ""
   data_res: ""
