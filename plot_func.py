@@ -221,7 +221,7 @@ def plot_ba(period_label):
     fig.suptitle(str_name, fontweight='bold')
     fig.subplots_adjust(top=0.93)
 
-    plt_tls.frame_and_axis_removal(axs, len(comps))
+    # plt_tls.frame_and_axis_removal(axs, len(comps))
 
     perc = False
     for i, data_typ in enumerate(plot_vars):
@@ -508,7 +508,7 @@ def plot_scatter_seasonal(period_label):
     fig.suptitle(str_name, fontweight='bold')
     fig.subplots_adjust(top=0.93)
 
-    plt_tls.frame_and_axis_removal(axs, len(comps))
+    # plt_tls.frame_and_axis_removal(axs, len(comps))
 
     for i, data_typ in enumerate(plot_vars):
         tres, tres_tol = tls.get_tres(data_typ)
@@ -578,7 +578,7 @@ def plot_scatter_cum():
     fig.suptitle(str_name, fontweight='bold')
     fig.subplots_adjust(top=0.93)
 
-    plt_tls.frame_and_axis_removal(axs, len(comps))
+    # plt_tls.frame_and_axis_removal(axs, len(comps))
 
     if inpt.datasets['dropsondes']['switch']:
         period_label = 'all'
@@ -713,7 +713,7 @@ def plot_taylor(vr_class):
         var_marker_map[var] = marker
         inpt.var = var
         var_data = inpt.extr[var]
-        comps = ['c1', 'c2', 'e5']
+        comps = var_data['comps']
         ref_x = var_data['ref_x']
         # plot_vars = tls.plot_vars_cleanup(comps, var_data)
 

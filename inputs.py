@@ -91,7 +91,7 @@ if datasets['buoys']['switch'] == True:
     list_var = ['orog']  # , 'sw_up', 'sw_down', 'temp',
     # 'surf_pres', 'rh']
 else:
-    list_var = met_vars + cloud_vars + rad_comps_vars + rad_flux_vars
+    list_var = ['temp'] #met_vars + cloud_vars + rad_comps_vars + rad_flux_vars
 
 # keep time resolution in order for taylor diagrams!
 tres_list = ['original', '6h', '12h', '24h']
@@ -146,11 +146,11 @@ var_dict = {
     },
     'c2': {
         'nanval': np.nan,
-        'col': 'red',
-        'col_ori': 'indianred',
-        'col_distr': 'salmon',
+        'col': 'green',
+        'col_ori': 'lightgreen',
+        'col_distr': 'lightgreen',
         'label': 'CARRA2',
-        'cmap': 'jet',
+        'cmap': 'plasma',
         'cmap_pos': (0.2, 0.85, 0.6, 0.1),
         'label_uom': ''
     },
