@@ -85,7 +85,7 @@ def safe_replace_year(dt, target_year):
 
 def grid_loading(dataset_type, file_sample):
     try:
-        ds = xr.open_dataset(os.path.join("..\\grid_selection", file_sample),
+        ds = xr.open_dataset(os.path.join("grid_selection", file_sample),
                              decode_timedelta=True, engine="netcdf4")
         print(f'OK: {file_sample}')
     except FileNotFoundError:
@@ -765,7 +765,7 @@ if __name__ == "__main__":
 
     print("Extracting CARRA1, CARRA2 and ERA5 grids for matching with observations")
     grid_sel = {'e': grid_loading('e', 'era5_NG_2m_temperature_2023.nc'), 'c1': grid_loading(
-        'c', 'carra1_2m_temperature_2023.nc'), 'c2': grid_loading(
+        'c1', 'carra1_2m_temperature_2023.nc'), 'c2': grid_loading(
         'c2', 'carra2_2m_temperature_2023.nc')}
 
     # Ground sites
