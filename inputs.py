@@ -35,6 +35,11 @@ basefol = {
         'parquets': shared_drive / 'Reanalysis' / 'carra1' / 'parquets',
         'raw': shared_drive / 'Reanalysis' / 'carra1' / 'raw',
     },
+    'c2': {
+        'base': shared_drive / 'Reanalysis' / 'carra2',
+        'parquets': shared_drive / 'Reanalysis' / 'carra2' / 'parquets',
+        'raw': shared_drive / 'Reanalysis' / 'carra2' / 'raw',
+    },
     'e': {
         'base': shared_drive / 'Reanalysis' / 'era5',
         'parquets': shared_drive / 'Reanalysis' / 'era5' / 'parquets',
@@ -70,9 +75,9 @@ location = next((info['fn']
                 for info in datasets.values() if info.get('switch')), None)
 
 # ========== VARIABLE GROUPS ==========
-met_vars = ['surf_pres', 'temp', 'windu', 'windv', 'rh', 'iwv'] # 'precip'
+met_vars = ['temp', 'surf_pres', 'windu', 'windv', 'rh', 'iwv']  # 'precip'
 rad_comps_vars = ['sw_up', 'sw_down', 'lw_up', 'lw_down']
-rad_flux_vars = ['alb' , 'sw_net', 'lw_net']
+rad_flux_vars = ['alb', 'sw_net', 'lw_net']
 cloud_vars = ['cbh']  # lwp
 technical_vars = ['winds', 'windd', 'dewpt', 'sw_net', 'lw_net']
 extra_vars = ['orog']
@@ -83,8 +88,8 @@ cumulative_vars = {'alb', 'lw_net', 'sw_net', 'sw_up',
 
 # Primary list of variables to analyze
 if datasets['buoys']['switch'] == True:
-    list_var = ['orog'] # , 'sw_up', 'sw_down', 'temp',
-                #'surf_pres', 'rh']
+    list_var = ['orog']  # , 'sw_up', 'sw_down', 'temp',
+    # 'surf_pres', 'rh']
 else:
     list_var = met_vars + cloud_vars + rad_comps_vars + rad_flux_vars
 
@@ -105,7 +110,7 @@ cbh_low_thresh = 320        # Minimum valid cloud base height threshold
 pres_low_thresh = 900.0     # Minimum valid surface pressure threshold
 pres_high_thresh = 1050.0   # Maximum valid surface pressure threshold
 carra1_ground_elev = 150
-carra2_ground_elev = 
+carra2_ground_elev = 150
 era5_ground_elev = 181
 thaao_ground_elev = 220
 
@@ -144,7 +149,7 @@ var_dict = {
         'col': 'red',
         'col_ori': 'indianred',
         'col_distr': 'salmon',
-        'label': 'CARRA1',
+        'label': 'CARRA2',
         'cmap': 'jet',
         'cmap_pos': (0.2, 0.85, 0.6, 0.1),
         'label_uom': ''
