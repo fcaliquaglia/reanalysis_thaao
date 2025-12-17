@@ -87,26 +87,28 @@ def plot_ts(period_label):
                     y_ori_mask = y_ori_.index.year == year
                 else:
                     season_months = inpt.seasons[period_label]['months']
-                    y_ori_mask = (y_ori_.index.year == year) & (y_ori_.index.month.isin(season_months))
+                    y_ori_mask = (y_ori_.index.year == year) & (
+                        y_ori_.index.month.isin(season_months))
                 if y_ori_mask.any():
                     y_ori = y_ori_.loc[y_ori_mask].dropna()
                     ax[i].plot(y_ori,
                                color=inpt.var_dict[data_typ]['col_ori'], **kwargs_ori)
-    
+
             # Resampled data for the year
             y_res = var_data[data_typ]['data_res'][inpt.tres][inpt.var]
             if period_label == 'all':
                 y_res_mask = y_res.index.year == year
             else:
                 season_months = inpt.seasons[period_label]['months']
-                y_res_mask = (y_res.index.year == year) & (y_res.index.month.isin(season_months))
+                y_res_mask = (y_res.index.year == year) & (
+                    y_res.index.month.isin(season_months))
             if y_res_mask.any():
                 y_res_ = y_res.loc[y_res_mask].dropna()
                 ax[i].plot(y_res_, color=inpt.var_dict[data_typ]['col'],
                            label=inpt.var_dict[data_typ]['label'], **kwargs_res)
 
         # Format the subplot axes (assuming this function is defined elsewhere)
-        plt_tls.format_ts(ax, year, i,period_label)
+        plt_tls.format_ts(ax, year, i, period_label)
 
     plt.xlabel('Time')
     plt.legend(ncol=2)
@@ -164,8 +166,10 @@ def plot_residuals(period_label):
                 y_mask = y.index.year == year
             else:
                 season_months = inpt.seasons[period_label]['months']
-                x_mask = (x.index.year == year) & (x.index.month.isin(season_months))
-                y_mask = (y.index.year == year) & (y.index.month.isin(season_months))
+                x_mask = (x.index.year == year) & (
+                    x.index.month.isin(season_months))
+                y_mask = (y.index.year == year) & (
+                    y.index.month.isin(season_months))
             if y_mask.any() and x_mask.any():
                 residuals = y.loc[y_mask] - x.loc[x_mask]
                 residuals = residuals.dropna()
@@ -218,19 +222,19 @@ def plot_ba(period_label):
     fig.subplots_adjust(top=0.93)
 
     plt_tls.frame_and_axis_removal(axs, len(comps))
-    
+
     perc = False
     for i, data_typ in enumerate(plot_vars):
         tres, tres_tol = tls.get_tres(data_typ)
         x = var_data[ref_x]['data_res'][tres][inpt.var]
-        time_range = plt_tls.make_time_range(inpt.years[0], inpt.years[-1], tres)
+        time_range = plt_tls.make_time_range(
+            inpt.years[0], inpt.years[-1], tres)
         x_all = x.reindex(time_range, method='nearest',
                           tolerance=pd.Timedelta(tres_tol)).astype(float)
         y_all = var_data[data_typ]['data_res'][tres][inpt.var].reindex(
             time_range).astype(float)
         valid_idx = ~(x_all.isna() | y_all.isna())
         x_valid, y_valid = x_all[valid_idx], y_all[valid_idx]
-
 
         if inpt.var == 'windd':
             return
@@ -242,10 +246,10 @@ def plot_ba(period_label):
             x_valid, y_valid = x_valid[valid_mask], y_valid[valid_mask]
             x_valid, y_valid = np.log1p(x_valid), np.log1p(y_valid)
 
-        if len(x_valid) < 2 or len(y_valid) <2:
+        if len(x_valid) < 2 or len(y_valid) < 2:
             print("[WARN]: no valid data points for Bland-Altman plot")
             continue
-        
+
         blandAltman(
             y_valid, x_valid, ax=axs[i], limitOfAgreement=1.96, confidenceInterval=95,
             confidenceIntervalMethod='approximate', detrend=None,
@@ -339,7 +343,8 @@ def plot_scatter_all(period_label):
         var_data[data_typ]['data_marg_distr']['tres_tol'] = tres_tol
 
         x = var_data[ref_x]['data_res'][tres][inpt.var]
-        time_range = plt_tls.make_time_range(inpt.years[0], inpt.years[-1], tres)
+        time_range = plt_tls.make_time_range(
+            inpt.years[0], inpt.years[-1], tres)
         x_all = x.reindex(time_range, method='nearest',
                           tolerance=pd.Timedelta(tres_tol)).astype(float)
         season_months = inpt.all_seasons['all']['months']
@@ -362,7 +367,7 @@ def plot_scatter_all(period_label):
             # Get the colormap object (copy it to avoid affecting other plots)
             import copy
             cmap = copy.copy(plt.get_cmap(inpt.var_dict[data_typ]['cmap']))
-            
+
             # Set the color for values below vmin (i.e., 0) to white (or 'none' for transparent)
             cmap.set_under('white')
 
@@ -385,9 +390,10 @@ def plot_scatter_all(period_label):
             # We want 'min' (for 0) AND possibly 'max' (for the 99th percentile overflow)
             has_overflow = np.any(counts > vmax_hist)
             if has_overflow:
-                extend_opt = 'both'  # Arrows on top (overflow) and bottom (0 values)
+                # Arrows on top (overflow) and bottom (0 values)
+                extend_opt = 'both'
             else:
-                extend_opt = 'min'   # Arrow only on bottom 
+                extend_opt = 'min'   # Arrow only on bottom
 
             # Clear and re-plot for actual display
             ax_joint.cla()
@@ -509,7 +515,8 @@ def plot_scatter_seasonal(period_label):
 
         x = var_data[ref_x]['data_res'][tres][inpt.var]
         y = var_data[data_typ]['data_res'][tres][inpt.var]
-        time_range = plt_tls.make_time_range(inpt.years[0], inpt.years[-1], tres)
+        time_range = plt_tls.make_time_range(
+            inpt.years[0], inpt.years[-1], tres)
 
         x_all = x.reindex(time_range, method='nearest',
                           tolerance=pd.Timedelta(tres_tol)).astype(float)
@@ -581,7 +588,8 @@ def plot_scatter_cum():
             tres, tres_tol = tls.get_tres(data_typ)
             x = var_data[ref_x]['data_res'][tres][inpt.var]
             # Prepare full time range for reindexing once
-            time_range = plt_tls.make_time_range(inpt.years[0], inpt.years[-1], tres)
+            time_range = plt_tls.make_time_range(
+                inpt.years[0], inpt.years[-1], tres)
             x_all = x.reindex(time_range, method='nearest',
                               tolerance=pd.Timedelta(tres_tol)).astype(float)
             y = var_data[data_typ]['data_res'][inpt.tres][inpt.var]
@@ -627,7 +635,8 @@ def plot_scatter_cum():
             for i, data_typ in enumerate(plot_vars):
                 tres, tres_tol = tls.get_tres(data_typ)
                 x = var_data[ref_x]['data_res'][tres][inpt.var]
-                time_range = plt_tls.make_time_range(inpt.years[0], inpt.years[-1], tres)
+                time_range = plt_tls.make_time_range(
+                    inpt.years[0], inpt.years[-1], tres)
                 x_all = x.reindex(time_range, method='nearest',
                                   tolerance=pd.Timedelta(tres_tol)).astype(float)
                 season_months = inpt.seasons[period_label]['months']
@@ -663,22 +672,22 @@ def plot_scatter_cum():
 def plot_taylor(vr_class):
 
     available_markers = [
-    'o',   # filled circle
-    's',   # filled square
-    'D',   # filled diamond
-    'd',   # filled thin diamond
-    '^',   # filled triangle up
-    'v',   # filled triangle down
-    '<',   # filled triangle left
-    '>',   # filled triangle right
-    'p',   # filled pentagon
-]
-            
+        'o',   # filled circle
+        's',   # filled square
+        'D',   # filled diamond
+        'd',   # filled thin diamond
+        '^',   # filled triangle up
+        'v',   # filled triangle down
+        '<',   # filled triangle left
+        '>',   # filled triangle right
+        'p',   # filled pentagon
+    ]
+
     if vr_class == 'met':
-        var_list=inpt.met_vars+inpt.cloud_vars
+        var_list = inpt.met_vars+inpt.cloud_vars
         plot_name = 'Weather variables'
     elif vr_class == 'rad_comps':
-        var_list=inpt.rad_comps_vars+['alb']
+        var_list = inpt.rad_comps_vars+['alb']
         plot_name = 'Radiation components variables'
     elif vr_class == 'rad_flux':
         var_list = [v for v in inpt.rad_flux_vars if v != 'alb']
@@ -704,9 +713,9 @@ def plot_taylor(vr_class):
         var_marker_map[var] = marker
         inpt.var = var
         var_data = inpt.extr[var]
-        comps = ['c1', 'c2', 'e']
+        comps = ['c1', 'c2', 'e5']
         ref_x = var_data['ref_x']
-        #plot_vars = tls.plot_vars_cleanup(comps, var_data)
+        # plot_vars = tls.plot_vars_cleanup(comps, var_data)
 
         for tres in inpt.tres_list:
             for data_typ in comps:
@@ -723,7 +732,7 @@ def plot_taylor(vr_class):
                     color = 'red'
                 if data_typ == 'c2':
                     color = 'green'
-                elif data_typ == 'e':
+                elif data_typ == 'e5':
                     color = 'blue'
                 else:
                     color = inpt.var_dict.get(
@@ -771,7 +780,7 @@ def plot_taylor_dia(ax, std_ref, std_models, corrs, labels,
 
     ax.set_ylim(0, rmax)
     ax.set_theta_direction(1)
-    ax.set_theta_zero_location('E')
+    ax.set_theta_zero_location('e5')
     ax.set_thetamin(0)
     ax.set_thetamax(90)
 
@@ -801,7 +810,8 @@ def plot_taylor_dia(ax, std_ref, std_models, corrs, labels,
     # --- Remove default theta-grid lines so they don't overwrite our custom spokes ---
     ax.grid(False)               # disable all default gridlines
     # re-enable only the circular radial grid if you like (optional)
-    ax.yaxis.grid(True, color='darksalmon', linestyle='--', linewidth=1., alpha=0.2)
+    ax.yaxis.grid(True, color='darksalmon',
+                  linestyle='--', linewidth=1., alpha=0.2)
 
     for theta in np.radians(theta_degrees):
         ax.plot([theta, theta], [0, rmax], color='darkgoldenrod',
@@ -826,7 +836,6 @@ def plot_taylor_dia(ax, std_ref, std_models, corrs, labels,
             return '999'
         else:
             return int(res.strip('h'))
-
 
     for i, (std, corr, label) in enumerate(zip(std_models, corrs, labels)):
         theta = np.arccos(corr)
@@ -873,8 +882,9 @@ def plot_taylor_dia(ax, std_ref, std_models, corrs, labels,
         thetas = [pt[0] for pt in all_pts_sorted]
         stds = [pt[1] for pt in all_pts_sorted]
 
-        ax.plot(thetas, stds, color='gray', linestyle='-', linewidth=0.8, alpha=0.9)
-    
+        ax.plot(thetas, stds, color='gray',
+                linestyle='-', linewidth=0.8, alpha=0.9)
+
     # Create first legend handles (variables)
     legend_elements = [
         Line2D([], [], color='black', marker=mark,
@@ -883,7 +893,7 @@ def plot_taylor_dia(ax, std_ref, std_models, corrs, labels,
     ]
 
     # Create second legend handles (models)
-    model_keys = ['c1', 'c2', 'e']
+    model_keys = ['c1', 'c2', 'e5']
     model_legend = [
         Line2D([], [], color=inpt.var_dict[k]['col'], marker='o',
                linestyle='None', label=inpt.var_dict[k]['label'])

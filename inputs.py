@@ -40,7 +40,7 @@ basefol = {
         'parquets': shared_drive / 'Reanalysis' / 'carra2' / 'parquets',
         'raw': shared_drive / 'Reanalysis' / 'carra2' / 'raw',
     },
-    'e': {
+    'e5': {
         'base': shared_drive / 'Reanalysis' / 'era5',
         'parquets': shared_drive / 'Reanalysis' / 'era5' / 'parquets',
         'raw': shared_drive / 'Reanalysis' / 'era5' / 'raw',
@@ -154,7 +154,7 @@ var_dict = {
         'cmap_pos': (0.2, 0.85, 0.6, 0.1),
         'label_uom': ''
     },
-    'e': {
+    'e5': {
         'nanval': -32767.0,
         'col': 'blue',
         'col_ori': 'dodgerblue',

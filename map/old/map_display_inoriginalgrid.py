@@ -7,7 +7,7 @@ import rasterio
 from rasterio.plot import show
 from rasterio.warp import calculate_default_transform, reproject, Resampling, transform
 import xarray as xr
-#import xesmf as xe
+# import xesmf as xe
 
 # -------------------
 basefol = r"H:\Shared drives\Reanalysis"
@@ -17,29 +17,35 @@ output_path = os.path.join(basefol, "pituffik_big_reproj.tif")
 # -------------------
 # 🔧 Utility functions
 
+
 def get_lat_lon(ds):
     """Return latitude and longitude DataArrays from dataset, handling variable naming differences."""
     lat_name = "lat" if "lat" in ds.variables else "latitude"
     lon_name = "lon" if "lon" in ds.variables else "longitude"
     return ds[lat_name], ds[lon_name]
 
+
 def wrap_lon(lon):
     """Wrap longitude to [-180, 180] range."""
     lon = np.asarray(lon)
     return (lon + 180) % 360 - 180
+
 
 def adjust_lon(lon):
     """Convert longitude to [0, 360) range element-wise."""
     lon = np.asarray(lon)
     return np.where(lon < 0, lon + 360, lon)
 
+
 def wrap_lon(lon):
     lon = np.array(lon)
     return ((lon + 180) % 360) - 180
 
+
 def lon_diff(lon1, lon2):
     d = lon2 - lon1
     return (d + 180) % 360 - 180
+
 
 def find_pixel(ds, lat1, lon1, var_name="t2m"):
     lat_ds, lon_ds = ds["latitude"], ds["longitude"]
@@ -74,6 +80,7 @@ def find_pixel(ds, lat1, lon1, var_name="t2m"):
             f"with {var_name} value = {val}")
 
     return np.array(lat_t), np.array(lon_t), np.array(vals)
+
 
 def get_lat_lon_names(ds):
     if "lat" in ds:
@@ -121,12 +128,14 @@ def plot_grid(ds, color, ax, xmin, xmax, ymin, ymax, src_crs):
     # Find rows and cols within raster bounds
     rows = np.where(
         (np.max(lon_wgs84, axis=1) >= xmin) & (np.min(lon_wgs84, axis=1) <= xmax) &
-        (np.max(lat_wgs84, axis=1) >= ymin) & (np.min(lat_wgs84, axis=1) <= ymax)
+        (np.max(lat_wgs84, axis=1) >= ymin) & (
+            np.min(lat_wgs84, axis=1) <= ymax)
     )[0]
 
     cols = np.where(
         (np.max(lon_wgs84, axis=0) >= xmin) & (np.min(lon_wgs84, axis=0) <= xmax) &
-        (np.max(lat_wgs84, axis=0) >= ymin) & (np.min(lat_wgs84, axis=0) <= ymax)
+        (np.max(lat_wgs84, axis=0) >= ymin) & (
+            np.min(lat_wgs84, axis=0) <= ymax)
     )[0]
 
     for i in rows:
@@ -151,6 +160,7 @@ def plot_closest(ds, lat1, lon1, ax):
         ax.plot(
             [lon1_adj[idx], lon2_adj[idx]], [lat1[idx], lat2[idx]], color=colors[idx], linestyle="--", linewidth=0.8)
 
+
 def reproj_tif(input_path, output_path, dst_crs="EPSG:4326"):
     """Reproject a raster to given CRS."""
     with rasterio.open(input_path) as src:
@@ -169,6 +179,7 @@ def reproj_tif(input_path, output_path, dst_crs="EPSG:4326"):
                     dst_crs=dst_crs, resampling=Resampling.nearest)
     return output_path
 
+
 def reproj_tif_if_needed(input_path, output_path, dst_crs="EPSG:4326"):
     """Reproject tif only if output does not exist."""
     if not os.path.exists(output_path):
@@ -177,6 +188,7 @@ def reproj_tif_if_needed(input_path, output_path, dst_crs="EPSG:4326"):
     else:
         print(f"Reprojected TIF already exists: {output_path}")
     return output_path
+
 
 def reproj_carra_if_needed(ds_c_orig, output_path):
     """Regrid CARRA only if output does not exist."""
@@ -224,7 +236,7 @@ ds_c2_orig = xr.open_dataset(os.path.join(
 
 ds_c2 = reproj_carra_if_needed(ds_c2_orig, carra_regrid_path)
 
-ds_e = xr.open_dataset(os.path.join(
+ds_e5 = xr.open_dataset(os.path.join(
     basefol, "era5\\raw", "era5_2m_temperature_2023.nc"), decode_timedelta=True)
 
 # Reproject TIF if needed (to EPSG:4326)
@@ -248,16 +260,18 @@ with rasterio.open(output_path) as src:
 
     # Plot original grids transformed on-the-fly to EPSG:4326
     plot_grid(ds_c, "red", ax, xmin, xmax, ymin, ymax, src_crs=carra_crs)
-    plot_grid(ds_e, "blue", ax, xmin, xmax, ymin, ymax, src_crs=rasterio.crs.CRS.from_string(era5_crs))
+    plot_grid(ds_e5, "blue", ax, xmin, xmax, ymin, ymax,
+              src_crs=rasterio.crs.CRS.from_string(era5_crs))
 
     plot_closest(ds_c, lat1, lon1, ax)
-    plot_closest(ds_e, lat1, lon1, ax)
+    plot_closest(ds_e5, lat1, lon1, ax)
 
     ax.set_xlim(xmin, xmax)
     ax.set_ylim(ymin, ymax)
-    #ax.legend()
-    plt.savefig(os.path.join(basefol, "rean_inoriginal.png"), dpi=200, bbox_inches="tight")
-    
+    # ax.legend()
+    plt.savefig(os.path.join(basefol, "rean_inoriginal.png"),
+                dpi=200, bbox_inches="tight")
+
 
 # Cleanup
 gc.collect()

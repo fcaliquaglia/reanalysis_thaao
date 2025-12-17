@@ -53,11 +53,11 @@ ds_c1 = ds_c1_all.isel(time=0).compute()
 ds_c1 = ds_c1.sortby("latitude", ascending=False)
 ds_c2 = ds_c2_all.isel(time=0).compute()
 ds_c2 = ds_c2.sortby("latitude", ascending=False)
-ds_e = ds_e_all.isel(valid_time=0).compute()
+ds_e5 = ds_e_all.isel(valid_time=0).compute()
 
 print(f"CARRA1 dataset dims: {ds_c1.dims}")
 print(f"CARRA2 dataset dims: {ds_c2.dims}")
-print(f"ERA5 dataset dims: {ds_e.dims}")
+print(f"ERA5 dataset dims: {ds_e5.dims}")
 
 carra_lat = ds_c1["latitude"].values
 carra_lon = ds_c1["longitude"].values
@@ -218,12 +218,12 @@ with rasterio.open(output_tif_path) as src:
         "Pituffik GeoTIFF (native res.) with ERA5 (blue) & CARRA (red) grids", fontsize=16)
     ax.axis("on")
 
-    lat_e = ds_e["latitude"].values
-    lon_e = ds_e["longitude"].values
-    lon2d_e, lat2d_e = np.meshgrid(lon_e, lat_e)
-    for i in range(0, lon2d_e.shape[0], 1):
+    lat_e5 = ds_e["latitude"].values
+    lon_e5 = ds_e["longitude"].values
+    lon2d_e5, lat2d_e5 = np.meshgrid(lon_e5, lat_e)
+    for i in range(0, lon2d_e5.shape[0], 1):
         ax.plot(lon2d_e[i, :], lat2d_e[i, :], color="blue", lw=1)
-    for j in range(0, lon2d_e.shape[1], 1):
+    for j in range(0, lon2d_e5.shape[1], 1):
         ax.plot(lon2d_e[:, j], lat2d_e[:, j], color="blue", lw=1)
 
     lat_c = ds_c["latitude"].values
@@ -234,7 +234,7 @@ with rasterio.open(output_tif_path) as src:
         ax.plot(lon_c[:, j], lat_c[:, j], color="red", lw=1)
 
     print("Plotting closest points on ERA5 grid:")
-    plot_closest(ds_e, lat1, lon1, ax)
+    plot_closest(ds_e5, lat1, lon1, ax)
 
     print("Plotting closest points on CARRA grid:")
     plot_closest(ds_c, lat1, lon1, ax)

@@ -36,7 +36,7 @@ def read_rean(vr, data_typ):
     Read processed reanalysis data from parquet files or generate them if missing.
 
     :param vr: Variable name (e.g., "temp").
-    :param data_typ: Dataset type (e.g., "c1" for CARRA1, "c2" for CARRA2, "e" for ERA5).
+    :param data_typ: Dataset type (e.g., "c1" for CARRA1, "c2" for CARRA2, "e5" for ERA5).
     """
 
     parquet_paths = []

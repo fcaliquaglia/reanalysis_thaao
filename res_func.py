@@ -60,7 +60,7 @@ def get_closest_subset_with_tolerance(df, freq, tol_minutes):
             dtype_dict[col] = 'Int64'
         else:
             dtype_dict[col] = dtype
-    
+
     result = result.astype(dtype_dict)
 
     valid_rows = final_indexer != -1
@@ -90,7 +90,7 @@ def data_resampling(vr):
         - Checks if the data DataFrame is empty via `tls.check_empty_df`.
         - If data is not empty:
             - If `inpt.tres` (time resolution) is 'original':
-                - For components 'c1', 'c2' or 'e', copies the data as is without resampling.
+                - For components 'c1', 'c2' or 'e5', copies the data as is without resampling.
                 - For components 't', 't1', 't2', extracts data closest to every 3-hour and 1-hour timestamps,
                   within tolerances of ±30 minutes for 3-hour intervals and ±10 minutes for 1-hour intervals.
                   Also stores the native data without modification.
@@ -135,28 +135,29 @@ def data_resampling(vr):
                 '3h': get_closest_subset_with_tolerance(data, '3h', tol_minutes=30),
             })
 
-                
             if inpt.tres != 'original':
                 if vr != 'precip':
                     if inpt.tres == '1ME':
                         resampled_data[inpt.tres] = data.resample(
-                        inpt.tres).mean()
-                        resampled_data[inpt.tres].index = resampled_data[inpt.tres].index.to_period('M').to_timestamp(how='start') + pd.Timedelta(days=14)
+                            inpt.tres).mean()
+                        resampled_data[inpt.tres].index = resampled_data[inpt.tres].index.to_period(
+                            'M').to_timestamp(how='start') + pd.Timedelta(days=14)
                     else:
                         masked = tls.mask_low_count_intervals(
                             data, data_typ, min_frac=inpt.min_frac)
                         resampled_data[inpt.tres] = masked.resample(
-                        inpt.tres).mean()
+                            inpt.tres).mean()
                 else:
                     if inpt.tres == '1ME':
                         resampled_data[inpt.tres] = data.resample(
-                        inpt.tres).sum()
-                        resampled_data[inpt.tres].index = resampled_data[inpt.tres].index.to_period('M').to_timestamp(how='start') + pd.Timedelta(days=14)
+                            inpt.tres).sum()
+                        resampled_data[inpt.tres].index = resampled_data[inpt.tres].index.to_period(
+                            'M').to_timestamp(how='start') + pd.Timedelta(days=14)
                     else:
                         masked = tls.mask_low_count_intervals(
                             data, data_typ, min_frac=inpt.min_frac)
                         resampled_data[inpt.tres] = masked.resample(inpt.tres).apply(
-                        lambda x: x.sum() if x.notna().any() else np.nan)
+                            lambda x: x.sum() if x.notna().any() else np.nan)
             else:
                 resampled_data[inpt.tres] = data
             print(f"Resampled (closest or mean) for {data_typ}, {vr}.")

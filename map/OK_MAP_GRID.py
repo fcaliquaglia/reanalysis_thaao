@@ -13,6 +13,7 @@ from rasterio.warp import reproject, calculate_default_transform, Resampling
 
 # ─── Function Definitions ────────────────────────────────────────────────────────
 
+
 def convert_dataset_lon_360_to_180(ds, lon_name="longitude"):
     """
     Convert longitude coordinates from 0..360 to -180..180 in xarray Dataset.
@@ -73,8 +74,10 @@ def find_pixel(ds, latitudes, longitudes, var_name="t2m"):
         closest_lon = lon_ds[x_idx] if is_1d else lon2d[y_idx, x_idx]
         val = ds[var_name].values[y_idx, x_idx]
 
-        lat_t.append(closest_lat.item() if hasattr(closest_lat, 'item') else closest_lat)
-        lon_t.append(closest_lon.item() if hasattr(closest_lon, 'item') else closest_lon)
+        lat_t.append(closest_lat.item() if hasattr(
+            closest_lat, 'item') else closest_lat)
+        lon_t.append(closest_lon.item() if hasattr(
+            closest_lon, 'item') else closest_lon)
         vals.append(val)
 
         print(f"Closest grid point to ({lat:.4f},{lon:.4f}) is at "
@@ -207,11 +210,11 @@ ds_e_all = xr.open_dataset(era5_nc_path, chunks={"valid_time": 100})
 # Select first time step and load into memory
 ds_c1 = ds_c1_all.isel(time=0).compute()
 ds_c2 = ds_c2_all.isel(time=0).compute()
-ds_e = ds_e_all.isel(valid_time=0).compute()
+ds_e5 = ds_e_all.isel(valid_time=0).compute()
 
 print(f"CARRA1 dataset dims: {ds_c1.dims}")
 print(f"CARRA2 dataset dims: {ds_c2.dims}")
-print(f"ERA5 dataset dims: {ds_e.dims}")
+print(f"ERA5 dataset dims: {ds_e5.dims}")
 
 # Prepare target grid for regridding: CARRA grid has 2D lat/lon arrays (y, x)
 carra1_lat = ds_c1["latitude"].values
@@ -248,7 +251,8 @@ if not os.path.exists(output_tif_path):
     reproj_tif(input_tif_path, output_tif_path, dst_crs="EPSG:4326")
     print(f"Raster reprojected and saved: {output_tif_path}")
 else:
-    print(f"Output file already exists: {output_tif_path}, skipping reprojection.")
+    print(
+        f"Output file already exists: {output_tif_path}, skipping reprojection.")
 
 # Points of interest
 lat1 = np.array([76.5149, 76.52, 76.5])
@@ -270,11 +274,11 @@ with rasterio.open(output_tif_path) as src:
     ax.axis("on")
 
     # Plot ERA5 grid in blue (1D lat/lon)
-    lon_e, lat_e = ds_e["longitude"].values, ds_e["latitude"].values
-    lon2d_e, lat2d_e = np.meshgrid(lon_e, lat_e)
-    for i in range(lon2d_e.shape[0]):
+    lon_e5, lat_e5 = ds_e["longitude"].values, ds_e["latitude"].values
+    lon2d_e5, lat2d_e5 = np.meshgrid(lon_e5, lat_e)
+    for i in range(lon2d_e5.shape[0]):
         ax.plot(lon2d_e[i, :], lat2d_e[i, :], "b-", linewidth=0.5)
-    for j in range(lon2d_e.shape[1]):
+    for j in range(lon2d_e5.shape[1]):
         ax.plot(lon2d_e[:, j], lat2d_e[:, j], "b-", linewidth=0.5)
 
     # Plot CARRA1 grid in red (2D lat/lon)
@@ -293,7 +297,7 @@ with rasterio.open(output_tif_path) as src:
 
     plot_closest(ds_c1, lat1, lon1, ax)
     plot_closest(ds_c2, lat1, lon1, ax)
-    plot_closest(ds_e, lat1, lon1, ax)
+    plot_closest(ds_e5, lat1, lon1, ax)
 
     plt.legend()
     plt.show()
@@ -301,7 +305,7 @@ with rasterio.open(output_tif_path) as src:
 print("Extracting time series from datasets at selected points...")
 ts_c1 = extract_time_series(ds_c1_all, carra1_indices, varname="t2m")
 ts_c2 = extract_time_series(ds_c2_all, carra2_indices, varname="t2m")
-ts_e = extract_time_series(ds_e_all, era5_indices, varname="t2m")
+ts_e5 = extract_time_series(ds_e_all, era5_indices, varname="t2m")
 
 print("Filtering time series for January 1-10, 2023 ...")
 ds_c1_jan = filter_time(ds_c1_all, "2023-01-01", "2023-01-10")
@@ -324,8 +328,8 @@ for i in range(len(ts_c1_jan)):
     time_dim_c2 = get_time_dim(ts_c2_jan[i])
     ax.plot(ts_c2_jan[i][time_dim_c2], ts_c2_jan[i].values, color=colors[i],
             label=f"CARRA2 pt{i+1} ({lat1[i]:.4f}, {lon1[i]:.4f})")
-    time_dim_e = get_time_dim(ts_e_jan[i])
-    ax.plot(ts_e_jan[i][time_dim_e], ts_e_jan[i].values, "b-", 
+    time_dim_e5 = get_time_dim(ts_e_jan[i])
+    ax.plot(ts_e_jan[i][time_dim_e], ts_e_jan[i].values, "b-",
             label=f"ERA5 pt{i+1} ({lat1[i]:.4f}, {lon1[i]:.4f})")
 
 ax.set_xlabel("Date")

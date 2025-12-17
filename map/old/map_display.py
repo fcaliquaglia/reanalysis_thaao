@@ -24,6 +24,7 @@ def get_lat_lon(ds):
     lon_name = "lon" if "lon" in ds.variables else "longitude"
     return ds[lat_name], ds[lon_name]
 
+
 def wrap_lon(lon):
     """Wrap longitude to [-180, 180] range."""
     lon = np.asarray(lon)
@@ -168,7 +169,7 @@ def reproj_carra_if_needed(ds_c_orig, output_path):
             coords={"lat": lat_new, "lon": lon_new})
 
         weights_file = os.path.join(basefol, "carra_to_target_weights.nc")
-        
+
         if not os.path.exists(weights_file):
             # Generate and save weights
             regridder = xe.Regridder(
@@ -179,7 +180,7 @@ def reproj_carra_if_needed(ds_c_orig, output_path):
             regridder = xe.Regridder(
                 ds_c_orig, ds_target, method="bilinear", periodic=False,
                 reuse_weights=True, filename=weights_file)
-        
+
         ds_c = regridder(ds_c_orig["t2m"])
         ds_c.to_netcdf(output_path)
     else:
@@ -199,7 +200,7 @@ ds_c1 = reproj_carra_if_needed(ds_c1_orig, carra1_regrid_path)
 ds_c2_orig = xr.open_dataset(os.path.join(
     basefol, "carra\\raw", "carra2_2m_temperature_2023.nc"), chunks={'time': 10}, decode_timedelta=True)
 ds_c2 = reproj_carra_if_needed(ds_c2_orig, carra2_regrid_path)
-ds_e = xr.open_dataset(os.path.join(
+ds_e5 = xr.open_dataset(os.path.join(
     basefol, "era5\\raw", "era5_2m_temperature_2023.nc"), decode_timedelta=True)
 
 # Reproject TIF if needed
@@ -219,11 +220,11 @@ with rasterio.open(output_path) as src:
 
     plot_grid(ds_c1, "red", ax, xmin, xmax, ymin, ymax)
     plot_grid(ds_c2, "green", ax, xmin, xmax, ymin, ymax)
-    plot_grid(ds_e, "blue", ax, xmin, xmax, ymin, ymax)
+    plot_grid(ds_e5, "blue", ax, xmin, xmax, ymin, ymax)
 
     plot_closest(ds_c1, lat1, lon1, ax)
     plot_closest(ds_c2, lat1, lon1, ax)
-    plot_closest(ds_e, lat1, lon1, ax)
+    plot_closest(ds_e5, lat1, lon1, ax)
 
     ax.set_xlim(xmin, xmax)
     ax.set_ylim(ymin, ymax)

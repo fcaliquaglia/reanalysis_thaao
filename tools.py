@@ -6,6 +6,7 @@ Created on Thu Jun 12 08:50:17 2025
 """
 
 
+import warnings
 import os
 import time
 import sys
@@ -37,8 +38,8 @@ def load_and_process_yaml(path: Path):
         cfg = yaml.safe_load(f)
     cfg = replace_none_with_nan(cfg)
 
-    # Replace placeholders in filenames for keys 'c1' and 'e'
-    for key in ('c1', 'c2', 'e'):
+    # Replace placeholders in filenames for keys 'c1' and 'e5'
+    for key in ('c1', 'c2', 'e5'):
         if key in cfg and 'fn' in cfg[key]:
             cfg[key]['fn'] = (
                 cfg[key]['fn']
@@ -47,6 +48,7 @@ def load_and_process_yaml(path: Path):
                 .replace('thaao_e', 'era5_NG')
             )
     return cfg
+
 
 def parse_datetime_columns(df, file):
     """
@@ -67,10 +69,12 @@ def parse_datetime_columns(df, file):
     time_col = "time[h:m:s]"
 
     if date_col and time_col:
-        datetime_str = df[date_col].astype(str) + " " + df[time_col].astype(str)
+        datetime_str = df[date_col].astype(
+            str) + " " + df[time_col].astype(str)
         return pd.to_datetime(datetime_str, errors="raise", format="mixed")
 
     raise ValueError(f"Unexpected datetime columns in {file.name}")
+
 
 def get_common_paths(vr, y, prefix):
 
@@ -143,13 +147,13 @@ def calc_rh_from_tdp():
 
     :return: None
     """
-    dewpoint = inpt.extr["dewpt"]["e"]["data"]["dewpt"]
-    temperature = inpt.extr["temp"]["e"]["data"]["temp"]
+    dewpoint = inpt.extr["dewpt"]["e5"]["data"]["dewpt"]
+    temperature = inpt.extr["temp"]["e5"]["data"]["temp"]
 
     relh = mpcalc.relative_humidity_from_dewpoint(
         temperature.values * units.K, dewpoint.values * units.K).to("percent")
 
-    inpt.extr["rh"]["e"]["data"] = pd.DataFrame(
+    inpt.extr["rh"]["e5"]["data"] = pd.DataFrame(
         {"rh": relh.magnitude}, index=dewpoint.index)
 
     return
@@ -238,17 +242,14 @@ def recompose_wind(u_series, v_series):
     )
 
 
-import pandas as pd
-import warnings
-
 def get_tres(data_typ, tres=None):
     """
     Return a valid frequency string and a tolerance string for resampling.
-    
+
     Parameters:
     -----------
     data_typ : str
-        Data component type ('c1', 'c2', 'e', 't', etc.)
+        Data component type ('c1', 'c2', 'e5', 't', etc.)
     tres : str, optional
         Desired time resolution (default: inpt.tres)
 
@@ -316,7 +317,6 @@ def get_tres(data_typ, tres=None):
     return freq_str, tolerance
 
 
-
 def wait_for_complete_download(file_path, timeout=600, interval=5):
     """Wait until the file is fully downloaded by monitoring file size."""
     print(f"Waiting for file to be ready: {file_path}")
@@ -358,8 +358,8 @@ def mask_low_count_intervals(df, data_typ, min_frac):
 
     # Custom thresholds for 'iwv' var
     thresholds = {
-        '1h': {'e': 1, 't': 1, 't2': 1},
-        '3h': {'c1': 1, 'c2': 1, 'e': 2, 't': 2, 't2': 2},
+        '1h': {'e5': 1, 't': 1, 't2': 1},
+        '3h': {'c1': 1, 'c2': 1, 'e5': 2, 't': 2, 't2': 2},
         '6h': {'c1': 2, 'c2': 2, 't': 3},
         '12h': {'c1': 4, 'c2': 4, 't': 5},
         '18h': {'c1': 5, 'c2': 5, 't': 8},
@@ -414,13 +414,13 @@ def process_rean(vr, data_typ, y):
         y_idx = coords['y_idx'].to_numpy()
         x_idx = coords['x_idx'].to_numpy()
         time_dim = 'valid_time' if 'valid_time' in ds.dims else 'time'
-        if data_typ in['c1', 'c2']:
+        if data_typ in ['c1', 'c2']:
             lat_vals = np.array([ds['latitude'].values[y, x]
                                 for y, x in zip(y_idx, x_idx)])
             lon_vals = np.array([ds['longitude'].values[y, x]
                                 for y, x in zip(y_idx, x_idx)])
             lat_dim, lon_dim = 'y', 'x'
-        elif data_typ == "e":
+        elif data_typ == "e5":
             lat_vals = ds["latitude"].isel(latitude=y_idx).values
             lon_vals = ds["longitude"].isel(longitude=x_idx).values
             lat_dim, lon_dim = 'latitude', 'longitude'
@@ -431,7 +431,7 @@ def process_rean(vr, data_typ, y):
         print(f"(First out of {len(lat_vals)}) Latitude = {lat_vals[0]:.4f}")
         print(
             f"(First out of {len(lon_vals)}) Longitude = {lon_vals[0]:.4f}", end="")
-        if data_typ in['c1', 'c2']:
+        if data_typ in ['c1', 'c2']:
             print(f" (also {lon_vals[0]-360:.4f})")
         else:
             print()
@@ -463,14 +463,14 @@ def process_rean(vr, data_typ, y):
             t_idx = coords['t_idx'].to_numpy().astype(int)
 
         time_dim = 'valid_time' if 'valid_time' in ds.dims else 'time'
-        if data_typ in['c1', 'c2']:
+        if data_typ in ['c1', 'c2']:
             lat_vals = np.array([ds['latitude'].values[y, x]
                                 for y, x in zip(y_idx, x_idx)])
             lon_vals = np.array([ds['longitude'].values[y, x]
                                 for y, x in zip(y_idx, x_idx)])
             time_vals = np.array(ds[time_dim].values[t_idx])
             lat_dim, lon_dim = 'y', 'x'
-        elif data_typ == "e":
+        elif data_typ == "e5":
             lat_vals = ds["latitude"].isel(latitude=y_idx).values
             lon_vals = ds["longitude"].isel(longitude=x_idx).values
             time_vals = np.array(ds[time_dim].values[t_idx])
@@ -486,7 +486,7 @@ def process_rean(vr, data_typ, y):
         print(
             f"(First out of {len(lon_vals)}) Longitude = {lon_vals[0]:.4f}", end="")
 
-        if data_typ in['c1', 'c2']:
+        if data_typ in ['c1', 'c2']:
             print(f" (also {lon_vals[0]-360:.4f})")
         else:
             print()
@@ -524,12 +524,12 @@ def process_rean(vr, data_typ, y):
             t_idx = int(coords['t_idx'].to_numpy()[0])
 
         time_dim = 'valid_time' if 'valid_time' in ds.dims else 'time'
-        if data_typ in['c1', 'c2']:
+        if data_typ in ['c1', 'c2']:
             lat_vals = ds['latitude'].values[y_idx, x_idx]
             lon_vals = ds['longitude'].values[y_idx, x_idx]
             time_vals = ds[time_dim].values[t_idx]
             lat_dim, lon_dim = 'y', 'x'
-        elif data_typ == "e":
+        elif data_typ == "e5":
             lat_vals = ds["latitude"].isel(latitude=y_idx).values
             lon_vals = ds["longitude"].isel(longitude=x_idx).values
             time_vals = ds[time_dim].values[t_idx]
@@ -544,7 +544,7 @@ def process_rean(vr, data_typ, y):
         print(f"Latitude = {lat_vals:.4f}")
         print(f"Longitude = {lon_vals:.4f}", end="")
 
-        if data_typ in['c1', 'c2']:
+        if data_typ in ['c1', 'c2']:
             print(f" (also {lon_vals-360:.4f})")
         else:
             print()

@@ -19,10 +19,10 @@ plot = True
 
 plot_flags = dict(
     ground_sites=True,
-    buoys=True,
-    dropsondes=True,
-    p3_tracks=True,
-    g3_tracks=True,
+    buoys=False,
+    dropsondes=False,
+    p3_tracks=False,
+    g3_tracks=False,
     radiosondes=False,
     ships=False
 )
@@ -100,15 +100,15 @@ def grid_loading(dataset_type, file_sample):
         flat_lon_c = lon_arr_c.ravel()
         ds_times_c = pd.to_datetime(ds[time_dim].values)
         return lat_arr_c, lon_arr_c, flat_lat_c, flat_lon_c, ds_times_c
-    elif dataset_type == 'e':
-        lat_1d_e = ds['latitude'].values
-        lon_1d_e = ds['longitude'].values % 360
-        lat_arr_e, lon_arr_e = np.meshgrid(
-            lat_1d_e, lon_1d_e, indexing='ij')
-        flat_lat_e = lat_arr_e.ravel()
-        flat_lon_e = lon_arr_e.ravel()
-        ds_times_e = pd.to_datetime(ds[time_dim].values)
-        return lat_arr_e, lon_arr_e, flat_lat_e, flat_lon_e, ds_times_e
+    elif dataset_type == 'e5':
+        lat_1d_e5 = ds['latitude'].values
+        lon_1d_e5 = ds['longitude'].values % 360
+        lat_arr_e5, lon_arr_e5 = np.meshgrid(
+            lat_1d_e5, lon_1d_e5, indexing='ij')
+        flat_lat_e5 = lat_arr_e5.ravel()
+        flat_lon_e5 = lon_arr_e5.ravel()
+        ds_times_e5 = pd.to_datetime(ds[time_dim].values)
+        return lat_arr_e5, lon_arr_e5, flat_lat_e5, flat_lon_e5, ds_times_e
     else:
         raise ValueError(f"Unknown dataset type: {dataset_type}")
 
@@ -141,7 +141,7 @@ def find_index_in_grid(grid_selection, fol_file, out_file):
 
     lat_arr,  lon_arr, flat_lat, flat_lon, ds_times = grid_selection
     # Read input coordinates
-    in_file = f"{out_file}"[17:]
+    in_file = f"{out_file}"[18:]
     coords = pd.read_csv(os.path.join(fol_file, in_file))
 
     # Output
@@ -187,7 +187,7 @@ def find_index_in_grid(grid_selection, fol_file, out_file):
                 time_diffs = np.abs(adjusted_ds_times - input_time)
 
                 # Filtering time differences below 3 tres
-                if out_file[0] == 'e':
+                if out_file[0] == 'e5':
                     thresh = 1
                 if out_file[0] == 'c1' or out_file[0] == 'c2':
                     thresh = 3
@@ -764,7 +764,7 @@ def plot_surf_date(seq, plot_flags=plot_flags):
 if __name__ == "__main__":
 
     print("Extracting CARRA1, CARRA2 and ERA5 grids for matching with observations")
-    grid_sel = {'e': grid_loading('e', 'era5_NG_2m_temperature_2023.nc'), 'c1': grid_loading(
+    grid_sel = {'e5': grid_loading('e5', 'era5_NG_2m_temperature_2023.nc'), 'c1': grid_loading(
         'c1', 'carra1_2m_temperature_2023.nc'), 'c2': grid_loading(
         'c2', 'carra2_2m_temperature_2023.nc')}
 
@@ -1074,6 +1074,6 @@ if __name__ == "__main__":
         plot_surf_date("2", current_flags)
         current_flags["dropsondes"] = True
         plot_surf_date("3", current_flags)
-        
+
         plot_flags = {k: True for k in plot_flags}
         plot_trajectories("all", plot_flags)

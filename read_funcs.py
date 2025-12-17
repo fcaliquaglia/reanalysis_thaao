@@ -44,7 +44,7 @@ def read_alb():
     sw_down_c1 = var_dict["c1"]["data"][vr]
     sw_down_c2 = var_dict["c2"]["data"][vr]
 
-    sw_down_e = var_dict["e"]["data"][vr]
+    sw_down_e5 = var_dict["e5"]["data"][vr]
 
     # --- CARRA1 ALB ---
     vr = "sw_net"
@@ -81,18 +81,18 @@ def read_alb():
     # --- ERA5 ALB ---
     vr = "sw_net"
     var_dict = inpt.extr[vr]
-    rd_frea.read_rean(vr, "e")
-    var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
-    sw_net_e = var_dict["e"]["data"][vr]
-    sw_net_e /= pd.Timedelta('1h').total_seconds()
+    rd_frea.read_rean(vr, "e5")
+    var_dict["e5"]["data"], _ = tls.check_empty_df(var_dict["e5"]["data"], vr)
+    sw_net_e5 = var_dict["e5"]["data"][vr]
+    sw_net_e5 /= pd.Timedelta('1h').total_seconds()
 
     vr = "sw_up"
     var_dict = inpt.extr[vr]
-    sw_up_e = sw_down_e - sw_net_e
-    sw_up_e = sw_up_e.mask(sw_up_e < inpt.rad_low_thresh, np.nan)
-    sw_up_e.name = vr
-    var_dict["e"]["data"] = pd.DataFrame({vr: sw_up_e})
-    var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
+    sw_up_e5 = sw_down_e5 - sw_net_e5
+    sw_up_e5 = sw_up_e5.mask(sw_up_e5 < inpt.rad_low_thresh, np.nan)
+    sw_up_e5.name = vr
+    var_dict["e5"]["data"] = pd.DataFrame({vr: sw_up_e})
+    var_dict["e5"]["data"], _ = tls.check_empty_df(var_dict["e5"]["data"], vr)
 
     # --- THAAO ALB ---
     vr = "sw_up"
@@ -126,8 +126,8 @@ def read_alb():
     alb_c2 = alb_c2_tmp.where((alb_c2_tmp >= 0.01) & (alb_c2_tmp <= .99))
     alb_c2.name = vr
     alb_e_tmp = sw_up_e/sw_down_e
-    alb_e = alb_e_tmp.where((alb_e_tmp >= 0.01) & (alb_e_tmp <= 0.99))
-    alb_e.name = vr
+    alb_e5 = alb_e_tmp.where((alb_e_tmp >= 0.01) & (alb_e_tmp <= 0.99))
+    alb_e5.name = vr
     alb_t_tmp = sw_up_t/sw_down_t
     alb_t = alb_t_tmp.where((alb_t_tmp >= 0.01) & (alb_t_tmp <= 0.99))
     alb_t.name = vr
@@ -138,8 +138,8 @@ def read_alb():
     var_dict["c2"]["data"] = pd.DataFrame({vr: alb_c2})
     var_dict["c2"]["data"], _ = tls.check_empty_df(var_dict["c2"]["data"], vr)
 
-    var_dict["e"]["data"] = pd.DataFrame({vr: alb_e})
-    var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
+    var_dict["e5"]["data"] = pd.DataFrame({vr: alb_e})
+    var_dict["e5"]["data"], _ = tls.check_empty_df(var_dict["e5"]["data"], vr)
 
     var_dict["t"]["data"] = pd.DataFrame({vr: alb_t})
     var_dict["t"]["data"], _ = tls.check_empty_df(var_dict["t"]["data"], vr)
@@ -173,11 +173,11 @@ def read_cbh():
         var_dict["c2"]["data"][vr] < inpt.cbh_low_thresh, np.nan)
 
     # --- ERA5 ---
-    rd_frea.read_rean(vr, "e")
-    var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
-    var_dict["e"]["data"][vr] += inpt.era5_ground_elev
-    var_dict["e"]["data"][vr] = var_dict["e"]["data"][vr].mask(
-        var_dict["e"]["data"][vr] < inpt.cbh_low_thresh, np.nan)
+    rd_frea.read_rean(vr, "e5")
+    var_dict["e5"]["data"], _ = tls.check_empty_df(var_dict["e5"]["data"], vr)
+    var_dict["e5"]["data"][vr] += inpt.era5_ground_elev
+    var_dict["e5"]["data"][vr] = var_dict["e5"]["data"][vr].mask(
+        var_dict["e5"]["data"][vr] < inpt.cbh_low_thresh, np.nan)
 
     # --- THAAO ---
     if inpt.datasets['THAAO']['switch']:
@@ -213,8 +213,8 @@ def read_iwv():
     var_dict["c2"]["data"], _ = tls.check_empty_df(var_dict["c2"]["data"], vr)
 
     # --- ERA5 ---
-    rd_frea.read_rean(vr, "e")
-    var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
+    rd_frea.read_rean(vr, "e5")
+    var_dict["e5"]["data"], _ = tls.check_empty_df(var_dict["e5"]["data"], vr)
 
     # --- THAAO (VESPA) ---
     if inpt.datasets['THAAO']['switch']:
@@ -252,11 +252,11 @@ def read_lwp():
     var_dict["c2"]["data"][vr] = lwp_c2
 
     # --- ERA5 ---
-    rd_frea.read_rean(vr, "e")
-    var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
-    var_dict["e"]["data"][vr] *= 1000.
-    lwp_e = var_dict["e"]["data"][vr]
-    var_dict["e"]["data"][vr] = lwp_e
+    rd_frea.read_rean(vr, "e5")
+    var_dict["e5"]["data"], _ = tls.check_empty_df(var_dict["e5"]["data"], vr)
+    var_dict["e5"]["data"][vr] *= 1000.
+    lwp_e5 = var_dict["e5"]["data"][vr]
+    var_dict["e5"]["data"][vr] = lwp_e
 
     # --- THAAO (HATPRO) ---
     if inpt.datasets['THAAO']['switch']:
@@ -294,9 +294,9 @@ def read_lw_down():
     # --- ERA5 ---
     vr = "lw_down"
     var_dict = inpt.extr[vr]
-    rd_frea.read_rean(vr, "e")
-    var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
-    var_dict["e"]["data"][vr] /= pd.Timedelta('1h').total_seconds()
+    rd_frea.read_rean(vr, "e5")
+    var_dict["e5"]["data"], _ = tls.check_empty_df(var_dict["e5"]["data"], vr)
+    var_dict["e5"]["data"][vr] /= pd.Timedelta('1h').total_seconds()
 
     # --- THAAO ---
     vr = "lw_down"
@@ -348,10 +348,10 @@ def read_lw_net():
     # --- ERA5 ---
     vr = "lw_net"
     var_dict = inpt.extr[vr]
-    rd_frea.read_rean(vr, "e")
-    var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
-    lw_net_e = var_dict["e"]["data"][vr]
-    lw_net_e /= pd.Timedelta('1h').total_seconds()
+    rd_frea.read_rean(vr, "e5")
+    var_dict["e5"]["data"], _ = tls.check_empty_df(var_dict["e5"]["data"], vr)
+    lw_net_e5 = var_dict["e5"]["data"][vr]
+    lw_net_e5 /= pd.Timedelta('1h').total_seconds()
 
     # --- THAAO ---
     vr = "lw_up"
@@ -393,7 +393,7 @@ def read_lw_up():
     read_lw_down()
     lw_down_c1 = var_dict["c1"]["data"][vr]
     lw_down_c2 = var_dict["c2"]["data"][vr]
-    lw_down_e = var_dict["e"]["data"][vr]
+    lw_down_e5 = var_dict["e5"]["data"][vr]
 
     # --- CARRA1 ---
     vr = "lw_net"
@@ -430,20 +430,20 @@ def read_lw_up():
     # --- ERA5 ---
     vr = "lw_net"
     var_dict = inpt.extr[vr]
-    rd_frea.read_rean(vr, "e")
-    var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
-    lw_net_e = var_dict["e"]["data"][vr]
-    lw_net_e /= pd.Timedelta('1h').total_seconds()
+    rd_frea.read_rean(vr, "e5")
+    var_dict["e5"]["data"], _ = tls.check_empty_df(var_dict["e5"]["data"], vr)
+    lw_net_e5 = var_dict["e5"]["data"][vr]
+    lw_net_e5 /= pd.Timedelta('1h').total_seconds()
 
     vr = "lw_up"
     var_dict = inpt.extr[vr]
     # CARRA/ERA5: `lw_net` includes sign as net = up + down, therefore
     # up = net - down
-    lw_up_e = lw_down_e - lw_net_e
-    lw_up_e = lw_up_e.mask(lw_up_e < inpt.rad_low_thresh, np.nan)
-    lw_up_e.name = vr
-    var_dict["e"]["data"] = pd.DataFrame({vr: lw_up_e})
-    var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
+    lw_up_e5 = lw_down_e5 - lw_net_e
+    lw_up_e5 = lw_up_e5.mask(lw_up_e5 < inpt.rad_low_thresh, np.nan)
+    lw_up_e5.name = vr
+    var_dict["e5"]["data"] = pd.DataFrame({vr: lw_up_e})
+    var_dict["e5"]["data"], _ = tls.check_empty_df(var_dict["e5"]["data"], vr)
 
     # --- THAAO ---
     vr = "lw_up"
@@ -486,9 +486,9 @@ def read_orog():
     var_dict["c2"]["data"], _ = tls.check_empty_df(var_dict["c2"]["data"], vr)
 
     # --- ERA5 ---
-    rd_frea.read_rean(vr, "e")
-    var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
-    var_dict["e"]["data"][vr] /= g
+    rd_frea.read_rean(vr, "e5")
+    var_dict["e5"]["data"], _ = tls.check_empty_df(var_dict["e5"]["data"], vr)
+    var_dict["e5"]["data"][vr] /= g
 
     return
 
@@ -514,11 +514,11 @@ def read_precip():
         var_dict["c2"]["data"][vr] <= inpt.precip_low_thresh, np.nan)
 
     # --- ERA5 ---
-    rd_frea.read_rean(vr, "e")
-    var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
-    var_dict["e"]["data"][vr] *= 1000
-    var_dict["e"]["data"][vr] = var_dict["e"]["data"][vr].mask(
-        var_dict["e"]["data"][vr] <= inpt.precip_low_thresh, np.nan)
+    rd_frea.read_rean(vr, "e5")
+    var_dict["e5"]["data"], _ = tls.check_empty_df(var_dict["e5"]["data"], vr)
+    var_dict["e5"]["data"][vr] *= 1000
+    var_dict["e5"]["data"][vr] = var_dict["e5"]["data"][vr].mask(
+        var_dict["e5"]["data"][vr] <= inpt.precip_low_thresh, np.nan)
 
     # --- THAAO ---
     if inpt.datasets['THAAO']['switch']:
@@ -550,10 +550,10 @@ def read_rh():
     var_dict["c2"]["data"], _ = tls.check_empty_df(var_dict["c2"]["data"], vr)
 
     # --- ERA5 ---
-    rd_frea.read_rean("dewpt", "e")
-    var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
-    rd_frea.read_rean("temp", "e")
-    var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
+    rd_frea.read_rean("dewpt", "e5")
+    var_dict["e5"]["data"], _ = tls.check_empty_df(var_dict["e5"]["data"], vr)
+    rd_frea.read_rean("temp", "e5")
+    var_dict["e5"]["data"], _ = tls.check_empty_df(var_dict["e5"]["data"], vr)
     tls.calc_rh_from_tdp()  # Compute RH from dew point and temp
 
     # --- THAAO ---
@@ -625,13 +625,13 @@ def read_surf_pres():
                                [vr] >= inpt.pres_high_thresh, vr] = np.nan
 
     # --- ERA5 ---
-    rd_frea.read_rean(vr, "e")
-    var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
-    var_dict["e"]["data"][vr] /= 100.
-    var_dict["e"]["data"].loc[var_dict["e"]["data"]
-                              [vr] <= inpt.pres_low_thresh, vr] = np.nan
-    var_dict["e"]["data"].loc[var_dict["e"]["data"]
-                              [vr] >= inpt.pres_high_thresh, vr] = np.nan
+    rd_frea.read_rean(vr, "e5")
+    var_dict["e5"]["data"], _ = tls.check_empty_df(var_dict["e5"]["data"], vr)
+    var_dict["e5"]["data"][vr] /= 100.
+    var_dict["e5"]["data"].loc[var_dict["e5"]["data"]
+                               [vr] <= inpt.pres_low_thresh, vr] = np.nan
+    var_dict["e5"]["data"].loc[var_dict["e5"]["data"]
+                               [vr] >= inpt.pres_high_thresh, vr] = np.nan
 
     # --- THAAO ---
     if inpt.datasets['THAAO']['switch']:
@@ -728,11 +728,11 @@ def read_sw_down():
     # --- ERA5 ---
     vr = "sw_down"
     var_dict = inpt.extr[vr]
-    rd_frea.read_rean(vr, "e")
-    var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
-    var_dict["e"]["data"][vr] /= pd.Timedelta('1h').total_seconds()
-    var_dict["e"]["data"][vr] = var_dict["e"]["data"][vr].mask(
-        var_dict["e"]["data"][vr] < inpt.rad_low_thresh, np.nan)
+    rd_frea.read_rean(vr, "e5")
+    var_dict["e5"]["data"], _ = tls.check_empty_df(var_dict["e5"]["data"], vr)
+    var_dict["e5"]["data"][vr] /= pd.Timedelta('1h').total_seconds()
+    var_dict["e5"]["data"][vr] = var_dict["e5"]["data"][vr].mask(
+        var_dict["e5"]["data"][vr] < inpt.rad_low_thresh, np.nan)
 
     # --- THAAO ---
     vr = "sw_down"
@@ -837,19 +837,19 @@ def read_sw_lw_net():
     # --- ERA5 SW_NET ---
     vr = "sw_net"
     var_dict = inpt.extr[vr]
-    rd_frea.read_rean(vr, "e")
-    var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
-    sw_net_e = var_dict["e"]["data"][vr] / pd.Timedelta('1h').total_seconds()
-    sw_net_e = sw_net_e.mask(sw_net_e < inpt.rad_low_thresh, np.nan)
-    var_dict["e"]["data"][vr] = sw_net_e
+    rd_frea.read_rean(vr, "e5")
+    var_dict["e5"]["data"], _ = tls.check_empty_df(var_dict["e5"]["data"], vr)
+    sw_net_e5 = var_dict["e5"]["data"][vr] / pd.Timedelta('1h').total_seconds()
+    sw_net_e5 = sw_net_e5.mask(sw_net_e5 < inpt.rad_low_thresh, np.nan)
+    var_dict["e5"]["data"][vr] = sw_net_e
 
     # --- ERA5 LW_NET ---
     vr = "lw_net"
     var_dict = inpt.extr[vr]
-    rd_frea.read_rean(vr, "e")
-    var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
-    lw_net_e = var_dict["e"]["data"][vr] / pd.Timedelta('1h').total_seconds()
-    var_dict["e"]["data"][vr] = lw_net_e
+    rd_frea.read_rean(vr, "e5")
+    var_dict["e5"]["data"], _ = tls.check_empty_df(var_dict["e5"]["data"], vr)
+    lw_net_e5 = var_dict["e5"]["data"][vr] / pd.Timedelta('1h').total_seconds()
+    var_dict["e5"]["data"][vr] = lw_net_e
 
     # --- THAAO SW_NET ---
     vr = "sw_up"
@@ -911,14 +911,14 @@ def read_sw_lw_net():
         lw_net_c1, lambda a, b: a if pd.isna(b) else b if pd.isna(a) else a + b)
     sw_lw_net_c2 = sw_net_c2.combine(
         lw_net_c2, lambda a, b: a if pd.isna(b) else b if pd.isna(a) else a + b)
-    sw_lw_net_e = sw_net_e.combine(
-        lw_net_e, lambda a, b: a if pd.isna(b) else b if pd.isna(a) else a + b)
+    sw_lw_net_e5 = sw_net_e5.combine(
+        lw_net_e5, lambda a, b: a if pd.isna(b) else b if pd.isna(a) else a + b)
     sw_lw_net_t = sw_net_t.combine(
         lw_net_t, lambda a, b: a if pd.isna(b) else b if pd.isna(a) else a + b)
 
     var_dict["c1"]["data"] = pd.DataFrame(sw_lw_net_c1, columns=[vr])
     var_dict["c2"]["data"] = pd.DataFrame(sw_lw_net_c2, columns=[vr])
-    var_dict["e"]["data"] = pd.DataFrame(sw_lw_net_e, columns=[vr])
+    var_dict["e5"]["data"] = pd.DataFrame(sw_lw_net_e5, columns=[vr])
     var_dict["t"]["data"] = pd.DataFrame(sw_lw_net_t, columns=[vr])
 
     return
@@ -950,10 +950,10 @@ def read_sw_net():
     # --- ERA5 ---
     vr = "sw_net"
     var_dict = inpt.extr[vr]
-    rd_frea.read_rean(vr, "e")
-    var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
-    sw_net_e = var_dict["e"]["data"][vr]
-    sw_net_e /= pd.Timedelta('1h').total_seconds()
+    rd_frea.read_rean(vr, "e5")
+    var_dict["e5"]["data"], _ = tls.check_empty_df(var_dict["e5"]["data"], vr)
+    sw_net_e5 = var_dict["e5"]["data"][vr]
+    sw_net_e5 /= pd.Timedelta('1h').total_seconds()
 
     # --- THAAO ---
     vr = "sw_up"
@@ -1026,7 +1026,7 @@ def read_sw_up():
     read_sw_down()
     sw_down_c1 = var_dict["c1"]["data"][vr]
     sw_down_c2 = var_dict["c2"]["data"][vr]
-    sw_down_e = var_dict["e"]["data"][vr]
+    sw_down_e5 = var_dict["e5"]["data"][vr]
 
     # --- CARRA1 ---
     vr = "sw_net"
@@ -1063,18 +1063,18 @@ def read_sw_up():
     # --- ERA5 ---
     vr = "sw_net"
     var_dict = inpt.extr[vr]
-    rd_frea.read_rean(vr, "e")
-    var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
-    sw_net_e = var_dict["e"]["data"][vr]
-    sw_net_e /= pd.Timedelta('1h').total_seconds()
+    rd_frea.read_rean(vr, "e5")
+    var_dict["e5"]["data"], _ = tls.check_empty_df(var_dict["e5"]["data"], vr)
+    sw_net_e5 = var_dict["e5"]["data"][vr]
+    sw_net_e5 /= pd.Timedelta('1h').total_seconds()
 
     vr = "sw_up"
     var_dict = inpt.extr[vr]
-    sw_up_e = sw_down_e - sw_net_e
-    sw_up_e = sw_up_e.mask(sw_up_e < inpt.rad_low_thresh, np.nan)
-    sw_up_e.name = vr
-    var_dict["e"]["data"] = pd.DataFrame({vr: sw_up_e})
-    var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
+    sw_up_e5 = sw_down_e5 - sw_net_e
+    sw_up_e5 = sw_up_e5.mask(sw_up_e5 < inpt.rad_low_thresh, np.nan)
+    sw_up_e5.name = vr
+    var_dict["e5"]["data"] = pd.DataFrame({vr: sw_up_e})
+    var_dict["e5"]["data"], _ = tls.check_empty_df(var_dict["e5"]["data"], vr)
 
     # --- THAAO ---
     vr = "sw_up"
@@ -1145,10 +1145,10 @@ def read_tcc():
         tls.percentage_to_okta)
 
     # --- ERA5 ---
-    rd_frea.read_rean(vr, "e")
-    var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
-    var_dict["e"]["data"][vr] *= 100.0
-    var_dict["e"]["data"]['tcc'] = var_dict["e"]["data"]['tcc'].apply(
+    rd_frea.read_rean(vr, "e5")
+    var_dict["e5"]["data"], _ = tls.check_empty_df(var_dict["e5"]["data"], vr)
+    var_dict["e5"]["data"][vr] *= 100.0
+    var_dict["e5"]["data"]['tcc'] = var_dict["e5"]["data"]['tcc'].apply(
         tls.percentage_to_okta)
 
     # --- THAAO ---
@@ -1184,9 +1184,9 @@ def read_temp():
     var_dict["c2"]["data"][vr] -= 273.15
 
     # --- ERA5 ---
-    rd_frea.read_rean(vr, "e")
-    var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
-    var_dict["e"]["data"][vr] -= 273.15
+    rd_frea.read_rean(vr, "e5")
+    var_dict["e5"]["data"], _ = tls.check_empty_df(var_dict["e5"]["data"], vr)
+    var_dict["e5"]["data"][vr] -= 273.15
 
     # --- THAAO ---
     if inpt.datasets['THAAO']['switch']:
@@ -1332,17 +1332,17 @@ def read_wind():
     # --- ERA5 ---
     vr = "windu"
     var_dict = inpt.extr[vr]
-    rd_frea.read_rean(vr, "e")
-    var_dict["e"]["data"] = var_dict["e"]["data"][var_dict["e"]
-                                                  ["data"].index >= start_date]
-    var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
+    rd_frea.read_rean(vr, "e5")
+    var_dict["e5"]["data"] = var_dict["e5"]["data"][var_dict["e5"]
+                                                    ["data"].index >= start_date]
+    var_dict["e5"]["data"], _ = tls.check_empty_df(var_dict["e5"]["data"], vr)
 
     vr = "windv"
     var_dict = inpt.extr[vr]
-    rd_frea.read_rean(vr, "e")
-    var_dict["e"]["data"] = var_dict["e"]["data"][var_dict["e"]
-                                                  ["data"].index >= start_date]
-    var_dict["e"]["data"], _ = tls.check_empty_df(var_dict["e"]["data"], vr)
+    rd_frea.read_rean(vr, "e5")
+    var_dict["e5"]["data"] = var_dict["e5"]["data"][var_dict["e5"]
+                                                    ["data"].index >= start_date]
+    var_dict["e5"]["data"], _ = tls.check_empty_df(var_dict["e5"]["data"], vr)
 
     # --- THAAO ---
     if inpt.datasets['THAAO']['switch']:
@@ -1441,9 +1441,9 @@ def read():
             var_dict["c2"]["data"], vr)
 
         # --- ERA5 ---
-        rd_frea.read_rean(vr, "e")
-        var_dict["e"]["data"], _ = tls.check_empty_df(
-            var_dict["e"]["data"], vr)
+        rd_frea.read_rean(vr, "e5")
+        var_dict["e5"]["data"], _ = tls.check_empty_df(
+            var_dict["e5"]["data"], vr)
 
         # --- THAAO ---
         if inpt.datasets['THAAO']['switch']:

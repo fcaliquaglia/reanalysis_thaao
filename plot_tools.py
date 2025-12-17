@@ -15,9 +15,10 @@ import matplotlib.cm as cm
 import csv
 import calendar
 
+
 def make_time_range(start_year, end_year, tres):
     tres_up = tres.upper()
-    
+
     # Monthly, want 15th
     if tres_up == "1ME":
         # Generate month starts then shift to 15th
@@ -33,7 +34,7 @@ def make_time_range(start_year, end_year, tres):
             end=pd.Timestamp(end_year, 12, 31, 23, 59),
             freq=tres
         )
-    
+
     return time_range
 
 
@@ -143,7 +144,7 @@ def get_color_by_resolution(data_typ, resolution):
     res_index = inpt.tres_list.index(resolution)
     if data_typ == 'c1':
         color = warm_colors[res_index]
-    elif data_typ == 'e':
+    elif data_typ == 'e5':
         color = cold_colors[res_index]
     else:
         color = 'gray'  # fallback
@@ -163,10 +164,10 @@ def calc_draw_fit(axs, i, xxx, yyy, tr, per_lab, data_typ, print_stats=True):
     :param per_lab: Key for color in inpt.seasons.
     :param print_stats: Whether to display stats text.
     """
-    if per_lab=='all':
-        col=inpt.all_seasons[per_lab]['col']
+    if per_lab == 'all':
+        col = inpt.all_seasons[per_lab]['col']
     else:
-        col=inpt.seasons[per_lab]['col']
+        col = inpt.seasons[per_lab]['col']
     var = inpt.var
     var_dict = inpt.var_dict
     ref_x = inpt.extr[var]['ref_x']
@@ -193,7 +194,8 @@ def calc_draw_fit(axs, i, xxx, yyy, tr, per_lab, data_typ, print_stats=True):
         axs[i].plot([var_min, var_max], [var_min, var_max],
                     color='black', lw=1.5, ls='-')
     else:
-        print(f"[WARN] Not enough data points for regression fit (len={len(xx)})")
+        print(
+            f"[WARN] Not enough data points for regression fit (len={len(xx)})")
         return
 
     fn = f"{tr}_{data_typ}_stats_{inpt.var}_{per_lab}_{inpt.location}.csv"
@@ -303,7 +305,7 @@ def calc_stats(x, y, data_typ, tr, fn, per_lab):
                      [tres_ref_x][inpt.var]*var_data['bin_size'])
         Q = np.array(var_data[data_typ]['data_marg_distr']
                      [tres][inpt.var]*var_data['bin_size'])
-    
+
         var_data[data_typ]['data_stats'][tr]['kl_bits'] = kl_divergence(
             P, Q)/np.log(2)
     save_stats(fn, data_typ, tr, ref_x)
