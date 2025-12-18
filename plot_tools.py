@@ -133,26 +133,21 @@ def frame_and_axis_removal(axs, n_plots):
 
 def get_colormap_colors(name, n):
     """
-    Returns n colors from a colormap with fixed mathematical spacing,
-    avoiding the extremes (0.0 to 0.2 and 0.9 to 1.0).
+    Returns n colors from a colormap with fixed mathematical spacing.
+    Progresses from Dark (0.9) to Light (0.3).
     """
     cmap = plt.get_cmap(name)
-    # We sample from 0.3 to 0.9 to ensure high contrast and visibility
-    colors = [cmap(i) for i in np.linspace(0.3, 0.9, n)]
-    return colors
+    # 0.9 is the saturated/dark end, 0.3 is the pale/light end
+    return [cmap(i) for i in np.linspace(0.9, 0.3, n)]
 
 
 def get_color_by_resolution(data_typ, resolution):
-    # Determine how many steps we need
     n_levels = len(inpt.tres_list)
 
-    # 1. Generate the palettes with fixed intervals
-    # 'autumn' for C1 (Red/Orange)
-    # 'Greens' or 'YlGn' for C2 (Green) - 'Greens' is more consistent for distance
-    # 'winter' for E5 (Blue/Cyan)
-    warm_colors = get_colormap_colors("autumn", n_levels)
-    green_colors = get_colormap_colors("Greens", n_levels)
-    cold_colors = get_colormap_colors("winter", n_levels)
+    # Generate palettes: Dark -> Light
+    red_shades = get_colormap_colors("Reds", n_levels)   # C1
+    green_shades = get_colormap_colors("Greens", n_levels)  # C2
+    blue_shades = get_colormap_colors("Blues", n_levels)  # E5
 
     try:
         res_index = inpt.tres_list.index(resolution)
@@ -160,11 +155,11 @@ def get_color_by_resolution(data_typ, resolution):
         return 'gray'
 
     if data_typ == 'c1':
-        return warm_colors[res_index]
+        return red_shades[res_index]
     elif data_typ == 'c2':
-        return green_colors[res_index]
+        return green_shades[res_index]
     elif data_typ == 'e5':
-        return cold_colors[res_index]
+        return blue_shades[res_index]
 
     return 'gray'
 
