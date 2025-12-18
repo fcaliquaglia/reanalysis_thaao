@@ -719,7 +719,7 @@ def plot_taylor(vr_class):
     ]
 
     if vr_class == 'met':
-        var_list = inpt.met_vars+inpt.cloud_vars
+        var_list = ['temp']  # inpt.met_vars+inpt.cloud_vars
         plot_name = 'Weather variables'
     elif vr_class == 'rad_comps':
         var_list = inpt.rad_comps_vars+['alb']
@@ -815,7 +815,7 @@ def plot_taylor_dia(ax, std_ref, std_models, corrs, labels,
 
     ax.set_ylim(0, rmax)
     ax.set_theta_direction(1)
-    ax.set_theta_zero_location('e5')
+    ax.set_theta_zero_location('e')
     ax.set_thetamin(0)
     ax.set_thetamax(90)
 
