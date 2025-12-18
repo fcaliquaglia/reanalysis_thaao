@@ -144,15 +144,17 @@ def get_colormap_colors(name, n):
 def get_color_by_resolution(data_typ, resolution):
     n_levels = len(inpt.tres_list)
 
-    # Generate palettes: Dark -> Light
-    red_shades = get_colormap_colors("Reds", n_levels)   # C1
+    # Generate palettes: Fixed mathematical distance, Dark (0.9) -> Light (0.3)
+    red_shades = get_colormap_colors("Reds", n_levels)    # C1
     green_shades = get_colormap_colors("Greens", n_levels)  # C2
-    blue_shades = get_colormap_colors("Blues", n_levels)  # E5
+    blue_shades = get_colormap_colors("Blues", n_levels)   # E5
+    purple_shades = get_colormap_colors("Purples", n_levels)  # T2
 
     try:
         res_index = inpt.tres_list.index(resolution)
     except ValueError:
-        return 'gray'
+        # If 'original' is passed or resolution not in list, return a neutral dark color
+        return 'black' if resolution == 'original' else 'gray'
 
     if data_typ == 'c1':
         return red_shades[res_index]
@@ -160,6 +162,8 @@ def get_color_by_resolution(data_typ, resolution):
         return green_shades[res_index]
     elif data_typ == 'e5':
         return blue_shades[res_index]
+    elif data_typ == 't2':
+        return purple_shades[res_index]
 
     return 'gray'
 
