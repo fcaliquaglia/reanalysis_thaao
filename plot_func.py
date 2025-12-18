@@ -37,6 +37,7 @@ from matplotlib.ticker import FuncFormatter
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from pyCompare import blandAltman
 from matplotlib.lines import Line2D
+from matplotlib.patches import Circle
 
 
 def plot_ts(period_label):
@@ -82,29 +83,46 @@ def plot_ts(period_label):
                     continue
                 if chck:
                     continue
-                y_ori_ = var_data[data_typ]['data_res']['original'][inpt.var]
-                if period_label == 'all':
-                    y_ori_mask = y_ori_.index.year == year
-                else:
-                    season_months = inpt.seasons[period_label]['months']
-                    y_ori_mask = (y_ori_.index.year == year) & (
-                        y_ori_.index.month.isin(season_months))
-                if y_ori_mask.any():
-                    y_ori = y_ori_.loc[y_ori_mask].dropna()
-                    ax[i].plot(y_ori,
-                               color=inpt.var_dict[data_typ]['col_ori'], **kwargs_ori)
 
-            # Resampled data for the year
-            y_res = var_data[data_typ]['data_res'][inpt.tres][inpt.var]
+            y_ori_full = var_data[data_typ]['data_res']['original'][inpt.var]
+            y_res_full = var_data[data_typ]['data_res'][inpt.tres][inpt.var]
+
+            # Define Season Months
             if period_label == 'all':
-                y_res_mask = y_res.index.year == year
+                season_months = list(range(1, 13))
             else:
                 season_months = inpt.seasons[period_label]['months']
-                y_res_mask = (y_res.index.year == year) & (
-                    y_res.index.month.isin(season_months))
+
+            # --- DJF Year-Crossing Logic ---
+            # Check if this season spans across the New Year (e.g., [12, 1, 2])
+            is_cross_year = (12 in season_months) and (1 in season_months)
+
+            def get_seasonal_mask(df_index):
+                if not is_cross_year or period_label == 'all':
+                    # Standard logic for non-crossing seasons (MAM, JJA, SON)
+                    return (df_index.year == year) & (df_index.month.isin(season_months))
+                else:
+                    # Logic for DJF: Dec of (year-1) and Jan/Feb of (year)
+                    # This assigns Dec 2023 to the "2024" winter row
+                    mask_current_year = (df_index.year == year) & (
+                        df_index.month.isin([m for m in season_months if m < 12]))
+                    mask_prev_year = (df_index.year == year -
+                                      1) & (df_index.month == 12)
+                    return mask_current_year | mask_prev_year
+
+            # Apply the seasonal masks
+            y_ori_mask = get_seasonal_mask(y_ori_full.index)
+            y_res_mask = get_seasonal_mask(y_res_full.index)
+
+            # --- Plotting ---
+            if y_ori_mask.any():
+                y_ori = y_ori_full.loc[y_ori_mask].dropna()
+                ax[i].plot(y_ori, color=inpt.var_dict[data_typ]
+                           ['col_ori'], **kwargs_ori)
+
             if y_res_mask.any():
-                y_res_ = y_res.loc[y_res_mask].dropna()
-                ax[i].plot(y_res_, color=inpt.var_dict[data_typ]['col'],
+                y_res = y_res_full.loc[y_res_mask].dropna()
+                ax[i].plot(y_res, color=inpt.var_dict[data_typ]['col'],
                            label=inpt.var_dict[data_typ]['label'], **kwargs_res)
 
         # Format the subplot axes (assuming this function is defined elsewhere)
@@ -155,37 +173,54 @@ def plot_residuals(period_label):
             tres, tres_tol = tls.get_tres(data_typ)
             x = var_data[ref_x]['data_res'][tres][inpt.var]
             y = var_data[data_typ]['data_res'][tres][inpt.var]
-            null, chck = tls.check_empty_df(x, inpt.var)
-            if chck:
+
+            # Check for empty data
+            if tls.check_empty_df(x, inpt.var)[1]:
                 return
-            null, chck = tls.check_empty_df(y, inpt.var)
-            if chck:
+            if tls.check_empty_df(y, inpt.var)[1]:
                 continue
-            if period_label == 'all':
-                x_mask = x.index.year == year
-                y_mask = y.index.year == year
-            else:
-                season_months = inpt.seasons[period_label]['months']
-                x_mask = (x.index.year == year) & (
-                    x.index.month.isin(season_months))
-                y_mask = (y.index.year == year) & (
-                    y.index.month.isin(season_months))
+
+            # --- METEOROLOGICAL SEASON MASKING ---
+            season_months = inpt.seasons[period_label]['months'] if period_label != 'all' else list(
+                range(1, 13))
+            is_cross_year = (12 in season_months) and (1 in season_months)
+
+            def get_seasonal_mask(df_index, target_year):
+                if not is_cross_year or period_label == 'all':
+                    # Standard year matching (MAM, JJA, SON)
+                    return (df_index.year == target_year) & (df_index.month.isin(season_months))
+                else:
+                    # DJF Logic: Dec of (target_year - 1) + Jan/Feb of (target_year)
+                    mask_current = (df_index.year == target_year) & (
+                        df_index.month.isin([1, 2]))
+                    mask_dec_prev = (
+                        df_index.year == target_year - 1) & (df_index.month == 12)
+                    return mask_current | mask_dec_prev
+
+            x_mask = get_seasonal_mask(x.index, year)
+            y_mask = get_seasonal_mask(y.index, year)
+
             if y_mask.any() and x_mask.any():
+                # Note: This subtraction assumes indices are perfectly aligned
+                # If they aren't, use y.loc[y_mask].subtract(x.loc[x_mask], axis=0)
                 residuals = y.loc[y_mask] - x.loc[x_mask]
                 residuals = residuals.dropna()
-                null, chck = tls.check_empty_df(residuals, inpt.var)
-                if chck:
+
+                if tls.check_empty_df(residuals, inpt.var)[1]:
                     continue
-                # ax[i].stem(residuals.index,
-                #               residuals.values, color=inpt.var_dict[data_typ]['col'],
-                #               label=inpt.var_dict[data_typ]['label'], marker='.')
-                markerline, stemlines, baseline = ax[i].stem(residuals.index,
-                                                             residuals.values, label=inpt.var_dict[data_typ]['label'])
-                markerline.set_color(inpt.var_dict[data_typ]['col'])
-                stemlines.set_color(inpt.var_dict[data_typ]['col'])
+
+                # Stem plot with styling
+                markerline, stemlines, baseline = ax[i].stem(
+                    residuals.index,
+                    residuals.values,
+                    label=inpt.var_dict[data_typ]['label']
+                )
+
+                plt.setp(
+                    markerline, color=inpt.var_dict[data_typ]['col'], markersize=1)
+                plt.setp(
+                    stemlines, color=inpt.var_dict[data_typ]['col'], linewidth=0.1)
                 baseline.set_visible(False)
-                stemlines.set_linewidth(0.1)
-                markerline.set_markersize(1)
 
         # Format axis
         plt_tls.format_ts(ax, year, i, period_label, residuals=True)
@@ -611,7 +646,7 @@ def plot_scatter_cum():
                 x_df, y_df,
                 left_index=True,
                 right_index=True,
-                tolerance=tres_tol,
+                tolerance=pd.Timedelta(tres_tol),
                 direction='nearest'
             ).dropna()
 
@@ -824,8 +859,8 @@ def plot_taylor_dia(ax, std_ref, std_models, corrs, labels,
         ax.plot(np.arctan2(y_arc, x_arc), np.sqrt(x_arc**2 + y_arc**2),
                 color='darkgreen', linestyle='--', linewidth=1, alpha=0.2)
 
-    ax.add_artist(plt.Circle((0, 0), std_ref, transform=ax.transData._b,
-                             color='black', fill=False, linestyle='--', linewidth=2))
+    ax.add_artist(Circle((0, 0), std_ref, transform=ax.transData._b,
+                         color='black', fill=False, linestyle='--', linewidth=2))
 
     point_map = {}
 

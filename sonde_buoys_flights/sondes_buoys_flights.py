@@ -13,6 +13,8 @@ import geopandas as gpd
 import mpl_toolkits.axes_grid1.inset_locator as inset_locator
 import calendar
 from math import radians, cos
+from pathlib import Path
+from scipy.spatial import cKDTree
 
 # ---------------------------- SETTINGS ---------------------------- #
 plot = True
@@ -27,15 +29,15 @@ plot_flags = dict(
     ships=False
 )
 
-basefol = r"H:\Shared drives\Dati_THAAO"
+basefol = Path(r"H:\Shared drives\Dati_THAAO")
 folders = {
-    "dropsondes": os.path.join(basefol, r"thaao_arcsix\dropsondes"),
-    "radiosondes": os.path.join(basefol, r"thaao_rs_sondes\\txt\\2024"),
-    "buoys": os.path.join(basefol, r"thaao_arcsix\buoys\\resource_map_doi_10_18739_A2T14TR46\data"),
-    "g3": os.path.join(basefol, r"thaao_arcsix\\met_nav\\G3"),
-    "p3": os.path.join(basefol, r"thaao_arcsix\\met_nav\\P3"),
-    'ships': os.path.join(basefol, r"thaao_arcsix\ships"),
-    "txt_location": r"txt_locations"
+    "dropsondes": basefol / "thaao_arcsix" / "dropsondes",
+    "radiosondes": basefol / "thaao_rs_sondes" / "txt" / "2024",
+    "buoys": basefol / "thaao_arcsix" / "buoys" / "resource_map_doi_10_18739_A2T14TR46" / "data",
+    "g3": basefol / "thaao_arcsix" / "met_nav" / "G3",
+    "p3": basefol / "thaao_arcsix" / "met_nav" / "P3",
+    'ships': basefol / "thaao_arcsix" / "ships",
+    "txt_location": "txt_locations"
 }
 
 ground_sites = {
@@ -113,134 +115,215 @@ def grid_loading(dataset_type, file_sample):
         raise ValueError(f"Unknown dataset type: {dataset_type}")
 
 
+# def find_index_in_grid(grid_selection, fol_file, out_file):
+#     """
+#     Matches input coordinates and datetimes to nearest grid points in a dataset.
+
+#     Parameters:
+#     - grid_selection: tuple of (lat_arr, lon_arr, flat_lat, flat_lon, ds_times)
+#       Grid data and timestamps from the dataset.
+#     - fol_file: str
+#       Folder containing input and output CSV files.
+#     - out_file: str
+#       Output CSV filename; input filename is derived from it.
+
+#     Input CSV (derived from out_file):
+#     - Columns: datetime (ISO), lat, lon, elev
+
+#     Output CSV:
+#     - Columns: datetime, input_lat, input_lon, input_elev,
+#                y_idx, x_idx, t_idx,
+#                matched_lat, matched_lon, matched_elev, matched_time
+
+#     Notes:
+#     - Time matching ignores year (matches by MM-DD HH:MM within ±24h).
+#     - Grid edge indices (0 or max) are set to NaN with a warning.
+#     - If no time match within 3h, matched_time is NaN.
+#     """
+
+#     lat_arr,  lon_arr, flat_lat, flat_lon, ds_times = grid_selection
+#     # Read input coordinates
+#     in_file = f"{out_file}"[18:]
+#     coords = pd.read_csv(os.path.join(fol_file, in_file))
+
+#     # Output
+#     with open(os.path.join(fol_file, out_file), "w") as out_f:
+#         header = "datetime,input_lat,input_lon,input_elev,y_idx,x_idx,t_idx,matched_lat,matched_lon,matched_elev,matched_time\n"
+#         out_f.write(header)
+
+#         for row in coords.itertuples(index=False):
+#             x_idx, y_idx, matched_lat, matched_lon = np.nan, np.nan, np.nan, np.nan
+#             y_idx = np.nan
+#             # x and y indexes (lat and lon)
+#             input_lat = row.lat
+#             input_lon = row.lon
+#             input_elev = row.elev
+#             distances = haversine_vectorized(
+#                 input_lat, input_lon, flat_lat, flat_lon)
+#             min_idx = np.argmin(distances)
+#             y_idx, x_idx = np.unravel_index(min_idx, lat_arr.shape)
+#             matched_lat = lat_arr[y_idx, x_idx]
+#             matched_lon = lon_arr[y_idx, x_idx]
+
+#             # Check for zero values and set to np.nan with warning
+#             if x_idx == 0 or x_idx == lon_arr.shape[1]-1:
+#                 print("x index is on the edge. This may indicate that the lat/lon point lies outside the available reanalysis domain. Setting to np.nan as a precaution.")
+#                 x_idx = np.nan
+#             else:
+#                 pass
+#             if y_idx == 0 or y_idx == lon_arr.shape[0]-1:
+#                 print("y index is on the edge. This may indicate that the lat/lon point lies outside the available reanalysis domain. Setting to np.nan as a precaution.")
+#                 y_idx = np.nan
+#             else:
+#                 pass
+
+#             matched_elev = np.nan
+
+#             # Parse input datetime
+#             t_idx, matched_time = np.nan, np.nan
+#             dt_str = row.time
+#             if pd.notnull(dt_str):
+#                 input_time = pd.to_datetime(dt_str)
+#                 adjusted_ds_times = ds_times.map(
+#                     lambda t: safe_replace_year(t, input_time.year))
+#                 time_diffs = np.abs(adjusted_ds_times - input_time)
+
+#                 # Filtering time differences below 3 tres
+#                 if out_file[0] == 'e5':
+#                     thresh = 1
+#                 if out_file[0] == 'c1' or out_file[0] == 'c2':
+#                     thresh = 3
+#                 threshold = pd.Timedelta(hours=thresh)
+#                 filtered_diffs = time_diffs.where(time_diffs <= threshold)
+#                 if filtered_diffs.isnull().all():
+#                     matched_time = np.nan
+#                     t_idx = np.nan
+#                 else:
+#                     time_idx = time_diffs.argmin()
+#                     matched_original = ds_times[time_idx]
+#                     matched_time = matched_original.replace(
+#                         year=input_time.year)
+#                     t_idx = ds_times.get_loc(matched_original)
+
+#                 days_in_year = 366 if calendar.isleap(input_time.year) else 365
+#                 index_check = (days_in_year * 24) // thresh
+#                 if t_idx > index_check:
+#                     print("t index is on the edge. This may indicate that the time point lies outside the available reanalysis domain. Setting to np.nan as a precaution.")
+#                     t_idx = np.nan
+#                 else:
+#                     pass
+
+#             str_fmt = f"{dt_str},{input_lat:.6f},{input_lon:.6f},{input_elev:.2f},{y_idx},{x_idx},{t_idx},{matched_lat:.6f},{matched_lon:.6f},{matched_elev:.2f},{matched_time}\n"
+#             out_f.write(str_fmt)
+
+#     print(f"Index mapping written to {out_file}")
+
+
+# def haversine_vectorized(lat1, lon1, lat2, lon2):
+#     """
+#     Compute distance (in meters) between a point and arrays of lat/lon using the haversine formula.
+#     """
+#     R = 6371000  # Earth radius in meters
+#     lat1, lon1 = radians(lat1), radians(lon1)
+#     lat2, lon2 = np.radians(lat2), np.radians(lon2)
+
+#     dlat = lat2 - lat1
+#     dlon = lon2 - lon1
+
+#     a = np.sin(dlat / 2.0) ** 2 + cos(lat1) * \
+#         np.cos(lat2) * np.sin(dlon / 2.0) ** 2
+#     return 2 * R * np.arcsin(np.sqrt(a))
+
+
 def find_index_in_grid(grid_selection, fol_file, out_file):
-    """
-    Matches input coordinates and datetimes to nearest grid points in a dataset.
+    lat_arr, lon_arr, flat_lat, flat_lon, ds_times = grid_selection
 
-    Parameters:
-    - grid_selection: tuple of (lat_arr, lon_arr, flat_lat, flat_lon, ds_times)
-      Grid data and timestamps from the dataset.
-    - fol_file: str
-      Folder containing input and output CSV files.
-    - out_file: str
-      Output CSV filename; input filename is derived from it.
-
-    Input CSV (derived from out_file):
-    - Columns: datetime (ISO), lat, lon, elev
-
-    Output CSV:
-    - Columns: datetime, input_lat, input_lon, input_elev,
-               y_idx, x_idx, t_idx,
-               matched_lat, matched_lon, matched_elev, matched_time
-
-    Notes:
-    - Time matching ignores year (matches by MM-DD HH:MM within ±24h).
-    - Grid edge indices (0 or max) are set to NaN with a warning.
-    - If no time match within 3h, matched_time is NaN.
-    """
-
-    lat_arr,  lon_arr, flat_lat, flat_lon, ds_times = grid_selection
-    # Read input coordinates
-    in_file = f"{out_file}"[18:]
+    # Deriving input filename: strip the prefix 'e5_grid_index_for_' etc.
+    in_file = re.sub(r'^(e5|c1|c2)_grid_index_for_', '', out_file)
     coords = pd.read_csv(os.path.join(fol_file, in_file))
 
-    # Output
-    with open(os.path.join(fol_file, out_file), "w") as out_f:
-        header = "datetime,input_lat,input_lon,input_elev,y_idx,x_idx,t_idx,matched_lat,matched_lon,matched_elev,matched_time\n"
-        out_f.write(header)
+    # Standardize column naming
+    if 'datetime' in coords.columns:
+        coords = coords.rename(columns={'datetime': 'time'})
 
-        for row in coords.itertuples(index=False):
-            x_idx, y_idx, matched_lat, matched_lon = np.nan, np.nan, np.nan, np.nan
-            y_idx = np.nan
-            # x and y indexes (lat and lon)
-            input_lat = row.lat
-            input_lon = row.lon
-            input_elev = row.elev
-            distances = haversine_vectorized(
-                input_lat, input_lon, flat_lat, flat_lon)
-            min_idx = np.argmin(distances)
-            y_idx, x_idx = np.unravel_index(min_idx, lat_arr.shape)
-            matched_lat = lat_arr[y_idx, x_idx]
-            matched_lon = lon_arr[y_idx, x_idx]
+    # Wrap longitudes to [0, 360] to match reanalysis grid
+    lons_wrapped = coords['lon'].values % 360
+    lats = coords['lat'].values
 
-            # Check for zero values and set to np.nan with warning
-            if x_idx == 0 or x_idx == lon_arr.shape[1]-1:
-                print("x index is on the edge. This may indicate that the lat/lon point lies outside the available reanalysis domain. Setting to np.nan as a precaution.")
-                x_idx = np.nan
-            else:
-                pass
-            if y_idx == 0 or y_idx == lon_arr.shape[0]-1:
-                print("y index is on the edge. This may indicate that the lat/lon point lies outside the available reanalysis domain. Setting to np.nan as a precaution.")
-                y_idx = np.nan
-            else:
-                pass
+    # 1. SPATIAL MATCHING (KD-Tree)
+    tree = cKDTree(np.c_[flat_lat, flat_lon])
+    distances, indices = tree.query(np.c_[lats, lons_wrapped])
+    y_idxs, x_idxs = np.unravel_index(indices, lat_arr.shape)
 
-            matched_elev = np.nan
+    # 2. TIME PREPARATION
+    # 'errors=coerce' handles 'nan' strings by turning them into NaT
+    input_times = pd.to_datetime(coords['time'], errors='coerce')
+    thresh = 1 if out_file.startswith('e5') else 3
+    threshold = pd.Timedelta(hours=thresh)
 
-            # Parse input datetime
-            t_idx, matched_time = np.nan, np.nan
-            dt_str = row.time
-            if pd.notnull(dt_str):
-                input_time = pd.to_datetime(dt_str)
-                adjusted_ds_times = ds_times.map(
-                    lambda t: safe_replace_year(t, input_time.year))
-                time_diffs = np.abs(adjusted_ds_times - input_time)
+    results = []
+    for i in range(len(coords)):
+        y_idx, x_idx = y_idxs[i], x_idxs[i]
 
-                # Filtering time differences below 3 tres
-                if out_file[0] == 'e5':
-                    thresh = 1
-                if out_file[0] == 'c1' or out_file[0] == 'c2':
-                    thresh = 3
-                threshold = pd.Timedelta(hours=thresh)
-                filtered_diffs = time_diffs.where(time_diffs <= threshold)
-                if filtered_diffs.isnull().all():
-                    matched_time = np.nan
-                    t_idx = np.nan
-                else:
-                    time_idx = time_diffs.argmin()
-                    matched_original = ds_times[time_idx]
-                    matched_time = matched_original.replace(
-                        year=input_time.year)
-                    t_idx = ds_times.get_loc(matched_original)
+        # Edge check logic
+        if x_idx == 0 or x_idx == lon_arr.shape[1]-1 or y_idx == 0 or y_idx == lon_arr.shape[0]-1:
+            y_idx, x_idx = np.nan, np.nan
 
-                days_in_year = 366 if calendar.isleap(input_time.year) else 365
-                index_check = (days_in_year * 24) // thresh
-                if t_idx > index_check:
-                    print("t index is on the edge. This may indicate that the time point lies outside the available reanalysis domain. Setting to np.nan as a precaution.")
-                    t_idx = np.nan
-                else:
-                    pass
+        t_idx, matched_time = np.nan, np.nan
+        it_val = input_times[i]
 
-            str_fmt = f"{dt_str},{input_lat:.6f},{input_lon:.6f},{input_elev:.2f},{y_idx},{x_idx},{t_idx},{matched_lat:.6f},{matched_lon:.6f},{matched_elev:.2f},{matched_time}\n"
-            out_f.write(str_fmt)
+        # Only attempt time matching if the input time is valid (not NaT/NaN)
+        if pd.notnull(it_val):
+            # safe_replace_year handles leap years safely
+            adj_ds_times = ds_times.map(
+                lambda t: safe_replace_year(t, it_val.year))
+            time_diffs = np.abs(adj_ds_times - it_val)
 
+            min_idx = time_diffs.argmin()
+            if time_diffs[min_idx] <= threshold:
+                t_idx = min_idx
+                # Create the display time (input year + reanalysis month/day/hour)
+                matched_time = ds_times[min_idx].replace(year=it_val.year)
+
+        results.append({
+            'datetime': coords['time'].iloc[i],
+            'input_lat': lats[i],
+            'input_lon': coords['lon'].iloc[i],
+            'input_elev': coords['elev'].iloc[i],
+            'y_idx': y_idx,
+            'x_idx': x_idx,
+            't_idx': t_idx,
+            'matched_lat': lat_arr[y_idxs[i], x_idxs[i]],
+            'matched_lon': lon_arr[y_idxs[i], x_idxs[i]],
+            'matched_elev': np.nan,
+            'matched_time': matched_time
+        })
+
+    pd.DataFrame(results).to_csv(os.path.join(
+        fol_file, out_file), index=False, na_rep='nan')
     print(f"Index mapping written to {out_file}")
 
 
-def haversine_vectorized(lat1, lon1, lat2, lon2):
-    """
-    Compute distance (in meters) between a point and arrays of lat/lon using the haversine formula.
-    """
-    R = 6371000  # Earth radius in meters
-    lat1, lon1 = radians(lat1), radians(lon1)
-    lat2, lon2 = np.radians(lat2), np.radians(lon2)
-
-    dlat = lat2 - lat1
-    dlon = lon2 - lon1
-
-    a = np.sin(dlat / 2.0) ** 2 + cos(lat1) * \
-        np.cos(lat2) * np.sin(dlon / 2.0) ** 2
-    return 2 * R * np.arcsin(np.sqrt(a))
-
-
 def read_ict_file(filepath):
-    """Reads second "Time_Start" header in an ICT file into a DataFrame."""
+    """Parses ICT and attempts to construct real datetimes."""
     with open(filepath, "r") as f:
-        header_line = [i for i, line in enumerate(
-            f) if line.startswith("Time_Start")]
-    if len(header_line) < 2:
-        raise ValueError(f"Second Time_Start header not found: {filepath}")
-    return pd.read_csv(filepath, skiprows=header_line[1], index_col="Time_Start")
+        lines = f.readlines()
+
+    # Find the date string (usually line 7 in NASA ICT format: YYYY, MM, DD)
+    # Or use regex to find the date in the filename
+    date_match = re.search(r'(\d{4})(\d{2})(\d{2})',
+                           os.path.basename(filepath))
+    base_date = pd.to_datetime(date_match.group(
+        0)) if date_match else pd.to_datetime("2024-01-01")
+
+    # Re-use your existing logic to skip headers
+    header_line = [i for i, line in enumerate(
+        lines) if line.startswith("Time_Start")]
+    df = pd.read_csv(filepath, skiprows=header_line[1])
+
+    # Convert 'Time_Start' (seconds) to actual datetime
+    df['actual_time'] = base_date + pd.to_timedelta(df['Time_Start'], unit='s')
+    return df
 
 
 def filter_coords(lat, lon, bounds=None):
@@ -883,8 +966,8 @@ if __name__ == "__main__":
         final_df = pd.DataFrame(highest_pres_rows)
 
         # Step 7: Save to a final TXT file
-        final_df.to_parquet(os.path.join(folders["txt_location"], "dropsondes_surface_level_temp.parquet"),
-                            index="time")
+        final_df.to_parquet(os.path.join(
+            folders["txt_location"], "dropsondes_surface_level_temp.parquet"), index="time")
 
         print("Saved final TXT with highest pressure rows.")
 

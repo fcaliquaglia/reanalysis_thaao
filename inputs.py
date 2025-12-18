@@ -124,14 +124,13 @@ dateranges = {
 
 # ========== SEASONAL DEFINITIONS ==========
 all_seasons = {'all': {'months': list(range(1, 13)), 'col': 'pink'}}
+
 seasons = {
     'DJF': {'months': [12, 1, 2], 'col': 'blue'},
     'MAM': {'months': [3, 4, 5], 'col': 'green'},
     'JJA': {'months': [6, 7, 8], 'col': 'orange'},
-    'SON': {'months': [9, 10, 11], 'col': 'brown'}
-}
-seasons = {
-    'Jan': {'months': [1],  'col': '#00008B'},  # Dark Blue
+    'SON': {'months': [9, 10, 11], 'col': 'brown'},
+    'Jan': {'months': [1],  'col': "#5D5D77"},  # Dark Blue
     'Feb': {'months': [2],  'col': '#1E90FF'},  # Dodger Blue
     'Mar': {'months': [3],  'col': '#228B22'},  # Forest Green
     'Apr': {'months': [4],  'col': '#32CD32'},  # Lime Green
@@ -145,7 +144,11 @@ seasons = {
     'Dec': {'months': [12], 'col': '#4682B4'}  # Steel Blue
 }
 
-seasons_subset = {k: v for k, v in seasons.items() if k != 'all'}
+meteorological_seasons = ['DJF', 'MAM', 'JJA', 'SON']
+
+# Dictionary comprehension to filter the seasons dictionary
+seasons_subset = {k: v for k,
+                  v in seasons.items() if k in meteorological_seasons}
 
 # ========== VARIABLE METADATA ==========
 var_dict = {
