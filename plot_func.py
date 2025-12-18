@@ -765,7 +765,7 @@ def plot_taylor(vr_class):
 
                 if data_typ == 'c1':
                     color = 'red'
-                if data_typ == 'c2':
+                elif data_typ == 'c2':
                     color = 'green'
                 elif data_typ == 'e5':
                     color = 'blue'
@@ -815,7 +815,7 @@ def plot_taylor_dia(ax, std_ref, std_models, corrs, labels,
 
     ax.set_ylim(0, rmax)
     ax.set_theta_direction(1)
-    ax.set_theta_zero_location('e')
+    ax.set_theta_offset(0.0)
     ax.set_thetamin(0)
     ax.set_thetamax(90)
 
@@ -873,7 +873,7 @@ def plot_taylor_dia(ax, std_ref, std_models, corrs, labels,
             return int(res.strip('h'))
 
     for i, (std, corr, label) in enumerate(zip(std_models, corrs, labels)):
-        theta = np.arccos(corr)
+        theta = np.arccos(np.clip(corr, -1, 1))
         try:
             data_typ, meta = label.split('(')
             var_name, resolution = [x.strip(' )') for x in meta.split(',')]

@@ -136,18 +136,39 @@ def get_colormap_colors(cmap_name, n):
 
 
 def get_color_by_resolution(data_typ, resolution):
+    # Handle the 'original' case if it's passed here
+    if resolution == 'original':
+        if data_typ == 'c1':
+            return 'darkred'
+        if data_typ == 'c2':
+            return 'darkgreen'
+        if data_typ == 'e5':
+            return 'darkblue'
+        return 'black'
 
     n_levels = len(inpt.tres_list)
 
-    cold_colors = get_colormap_colors("winter", n_levels)  # or "cool", "Blues"
-    warm_colors = get_colormap_colors("autumn", n_levels)  # or "hot", "OrRd"
-    res_index = inpt.tres_list.index(resolution)
+    # Define colormaps for each model
+    warm_colors = get_colormap_colors(
+        "autumn", n_levels)   # C1: Red/Orange shades
+    green_colors = get_colormap_colors("YlGn", n_levels)    # C2: Green shades
+    cold_colors = get_colormap_colors(
+        "winter", n_levels)   # E5: Blue/Cyan shades
+
+    try:
+        res_index = inpt.tres_list.index(resolution)
+    except ValueError:
+        # Fallback if resolution string is not in the list
+        res_index = 0
+
     if data_typ == 'c1':
         color = warm_colors[res_index]
+    elif data_typ == 'c2':
+        color = green_colors[res_index]
     elif data_typ == 'e5':
         color = cold_colors[res_index]
     else:
-        color = 'gray'  # fallback
+        color = 'gray'
 
     return color
 
