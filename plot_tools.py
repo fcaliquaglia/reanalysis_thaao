@@ -12,6 +12,7 @@ import inputs as inpt
 import pandas as pd
 import datetime as dt
 import matplotlib.cm as cm
+import matplotlib.pyplot as plt
 import csv
 import calendar
 
@@ -130,47 +131,42 @@ def frame_and_axis_removal(axs, n_plots):
         axs[i].set_visible(False)
 
 
-def get_colormap_colors(cmap_name, n):
-    cmap = cm.get_cmap(cmap_name, n)
-    return [cmap(i) for i in range(n)]
+def get_colormap_colors(name, n):
+    """
+    Returns n colors from a colormap with fixed mathematical spacing,
+    avoiding the extremes (0.0 to 0.2 and 0.9 to 1.0).
+    """
+    cmap = plt.get_cmap(name)
+    # We sample from 0.3 to 0.9 to ensure high contrast and visibility
+    colors = [cmap(i) for i in np.linspace(0.3, 0.9, n)]
+    return colors
 
 
 def get_color_by_resolution(data_typ, resolution):
-    # Handle the 'original' case if it's passed here
-    if resolution == 'original':
-        if data_typ == 'c1':
-            return 'darkred'
-        if data_typ == 'c2':
-            return 'darkgreen'
-        if data_typ == 'e5':
-            return 'darkblue'
-        return 'black'
-
+    # Determine how many steps we need
     n_levels = len(inpt.tres_list)
 
-    # Define colormaps for each model
-    warm_colors = get_colormap_colors(
-        "autumn", n_levels)   # C1: Red/Orange shades
-    green_colors = get_colormap_colors("YlGn", n_levels)    # C2: Green shades
-    cold_colors = get_colormap_colors(
-        "winter", n_levels)   # E5: Blue/Cyan shades
+    # 1. Generate the palettes with fixed intervals
+    # 'autumn' for C1 (Red/Orange)
+    # 'Greens' or 'YlGn' for C2 (Green) - 'Greens' is more consistent for distance
+    # 'winter' for E5 (Blue/Cyan)
+    warm_colors = get_colormap_colors("autumn", n_levels)
+    green_colors = get_colormap_colors("Greens", n_levels)
+    cold_colors = get_colormap_colors("winter", n_levels)
 
     try:
         res_index = inpt.tres_list.index(resolution)
     except ValueError:
-        # Fallback if resolution string is not in the list
-        res_index = 0
+        return 'gray'
 
     if data_typ == 'c1':
-        color = warm_colors[res_index]
+        return warm_colors[res_index]
     elif data_typ == 'c2':
-        color = green_colors[res_index]
+        return green_colors[res_index]
     elif data_typ == 'e5':
-        color = cold_colors[res_index]
-    else:
-        color = 'gray'
+        return cold_colors[res_index]
 
-    return color
+    return 'gray'
 
 
 def calc_draw_fit(axs, i, xxx, yyy, tr, per_lab, data_typ, print_stats=True):
