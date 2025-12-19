@@ -75,7 +75,7 @@ location = next((info['fn']
                 for info in datasets.values() if info.get('switch')), None)
 
 # ========== VARIABLE GROUPS ==========
-met_vars = ['windu', 'windv', 'temp', 'surf_pres',  'rh', 'iwv']  # 'precip'
+met_vars = ['temp', 'surf_pres',  'rh', 'iwv']  # 'precip', 'windu', 'windv',
 rad_comps_vars = ['sw_up', 'sw_down', 'lw_up', 'lw_down']
 rad_flux_vars = ['alb', 'sw_net', 'lw_net']
 cloud_vars = ['cbh']  # lwp
